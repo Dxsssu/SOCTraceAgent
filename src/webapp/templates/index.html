@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOCAgent - AI驱动的安全运营中心</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <span class="fw-bold me-2">SA</span>
+                SOCAgent
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health">健康检查</a>
+                    </li>
+                </ul>
+                <span class="navbar-text text-white-50">Planner / Executor / Reviewer</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="mb-4">
+            <div class="text-center">
+                <h1>SOCAgent</h1>
+                <p class="text-muted">基于 SQLite 共享黑板的三角色智能溯源系统</p>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>创建安全事件</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="event-form">
+                            <div class="mb-3">
+                                <label for="event-name" class="form-label">事件名称 (可选)</label>
+                                <input type="text" class="form-control" id="event-name" placeholder="如未提供，系统将自动生成">
+                            </div>
+                            <div class="mb-3">
+                                <label for="event-message" class="form-label">事件描述 *</label>
+                                <textarea class="form-control required-field" id="event-message" rows="4" required placeholder="例如：检测到外部IP 66.240.205.34 正在暴力破解邮件网关服务器，对应内网IP地址是192.168.22.251"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="event-context" class="form-label">事件上下文 (可选)</label>
+                                <textarea class="form-control" id="event-context" rows="2" placeholder='可以填写 JSON，或直接输入备注文本'></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="event-severity" class="form-label">严重程度</label>
+                                <select class="form-select" id="event-severity">
+                                    <option value="low">低</option>
+                                    <option value="medium" selected>中</option>
+                                    <option value="high">高</option>
+                                    <option value="critical">严重</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="event-source" class="form-label">事件来源 (可选)</label>
+                                <input type="text" class="form-control" id="event-source" value="web_manual" placeholder="例如：SIEM, EDR, 人工报告">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">创建事件</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>安全事件列表</h5>
+                        <button id="refresh-events" class="btn btn-sm btn-outline-secondary">刷新</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="events-container">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <p class="mt-2">加载事件列表...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast容器 -->
+    <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- 版本信息 -->
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <small class="text-muted">
+                SOCAgent <span id="version-info">v0.1.0</span> | SQLite-backed multi-agent traceback workflow
+            </small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/index.js"></script>
+    
+    <!-- 加载版本信息 -->
+    <script>
+        fetch('/api/version')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('version-info').textContent = `v${data.data.version}`;
+                }
+            })
+            .catch(error => {
+                console.log('无法获取版本信息:', error);
+            });
+    </script>
+</body>
+</html> 
