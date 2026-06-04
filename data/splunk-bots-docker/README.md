@@ -14,6 +14,8 @@ Happy Hunting!
 
 Edit the `docker-compose.yml` file and change the value in `SPLUNK_PASSWORD=` to your preferred password the default is `changeme`. The username to login is `admin` for all containers.
 
+On Apple Silicon Macs, the `splunk/splunk:8.2.3` image does not provide a native `arm64` manifest, so the compose file pins these services to `linux/amd64`.
+
 Use the `docker-compose up` or `docker compose up` commands to bring up all containers (this may take a while).
 
 To bring up just the BOTSv1 container run `docker-compose up -d bots1` this brings up the container in a detached mode so you can continue to use your terminal for other things. Then navigate to `http://localhost:8000` on your local machine or on the IP of the system running it and port 8000 to access from another system.
