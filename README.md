@@ -206,6 +206,7 @@ SOCAGENT_WEB_PORT=5008
 
 - 仓库中的 `.env` 不应该保存真实密钥，建议改为占位值并使用你自己的 API Key
 - 如果真实密钥已经入库，应该立即轮换
+- `Planner` 和 `Reviewer` 现在要求真实 LLM 可用；如果 `DEEPSEEK_API_KEY` 缺失或模型返回非法 YAML，事件会直接进入 `failed`，不会再自动生成模拟结果
 
 ## 初始化与启动
 
@@ -375,7 +376,7 @@ python tests/test_multi_agent_loop.py --db-path tests/runtime/test_multi_agent_l
 - 轮次复盘持久化
 - 结构化消息留痕
 - 独立的多轮闭环测试脚本
-- LLM 失败时的 fallback 逻辑
+- LLM 结果校验与失败显式落库
 
 ## 当前局限
 

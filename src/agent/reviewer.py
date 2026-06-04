@@ -8,7 +8,7 @@ import time
 from src.agent.llm import call_llm, parse_yaml_response
 from src.memory.working_memory import TTTStore
 from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageBus
-from src.schema import Event, EventStatus, ExecutionStatus, RoundReview
+from src.schema import Event, EventStatus, RoundReview
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
 
@@ -145,7 +145,12 @@ class ReviewerRuntime:
             message_type=MessageType.ROUND_REVIEW_STARTED,
             payload={"execution_count": len(executions)},
         )
-        review = self._generate_round_review(event, latest_ttt.to_dict(), executions)
+        try:
+            review = self._generate_round_review(event, latest_ttt.to_dict(), executions)
+        except Exception as exc:
+            logger.exception("Reviewer round review generation failed")
+            self._fail_event(event, f"Reviewer round review generation failed: {exc}")
+            return False
         self.storage.save_round_review(review)
         replanning_event = Event(
             event_id=event.event_id,
@@ -191,65 +196,51 @@ class ReviewerRuntime:
                 json.dumps(execution_payload, ensure_ascii=False, indent=2),
             ]
         )
-        try:
-            response_text = call_llm(
-                self.agent.system_prompt,
-                user_prompt,
-                extra_body={"thinking": {"type": "enabled"}},
-            )
-            parsed = parse_yaml_response(response_text)
-            if parsed:
-                findings = tuple(str(item) for item in (parsed.get("findings") or []))
-                gaps = tuple(str(item) for item in (parsed.get("gaps") or []))
-                recommendations = tuple(str(item) for item in (parsed.get("recommendations") or []))
-                if findings or gaps or recommendations:
-                    return RoundReview(
-                        event_id=event.event_id,
-                        round_id=event.current_round,
-                        findings=findings,
-                        gaps=gaps,
-                        recommendations=recommendations,
-                        created_by=self.agent.role_name,
-                        created_at=utc_now(),
-                        updated_at=utc_now(),
-                    )
-        except Exception:
-            logger.exception("Reviewer round review generation failed, using fallback")
-        return self._build_fallback_review(event, executions)
-
-    def _build_fallback_review(self, event: Event, executions: list[object]) -> RoundReview:
-        findings: list[str] = []
-        gaps: list[str] = []
-        recommendations: list[str] = []
-
-        if not executions:
-            gaps.append("本轮没有生成任何执行记录。")
-            recommendations.append("检查 Executor 是否成功领取 TTT 叶子节点。")
-        else:
-            for execution in executions:
-                if execution.execution_status == ExecutionStatus.COMPLETED:
-                    findings.append(
-                        f"节点 {execution.node_id} 已执行完成，工具为 {execution.tool_name}。"
-                    )
-                else:
-                    gaps.append(
-                        f"节点 {execution.node_id} 执行失败，原因：{execution.error_message or 'unknown'}。"
-                    )
-            if gaps:
-                recommendations.append("下一轮优先处理工具能力缺口或补充外部数据源。")
-            if not recommendations:
-                recommendations.append("根据当前已完成结果继续缩小调查范围。")
-
+        response_text = call_llm(
+            self.agent.system_prompt,
+            user_prompt,
+            extra_body={"thinking": {"type": "enabled"}},
+        )
+        parsed = parse_yaml_response(response_text)
+        if not parsed:
+            raise ValueError("Reviewer returned empty or non-YAML content")
+        findings = tuple(str(item) for item in (parsed.get("findings") or []))
+        gaps = tuple(str(item) for item in (parsed.get("gaps") or []))
+        recommendations = tuple(str(item) for item in (parsed.get("recommendations") or []))
+        if not (findings or gaps or recommendations):
+            raise ValueError("Reviewer response missing findings/gaps/recommendations")
         return RoundReview(
             event_id=event.event_id,
             round_id=event.current_round,
-            findings=tuple(findings or ["本轮已完成执行结果收集。"]),
-            gaps=tuple(gaps),
-            recommendations=tuple(recommendations),
+            findings=findings,
+            gaps=gaps,
+            recommendations=recommendations,
             created_by=self.agent.role_name,
             created_at=utc_now(),
             updated_at=utc_now(),
         )
+
+    def _fail_event(self, event: Event, reason: str) -> Event:
+        failed_event = Event(
+            event_id=event.event_id,
+            event_name=event.event_name,
+            message=event.message,
+            context=event.context,
+            source=event.source,
+            severity=event.severity,
+            event_status=EventStatus.FAILED,
+            current_round=event.current_round,
+            created_at=event.created_at,
+            updated_at=utc_now(),
+        )
+        self.storage.save_event(failed_event)
+        self._publish(
+            event_id=event.event_id,
+            round_id=event.current_round,
+            message_type=MessageType.SYSTEM_ERROR,
+            payload={"text": reason},
+        )
+        return failed_event
 
     def _publish(
         self,
