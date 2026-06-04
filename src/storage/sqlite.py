@@ -134,6 +134,23 @@ class SQLiteStorage:
                 ).fetchone()
         return self._row_to_event(row) if row else None
 
+    def delete_event(self, event_id: str) -> bool:
+        with self._lock:
+            with self.connect() as conn:
+                existing = conn.execute(
+                    "SELECT 1 FROM events WHERE event_id = ? LIMIT 1",
+                    (event_id,),
+                ).fetchone()
+                if existing is None:
+                    return False
+                conn.execute("DELETE FROM ttt_snapshots WHERE event_id = ?", (event_id,))
+                conn.execute("DELETE FROM messages WHERE event_id = ?", (event_id,))
+                conn.execute("DELETE FROM executions WHERE event_id = ?", (event_id,))
+                conn.execute("DELETE FROM round_reviews WHERE event_id = ?", (event_id,))
+                conn.execute("DELETE FROM events WHERE event_id = ?", (event_id,))
+                conn.commit()
+        return True
+
     def list_events_by_status(self, *statuses: str) -> list[Event]:
         if not statuses:
             return []

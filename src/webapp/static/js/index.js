@@ -1,9 +1,25 @@
 const API_BASE_URL = "/api";
+let deleteModalInstance = null;
+let pendingDeleteEvent = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchEvents();
   document.getElementById("refresh-events")?.addEventListener("click", fetchEvents);
   document.getElementById("event-form")?.addEventListener("submit", submitEventForm);
+  document.getElementById("events-container")?.addEventListener("click", handleEventListClick);
+  document.getElementById("confirm-delete-event")?.addEventListener("click", confirmDeleteEvent);
+  const deleteModalElement = document.getElementById("deleteEventModal");
+  if (deleteModalElement) {
+    deleteModalInstance = new bootstrap.Modal(deleteModalElement);
+    deleteModalElement.addEventListener("hidden.bs.modal", () => {
+      pendingDeleteEvent = null;
+      const confirmButton = document.getElementById("confirm-delete-event");
+      if (confirmButton) {
+        confirmButton.disabled = false;
+        confirmButton.textContent = "确认删除";
+      }
+    });
+  }
 });
 
 async function submitEventForm(event) {
@@ -98,7 +114,20 @@ function renderEventCard(event) {
   return `
     <a href="/warroom/${escapeHtml(event.event_id)}" class="list-group-item list-group-item-action event-card severity-${escapeHtml(event.severity)}">
       <div class="d-flex w-100 justify-content-between">
-        <h5 class="mb-1">${escapeHtml(event.event_name || "未命名事件")}</h5>
+        <div class="d-flex align-items-start flex-grow-1 me-3">
+          <h5 class="mb-1 event-card-title">${escapeHtml(event.event_name || "未命名事件")}</h5>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-danger event-delete-button"
+            data-action="delete-event"
+            data-event-id="${escapeHtml(event.event_id)}"
+            data-event-name="${escapeHtml(event.event_name || "未命名事件")}"
+            aria-label="删除事件 ${escapeHtml(event.event_name || event.event_id)}"
+            title="删除事件"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
         <small>${escapeHtml(createdAt)}</small>
       </div>
       <p class="mb-1">${escapeHtml(event.message || "")}</p>
@@ -111,6 +140,54 @@ function renderEventCard(event) {
       </div>
     </a>
   `;
+}
+
+function handleEventListClick(event) {
+  const deleteButton = event.target.closest('[data-action="delete-event"]');
+  if (!deleteButton) return;
+  event.preventDefault();
+  event.stopPropagation();
+
+  pendingDeleteEvent = {
+    eventId: deleteButton.dataset.eventId,
+    eventName: deleteButton.dataset.eventName || "未命名事件",
+  };
+
+  const textElement = document.getElementById("delete-event-modal-text");
+  if (textElement) {
+    textElement.textContent = `确定要删除事件“${pendingDeleteEvent.eventName}”吗？`;
+  }
+  deleteModalInstance?.show();
+}
+
+async function confirmDeleteEvent() {
+  if (!pendingDeleteEvent?.eventId) return;
+  const confirmButton = document.getElementById("confirm-delete-event");
+  const originalText = confirmButton?.textContent || "确认删除";
+  if (confirmButton) {
+    confirmButton.disabled = true;
+    confirmButton.textContent = "删除中...";
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/event/${encodeURIComponent(pendingDeleteEvent.eventId)}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    if (!response.ok || data.status !== "success") {
+      throw new Error(data.message || "删除失败");
+    }
+    deleteModalInstance?.hide();
+    showToast("事件删除成功", "success");
+    await fetchEvents();
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "删除失败", "error");
+    if (confirmButton) {
+      confirmButton.disabled = false;
+      confirmButton.textContent = originalText;
+    }
+  }
 }
 
 function getSeverityBadge(severity) {

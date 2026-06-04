@@ -148,6 +148,15 @@ def register_routes(app: Flask) -> None:
             return jsonify({"status": "error", "message": "事件不存在"}), 404
         return jsonify({"status": "success", "data": event.to_dict()})
 
+    @app.route("/api/event/<event_id>", methods=["DELETE"])
+    def delete_event(event_id: str) -> Any:
+        initialize_local_state()
+        storage = SQLiteStorage()
+        deleted = storage.delete_event(event_id)
+        if not deleted:
+            return jsonify({"status": "error", "message": "事件不存在"}), 404
+        return jsonify({"status": "success", "message": "事件删除成功", "data": {"event_id": event_id}})
+
     @app.route("/api/event/<event_id>/messages")
     def get_event_messages(event_id: str) -> Any:
         after_rowid = request.args.get("after_rowid", default=0, type=int)
