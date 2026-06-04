@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import argparse
 import os
+import threading
 
 from dotenv import load_dotenv
 
+from src.agent.executor import ExecutorRuntime
+from src.agent.planner import PlannerRuntime
+from src.agent.reviewer import ReviewerRuntime
 from src.agent import run_executor, run_planner, run_reviewer
 from src.memory.working_memory import TTTStore
 from src.messaging import SQLiteMessageBus
@@ -48,6 +52,23 @@ def start_role(role_name: str, poll_interval: float) -> None:
     raise ValueError(f"未知角色: {role_name}")
 
 
+def start_all_services(poll_interval: float) -> None:
+    initialize_local_state()
+    runtimes = (
+        ("planner", PlannerRuntime(poll_interval=poll_interval)),
+        ("executor", ExecutorRuntime(poll_interval=poll_interval)),
+        ("reviewer", ReviewerRuntime(poll_interval=poll_interval)),
+    )
+    for name, runtime in runtimes:
+        thread = threading.Thread(
+            target=runtime.run_forever,
+            name=f"socagent-{name}",
+            daemon=True,
+        )
+        thread.start()
+    run_web_server()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="SOCAgent bootstrap")
     parser.add_argument("-role", type=str, help="角色: _planner, _executor, _reviewer")
@@ -67,9 +88,13 @@ def main() -> None:
         start_role(args.role, poll_interval=poll_interval)
         return
 
-    if args.web or not args.role:
+    poll_interval = float(os.environ.get("SOCAGENT_POLL_INTERVAL", "5"))
+    if args.web:
         run_web_server()
         return
+
+    start_all_services(poll_interval=poll_interval)
+    return
 
 
 if __name__ == "__main__":
