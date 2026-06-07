@@ -72,6 +72,7 @@ class SQLiteStorage:
                         review_id TEXT PRIMARY KEY,
                         event_id TEXT NOT NULL,
                         round_id INTEGER NOT NULL,
+                        summary_text TEXT NOT NULL DEFAULT '',
                         findings_json TEXT NOT NULL DEFAULT '[]',
                         gaps_json TEXT NOT NULL DEFAULT '[]',
                         recommendations_json TEXT NOT NULL DEFAULT '[]',
@@ -82,6 +83,14 @@ class SQLiteStorage:
                     )
                     """
                 )
+                columns = {
+                    row["name"]
+                    for row in conn.execute("PRAGMA table_info(round_reviews)").fetchall()
+                }
+                if "summary_text" not in columns:
+                    conn.execute(
+                        "ALTER TABLE round_reviews ADD COLUMN summary_text TEXT NOT NULL DEFAULT ''"
+                    )
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_events_status_round ON events (event_status, current_round)"
                 )
@@ -228,14 +237,15 @@ class SQLiteStorage:
                 conn.execute(
                     """
                     INSERT OR REPLACE INTO round_reviews (
-                        review_id, event_id, round_id, findings_json, gaps_json,
+                        review_id, event_id, round_id, summary_text, findings_json, gaps_json,
                         recommendations_json, created_by, created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         payload["review_id"],
                         payload["event_id"],
                         payload["round_id"],
+                        payload["summary_text"],
                         json.dumps(payload["findings"], ensure_ascii=False),
                         json.dumps(payload["gaps"], ensure_ascii=False),
                         json.dumps(payload["recommendations"], ensure_ascii=False),
@@ -317,6 +327,7 @@ class SQLiteStorage:
                 "review_id": row["review_id"],
                 "event_id": row["event_id"],
                 "round_id": row["round_id"],
+                "summary_text": row["summary_text"] if "summary_text" in row.keys() else "",
                 "findings": json.loads(row["findings_json"] or "[]"),
                 "gaps": json.loads(row["gaps_json"] or "[]"),
                 "recommendations": json.loads(row["recommendations_json"] or "[]"),

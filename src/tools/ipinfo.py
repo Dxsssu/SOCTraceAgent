@@ -16,7 +16,9 @@ from .mcp import FastMCP, register_server
 load_dotenv()
 
 IPINFO_BASE_URL = "https://ipinfo.io"
-IP_PATTERN = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b|(?:[0-9A-Fa-f:]+:+)+[0-9A-Fa-f]+\b")
+IP_PATTERN = re.compile(
+    r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])|(?<![0-9A-Fa-f:])(?:[0-9A-Fa-f:]+:+)+[0-9A-Fa-f]+(?![0-9A-Fa-f:])"
+)
 
 mcp = register_server(FastMCP(
     "ipinfo",

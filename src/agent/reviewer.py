@@ -5,7 +5,7 @@ import json
 import logging
 import time
 
-from src.agent.llm import call_llm, parse_yaml_response
+from src.agent.llm import call_llm
 from src.memory.working_memory import TTTStore
 from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageBus
 from src.schema import Event, EventStatus, RoundReview
@@ -29,35 +29,12 @@ REVIEWER_SYSTEM_PROMPT = """
 - 你必须严格基于实际执行结果给出判断，不能编造证据。
 - 若执行失败或能力缺失，应真实指出，而不是掩盖。
 
-你的输出必须严格使用 YAML，且只能输出以下两种 response_type：
-- ROGER
-- ROUND_REVIEW
-
 总结要求：
-- 总结当前轮已经获取到的关键证据。
-- 指出哪些假设被支持，哪些假设仍未验证。
-- 指出失败执行、能力缺口或数据缺口。
-- 给 Planner 提供下一轮更新 TTT 的建议重点。
-
-输出示例：
-```yaml
-type: llm_response
-from: _reviewer
-to:
-  - _planner
-event_id: "{ 来自输入 }"
-round_id: "{ 来自输入 }"
-response_type: ROUND_REVIEW
-findings:
-  - 已确认源 IP 存在恶意扫描与暴力破解标签。
-  - 尚未确认邮件网关是否存在成功登录记录。
-gaps:
-  - 缺少目标主机认证日志证据。
-  - 当前工具集中没有直接查询某设备审计日志的能力。
-recommendations:
-  - 下一轮优先验证目标主机在告警时间窗内的成功登录行为。
-  - 若仍无日志查询能力，应将相关节点标记为能力缺口并调整 TTT。
-```
+- 总结本轮工具执行结果。
+- 总结目前已经收集到的结论。
+- 只给 Planner 1 条下一轮 TTT 调整建议，不要给多条建议清单。
+- 如果当前步骤已经成功执行并返回了所需结果，且没有出现新的关键证据或新的调查方向，应明确建议 Planner 尽量保持 TTT 不变，沿现有节点继续向下执行。
+- 如果合适，可以自然地使用简洁 Markdown（如小标题、列表、加粗）来提高可读性，但不要为了格式牺牲判断质量。
 """.strip()
 
 
@@ -69,13 +46,9 @@ class ReviewerAgent:
     display_name: str = "Reviewer"
     description: str = "负责总结每一轮执行结果，并将结果反馈给 Planner。"
     responsibilities: tuple[str, ...] = (
-        "汇总本轮执行结果中的关键证据。",
-        "识别已验证结论、未验证假设和能力缺口。",
-        "向 Planner 返回结构化轮次总结和下一轮建议。",
-    )
-    allowed_response_types: tuple[str, ...] = (
-        "ROGER",
-        "ROUND_REVIEW",
+        "总结本轮工具执行结果。",
+        "总结已经收集到的结论。",
+        "给出 1 条 TTT 调整建议。",
     )
     system_prompt: str = REVIEWER_SYSTEM_PROMPT
 
@@ -102,8 +75,6 @@ class ReviewerRuntime:
         did_work = False
         events = self.storage.list_events_by_status(
             EventStatus.REVIEWING.value,
-            EventStatus.EXECUTING.value,
-            EventStatus.PLANNED.value,
         )
         for event in events:
             if self.process_event(event):
@@ -131,10 +102,10 @@ class ReviewerRuntime:
     def process_event(self, event: Event) -> bool:
         if self.storage.get_round_review(event.event_id, event.current_round) is not None:
             return False
-        if not self.ttt_store.all_leaves_terminal(event.event_id, event.current_round):
-            return False
 
         executions = self.storage.list_executions(event.event_id, event.current_round)
+        if not executions:
+            return False
         latest_ttt = self.ttt_store.get_latest_ttt(event.event_id)
         if latest_ttt is None:
             return False
@@ -190,7 +161,9 @@ class ReviewerRuntime:
         execution_payload = [execution.to_dict() for execution in executions]
         user_prompt = "\n".join(
             [
-                "请根据以下事件、TTT 和本轮执行记录，输出 YAML 形式的轮次总结。",
+                "请根据以下事件、TTT 和本轮执行记录，直接输出一段轮次总结内容。",
+                "如果你觉得合适，可以自然使用简洁 Markdown 来提升可读性；不必强行套格式。",
+                "不要输出 YAML 或 JSON。",
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(ttt_payload, ensure_ascii=False, indent=2),
                 json.dumps(execution_payload, ensure_ascii=False, indent=2),
@@ -201,20 +174,13 @@ class ReviewerRuntime:
             user_prompt,
             extra_body={"thinking": {"type": "enabled"}},
         )
-        parsed = parse_yaml_response(response_text)
-        if not parsed:
-            raise ValueError("Reviewer returned empty or non-YAML content")
-        findings = tuple(str(item) for item in (parsed.get("findings") or []))
-        gaps = tuple(str(item) for item in (parsed.get("gaps") or []))
-        recommendations = tuple(str(item) for item in (parsed.get("recommendations") or []))
-        if not (findings or gaps or recommendations):
-            raise ValueError("Reviewer response missing findings/gaps/recommendations")
+        summary_text = (response_text or "").strip()
+        if not summary_text:
+            raise ValueError("Reviewer returned empty content")
         return RoundReview(
             event_id=event.event_id,
             round_id=event.current_round,
-            findings=findings,
-            gaps=gaps,
-            recommendations=recommendations,
+            summary_text=summary_text,
             created_by=self.agent.role_name,
             created_at=utc_now(),
             updated_at=utc_now(),

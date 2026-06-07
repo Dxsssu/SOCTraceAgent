@@ -7,6 +7,7 @@ from typing import Any
 from dotenv import load_dotenv
 from openai import OpenAI
 import yaml
+from yaml import YAMLError
 
 
 load_dotenv()
@@ -24,6 +25,7 @@ class LLMConfig:
     model: str
     reasoning_effort: str = "high"
     thinking_enabled: bool = True
+    request_timeout: float = 60.0
 
     @classmethod
     def from_env(cls) -> "LLMConfig":
@@ -38,6 +40,7 @@ class LLMConfig:
             reasoning_effort=os.environ.get("DEEPSEEK_REASONING_EFFORT", "high").strip(),
             thinking_enabled=os.environ.get("DEEPSEEK_THINKING_ENABLED", "true").strip().lower()
             in {"1", "true", "yes", "on"},
+            request_timeout=float(os.environ.get("DEEPSEEK_REQUEST_TIMEOUT", "60").strip()),
         )
 
 
@@ -79,6 +82,7 @@ class LLMClient:
             stream=stream,
             reasoning_effort=reasoning_effort or self.config.reasoning_effort,
             extra_body=payload_extra_body,
+            timeout=self.config.request_timeout,
         )
         return response.choices[0].message.content or ""
 
@@ -112,16 +116,49 @@ def parse_yaml_response(response_text: str) -> dict[str, Any] | None:
     if not text:
         return None
 
-    yaml_text = text
+    candidates: list[str] = []
     if "```yaml" in text:
         parts = text.split("```yaml", 1)
-        yaml_text = parts[1].split("```", 1)[0].strip()
+        candidates.append(parts[1].split("```", 1)[0].strip())
     elif "```" in text:
         parts = text.split("```", 1)
-        yaml_text = parts[1].split("```", 1)[0].strip()
+        candidates.append(parts[1].split("```", 1)[0].strip())
 
-    parsed = yaml.safe_load(yaml_text)
-    return parsed if isinstance(parsed, dict) else None
+    candidates.append(text)
+    extracted = _extract_yaml_tail(text)
+    if extracted and extracted not in candidates:
+        candidates.append(extracted)
+
+    for candidate in candidates:
+        try:
+            parsed = yaml.safe_load(candidate)
+        except YAMLError:
+            continue
+        if isinstance(parsed, dict):
+            return parsed
+    return None
+
+
+def _extract_yaml_tail(text: str) -> str | None:
+    lines = [line.rstrip() for line in text.splitlines()]
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if _looks_like_yaml_key(stripped):
+            return "\n".join(lines[index:]).strip()
+    return None
+
+
+def _looks_like_yaml_key(line: str) -> bool:
+    if line.startswith("- "):
+        return False
+    if ":" not in line:
+        return False
+    key_part = line.split(":", 1)[0].strip()
+    if not key_part:
+        return False
+    return all(char.isalnum() or char in {"_", "-"} for char in key_part)
 
 
 __all__ = ["LLMClient", "LLMConfig", "call_llm", "parse_yaml_response"]

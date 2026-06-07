@@ -14,6 +14,7 @@ class RoundReview:
 
     event_id: str
     round_id: int
+    summary_text: str = ""
     findings: tuple[str, ...] = field(default_factory=tuple)
     gaps: tuple[str, ...] = field(default_factory=tuple)
     recommendations: tuple[str, ...] = field(default_factory=tuple)
@@ -27,6 +28,7 @@ class RoundReview:
             "review_id": self.review_id,
             "event_id": self.event_id,
             "round_id": self.round_id,
+            "summary_text": self.summary_text,
             "findings": list(self.findings),
             "gaps": list(self.gaps),
             "recommendations": list(self.recommendations),
@@ -41,6 +43,7 @@ class RoundReview:
             review_id=str(data.get("review_id") or uuid4()),
             event_id=str(data["event_id"]),
             round_id=int(data.get("round_id") or 1),
+            summary_text=str(data.get("summary_text") or ""),
             findings=tuple(str(item) for item in (data.get("findings") or [])),
             gaps=tuple(str(item) for item in (data.get("gaps") or [])),
             recommendations=tuple(str(item) for item in (data.get("recommendations") or [])),

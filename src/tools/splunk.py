@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import base64
+from datetime import datetime, timezone
 import json
 import os
 import re
@@ -39,6 +40,28 @@ DEFAULT_LIMIT = 20
 MAX_LIMIT = 100
 MAX_SAMPLE_EVENTS = 20
 MAX_FIELD_LENGTH = 500
+COARSE_QUERY_LIMIT = 10
+COARSE_FIELD_FILTER_ALLOWLIST = frozenset(
+    {
+        "src",
+        "src_ip",
+        "dest",
+        "dest_ip",
+        "clientip",
+        "ip",
+        "host",
+        "source",
+        "c_ip",
+        "s_ip",
+    }
+)
+
+STREAM_HTTP_SOURCETYPE = "stream:http"
+IIS_SOURCETYPE = "iis"
+WINEVENTLOG_SOURCETYPE = "wineventlog"
+SYSMON_SOURCETYPE = "xmlwineventlog:microsoft-windows-sysmon/operational"
+DNS_SOURCETYPE = "stream:dns"
+SMB_SOURCETYPE = "stream:smb"
 
 mcp = register_server(FastMCP(
     "splunk",
@@ -125,26 +148,26 @@ class SplunkToolConfig:
 
 
 BOTSV1_SOURCETYPES: tuple[SourcetypeCatalogEntry, ...] = (
-    SourcetypeCatalogEntry("stream:sip", "SIP 通信日志", ("src", "dest", "method", "call_id")),
-    SourcetypeCatalogEntry("stream:snmp", "SNMP 访问日志", ("src", "dest", "community", "oid")),
-    SourcetypeCatalogEntry("stream:dhcp", "DHCP 网络流日志", ("src", "dest", "mac_addr", "dhcp_message_type")),
-    SourcetypeCatalogEntry("fgt_event", "FortiGate 事件日志", ("srcip", "dstip", "user", "action", "msg", "devname")),
-    SourcetypeCatalogEntry("nessus:scan", "Nessus 漏洞扫描结果", ("host", "pluginName", "severity", "port", "protocol")),
-    SourcetypeCatalogEntry("stream:ldap", "LDAP 目录访问日志", ("src", "dest", "binddn", "operation", "result")),
-    SourcetypeCatalogEntry("stream:mapi", "MAPI/邮件客户端协议日志", ("src", "dest", "user", "subject")),
-    SourcetypeCatalogEntry("stream:dns", "DNS 查询日志", ("src", "dest", "query", "query_type", "answer", "rcode")),
-    SourcetypeCatalogEntry("stream:icmp", "ICMP 流量日志", ("src", "dest", "icmp_type", "icmp_code")),
-    SourcetypeCatalogEntry("iis", "IIS Web 访问日志", ("c_ip", "cs_method", "cs_uri_stem", "cs_uri_query", "sc_status", "cs_username")),
-    SourcetypeCatalogEntry("stream:http", "HTTP 请求日志", ("src", "dest", "method", "uri", "status", "user_agent", "http_content_type")),
-    SourcetypeCatalogEntry("fgt_utm", "FortiGate UTM/威胁检测日志", ("srcip", "dstip", "service", "attack", "severity", "action")),
-    SourcetypeCatalogEntry("stream:tcp", "TCP 会话日志", ("src", "dest", "src_port", "dest_port", "tcp_flags")),
-    SourcetypeCatalogEntry("fgt_traffic", "FortiGate 流量日志", ("srcip", "dstip", "srcport", "dstport", "proto", "action")),
-    SourcetypeCatalogEntry("stream:ip", "通用 IP 流量日志", ("src", "dest", "proto", "bytes_in", "bytes_out")),
-    SourcetypeCatalogEntry("WinRegistry", "Windows 注册表活动日志", ("host", "registry_path", "registry_value_name", "action", "user")),
-    SourcetypeCatalogEntry("wineventlog", "Windows 事件日志，适合认证、系统与应用行为调查", ("host", "source", "EventCode", "Message", "ComputerName", "Account_Name", "Logon_Type", "user")),
-    SourcetypeCatalogEntry("suricata", "Suricata IDS 告警日志", ("src_ip", "dest_ip", "src_port", "dest_port", "signature", "category", "severity")),
-    SourcetypeCatalogEntry("stream:smb", "SMB 文件共享日志", ("src", "dest", "file_name", "share_name", "action")),
-    SourcetypeCatalogEntry("XmlWinEventLog:Microsoft-Windows-Sysmon/Operational", "Sysmon 进程、网络、文件与注册表行为日志", ("host", "EventCode", "Image", "CommandLine", "ParentImage", "User", "SourceIp", "DestinationIp")),
+    SourcetypeCatalogEntry("stream:sip", "SIP 通信日志", ("src_ip", "dest_ip", "method", "request_call_id", "caller_user_phone", "callee_user_phone")),
+    SourcetypeCatalogEntry("stream:snmp", "SNMP 访问日志", ("src_ip", "dest_ip", "community{}", "method{}", "request_id", "timestamp")),
+    SourcetypeCatalogEntry("stream:dhcp", "DHCP 网络流日志", ("src_ip", "dest_ip", "chaddr", "opcode", "dns_server", "lease_duration")),
+    SourcetypeCatalogEntry("fgt_event", "FortiGate 事件日志", ("devname", "logdesc", "action", "interface", "dhcp_msg", "ip")),
+    SourcetypeCatalogEntry("nessus:scan", "Nessus 漏洞扫描结果", ("host", "host-ip", "pluginName", "severity", "port", "protocol")),
+    SourcetypeCatalogEntry("stream:ldap", "LDAP 目录访问日志", ("src_ip", "dest_ip", "message_type", "message_id", "assertion_description{}", "assertion_value{}")),
+    SourcetypeCatalogEntry("stream:mapi", "MAPI/邮件客户端协议日志", ("src_ip", "dest_ip", "login", "domain", "auth_type", "login_server")),
+    SourcetypeCatalogEntry("stream:dns", "DNS 查询日志", ("src_ip", "dest_ip", "query{}", "query_type{}", "answer", "rcode")),
+    SourcetypeCatalogEntry("stream:icmp", "ICMP 流量日志", ("src_ip", "dest_ip", "code", "code_string", "sequence", "timestamp")),
+    SourcetypeCatalogEntry("iis", "IIS Web 访问日志", ("c_ip", "s_ip", "cs_method", "cs_uri_stem", "cs_uri_query", "sc_status")),
+    SourcetypeCatalogEntry("stream:http", "HTTP 请求日志", ("src_ip", "dest_ip", "http_method", "site", "uri", "src_headers")),
+    SourcetypeCatalogEntry("fgt_utm", "FortiGate UTM/威胁检测日志", ("srcip", "dstip", "file_name", "file_hash", "appcat", "action")),
+    SourcetypeCatalogEntry("stream:tcp", "TCP 会话日志", ("src_ip", "dest_ip", "src_port", "dest_port", "connection", "refused")),
+    SourcetypeCatalogEntry("fgt_traffic", "FortiGate 流量日志", ("srcip", "dstip", "srcport", "dstport", "app", "action")),
+    SourcetypeCatalogEntry("stream:ip", "通用 IP 流量日志", ("src_ip", "dest_ip", "protocol", "bytes_in", "bytes_out", "packets")),
+    SourcetypeCatalogEntry("WinRegistry", "Windows 注册表活动日志", ("host", "registry_path", "registry_value_name", "registry_value_data", "action", "process_image")),
+    SourcetypeCatalogEntry("wineventlog", "Windows 事件日志，适合认证、系统与应用行为调查", ("ComputerName", "EventCode", "Account_Name", "LogonType", "IpAddress", "Message")),
+    SourcetypeCatalogEntry("suricata", "Suricata IDS 告警日志", ("src_ip", "dest_ip", "signature", "category", "severity", "http.http_method")),
+    SourcetypeCatalogEntry("stream:smb", "SMB 文件共享日志", ("src_ip", "dest_ip", "filename", "path", "command{}", "nt_status{}")),
+    SourcetypeCatalogEntry("XmlWinEventLog:Microsoft-Windows-Sysmon/Operational", "Sysmon 进程、网络、文件与注册表行为日志", ("EventCode", "Image", "CommandLine", "ParentImage", "SourceIp", "DestinationIp")),
 )
 
 
@@ -272,6 +295,12 @@ class SplunkSearchTool:
             )
         if not parsed.get("dataset"):
             parsed["dataset"] = dataset_name
+        parsed = _fill_partial_time_terms(
+            parsed,
+            intent=intent,
+            additional_context=additional_context or {},
+        )
+        parsed = _canonicalize_query_spec(parsed)
         try:
             return SplunkQuerySpec.from_dict(parsed)
         except (TypeError, ValueError) as exc:
@@ -299,10 +328,6 @@ class SplunkSearchTool:
             clauses.append(f'host="{_escape_quotes(normalized.host)}"')
         if normalized.source:
             clauses.append(f'source="{_escape_quotes(normalized.source)}"')
-        if normalized.earliest:
-            clauses.append(f'earliest="{_escape_quotes(normalized.earliest)}"')
-        if normalized.latest:
-            clauses.append(f'latest="{_escape_quotes(normalized.latest)}"')
         if normalized.ip:
             clauses.append(
                 "(" + " OR ".join(f'{field}="{_escape_quotes(normalized.ip)}"' for field in COMMON_IP_FIELDS) + ")"
@@ -339,24 +364,45 @@ class SplunkSearchTool:
                 additional_context=additional_context,
             )
             dataset_cfg = self.config.resolve_dataset(dataset or normalized_spec.dataset)
-            query = self.build_query(normalized_spec, dataset=dataset_cfg.name)
-            raw_results = self._execute_search(dataset_cfg, query)
-            sample_events = self._format_sample_events(raw_results, normalized_spec.fields)
-            warnings: list[str] = []
-            if not raw_results:
-                warnings.append("No events matched the query")
-            return {
-                "success": True,
-                "dataset": dataset_cfg.name,
-                "query": query,
-                "job_mode": "search_job_polling",
-                "result_count": len(raw_results),
-                "summary": self._build_summary(dataset_cfg, normalized_spec, raw_results, sample_events),
-                "sample_events": sample_events,
-                "warnings": warnings,
-                "error_message": "",
-                "query_spec": normalized_spec.to_dict(),
-            }
+            coarse_spec = self._build_coarse_query_spec(normalized_spec)
+            coarse_result = self._run_search_stage(
+                dataset_cfg=dataset_cfg,
+                spec=coarse_spec,
+                stage_name="coarse_only",
+            )
+            if int(coarse_result["result_count"]) == 0:
+                coarse_result["warnings"].append("No matching logs found in coarse search")
+                coarse_result["no_data_found"] = True
+                return coarse_result
+
+            if coarse_spec.to_dict() == normalized_spec.to_dict():
+                coarse_result["search_stage"] = "coarse_only"
+                coarse_result["coarse_query"] = coarse_result["query"]
+                coarse_result["coarse_result_count"] = coarse_result["result_count"]
+                coarse_result["coarse_query_spec"] = coarse_result["query_spec"]
+                coarse_result["no_data_found"] = False
+                return coarse_result
+
+            refined_result = self._run_search_stage(
+                dataset_cfg=dataset_cfg,
+                spec=normalized_spec,
+                stage_name="coarse_then_refined",
+            )
+            refined_result["coarse_query"] = coarse_result["query"]
+            refined_result["coarse_result_count"] = coarse_result["result_count"]
+            refined_result["coarse_query_spec"] = coarse_result["query_spec"]
+            refined_result["no_data_found"] = False
+            if int(refined_result["result_count"]) == 0:
+                refined_result["warnings"].append(
+                    "Refined search returned no events; falling back to coarse search samples"
+                )
+                refined_result["result_count"] = coarse_result["result_count"]
+                refined_result["summary"] = coarse_result["summary"]
+                refined_result["sample_events"] = coarse_result["sample_events"]
+                refined_result["query"] = coarse_result["query"]
+                refined_result["query_spec"] = coarse_result["query_spec"]
+                refined_result["used_fallback_results"] = True
+            return refined_result
         except SplunkToolError as exc:
             return {
                 "success": False,
@@ -370,6 +416,53 @@ class SplunkSearchTool:
                 "error_message": f"{exc.code}:{exc.message}",
                 "query_spec": spec.to_dict() if isinstance(spec, SplunkQuerySpec) else dict(spec or {}),
             }
+
+    def _run_search_stage(
+        self,
+        *,
+        dataset_cfg: SplunkDatasetConfig,
+        spec: SplunkQuerySpec,
+        stage_name: str,
+    ) -> dict[str, Any]:
+        query = self.build_query(spec, dataset=dataset_cfg.name)
+        raw_results = self._execute_search(dataset_cfg, query)
+        sample_events = self._format_sample_events(raw_results, spec.fields)
+        warnings: list[str] = []
+        return {
+            "success": True,
+            "dataset": dataset_cfg.name,
+            "query": query,
+            "job_mode": "search_job_polling",
+            "result_count": len(raw_results),
+            "summary": self._build_summary(dataset_cfg, spec, raw_results, sample_events),
+            "sample_events": sample_events,
+            "warnings": warnings,
+            "error_message": "",
+            "query_spec": spec.to_dict(),
+            "search_stage": stage_name,
+        }
+
+    def _build_coarse_query_spec(self, spec: SplunkQuerySpec) -> SplunkQuerySpec:
+        coarse_filters = {
+            key: value
+            for key, value in spec.field_filters.items()
+            if key in COARSE_FIELD_FILTER_ALLOWLIST
+        }
+        coarse_keywords = spec.keywords[:2]
+        return SplunkQuerySpec(
+            dataset=spec.dataset,
+            index=spec.index,
+            sourcetype=spec.sourcetype,
+            earliest=spec.earliest,
+            latest=spec.latest,
+            keywords=coarse_keywords,
+            ip=spec.ip,
+            host=spec.host,
+            source=spec.source,
+            field_filters=coarse_filters,
+            limit=min(spec.limit, COARSE_QUERY_LIMIT),
+            fields=spec.fields,
+        )
 
     def build_query_from_intent(
         self,
@@ -684,13 +777,6 @@ def log_search(intent: str) -> dict[str, Any]:
             "translation_strategy": "llm_intent_translation",
             "translation_error": "",
         }
-        if search_result.get("success") and int(search_result.get("result_count") or 0) == 0:
-            return {
-                "success": False,
-                "result": search_result,
-                "error_message": "zero_results:No events matched the query",
-                "tool_input": tool_input,
-            }
         return {
             "success": bool(search_result.get("success")),
             "result": search_result,
@@ -842,6 +928,110 @@ def _truncate_value(value: Any) -> Any:
     if isinstance(value, list):
         return [_truncate_value(item) for item in value[:10]]
     return value
+
+
+def _normalize_time_term(value: str) -> str:
+    text = value.strip()
+    if not text:
+        return text
+    if text.lower() == "now":
+        return text
+    if re.fullmatch(r"-?\d+[smhdwmonqy](@[smhdw])?", text):
+        return text
+    if re.fullmatch(r"\d+(\.\d+)?", text):
+        return text
+
+    normalized = text.replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return text
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return str(int(parsed.timestamp()))
+
+
+def _fill_partial_time_terms(
+    spec: dict[str, Any],
+    *,
+    intent: str,
+    additional_context: dict[str, Any],
+) -> dict[str, Any]:
+    normalized = dict(spec)
+    date_hint = _extract_date_hint(
+        "\n".join(
+            [
+                intent,
+                json.dumps(additional_context, ensure_ascii=False, indent=2),
+            ]
+        )
+    )
+    if not date_hint:
+        return normalized
+    for field_name in ("earliest", "latest"):
+        value = normalized.get(field_name)
+        if not isinstance(value, str):
+            continue
+        text = value.strip()
+        if re.fullmatch(r"\d{2}:\d{2}:\d{2}", text):
+            normalized[field_name] = f"{date_hint}T{text}"
+    return normalized
+
+
+def _extract_date_hint(text: str) -> str | None:
+    match = re.search(r"\b(\d{4})[-/](\d{2})[-/](\d{2})\b", text)
+    if not match:
+        return None
+    year, month, day = match.groups()
+    return f"{year}-{month}-{day}"
+
+
+def _canonicalize_query_spec(spec: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(spec)
+    sourcetype = str(normalized.get("sourcetype") or "").strip().lower()
+    field_filters = dict(normalized.get("field_filters") or {})
+    keywords = list(_normalize_string_sequence(normalized.get("keywords")))
+
+    rewritten_filters: dict[str, str | tuple[str, ...]] = {}
+    for raw_key, raw_value in field_filters.items():
+        key = str(raw_key).strip()
+        value = raw_value
+        if isinstance(value, (list, tuple, set)):
+            values = tuple(str(item).strip() for item in value if str(item).strip())
+            if not values:
+                continue
+            rewritten_filters[key] = values
+            continue
+
+        text = str(value).strip()
+        if not text:
+            continue
+
+        if sourcetype == "stream:http":
+            if key == "src" and _looks_like_ip(text):
+                rewritten_filters["src_ip"] = text
+                continue
+            if key == "dest" and _looks_like_ip(text):
+                rewritten_filters["dest_ip"] = text
+                continue
+            if key == "dest" and _looks_like_domain(text):
+                if text not in keywords:
+                    keywords.append(text)
+                continue
+
+        rewritten_filters[key] = text
+
+    normalized["field_filters"] = rewritten_filters
+    normalized["keywords"] = keywords
+    return normalized
+
+
+def _looks_like_ip(value: str) -> bool:
+    return bool(re.fullmatch(r"(?:\d{1,3}\.){3}\d{1,3}", value))
+
+
+def _looks_like_domain(value: str) -> bool:
+    return bool(re.fullmatch(r"[A-Za-z0-9.-]+\.[A-Za-z]{2,}", value)) and not _looks_like_ip(value)
 
 
 __all__ = [

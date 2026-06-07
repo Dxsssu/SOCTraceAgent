@@ -49,7 +49,7 @@ round_id: "{ 来自输入 }"
 response_type: EXECUTION_RESULT
 execution:
   node_id: "1-1-1"
-  node_title: "执行意图1.1.1：查询源 IP 基础情报与历史行为"
+  node_title: "查询源 IP 基础情报与历史行为"
   tool_name: "ip_reputation_lookup"
   status: success
   result:
@@ -103,7 +103,6 @@ class ExecutorRuntime:
         did_work = False
         events = self.storage.list_events_by_status(
             EventStatus.PLANNED.value,
-            EventStatus.EXECUTING.value,
         )
         for event in events:
             if self.process_event(event):
@@ -222,18 +221,37 @@ class ExecutorRuntime:
             new_status=TTTNodeStatus.DONE if success else TTTNodeStatus.NOT_APPLICABLE,
             updated_by=self.agent.role_name,
             round_id=event.current_round,
-            metadata_updates={
-                "tool_name": tool_name,
-                "last_execution_id": execution.execution_id,
-                "last_execution_status": execution.execution_status.value,
-            },
+            metadata_updates=self._build_node_metadata_updates(
+                tool_name=tool_name,
+                execution=execution,
+            ),
         )
         self._publish(
             event_id=event.event_id,
             round_id=event.current_round,
             message_type=MessageType.EXECUTION_COMPLETED if success else MessageType.EXECUTION_FAILED,
             payload=execution.to_dict(),
-            to_role=RoleName.REVIEWER if not self.ttt_store.has_open_work(event.event_id, event.current_round) else None,
+            to_role=RoleName.REVIEWER,
+        )
+        reviewing_event = Event(
+            event_id=event.event_id,
+            event_name=event.event_name,
+            message=event.message,
+            context=event.context,
+            source=event.source,
+            severity=event.severity,
+            event_status=EventStatus.REVIEWING,
+            current_round=event.current_round,
+            created_at=event.created_at,
+            updated_at=utc_now(),
+        )
+        self.storage.save_event(reviewing_event)
+        self._publish(
+            event_id=event.event_id,
+            round_id=event.current_round,
+            message_type=MessageType.HANDOFF_TO_REVIEWER,
+            payload={"text": "execution_ready_for_review", "node_id": claimed.node_id},
+            to_role=RoleName.REVIEWER,
         )
         return True
 
@@ -311,6 +329,21 @@ class ExecutorRuntime:
         error_message = str(tool_response.get("error_message") or "")
         success = bool(tool_response.get("success"))
         return success, result, error_message, tool_input
+
+    @staticmethod
+    def _build_node_metadata_updates(
+        *,
+        tool_name: str,
+        execution: Execution,
+    ) -> dict[str, Any]:
+        result = dict(execution.result or {})
+        return {
+            "tool_name": tool_name,
+            "last_execution_id": execution.execution_id,
+            "last_execution_status": execution.execution_status.value,
+            "no_data_found": bool(result.get("no_data_found")),
+            "search_stage": str(result.get("search_stage") or ""),
+        }
 
     @staticmethod
     def _list_available_tools() -> list[dict[str, Any]]:

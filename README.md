@@ -18,7 +18,7 @@ SOCAgent 是一个面向安全告警溯源场景的三角色多智能体原型�
 
 1. `Planner` 接收告警并初始化 `TTT`
 2. `Executor` 领取 `TTT` 中的 L3 叶子节点并执行
-3. `Reviewer` 汇总本轮执行结果并生成 `RoundReview`
+3. `Reviewer` 在一次 `Execution` 完成后立即汇总当前轮结果并生成 `RoundReview`
 4. `Planner` 根据 `RoundReview` 更新下一轮 `TTT`
 5. 如果还有未完成叶子节点，则继续下一轮；否则事件结束
 
@@ -36,6 +36,7 @@ Event -> TTT -> Execution -> RoundReview -> TTT
 
 - `Planner`
   - 读取新告警
+  - 先对告警做系统分析，并匹配 procedural memory
   - 初始化第一版 `TTT`
   - 在每轮结束后基于 `RoundReview` 更新下一轮 `TTT`
 
@@ -43,9 +44,10 @@ Event -> TTT -> Execution -> RoundReview -> TTT
   - 从当前 `TTT` 中领取一个待执行的 L3 叶子节点
   - 选择工具并生成 `Execution`
   - 将叶子节点状态推进为 `done` 或 `n/a`
+  - 单次执行完成后立即 handoff 给 `Reviewer`
 
 - `Reviewer`
-  - 汇总当前轮的 `Execution`
+  - 在每次执行后汇总当前轮的 `Execution`
   - 识别已验证结论、证据缺口、能力缺口
   - 写入 `RoundReview` 并把事件状态切回 `replanning`
 
@@ -80,7 +82,7 @@ pending -> planned -> executing -> reviewing -> replanning -> planned/completed
 - `pending`：新事件，等待 `Planner`
 - `planned`：已有待执行 `TTT`
 - `executing`：`Executor` 正在处理叶子节点
-- `reviewing`：本轮所有叶子节点都已到终态，等待 `Reviewer`
+- `reviewing`：当前轮已有新的执行结果，等待 `Reviewer`
 - `replanning`：`Reviewer` 已输出总结，等待 `Planner` 更新下一轮
 - `completed`：任务树无开放叶子节点，事件结束
 
@@ -90,11 +92,23 @@ pending -> planned -> executing -> reviewing -> replanning -> planned/completed
 
 - 必须是完整快照，不是增量 patch
 - 严格只有三层
-- `L1` 表示阶段性目标
-- `L2` 表示待验证的子问题或假设
-- `L3` 表示可执行意图
+- `L1` 表示一个独立的调查大方向；如果事件存在多个明显方向，应拆成多个 `L1`
+- `L2` 表示围绕 `L1` 需要回答的问题
+- `L3` 表示为回答该问题需要执行的查询或取证动作，并应尽量携带完整实体信息
 - `node_id` 使用纯数字分层编号，例如 `1`、`1-2`、`1-2-3`
 - `Executor` 只消费 `L3` 叶子节点
+
+## Long-term Memory
+
+当前项目在 `src/memory/longterm_memory/procedural_memory/` 下维护 procedural memory 知识库。
+
+- `procedural_memory/`：存放不同事件类型的调查 workflow 记忆，正文建议直接按 `L1/L2/L3` 语义组织
+- `factual_memory/`：存放企业背景、数据环境和调查约束等事实型记忆
+- 两类文档格式都为 `YAML front matter + Markdown 正文`
+- `Planner` 在首次初始化 TTT 前会先读取所有 procedural memory 摘要
+- 再用 LLM 从中筛选最匹配的一篇 workflow 记忆作为建树上下文
+- 同时固定注入全部 factual memory 文档，以及当前注册的 MCP server/tool 能力清单
+- 初始 TTT 的上下文来源因此包括：事件、初始分析、procedural memory、factual memory、MCP tools
 
 节点状态使用：
 
@@ -377,7 +391,7 @@ python tests/test_multi_agent_loop.py --db-path tests/runtime/test_multi_agent_l
 - 选中 `log_search` 后，再由 `src/tools/splunk.py` 把调查意图翻译成查询规格与 SPL
 - 最终通过 Splunk REST API 执行真实查询，并返回摘要与样本事件
 
-当前 `src/tools` 只保留一个 MCP server：`src/tools/splunk.py`。`Executor` 不再依赖标题关键词硬编码挑工具，而是读取当前可用 MCP tools 的描述、用途与限制，用 LLM 做一次内置工具选择，然后调用被选中的 tool。
+当前 `src/tools` 已注册多个 MCP server，包括 `splunk`、`ipinfo`、`virustotal`。`Executor` 不再依赖标题关键词硬编码挑工具，而是读取当前可用 MCP tools 的描述、用途与限制，用 LLM 做一次内置工具选择，然后调用被选中的 tool。
 
 ### Splunk 工具最小调用示例
 

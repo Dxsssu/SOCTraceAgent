@@ -40,6 +40,7 @@ load_dotenv(ROOT_DIR / ".env")
 
 
 PIPELINE_MESSAGE_TYPES = {
+    "planner_analysis_completed",
     "ttt_initialized",
     "ttt_updated",
     "leaf_claimed",
@@ -381,6 +382,23 @@ def is_multi_round_done(snapshot: dict[str, object], target_rounds: int) -> bool
     return all(round_id in rounds for round_id in range(1, target_rounds + 1))
 
 
+def has_message_type(event_id: str, db_path: Path, message_type: str) -> bool:
+    try:
+        with sqlite3.connect(db_path) as conn:
+            row = conn.execute(
+                """
+                SELECT 1
+                FROM messages
+                WHERE event_id = ? AND message_type = ?
+                LIMIT 1
+                """,
+                (event_id, message_type),
+            ).fetchone()
+    except sqlite3.OperationalError:
+        return False
+    return row is not None
+
+
 def main() -> int:
     args = build_arg_parser().parse_args()
     db_path = (ROOT_DIR / args.db_path).resolve()
@@ -430,6 +448,10 @@ def main() -> int:
 
         print("\n=== Result ===")
         if is_multi_round_done(snapshot, args.target_rounds):
+            if not has_message_type(event_id, db_path, "planner_analysis_completed"):
+                print("FAIL: planner analysis message not found.")
+                print(f"event_id={event_id}")
+                return 1
             print(f"PASS: multi-round loop completed (target_rounds={args.target_rounds}).")
             print(
                 "INFO: "

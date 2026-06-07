@@ -65,6 +65,7 @@ class TTTStore:
             event_id=tree.event_id,
             round_id=tree.round_id,
             root_nodes=tree.root_nodes,
+            metadata=tree.metadata,
             created_at=tree.created_at,
             updated_at=utc_now(),
         )

@@ -17,7 +17,7 @@ load_dotenv()
 
 VT_BASE_URL = "https://www.virustotal.com/api/v3"
 VT_GUI_BASE_URL = "https://www.virustotal.com/gui"
-IPV4_PATTERN = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+IPV4_PATTERN = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")
 
 mcp = register_server(FastMCP(
     "virustotal",

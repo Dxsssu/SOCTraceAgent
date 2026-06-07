@@ -7,8 +7,10 @@ class MessageType(StrEnum):
     """系统内部使用的结构化消息类型。"""
 
     USER_MESSAGE = "user_message"
+    PLANNER_ANALYSIS_COMPLETED = "planner_analysis_completed"
     TTT_INITIALIZED = "ttt_initialized"
     TTT_UPDATED = "ttt_updated"
+    OVERALL_ASSESSMENT_CREATED = "overall_assessment_created"
     LEAF_DISCOVERED = "leaf_discovered"
     LEAF_CLAIMED = "leaf_claimed"
     TOOL_SELECTED = "tool_selected"
