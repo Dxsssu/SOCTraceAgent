@@ -371,22 +371,13 @@ python tests/test_multi_agent_loop.py --db-path tests/runtime/test_multi_agent_l
 
 ### 工具执行现状
 
-`Executor` 当前有一条真实的日志检索能力：
+`Executor` 当前已经接入一套真实的 Splunk MCP 工具能力：
 
-- `event_context_lookup` 会直接从当前 `Event` 提取上下文，返回成功
-- `log_search` 会调用 `src/tools/splunk.py` 构建并执行 Splunk 查询
-- 其他工具名如 `threat_intel_lookup`、`asset_inventory_lookup` 目前仍会返回未实现
+- `log_search` 会根据 TTT 叶子节点的自然语言意图，先由 LLM 在内置路由阶段选择工具
+- 选中 `log_search` 后，再由 `src/tools/splunk.py` 把调查意图翻译成查询规格与 SPL
+- 最终通过 Splunk REST API 执行真实查询，并返回摘要与样本事件
 
-`Executor` 会在节点标题包含“日志”“认证”“登录”时优先走 `log_search`。当前实现会结合事件上下文与节点标题，自动抽取：
-
-- `splunk_dataset` / `dataset`
-- `sourcetype` / `splunk_sourcetype`
-- `earliest` / `latest`
-- `field_filters`
-- `splunk_fields`
-- 事件或节点里的 IP 线索
-
-除了结构化参数入口，还提供一个“自然语言调查意图 -> 查询规格 -> SPL”的两步式入口，供后续 Agent 或脚本调用。
+当前 `src/tools` 只保留一个 MCP server：`src/tools/splunk.py`。`Executor` 不再依赖标题关键词硬编码挑工具，而是读取当前可用 MCP tools 的描述、用途与限制，用 LLM 做一次内置工具选择，然后调用被选中的 tool。
 
 ### Splunk 工具最小调用示例
 

@@ -36,23 +36,19 @@ class SplunkTTTIntegrationTests(unittest.TestCase):
             title="查询 botsv1 中的 DNS 请求日志样本，确认常见的源 IP、目的 IP、query 和 answer 字段，返回前几条结果。",
         )
 
-        query_spec, strategy, translation_error = runtime._derive_log_search_spec(event, node)
-        query = runtime.splunk_tool.build_query(query_spec)
-        result = runtime.splunk_tool.search(
-            spec=query_spec,
-            additional_context={
-                "event": event.to_dict(),
-                "node": {"node_id": node.node_id, "title": node.title},
-            },
+        tool_selection = runtime._select_tool(node, event)
+        success, result, error_message, tool_input = runtime._execute_tool(
+            event,
+            node,
+            tool_selection["tool_name"],
+            tool_selection=tool_selection,
         )
+        query = str(tool_input.get("query") or "")
 
-        print("\n=== Translation Strategy ===")
-        print(strategy)
-        if translation_error:
-            print("\n=== Translation Error ===")
-            print(translation_error)
-        print("\n=== Query Spec ===")
-        print(json.dumps(query_spec.to_dict(), ensure_ascii=False, indent=2))
+        print("\n=== Selected Tool ===")
+        print(json.dumps(tool_selection, ensure_ascii=False, indent=2))
+        print("\n=== Tool Input ===")
+        print(json.dumps(tool_input, ensure_ascii=False, indent=2))
         print("\n=== Generated SPL ===")
         print(query)
         print("\n=== Search Summary ===")
@@ -60,10 +56,10 @@ class SplunkTTTIntegrationTests(unittest.TestCase):
         print("\n=== Sample Events ===")
         print(json.dumps(result.get("sample_events", []), ensure_ascii=False, indent=2))
 
-        self.assertEqual(strategy, "llm_intent_translation", translation_error)
+        self.assertEqual(tool_selection["tool_name"], "log_search")
         self.assertTrue(query.strip())
         self.assertIn("index=botsv1", query)
-        self.assertTrue(result["success"], result["error_message"])
+        self.assertTrue(success, error_message)
         self.assertEqual(result["query"], query)
         self.assertGreater(result["result_count"], 0, json.dumps(result, ensure_ascii=False, indent=2))
         self.assertGreater(len(result["sample_events"]), 0, json.dumps(result, ensure_ascii=False, indent=2))

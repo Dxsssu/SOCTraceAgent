@@ -12,6 +12,8 @@ from urllib import error, parse, request
 
 from dotenv import load_dotenv
 
+from .mcp import FastMCP, register_server
+
 load_dotenv()
 
 
@@ -37,6 +39,11 @@ DEFAULT_LIMIT = 20
 MAX_LIMIT = 100
 MAX_SAMPLE_EVENTS = 20
 MAX_FIELD_LENGTH = 500
+
+mcp = register_server(FastMCP(
+    "splunk",
+    instructions="Splunk-backed investigation server for search planning, SPL construction, and log retrieval.",
+))
 
 
 class SplunkToolError(RuntimeError):
@@ -637,6 +644,126 @@ def get_dataset_catalog_entry(dataset: str) -> DatasetCatalogEntry | None:
     return DATASET_CATALOG.get(dataset.strip().lower())
 
 
+def get_default_splunk_tool() -> SplunkSearchTool:
+    return SplunkSearchTool()
+
+
+@mcp.tool()
+def log_search(intent: str) -> dict[str, Any]:
+    """
+    Translate a TTT log-investigation intent into SPL and query Splunk for matching events.
+
+    Use this tool when the task asks to search logs, authentication records, DNS, HTTP,
+    Sysmon, Suricata, or other Splunk-accessible telemetry in the configured BOTS datasets.
+    This tool is read-only, but it requires a reachable Splunk instance and indexed data.
+    Zero-result queries are possible if the intent is too narrow or the dataset does not
+    contain matching events.
+
+    Args:
+        intent: Natural-language investigation request, optionally including event and
+            TTT context rendered into a single prompt string by the caller.
+
+    Returns:
+        A structured result containing success, query details, summary, sample events,
+        and any execution error message.
+    """
+    service = get_default_splunk_tool()
+    dataset = service.config.default_dataset
+    try:
+        query_spec = service.interpret_intent(
+            intent,
+            dataset=dataset,
+            additional_context={"rendered_intent": intent},
+        )
+        search_result = service.search(
+            spec=query_spec,
+            additional_context={"rendered_intent": intent},
+        )
+        tool_input = {
+            "intent": intent,
+            "query_spec": search_result.get("query_spec", query_spec.to_dict()),
+            "query": search_result.get("query", ""),
+            "translation_strategy": "llm_intent_translation",
+            "translation_error": "",
+        }
+        if search_result.get("success") and int(search_result.get("result_count") or 0) == 0:
+            return {
+                "success": False,
+                "result": search_result,
+                "error_message": "zero_results:No events matched the query",
+                "tool_input": tool_input,
+            }
+        return {
+            "success": bool(search_result.get("success")),
+            "result": search_result,
+            "error_message": str(search_result.get("error_message") or ""),
+            "tool_input": tool_input,
+        }
+    except Exception as exc:
+        return {
+            "success": False,
+            "result": {
+                "success": False,
+                "dataset": dataset,
+                "query": "",
+                "job_mode": "search_job_polling",
+                "result_count": 0,
+                "summary": {},
+                "sample_events": [],
+                "warnings": [],
+                "error_message": f"intent_parse_error:{exc}",
+                "query_spec": {},
+            },
+            "error_message": f"intent_parse_error:{exc}",
+            "tool_input": {
+                "intent": intent,
+                "query_spec": {},
+                "query": "",
+                "translation_strategy": "llm_intent_translation",
+                "translation_error": str(exc),
+            },
+        }
+
+
+def _build_spl_query_result(
+    *,
+    intent: str = "",
+    event: dict[str, Any] | None = None,
+    node: dict[str, Any] | None = None,
+    context: dict[str, Any] | None = None,
+    spec: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    service = get_default_splunk_tool()
+    normalized_spec = SplunkQuerySpec.from_dict(spec or {})
+    query = service.build_query(normalized_spec)
+    return {
+        "success": True,
+        "result": {"query": query, "query_spec": normalized_spec.to_dict()},
+        "error_message": "",
+        "tool_input": {"intent": intent},
+    }
+
+
+def _list_splunk_datasets_result(
+    *,
+    intent: str = "",
+    event: dict[str, Any] | None = None,
+    node: dict[str, Any] | None = None,
+    context: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    service = get_default_splunk_tool()
+    datasets = [
+        service.get_dataset_context(dataset_name)
+        for dataset_name in sorted(service.config.datasets.keys())
+    ]
+    return {
+        "success": True,
+        "result": {"datasets": datasets},
+        "error_message": "",
+        "tool_input": {"intent": intent},
+    }
+
+
 def _candidate_api_paths(path: str) -> tuple[str, ...]:
     normalized = path if path.startswith("/") else f"/{path}"
     if not normalized.startswith("/services/"):
@@ -724,6 +851,8 @@ __all__ = [
     "DatasetCatalogEntry",
     "SplunkQuerySpec",
     "SplunkSearchTool",
+    "get_default_splunk_tool",
+    "mcp",
     "SourcetypeCatalogEntry",
     "SplunkToolConfig",
 ]

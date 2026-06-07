@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import logging
-import re
 import time
 from typing import Any
 
+from src.agent.llm import call_llm, parse_yaml_response
 from src.memory.working_memory import TTTStore
 from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageBus
 from src.schema import Event, EventStatus, Execution, ExecutionStatus, TTTNodeStatus
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
-from src.tools import SplunkQuerySpec, SplunkSearchTool
+from src.tools import get_registered_tool, list_registered_tools
 
 
 logger = logging.getLogger(__name__)
@@ -95,7 +96,6 @@ class ExecutorRuntime:
         self.storage = storage or SQLiteStorage()
         self.ttt_store = ttt_store or TTTStore()
         self.bus = bus or SQLiteMessageBus()
-        self.splunk_tool = SplunkSearchTool()
         self.poll_interval = poll_interval
         self.running = False
 
@@ -178,12 +178,18 @@ class ExecutorRuntime:
             payload={"node_id": claimed.node_id, "node_title": claimed.title},
         )
 
-        tool_name = self._select_tool_name(claimed)
+        tool_selection = self._select_tool(claimed, event)
+        tool_name = tool_selection["tool_name"]
         self._publish(
             event_id=event.event_id,
             round_id=event.current_round,
             message_type=MessageType.TOOL_SELECTED,
-            payload={"node_id": claimed.node_id, "tool_name": tool_name},
+            payload={
+                "node_id": claimed.node_id,
+                "tool_name": tool_name,
+                "reason": tool_selection.get("reason", ""),
+                "confidence": tool_selection.get("confidence", ""),
+            },
         )
 
         self._publish(
@@ -192,7 +198,12 @@ class ExecutorRuntime:
             message_type=MessageType.EXECUTION_STARTED,
             payload={"node_id": claimed.node_id, "tool_name": tool_name},
         )
-        success, result, error_message, tool_input = self._execute_tool(event, claimed, tool_name)
+        success, result, error_message, tool_input = self._execute_tool(
+            event,
+            claimed,
+            tool_name,
+            tool_selection=tool_selection,
+        )
         execution = Execution(
             event_id=event.event_id,
             round_id=event.current_round,
@@ -228,230 +239,124 @@ class ExecutorRuntime:
         )
         return True
 
-    def _select_tool_name(self, node: Any) -> str:
-        title = (getattr(node, "title", "") or "").lower()
-        if "上下文" in title or "告警" in title:
-            return "event_context_lookup"
-        if "ip" in title or "情报" in title:
-            return "threat_intel_lookup"
-        if "资产" in title:
-            return "asset_inventory_lookup"
-        if "日志" in title or "认证" in title or "登录" in title:
-            return "log_search"
-        return "investigation_notebook"
+    def _select_tool(self, node: Any, event: Event) -> dict[str, str]:
+        tools = self._list_available_tools()
+        if not tools:
+            return {
+                "tool_name": "",
+                "reason": "No MCP tools are currently registered for routing.",
+                "confidence": "low",
+            }
+
+        intent = str(getattr(node, "title", "") or "")
+        user_prompt = "\n".join(
+            [
+                "请从可用 MCP 工具中选择最适合执行当前 TTT 叶子节点任务的工具，只输出 YAML。",
+                "输出字段只允许：tool_name, reason, confidence。",
+                "confidence 只允许：high, medium, low。",
+                "不得输出未列出的工具名。",
+                f"intent: {intent}",
+                f"event: {json.dumps(event.to_dict(), ensure_ascii=False, indent=2)}",
+                f"node: {json.dumps({'node_id': getattr(node, 'node_id', ''), 'title': intent}, ensure_ascii=False, indent=2)}",
+                f"context: {json.dumps(event.context or {}, ensure_ascii=False, indent=2)}",
+                f"tools: {json.dumps(tools, ensure_ascii=False, indent=2)}",
+            ]
+        )
+        parsed = parse_yaml_response(
+            call_llm(
+                """
+你是一个 SOC 多工具路由器。
+你的任务是根据当前调查意图，从候选 MCP 工具列表中选择唯一一个最合适的工具。
+必须基于工具用途和限制做选择，不能编造工具名。
+如果当前只有一个工具，就在解释原因后直接选择它。
+""".strip(),
+                user_prompt,
+                extra_body={"thinking": {"type": "enabled"}},
+            )
+        )
+        valid_names = {tool["name"] for tool in tools}
+        selected_name = str((parsed or {}).get("tool_name") or "").strip()
+        if selected_name not in valid_names:
+            selected_name = tools[0]["name"]
+            reason = "Tool router returned an invalid tool name, so the first available MCP tool was selected as fallback."
+            confidence = "low"
+        else:
+            reason = str((parsed or {}).get("reason") or "").strip()
+            confidence = str((parsed or {}).get("confidence") or "medium").strip().lower()
+        if confidence not in {"high", "medium", "low"}:
+            confidence = "medium"
+        return {
+            "tool_name": selected_name,
+            "reason": reason,
+            "confidence": confidence,
+        }
 
     def _execute_tool(
         self,
         event: Event,
         node: Any,
         tool_name: str,
+        *,
+        tool_selection: dict[str, str],
     ) -> tuple[bool, dict[str, Any], str, dict[str, Any]]:
-        if tool_name == "event_context_lookup":
+        tool = get_registered_tool(tool_name)
+        if tool is None:
             return (
-                True,
+                False,
                 {
-                    "event_id": event.event_id,
-                    "event_name": event.event_name,
-                    "message": event.message,
-                    "context": event.context,
-                    "source": event.source,
-                    "note": "从当前事件记录中提取已有上下文。",
+                    "tool_name": tool_name,
+                    "node_id": getattr(node, "node_id", ""),
+                    "note": "未找到对应工具定义。",
                 },
-                "",
-                {"node_title": getattr(node, "title", "")},
-            )
-        if tool_name == "log_search":
-            query_spec, strategy, translation_error = self._derive_log_search_spec(event, node)
-            search_result = self.splunk_tool.search(
-                spec=query_spec,
-                additional_context={
-                    "event": event.to_dict(),
-                    "node": {
-                        "node_id": getattr(node, "node_id", ""),
-                        "title": getattr(node, "title", ""),
-                    },
+                f"tool_not_found:{tool_name}",
+                {
+                    "node_title": getattr(node, "title", ""),
+                    "selected_by": "executor_builtin_router",
+                    "selection_reason": tool_selection.get("reason", ""),
+                    "selection_confidence": tool_selection.get("confidence", ""),
                 },
             )
-            tool_input = {
-                "node_title": getattr(node, "title", ""),
-                "translation_strategy": strategy,
-                "translation_error": translation_error,
-                "query_spec": search_result.get("query_spec", query_spec.to_dict()),
-                "query": search_result.get("query", ""),
-            }
-            error_message = str(search_result.get("error_message") or "")
-            if search_result.get("success"):
-                if search_result.get("result_count", 0) == 0:
-                    return (
-                        False,
-                        search_result,
-                        "zero_results:No events matched the query",
-                        tool_input,
-                    )
-                return True, search_result, "", tool_input
-            return False, search_result, error_message, tool_input
-        return (
-            False,
-            {
-                "tool_name": tool_name,
-                "node_id": getattr(node, "node_id", ""),
-                "note": "当前项目尚未接入真实外部工具。",
-            },
-            f"tool_not_implemented:{tool_name}",
-            {"node_title": getattr(node, "title", "")},
-        )
 
-    def _derive_log_search_spec(self, event: Event, node: Any) -> tuple[SplunkQuerySpec, str, str]:
-        fallback_spec = self._build_log_search_spec(event, node)
-        dataset = fallback_spec.dataset or "botsv1"
-        additional_context = {
-            "event": event.to_dict(),
-            "node": {
-                "node_id": getattr(node, "node_id", ""),
-                "title": getattr(node, "title", ""),
-            },
-            "fallback_spec": fallback_spec.to_dict(),
+        tool_response = tool.execute(
+            intent=self._build_tool_intent(event, node),
+        )
+        tool_input = {
+            "node_title": getattr(node, "title", ""),
+            "selected_by": "executor_builtin_router",
+            "selection_reason": tool_selection.get("reason", ""),
+            "selection_confidence": tool_selection.get("confidence", ""),
+            **dict(tool_response.get("tool_input") or {}),
         }
-        try:
-            spec = self.splunk_tool.interpret_intent(
-                str(getattr(node, "title", "") or ""),
-                dataset=dataset,
-                additional_context=additional_context,
-            )
-            merged_spec = SplunkQuerySpec(
-                dataset=spec.dataset or fallback_spec.dataset,
-                index=spec.index or fallback_spec.index,
-                sourcetype=spec.sourcetype or fallback_spec.sourcetype,
-                earliest=spec.earliest or fallback_spec.earliest,
-                latest=spec.latest or fallback_spec.latest,
-                keywords=spec.keywords or fallback_spec.keywords,
-                ip=spec.ip or fallback_spec.ip,
-                host=spec.host or fallback_spec.host,
-                source=spec.source or fallback_spec.source,
-                field_filters=spec.field_filters or fallback_spec.field_filters,
-                limit=spec.limit or fallback_spec.limit,
-                fields=spec.fields or fallback_spec.fields,
-            )
-            return merged_spec, "llm_intent_translation", ""
-        except Exception as exc:
-            logger.warning("LLM log-search translation failed for node=%s: %s", getattr(node, "node_id", ""), exc)
-            return fallback_spec, "rule_based_fallback", str(exc)
+        result = dict(tool_response.get("result") or {})
+        error_message = str(tool_response.get("error_message") or "")
+        success = bool(tool_response.get("success"))
+        return success, result, error_message, tool_input
 
-    def _build_log_search_spec(self, event: Event, node: Any) -> SplunkQuerySpec:
-        title = str(getattr(node, "title", "") or "").strip()
-        context = dict(event.context or {})
-        dataset = str(
-            context.get("splunk_dataset")
-            or context.get("dataset")
-            or context.get("log_dataset")
-            or "botsv1"
-        ).strip()
-        sourcetype = self._infer_sourcetype(title, event.message, context)
-        earliest = self._first_non_empty(
-            context.get("splunk_earliest"),
-            context.get("earliest"),
-            context.get("time_range_start"),
+    @staticmethod
+    def _list_available_tools() -> list[dict[str, Any]]:
+        return [
+            tool.to_dict()
+            for tool in list_registered_tools(include_non_routable=False)
+        ]
+
+    @staticmethod
+    def _build_tool_intent(event: Event, node: Any) -> str:
+        node_title = str(getattr(node, "title", "") or "").strip()
+        node_id = str(getattr(node, "node_id", "") or "").strip()
+        context_text = json.dumps(event.context or {}, ensure_ascii=False, indent=2)
+        return "\n".join(
+            [
+                "请基于以下事件背景与待执行任务，完成本次调查查询。",
+                f"事件名称: {event.event_name}",
+                f"事件描述: {event.message}",
+                f"事件来源: {event.source}",
+                f"事件严重级别: {event.severity.value}",
+                f"TTT 节点 ID: {node_id}",
+                f"TTT 叶子节点任务: {node_title}",
+                "事件上下文:",
+                context_text,
+            ]
         )
-        latest = self._first_non_empty(
-            context.get("splunk_latest"),
-            context.get("latest"),
-            context.get("time_range_end"),
-        )
-        source = self._first_non_empty(context.get("source_filter"), context.get("splunk_source"))
-        host = self._first_non_empty(context.get("host"), context.get("asset_host"), context.get("hostname"))
-        ip = self._extract_ip(title) or self._extract_ip(event.message)
-        keywords = self._build_log_search_keywords(title, event.message, context)
-        fields = tuple(
-            field
-            for field in self._normalize_sequence(
-                context.get("splunk_fields") or context.get("fields")
-            )
-        )
-        return SplunkQuerySpec(
-            dataset=dataset or None,
-            sourcetype=sourcetype,
-            earliest=earliest,
-            latest=latest,
-            keywords=keywords,
-            ip=ip,
-            host=host,
-            source=source,
-            field_filters=self._extract_field_filters(context),
-            fields=fields,
-        )
-
-    @staticmethod
-    def _extract_ip(text: str) -> str | None:
-        match = re.search(r"\b(?:\d{1,3}\.){3}\d{1,3}\b", text or "")
-        return match.group(0) if match else None
-
-    @staticmethod
-    def _infer_sourcetype(title: str, message: str, context: dict[str, Any]) -> str | None:
-        explicit = str(context.get("sourcetype") or context.get("splunk_sourcetype") or "").strip()
-        if explicit:
-            return explicit
-        combined = f"{title} {message}".lower()
-        if "sysmon" in combined:
-            return "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational"
-        if "dns" in combined:
-            return "stream:dns"
-        if "http" in combined or "web" in combined:
-            return "stream:http"
-        if "认证" in combined or "登录" in combined or "security" in combined:
-            return "WinEventLog:Security"
-        if "iis" in combined:
-            return "iis"
-        if "suricata" in combined:
-            return "suricata"
-        return None
-
-    @staticmethod
-    def _build_log_search_keywords(title: str, message: str, context: dict[str, Any]) -> tuple[str, ...]:
-        keywords: list[str] = []
-        for entry in ExecutorRuntime._normalize_sequence(context.get("keywords")):
-            if entry not in keywords:
-                keywords.append(entry)
-
-        combined = f"{title} {message}".lower()
-        for candidate in ("登录", "认证", "失败", "成功", "powershell", "cmd.exe", "rundll32", "suricata", "dns", "http"):
-            if candidate.lower() in combined and candidate not in keywords:
-                keywords.append(candidate)
-        return tuple(keywords)
-
-    @staticmethod
-    def _extract_field_filters(context: dict[str, Any]) -> dict[str, str | tuple[str, ...]]:
-        raw = context.get("field_filters")
-        if isinstance(raw, dict):
-            normalized: dict[str, str | tuple[str, ...]] = {}
-            for key, value in raw.items():
-                if isinstance(value, (list, tuple, set)):
-                    cleaned = tuple(str(item).strip() for item in value if str(item).strip())
-                    if cleaned:
-                        normalized[str(key).strip()] = cleaned
-                else:
-                    text = str(value).strip()
-                    if text:
-                        normalized[str(key).strip()] = text
-            return normalized
-        return {}
-
-    @staticmethod
-    def _normalize_sequence(value: Any) -> tuple[str, ...]:
-        if value is None:
-            return ()
-        if isinstance(value, str):
-            items = [value]
-        else:
-            items = list(value)
-        return tuple(str(item).strip() for item in items if str(item).strip())
-
-    @staticmethod
-    def _first_non_empty(*values: Any) -> str | None:
-        for value in values:
-            text = str(value).strip() if value is not None else ""
-            if text:
-                return text
-        return None
 
     def _publish(
         self,
