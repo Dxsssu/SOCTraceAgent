@@ -187,8 +187,6 @@ class ExecutorRuntime:
             payload={
                 "node_id": claimed.node_id,
                 "tool_name": tool_name,
-                "reason": tool_selection.get("reason", ""),
-                "confidence": tool_selection.get("confidence", ""),
             },
         )
 
@@ -244,21 +242,17 @@ class ExecutorRuntime:
         if not tools:
             return {
                 "tool_name": "",
-                "reason": "No MCP tools are currently registered for routing.",
-                "confidence": "low",
             }
 
         intent = str(getattr(node, "title", "") or "")
+        allowed_names = [tool["name"] for tool in tools]
         user_prompt = "\n".join(
             [
-                "请从可用 MCP 工具中选择最适合执行当前 TTT 叶子节点任务的工具，只输出 YAML。",
-                "输出字段只允许：tool_name, reason, confidence。",
-                "confidence 只允许：high, medium, low。",
-                "不得输出未列出的工具名。",
+                "请根据当前 TTT 叶子节点标题，从可用 MCP tools 中选择唯一一个最合适的工具。",
+                "只输出 YAML，且只能包含一个字段：tool_name。",
+                "tool_name 必须严格等于候选列表中的一个值，不要输出其他字段，不要解释。",
                 f"intent: {intent}",
-                f"event: {json.dumps(event.to_dict(), ensure_ascii=False, indent=2)}",
-                f"node: {json.dumps({'node_id': getattr(node, 'node_id', ''), 'title': intent}, ensure_ascii=False, indent=2)}",
-                f"context: {json.dumps(event.context or {}, ensure_ascii=False, indent=2)}",
+                f"allowed_tool_names: {json.dumps(allowed_names, ensure_ascii=False)}",
                 f"tools: {json.dumps(tools, ensure_ascii=False, indent=2)}",
             ]
         )
@@ -266,9 +260,8 @@ class ExecutorRuntime:
             call_llm(
                 """
 你是一个 SOC 多工具路由器。
-你的任务是根据当前调查意图，从候选 MCP 工具列表中选择唯一一个最合适的工具。
-必须基于工具用途和限制做选择，不能编造工具名。
-如果当前只有一个工具，就在解释原因后直接选择它。
+你的任务是根据当前 TTT 叶子节点标题，从候选 MCP 工具列表中选择唯一一个最合适的工具。
+你只能返回一个合法的 tool_name。
 """.strip(),
                 user_prompt,
                 extra_body={"thinking": {"type": "enabled"}},
@@ -277,18 +270,9 @@ class ExecutorRuntime:
         valid_names = {tool["name"] for tool in tools}
         selected_name = str((parsed or {}).get("tool_name") or "").strip()
         if selected_name not in valid_names:
-            selected_name = tools[0]["name"]
-            reason = "Tool router returned an invalid tool name, so the first available MCP tool was selected as fallback."
-            confidence = "low"
-        else:
-            reason = str((parsed or {}).get("reason") or "").strip()
-            confidence = str((parsed or {}).get("confidence") or "medium").strip().lower()
-        if confidence not in {"high", "medium", "low"}:
-            confidence = "medium"
+            selected_name = ""
         return {
             "tool_name": selected_name,
-            "reason": reason,
-            "confidence": confidence,
         }
 
     def _execute_tool(
@@ -312,19 +296,15 @@ class ExecutorRuntime:
                 {
                     "node_title": getattr(node, "title", ""),
                     "selected_by": "executor_builtin_router",
-                    "selection_reason": tool_selection.get("reason", ""),
-                    "selection_confidence": tool_selection.get("confidence", ""),
                 },
             )
 
         tool_response = tool.execute(
-            intent=self._build_tool_intent(event, node),
+            intent=str(getattr(node, "title", "") or ""),
         )
         tool_input = {
             "node_title": getattr(node, "title", ""),
             "selected_by": "executor_builtin_router",
-            "selection_reason": tool_selection.get("reason", ""),
-            "selection_confidence": tool_selection.get("confidence", ""),
             **dict(tool_response.get("tool_input") or {}),
         }
         result = dict(tool_response.get("result") or {})
@@ -338,25 +318,6 @@ class ExecutorRuntime:
             tool.to_dict()
             for tool in list_registered_tools(include_non_routable=False)
         ]
-
-    @staticmethod
-    def _build_tool_intent(event: Event, node: Any) -> str:
-        node_title = str(getattr(node, "title", "") or "").strip()
-        node_id = str(getattr(node, "node_id", "") or "").strip()
-        context_text = json.dumps(event.context or {}, ensure_ascii=False, indent=2)
-        return "\n".join(
-            [
-                "请基于以下事件背景与待执行任务，完成本次调查查询。",
-                f"事件名称: {event.event_name}",
-                f"事件描述: {event.message}",
-                f"事件来源: {event.source}",
-                f"事件严重级别: {event.severity.value}",
-                f"TTT 节点 ID: {node_id}",
-                f"TTT 叶子节点任务: {node_title}",
-                "事件上下文:",
-                context_text,
-            ]
-        )
 
     def _publish(
         self,
