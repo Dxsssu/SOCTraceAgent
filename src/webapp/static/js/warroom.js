@@ -330,7 +330,6 @@ function renderHierarchy() {
         <div class="event-tree-round">
           <div class="event-tree-round-title">
             Round ${escapeHtml(round.round_id)}
-            <span class="event-tree-status">TTT v${escapeHtml(round.ttt_version)}</span>
           </div>
           <ul>
             <li>TTT: ${escapeHtml(treeTitle)}</li>

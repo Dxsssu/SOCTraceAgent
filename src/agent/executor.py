@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
+import re
 import time
 from typing import Any
 
@@ -10,6 +11,7 @@ from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageB
 from src.schema import Event, EventStatus, Execution, ExecutionStatus, TTTNodeStatus
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
+from src.tools import SplunkQuerySpec, SplunkSearchTool
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +47,7 @@ event_id: "{ 来自输入 }"
 round_id: "{ 来自输入 }"
 response_type: EXECUTION_RESULT
 execution:
-  node_id: "phase-1:l2-1:l3-1"
+  node_id: "1-1-1"
   node_title: "执行意图1.1.1：查询源 IP 基础情报与历史行为"
   tool_name: "ip_reputation_lookup"
   status: success
@@ -93,6 +95,7 @@ class ExecutorRuntime:
         self.storage = storage or SQLiteStorage()
         self.ttt_store = ttt_store or TTTStore()
         self.bus = bus or SQLiteMessageBus()
+        self.splunk_tool = SplunkSearchTool()
         self.poll_interval = poll_interval
         self.running = False
 
@@ -189,14 +192,14 @@ class ExecutorRuntime:
             message_type=MessageType.EXECUTION_STARTED,
             payload={"node_id": claimed.node_id, "tool_name": tool_name},
         )
-        success, result, error_message = self._execute_tool(event, claimed, tool_name)
+        success, result, error_message, tool_input = self._execute_tool(event, claimed, tool_name)
         execution = Execution(
             event_id=event.event_id,
             round_id=event.current_round,
             node_id=claimed.node_id,
             node_title=claimed.title,
             tool_name=tool_name,
-            tool_input={"node_title": claimed.title, "task_type": claimed.task_type},
+            tool_input=tool_input,
             result=result,
             execution_status=ExecutionStatus.COMPLETED if success else ExecutionStatus.FAILED,
             error_message=error_message,
@@ -237,7 +240,12 @@ class ExecutorRuntime:
             return "log_search"
         return "investigation_notebook"
 
-    def _execute_tool(self, event: Event, node: Any, tool_name: str) -> tuple[bool, dict[str, Any], str]:
+    def _execute_tool(
+        self,
+        event: Event,
+        node: Any,
+        tool_name: str,
+    ) -> tuple[bool, dict[str, Any], str, dict[str, Any]]:
         if tool_name == "event_context_lookup":
             return (
                 True,
@@ -250,7 +258,38 @@ class ExecutorRuntime:
                     "note": "从当前事件记录中提取已有上下文。",
                 },
                 "",
+                {"node_title": getattr(node, "title", "")},
             )
+        if tool_name == "log_search":
+            query_spec, strategy, translation_error = self._derive_log_search_spec(event, node)
+            search_result = self.splunk_tool.search(
+                spec=query_spec,
+                additional_context={
+                    "event": event.to_dict(),
+                    "node": {
+                        "node_id": getattr(node, "node_id", ""),
+                        "title": getattr(node, "title", ""),
+                    },
+                },
+            )
+            tool_input = {
+                "node_title": getattr(node, "title", ""),
+                "translation_strategy": strategy,
+                "translation_error": translation_error,
+                "query_spec": search_result.get("query_spec", query_spec.to_dict()),
+                "query": search_result.get("query", ""),
+            }
+            error_message = str(search_result.get("error_message") or "")
+            if search_result.get("success"):
+                if search_result.get("result_count", 0) == 0:
+                    return (
+                        False,
+                        search_result,
+                        "zero_results:No events matched the query",
+                        tool_input,
+                    )
+                return True, search_result, "", tool_input
+            return False, search_result, error_message, tool_input
         return (
             False,
             {
@@ -259,7 +298,160 @@ class ExecutorRuntime:
                 "note": "当前项目尚未接入真实外部工具。",
             },
             f"tool_not_implemented:{tool_name}",
+            {"node_title": getattr(node, "title", "")},
         )
+
+    def _derive_log_search_spec(self, event: Event, node: Any) -> tuple[SplunkQuerySpec, str, str]:
+        fallback_spec = self._build_log_search_spec(event, node)
+        dataset = fallback_spec.dataset or "botsv1"
+        additional_context = {
+            "event": event.to_dict(),
+            "node": {
+                "node_id": getattr(node, "node_id", ""),
+                "title": getattr(node, "title", ""),
+            },
+            "fallback_spec": fallback_spec.to_dict(),
+        }
+        try:
+            spec = self.splunk_tool.interpret_intent(
+                str(getattr(node, "title", "") or ""),
+                dataset=dataset,
+                additional_context=additional_context,
+            )
+            merged_spec = SplunkQuerySpec(
+                dataset=spec.dataset or fallback_spec.dataset,
+                index=spec.index or fallback_spec.index,
+                sourcetype=spec.sourcetype or fallback_spec.sourcetype,
+                earliest=spec.earliest or fallback_spec.earliest,
+                latest=spec.latest or fallback_spec.latest,
+                keywords=spec.keywords or fallback_spec.keywords,
+                ip=spec.ip or fallback_spec.ip,
+                host=spec.host or fallback_spec.host,
+                source=spec.source or fallback_spec.source,
+                field_filters=spec.field_filters or fallback_spec.field_filters,
+                limit=spec.limit or fallback_spec.limit,
+                fields=spec.fields or fallback_spec.fields,
+            )
+            return merged_spec, "llm_intent_translation", ""
+        except Exception as exc:
+            logger.warning("LLM log-search translation failed for node=%s: %s", getattr(node, "node_id", ""), exc)
+            return fallback_spec, "rule_based_fallback", str(exc)
+
+    def _build_log_search_spec(self, event: Event, node: Any) -> SplunkQuerySpec:
+        title = str(getattr(node, "title", "") or "").strip()
+        context = dict(event.context or {})
+        dataset = str(
+            context.get("splunk_dataset")
+            or context.get("dataset")
+            or context.get("log_dataset")
+            or "botsv1"
+        ).strip()
+        sourcetype = self._infer_sourcetype(title, event.message, context)
+        earliest = self._first_non_empty(
+            context.get("splunk_earliest"),
+            context.get("earliest"),
+            context.get("time_range_start"),
+        )
+        latest = self._first_non_empty(
+            context.get("splunk_latest"),
+            context.get("latest"),
+            context.get("time_range_end"),
+        )
+        source = self._first_non_empty(context.get("source_filter"), context.get("splunk_source"))
+        host = self._first_non_empty(context.get("host"), context.get("asset_host"), context.get("hostname"))
+        ip = self._extract_ip(title) or self._extract_ip(event.message)
+        keywords = self._build_log_search_keywords(title, event.message, context)
+        fields = tuple(
+            field
+            for field in self._normalize_sequence(
+                context.get("splunk_fields") or context.get("fields")
+            )
+        )
+        return SplunkQuerySpec(
+            dataset=dataset or None,
+            sourcetype=sourcetype,
+            earliest=earliest,
+            latest=latest,
+            keywords=keywords,
+            ip=ip,
+            host=host,
+            source=source,
+            field_filters=self._extract_field_filters(context),
+            fields=fields,
+        )
+
+    @staticmethod
+    def _extract_ip(text: str) -> str | None:
+        match = re.search(r"\b(?:\d{1,3}\.){3}\d{1,3}\b", text or "")
+        return match.group(0) if match else None
+
+    @staticmethod
+    def _infer_sourcetype(title: str, message: str, context: dict[str, Any]) -> str | None:
+        explicit = str(context.get("sourcetype") or context.get("splunk_sourcetype") or "").strip()
+        if explicit:
+            return explicit
+        combined = f"{title} {message}".lower()
+        if "sysmon" in combined:
+            return "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational"
+        if "dns" in combined:
+            return "stream:dns"
+        if "http" in combined or "web" in combined:
+            return "stream:http"
+        if "认证" in combined or "登录" in combined or "security" in combined:
+            return "WinEventLog:Security"
+        if "iis" in combined:
+            return "iis"
+        if "suricata" in combined:
+            return "suricata"
+        return None
+
+    @staticmethod
+    def _build_log_search_keywords(title: str, message: str, context: dict[str, Any]) -> tuple[str, ...]:
+        keywords: list[str] = []
+        for entry in ExecutorRuntime._normalize_sequence(context.get("keywords")):
+            if entry not in keywords:
+                keywords.append(entry)
+
+        combined = f"{title} {message}".lower()
+        for candidate in ("登录", "认证", "失败", "成功", "powershell", "cmd.exe", "rundll32", "suricata", "dns", "http"):
+            if candidate.lower() in combined and candidate not in keywords:
+                keywords.append(candidate)
+        return tuple(keywords)
+
+    @staticmethod
+    def _extract_field_filters(context: dict[str, Any]) -> dict[str, str | tuple[str, ...]]:
+        raw = context.get("field_filters")
+        if isinstance(raw, dict):
+            normalized: dict[str, str | tuple[str, ...]] = {}
+            for key, value in raw.items():
+                if isinstance(value, (list, tuple, set)):
+                    cleaned = tuple(str(item).strip() for item in value if str(item).strip())
+                    if cleaned:
+                        normalized[str(key).strip()] = cleaned
+                else:
+                    text = str(value).strip()
+                    if text:
+                        normalized[str(key).strip()] = text
+            return normalized
+        return {}
+
+    @staticmethod
+    def _normalize_sequence(value: Any) -> tuple[str, ...]:
+        if value is None:
+            return ()
+        if isinstance(value, str):
+            items = [value]
+        else:
+            items = list(value)
+        return tuple(str(item).strip() for item in items if str(item).strip())
+
+    @staticmethod
+    def _first_non_empty(*values: Any) -> str | None:
+        for value in values:
+            text = str(value).strip() if value is not None else ""
+            if text:
+                return text
+        return None
 
     def _publish(
         self,
