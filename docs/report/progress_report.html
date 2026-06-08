@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOCAgent 阶段性进展汇报</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --paper: #fffdf8;
+      --ink: #16202a;
+      --muted: #52606d;
+      --blue: #114b7a;
+      --teal: #1f7a6b;
+      --gold: #c78b2a;
+      --red: #b24a3d;
+      --line: rgba(17, 75, 122, 0.14);
+      --shadow: 0 24px 60px rgba(22, 32, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top left, rgba(199, 139, 42, 0.10), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(31, 122, 107, 0.10), transparent 30%),
+        var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .deck {
+      max-width: 1380px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 0 4px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--blue);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .slides {
+      display: grid;
+      gap: 26px;
+    }
+
+    .slide {
+      position: relative;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      min-height: 780px;
+      padding: 44px 48px 40px;
+      overflow: hidden;
+      page-break-after: always;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(17, 75, 122, 0.035), transparent 42%),
+        linear-gradient(320deg, rgba(31, 122, 107, 0.04), transparent 45%);
+      pointer-events: none;
+    }
+
+    .slide-number {
+      position: absolute;
+      top: 26px;
+      right: 30px;
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(17, 75, 122, 0.08);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: 58px;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+      max-width: 760px;
+    }
+
+    h2 {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: 42px;
+      line-height: 1.14;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .lede {
+      margin-top: 18px;
+      max-width: 720px;
+      font-size: 20px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr;
+      gap: 28px;
+      margin-top: 44px;
+      align-items: stretch;
+    }
+
+    .hero-panel,
+    .card,
+    .metric,
+    .mock {
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-panel {
+      padding: 26px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .flow-step {
+      padding: 18px 14px;
+      border-radius: 18px;
+      color: #fff;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.4;
+      min-height: 110px;
+      display: grid;
+      place-items: center;
+    }
+
+    .flow-step.blue { background: linear-gradient(135deg, #0f4c81, #2563a6); }
+    .flow-step.teal { background: linear-gradient(135deg, #166c61, #2a9587); }
+    .flow-step.red { background: linear-gradient(135deg, #a94438, #cf5d4d); }
+    .flow-step.gold { background: linear-gradient(135deg, #b77b1c, #d29b3d); }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .metric {
+      padding: 22px 22px 18px;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metric-value {
+      margin-top: 10px;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--blue);
+    }
+
+    .section-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 28px;
+    }
+
+    .card {
+      padding: 24px;
+    }
+
+    .card h3 {
+      margin-bottom: 14px;
+      font-size: 24px;
+      color: var(--blue);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.2em;
+      color: var(--ink);
+      line-height: 1.75;
+      font-size: 18px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .highlight {
+      margin-top: 22px;
+      padding: 20px 22px;
+      border-left: 5px solid var(--gold);
+      background: rgba(199, 139, 42, 0.08);
+      border-radius: 18px;
+      color: #5f4a21;
+      font-size: 18px;
+      line-height: 1.75;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stack-columns {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 0.9fr;
+      gap: 20px;
+      margin-top: 32px;
+    }
+
+    .stack-box {
+      border-radius: 24px;
+      padding: 24px;
+      color: #fff;
+      min-height: 360px;
+    }
+
+    .stack-box h3 {
+      margin-bottom: 16px;
+      font-size: 26px;
+      color: #fff;
+    }
+
+    .stack-box ul {
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .stack-box.backend { background: linear-gradient(160deg, #114b7a, #1f6ba6); }
+    .stack-box.frontend { background: linear-gradient(160deg, #1f7a6b, #2f9f8e); }
+
+    .arch-box {
+      background: #f7f3ea;
+      border: 1px solid rgba(17, 75, 122, 0.12);
+      border-radius: 24px;
+      padding: 24px;
+      min-height: 360px;
+    }
+
+    .arch-flow {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .arch-node {
+      padding: 18px;
+      border-radius: 18px;
+      text-align: center;
+      font-weight: 700;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--blue);
+    }
+
+    .arch-arrow {
+      text-align: center;
+      color: var(--gold);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .ui-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 30px;
+    }
+
+    .mock {
+      padding: 18px;
+    }
+
+    .mock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .mock-window {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .mock-bar {
+      height: 46px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      background: linear-gradient(90deg, #1f6ba6, #2f9f8e);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .home-layout,
+    .war-layout {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      min-height: 370px;
+      background:
+        linear-gradient(180deg, rgba(17, 75, 122, 0.03), transparent),
+        #fff;
+    }
+
+    .home-layout {
+      grid-template-columns: 0.8fr 1.2fr;
+    }
+
+    .war-layout {
+      grid-template-columns: 1.6fr 0.7fr;
+      background: #091521;
+    }
+
+    .block {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      padding: 16px;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .block.blue {
+      background: #eaf4ff;
+      color: var(--blue);
+    }
+
+    .block.soft {
+      background: #fffdf8;
+      color: var(--ink);
+    }
+
+    .block.dark {
+      background: #0f2233;
+      color: #dce9f4;
+      border-color: rgba(56, 189, 248, 0.18);
+    }
+
+    .block.darker {
+      background: #11293d;
+      color: #dce9f4;
+      border-color: rgba(56, 189, 248, 0.18);
+    }
+
+    .tiny {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 14px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-grid,
+      .section-grid,
+      .stack-columns,
+      .ui-grid,
+      .home-layout,
+      .war-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .flow {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .slide {
+        min-height: auto;
+        padding: 34px 26px;
+      }
+
+      h1 {
+        font-size: 42px;
+      }
+
+      h2 {
+        font-size: 34px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .topbar {
+        display: none;
+      }
+
+      .slides {
+        gap: 0;
+      }
+
+      .slide {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100%;
+        min-height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark">SA</div>
+        <div>SOCAgent Progress Report</div>
+      </div>
+      <div class="hint">浏览器打开即可展示，也可以直接打印为 PDF</div>
+    </div>
+
+    <div class="slides">
+      <section class="slide">
+        <div class="slide-number">01 / 05</div>
+        <div class="eyebrow">Stage Report</div>
+        <h1>SOCAgent 阶段性进展汇报</h1>
+        <p class="lede">面向安全告警溯源场景的三角色多智能体原型。当前重点是先把 workflow 打通，再在开源数据集上持续测试、验证和调优。</p>
+
+        <div class="hero-grid">
+          <div class="hero-panel">
+            <h3>核心闭环</h3>
+            <div class="flow">
+              <div class="flow-step blue">Event<br>输入告警</div>
+              <div class="flow-step teal">TTT<br>任务拆解</div>
+              <div class="flow-step gold">Execution<br>执行检索</div>
+              <div class="flow-step red">RoundReview<br>轮次复盘</div>
+              <div class="flow-step blue">Next TTT<br>继续推进</div>
+            </div>
+            <div class="highlight">目前项目已经从“静态概念验证”进入“可运行闭环原型”阶段，能够围绕同一事件完成规划、执行、复盘与下一轮重规划。</div>
+          </div>
+
+          <div class="side-stack">
+            <div class="metric">
+              <div class="metric-label">Agent Roles</div>
+              <div class="metric-value">3 个角色协同</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Shared State</div>
+              <div class="metric-value">SQLite 共享黑板</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Current Focus</div>
+              <div class="metric-value">Workflow 打通 + 数据集调优</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-number">02 / 05</div>
+        <div class="eyebrow">Overall Progress</div>
+        <h2>1. 当前整体进展</h2>
+        <p class="lede">围绕“Event → TTT → Execution → RoundReview → TTT”的链路，已经把核心流程接通，并开始在开源数据集上做反复验证。</p>
+
+        <div class="section-grid">
+          <div class="card">
+            <h3>已经完成的部分</h3>
+            <ul>
+              <li>Planner、Executor、Reviewer 三角色职责已经拆分清楚。</li>
+              <li>TTT 溯源任务树、执行记录、轮次复盘均已结构化落库。</li>
+              <li>Web 首页和 war room 已经能展示真实运行状态，而不是假数据页面。</li>
+              <li>支持多轮推进，能够观察事件从待处理到完成的全过程。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>当前调优重点</h3>
+            <ul>
+              <li>在 BOTS 数据集上测试不同告警输入下的任务拆解质量。</li>
+              <li>优化 Executor 的工具路由与 Splunk 查询意图翻译。</li>
+              <li>观察每轮复盘是否能有效收敛问题并驱动下一轮调查。</li>
+              <li>验证前后端展示与后端真实状态的一致性。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="highlight">一句话概括当前阶段：整体 workflow 已经打通，接下来主要工作不是“再搭框架”，而是“持续在真实数据集上跑、看效果、改细节”。</div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-number">03 / 05</div>
+        <div class="eyebrow">Dataset</div>
+        <h2>2. BOTS 数据集介绍</h2>
+        <p class="lede">BOTS（Boss of the SOC）是 Splunk 提供的开源安全分析数据集，适合用于攻击溯源、日志关联分析和查询策略验证。</p>
+
+        <div class="section-grid">
+          <div class="card">
+            <h3>为什么选它</h3>
+            <ul>
+              <li>数据公开，便于复现实验与阶段性展示。</li>
+              <li>包含主机、网络、边界设备等多类型日志。</li>
+              <li>适合模拟真实 SOC 调查中的证据链拼接过程。</li>
+              <li>有利于验证多轮调查 workflow 是否可泛化。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>当前项目中的使用方式</h3>
+            <ul>
+              <li>默认使用 `botsv1`，同时预留 `botsv2` 和 `botsv3`。</li>
+              <li>通过 Splunk REST API 执行真实检索，不是离线 mock。</li>
+              <li>重点验证 TTT 任务拆解与日志查询是否能对应起来。</li>
+              <li>持续观察查询摘要、样本事件与复盘结果是否合理。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>典型日志类型</h3>
+            <ul>
+              <li>Windows / Sysmon</li>
+              <li>IIS / HTTP / DNS / Stream</li>
+              <li>Suricata / FortiGate</li>
+              <li>注册表与主机行为日志</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>对当前阶段的价值</h3>
+            <ul>
+              <li>能把“多智能体流程”落到实际日志调查场景中。</li>
+              <li>便于比较不同查询策略和任务树设计的优劣。</li>
+              <li>为后续接入更多安全工具提供统一验证基线。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-number">04 / 05</div>
+        <div class="eyebrow">Tech Stack</div>
+        <h2>3. 前后端技术栈</h2>
+        <p class="lede">当前实现以“轻量、可运行、便于快速迭代”为原则，优先保证链路真实可验证，而不是过早追求复杂部署。</p>
+
+        <div class="stack-columns">
+          <div class="stack-box backend">
+            <h3>后端</h3>
+            <ul>
+              <li>Python 3.13</li>
+              <li>Flask + Flask-SocketIO</li>
+              <li>SQLite 作为共享状态中心</li>
+              <li>OpenAI 兼容接口封装 LLM 调用</li>
+              <li>Splunk、VirusTotal、IPInfo 工具接入</li>
+            </ul>
+          </div>
+
+          <div class="stack-box frontend">
+            <h3>前端</h3>
+            <ul>
+              <li>Jinja2 模板页面</li>
+              <li>Bootstrap 5</li>
+              <li>原生 JavaScript</li>
+              <li>Socket.IO 实时消息推送</li>
+              <li>首页 + War Room 双页面结构</li>
+            </ul>
+          </div>
+
+          <div class="arch-box">
+            <h3>运行结构</h3>
+            <div class="arch-flow">
+              <div class="arch-node">Web 层</div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node">Planner / Executor / Reviewer</div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node">SQLite + TTT + Execution + Review</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="highlight">当前技术选型的目标很明确：先保证系统能稳定跑通、能被观察、能被验证，然后再逐步替换为更复杂的调度或存储方案。</div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-number">05 / 06</div>
+        <div class="eyebrow">Interface</div>
+        <h2>4. 界面展示</h2>
+        <p class="lede">前端当前主要承担“创建事件”和“观察调查过程”两个职责，重点是帮助我们验证多角色协作过程是否清晰、状态是否可追踪。</p>
+
+        <div class="ui-grid">
+          <div class="mock">
+            <div class="mock-header">
+              <span>首页</span>
+              <span>Event Creation</span>
+            </div>
+            <div class="mock-window">
+              <div class="mock-bar">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <span style="margin-left: 8px;">SOCAgent Home</span>
+              </div>
+              <div class="home-layout">
+                <div class="block blue">
+                  创建事件表单<br><br>
+                  录入事件名称、描述、上下文、严重等级与来源。
+                </div>
+                <div class="block soft">
+                  事件列表<br><br>
+                  展示当前所有调查任务，支持查看状态并进入 war room。
+                </div>
+              </div>
+            </div>
+            <div class="tiny">作用：作为系统入口，方便快速创建实验事件并进入单事件视角。</div>
+          </div>
+
+          <div class="mock">
+            <div class="mock-header">
+              <span>War Room</span>
+              <span>Live Investigation</span>
+            </div>
+            <div class="mock-window">
+              <div class="mock-bar">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <span style="margin-left: 8px;">SOCAgent War Room</span>
+              </div>
+              <div class="war-layout">
+                <div class="block dark">
+                  消息流<br><br>
+                  展示 Planner、Executor、Reviewer 的协作内容，以及每轮调查推进过程。
+                </div>
+                <div class="block darker">
+                  右侧状态栏<br><br>
+                  当前轮次、叶子节点数量、执行记录数、轮次复盘数、角色状态。
+                </div>
+              </div>
+            </div>
+            <div class="tiny">作用：作为核心观测界面，便于展示 TTT、执行记录、轮次复盘和实时状态变化。</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-number">06 / 06</div>
+        <div class="eyebrow">Next Step</div>
+        <h2>5. 下一步工作</h2>
+        <p class="lede">在当前闭环已经跑通的基础上，后续重点会从“搭框架”转向“提效果、补能力、做验证”。</p>
+
+        <div class="section-grid">
+          <div class="card">
+            <h3>持续验证与调优</h3>
+            <ul>
+              <li>继续在 BOTS 数据集上测试不同类型告警输入。</li>
+              <li>观察 TTT 任务拆解是否稳定、是否贴合真实调查流程。</li>
+              <li>优化 Splunk 查询生成质量，减少无效检索和结果偏差。</li>
+              <li>对多轮复盘过程做分析，提升问题收敛效率。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>能力补全</h3>
+            <ul>
+              <li>继续丰富可调用的安全工具，增强证据获取能力。</li>
+              <li>完善前端展示，让 TTT、执行记录和复盘结果更直观。</li>
+              <li>补充更多标准化测试，提升系统稳定性和可复现性。</li>
+              <li>为后续替换更强的调度与存储方案打基础。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="highlight">下一阶段目标可以概括为三点：第一，让 workflow 在更多真实数据场景下跑稳；第二，让查询与复盘结果更准确；第三，让系统从“可运行原型”逐步走向“可持续迭代的研究平台”。</div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>
