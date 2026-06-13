@@ -7,46 +7,46 @@ tags:
   - ip
   - threat_intelligence
   - network
-summary: 适用于围绕可疑 IP、扫描源或威胁情报命中来源的告警初始分析流程。
+summary: Initial triage workflow for alerts centered on a suspicious IP, scan source, or threat-intelligence hit.
 ---
 
-# 适用场景
+# Applicable Scenarios
 
-适合处理来源 IP 可疑、威胁情报命中、扫描行为、外联异常或边界设备发现可疑访问等事件。
+Suitable for incidents where the source IP is suspicious, a threat-intelligence match fired, scanning behavior is observed, outbound access looks abnormal, or perimeter devices discovered suspicious traffic.
 
-# 调查主线 / Workflow
+# Investigation Workflow
 
-1. 先判断该 IP 是否确实具备恶意背景或异常画像。
-2. 再确认它与哪些内部资产、服务和时间窗发生了交互。
-3. 最后判断是否已经出现成功访问、后续主机异常或更大范围影响。
+1. First determine whether the IP truly has a malicious background or an anomalous profile.
+2. Then confirm which internal assets, services, and time windows it interacted with.
+3. Finally, determine whether successful access, follow-on host anomalies, or broader impact has already occurred.
 
-# L1 目标建议
+# Suggested L1 Goals
 
-- 可拆成多个 L1，例如“评估外部 IP 风险”“确认与内部资产的交互范围”“检查目标资产后续异常”。
+- You can split the tree into multiple L1s, such as "Assess external IP risk", "Confirm interaction scope with internal assets", and "Inspect follow-on anomalies on the target asset".
 
-# L2 问题候选
+# Candidate L2 Questions
 
-- 该外部 IP 是否有明确恶意标签、信誉异常或攻击历史？
-- 该 IP 在当前时间窗内访问了哪些内部资产、端口和协议？
-- 是否存在与该 IP 关联的成功访问、告警升级或后续主机异常？
-- 该 IP 的活动更像扫描、探测、利用尝试还是正常业务流量？
+- Does the external IP have clear malicious tags, abnormal reputation, or attack history?
+- Which internal assets, ports, and protocols did the IP touch within the current time window?
+- Is there evidence of successful access, escalated alerts, or follow-on host anomalies tied to this IP?
+- Does the activity look more like scanning, probing, exploitation attempts, or legitimate business traffic?
 
-# L3 查询动作候选
+# Candidate L3 Actions
 
-- 查询告警中的外部 IP 的基础情报、地理位置、ASN 和所有者信息。
-- 查询告警中的外部 IP 的外部威胁情报、信誉标签与恶意检测结果。
-- 查询与告警中的外部 IP 相关的网络访问日志，识别目标资产、端口、协议和时间分布。
-- 查询边界设备、IDS/IPS 或防火墙日志，确认是否有阻断、告警或攻击特征。
-- 查询与被访问资产相关的主机、认证或应用日志，确认是否出现后续异常。
+- Query basic intelligence, geolocation, ASN, and ownership details for the external IP in the alert.
+- Query external threat-intelligence, reputation tags, and malicious-detection results for the external IP in the alert.
+- Query network access logs related to the external IP in the alert to identify target assets, ports, protocols, and time distribution.
+- Query perimeter, IDS/IPS, or firewall logs to confirm blocking, alerts, or attack signatures.
+- Query host, authentication, or application logs for the accessed asset to determine whether follow-on anomalies occurred.
 
-# 证据来源 / 工具提示
+# Evidence Sources / Tool Hints
 
-- Splunk 中的网络流日志、防火墙日志和检测告警适合确认访问范围与行为模式。
-- IP 基础情报与威胁情报工具适合补充外部画像。
-- 如果需要判断是否已打到主机层，应进一步拆分出针对目标主机的独立 L3 查询动作。
+- Network-flow logs, firewall logs, and security detections in Splunk are useful for validating access scope and behavior patterns.
+- Basic IP intelligence and threat-intelligence tools are useful for enriching the external profile.
+- If you need to determine whether the activity reached the host layer, split out separate L3 actions for the target host.
 
-# 收敛与下一步判断
+# Convergence and Next-Step Guidance
 
-- 如果 IP 信誉高风险且存在针对内部资产的真实访问，应优先扩展到目标主机和后续行为。
-- 如果只有单次低价值访问且无恶意情报支撑，可先验证是否为噪声或误报。
-- 如果当前无法确认访问结果，应先补齐时间窗、目标资产和网络证据，再决定是否扩线。
+- If the IP has high-risk reputation and real access to internal assets is confirmed, expand first into the target host and follow-on behavior.
+- If there is only a single low-value access and no malicious-intelligence support, first validate whether it was noise or a false positive.
+- If the access outcome cannot yet be confirmed, fill in the time window, target asset, and network evidence before deciding whether to branch out further.

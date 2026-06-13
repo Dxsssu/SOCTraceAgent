@@ -14,7 +14,7 @@ def utc_now() -> datetime:
 
 @dataclass(slots=True, frozen=True)
 class MessageEnvelope:
-    """轻量消息封装，用于审计、调试和未来前端展示。"""
+    """Lightweight message envelope for auditing, debugging, and future UI display."""
 
     event_id: str
     message_type: MessageType
@@ -59,7 +59,7 @@ class MessageEnvelope:
 
 @dataclass(slots=True, frozen=True)
 class MessageQuery:
-    """消息查询条件。"""
+    """Message query filter."""
 
     event_id: str
     round_id: int | None = None

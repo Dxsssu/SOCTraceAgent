@@ -28,7 +28,7 @@ class VirusTotalToolTests(unittest.TestCase):
         tool = get_registered_tool("get_ip_report")
         assert tool is not None
 
-        intent = "请查询 IP 8.8.8.8 的 VirusTotal 报告，返回检测统计和 ASN 信息。"
+        intent = "Please query the VirusTotal report for IP 8.8.8.8 and return detection statistics plus ASN information."
         result = tool.execute(intent=intent)
 
         print("\n=== Query Intent ===")

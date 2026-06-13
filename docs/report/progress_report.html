@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SOCAgent 阶段性进展汇报</title>
+  <title>SOCAgent Progress Report</title>
   <style>
     :root {
       --bg: #f4efe6;
@@ -13,14 +13,11 @@
       --blue: #114b7a;
       --teal: #1f7a6b;
       --gold: #c78b2a;
-      --red: #b24a3d;
       --line: rgba(17, 75, 122, 0.14);
       --shadow: 0 24px 60px rgba(22, 32, 42, 0.12);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -30,7 +27,7 @@
         radial-gradient(circle at bottom right, rgba(31, 122, 107, 0.10), transparent 30%),
         var(--bg);
       color: var(--ink);
-      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
     }
 
     body {
@@ -133,8 +130,18 @@
       z-index: 1;
     }
 
+    a {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
     h1 {
-      font-family: "Georgia", "Times New Roman", serif;
+      font-family: Georgia, serif;
       font-size: 58px;
       line-height: 1.06;
       letter-spacing: -0.03em;
@@ -142,76 +149,140 @@
     }
 
     h2 {
-      font-family: "Georgia", "Times New Roman", serif;
+      font-family: Georgia, serif;
       font-size: 42px;
       line-height: 1.14;
       letter-spacing: -0.02em;
       margin-bottom: 12px;
     }
 
+    h3 {
+      margin-bottom: 14px;
+      font-size: 24px;
+      color: var(--blue);
+    }
+
     .lede {
       margin-top: 18px;
-      max-width: 720px;
+      max-width: 780px;
       font-size: 20px;
       line-height: 1.7;
       color: var(--muted);
     }
 
-    .hero-grid {
+    .hero-grid,
+    .section-grid,
+    .data-grid,
+    .stack-columns,
+    .ui-grid {
       position: relative;
       z-index: 1;
       display: grid;
-      grid-template-columns: 1.2fr 0.9fr;
-      gap: 28px;
-      margin-top: 44px;
-      align-items: stretch;
+      gap: 24px;
+      margin-top: 30px;
+    }
+
+    .hero-grid { grid-template-columns: 1.2fr 0.9fr; }
+    .section-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .data-grid { grid-template-columns: 1.15fr 1fr; }
+    .stack-columns { grid-template-columns: 1fr 1fr 0.9fr; }
+    .ui-grid { grid-template-columns: 1fr 1fr; }
+
+    .hero-panel,
+    .card,
+    .metric,
+    .mock,
+    .arch-box {
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.76);
+      backdrop-filter: blur(8px);
     }
 
     .hero-panel,
     .card,
     .metric,
-    .mock {
-      border-radius: 24px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.72);
-      backdrop-filter: blur(8px);
-    }
-
-    .hero-panel {
-      padding: 26px;
+    .mock,
+    .arch-box,
+    .stack-box {
+      padding: 24px;
     }
 
     .flow {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
       margin-top: 18px;
+      align-items: stretch;
+      overflow: visible;
     }
 
-    .flow-step {
+    .flow-step,
+    .arch-node {
       padding: 18px 14px;
       border-radius: 18px;
-      color: #fff;
       font-weight: 700;
       text-align: center;
       line-height: 1.4;
+    }
+
+    .flow-step {
+      position: relative;
+      color: #fff;
       min-height: 110px;
       display: grid;
       place-items: center;
     }
 
+    .flow-step.step-1 { grid-column: 1; grid-row: 1; z-index: 6; }
+    .flow-step.step-2 { grid-column: 2; grid-row: 1; z-index: 5; }
+    .flow-step.step-3 { grid-column: 3; grid-row: 1; z-index: 4; }
+    .flow-step.step-4 { grid-column: 3; grid-row: 2; z-index: 3; }
+    .flow-step.step-5 { grid-column: 2; grid-row: 2; z-index: 2; }
+    .flow-step.step-6 { grid-column: 1; grid-row: 2; z-index: 1; }
+
+    .flow-step.arrow-right::after,
+    .flow-step.arrow-left::after,
+    .flow-step.arrow-down::after {
+      position: absolute;
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+      text-shadow: 0 6px 16px rgba(22, 32, 42, 0.12);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .flow-step.arrow-right::after {
+      content: "\2192";
+      top: 50%;
+      right: -27px;
+      transform: translateY(-50%);
+    }
+
+    .flow-step.arrow-left::after {
+      content: "\2190";
+      top: 50%;
+      left: -27px;
+      transform: translateY(-50%);
+    }
+
+    .flow-step.arrow-down::after {
+      content: "\2193";
+      bottom: -27px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
     .flow-step.blue { background: linear-gradient(135deg, #0f4c81, #2563a6); }
     .flow-step.teal { background: linear-gradient(135deg, #166c61, #2a9587); }
-    .flow-step.red { background: linear-gradient(135deg, #a94438, #cf5d4d); }
     .flow-step.gold { background: linear-gradient(135deg, #b77b1c, #d29b3d); }
+    .flow-step.red { background: linear-gradient(135deg, #a94438, #cf5d4d); }
 
     .side-stack {
       display: grid;
       gap: 18px;
-    }
-
-    .metric {
-      padding: 22px 22px 18px;
     }
 
     .metric-label {
@@ -228,23 +299,11 @@
       color: var(--blue);
     }
 
-    .section-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 22px;
-      margin-top: 28px;
-    }
-
-    .card {
-      padding: 24px;
-    }
-
-    .card h3 {
-      margin-bottom: 14px;
-      font-size: 24px;
-      color: var(--blue);
+    .metric-note {
+      margin-top: 10px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--muted);
     }
 
     ul {
@@ -272,30 +331,15 @@
       z-index: 1;
     }
 
-    .stack-columns {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr 0.9fr;
-      gap: 20px;
-      margin-top: 32px;
-    }
-
     .stack-box {
       border-radius: 24px;
-      padding: 24px;
       color: #fff;
       min-height: 360px;
     }
 
-    .stack-box h3 {
-      margin-bottom: 16px;
-      font-size: 26px;
-      color: #fff;
-    }
-
+    .stack-box h3,
     .stack-box ul {
-      color: rgba(255, 255, 255, 0.92);
+      color: #fff;
     }
 
     .stack-box.backend { background: linear-gradient(160deg, #114b7a, #1f6ba6); }
@@ -303,10 +347,6 @@
 
     .arch-box {
       background: #f7f3ea;
-      border: 1px solid rgba(17, 75, 122, 0.12);
-      border-radius: 24px;
-      padding: 24px;
-      min-height: 360px;
     }
 
     .arch-flow {
@@ -316,10 +356,6 @@
     }
 
     .arch-node {
-      padding: 18px;
-      border-radius: 18px;
-      text-align: center;
-      font-weight: 700;
       background: #fff;
       border: 1px solid var(--line);
       color: var(--blue);
@@ -330,19 +366,6 @@
       color: var(--gold);
       font-size: 24px;
       font-weight: 800;
-    }
-
-    .ui-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-top: 30px;
-    }
-
-    .mock {
-      padding: 18px;
     }
 
     .mock-header {
@@ -385,13 +408,11 @@
       gap: 14px;
       padding: 18px;
       min-height: 370px;
-      background:
-        linear-gradient(180deg, rgba(17, 75, 122, 0.03), transparent),
-        #fff;
     }
 
     .home-layout {
       grid-template-columns: 0.8fr 1.2fr;
+      background: linear-gradient(180deg, rgba(17, 75, 122, 0.03), transparent), #fff;
     }
 
     .war-layout {
@@ -407,27 +428,16 @@
       line-height: 1.65;
     }
 
-    .block.blue {
-      background: #eaf4ff;
-      color: var(--blue);
-    }
-
-    .block.soft {
-      background: #fffdf8;
-      color: var(--ink);
-    }
-
-    .block.dark {
-      background: #0f2233;
-      color: #dce9f4;
-      border-color: rgba(56, 189, 248, 0.18);
-    }
-
+    .block.blue { background: #eaf4ff; color: var(--blue); }
+    .block.soft { background: #fffdf8; color: var(--ink); }
+    .block.dark,
     .block.darker {
-      background: #11293d;
       color: #dce9f4;
       border-color: rgba(56, 189, 248, 0.18);
     }
+
+    .block.dark { background: #0f2233; }
+    .block.darker { background: #11293d; }
 
     .tiny {
       font-size: 14px;
@@ -439,6 +449,7 @@
     @media (max-width: 1100px) {
       .hero-grid,
       .section-grid,
+      .data-grid,
       .stack-columns,
       .ui-grid,
       .home-layout,
@@ -447,7 +458,16 @@
       }
 
       .flow {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
+      }
+
+      .flow-step {
+        grid-column: auto !important;
+        grid-row: auto !important;
+      }
+
+      .flow-step::after {
+        display: none;
       }
 
       .slide {
@@ -455,13 +475,8 @@
         padding: 34px 26px;
       }
 
-      h1 {
-        font-size: 42px;
-      }
-
-      h2 {
-        font-size: 34px;
-      }
+      h1 { font-size: 42px; }
+      h2 { font-size: 34px; }
     }
 
     @media print {
@@ -470,13 +485,8 @@
         padding: 0;
       }
 
-      .topbar {
-        display: none;
-      }
-
-      .slides {
-        gap: 0;
-      }
+      .topbar { display: none; }
+      .slides { gap: 0; }
 
       .slide {
         border: none;
@@ -495,259 +505,226 @@
         <div class="brand-mark">SA</div>
         <div>SOCAgent Progress Report</div>
       </div>
-      <div class="hint">浏览器打开即可展示，也可以直接打印为 PDF</div>
+      <div class="hint">Open in a browser for presentation, or print directly to PDF</div>
     </div>
 
     <div class="slides">
       <section class="slide">
-        <div class="slide-number">01 / 05</div>
+        <div class="slide-number">01 / 06</div>
         <div class="eyebrow">Stage Report</div>
-        <h1>SOCAgent 阶段性进展汇报</h1>
-        <p class="lede">面向安全告警溯源场景的三角色多智能体原型。当前重点是先把 workflow 打通，再在开源数据集上持续测试、验证和调优。</p>
+        <h1>SOCAgent Progress Report</h1>
+        <p class="lede">A three-role multi-agent prototype for security alert traceback. The current focus is to run the workflow end to end, then keep testing, validating, and tuning it on open datasets.</p>
 
         <div class="hero-grid">
           <div class="hero-panel">
-            <h3>核心闭环</h3>
+            <h3>Core Loop</h3>
             <div class="flow">
-              <div class="flow-step blue">Event<br>输入告警</div>
-              <div class="flow-step teal">TTT<br>任务拆解</div>
-              <div class="flow-step gold">Execution<br>执行检索</div>
-              <div class="flow-step red">RoundReview<br>轮次复盘</div>
-              <div class="flow-step blue">Next TTT<br>继续推进</div>
+              <div class="flow-step blue step-1 arrow-right">Event<br>Alert Intake</div>
+              <div class="flow-step teal step-2 arrow-right">Long-Term Memory<br>Context Load</div>
+              <div class="flow-step teal step-3 arrow-down">TTT<br>Task Breakdown</div>
+              <div class="flow-step gold step-4 arrow-left">Execution<br>Tool Execution</div>
+              <div class="flow-step red step-5 arrow-left">Review<br>Round Review</div>
+              <div class="flow-step blue step-6">Replan<br>Next Round</div>
             </div>
-            <div class="highlight">目前项目已经从“静态概念验证”进入“可运行闭环原型”阶段，能够围绕同一事件完成规划、执行、复盘与下一轮重规划。</div>
+            <div class="highlight">The project has moved from a static proof of concept to a runnable closed-loop prototype that can plan, execute, review, and replan around the same event.</div>
           </div>
 
           <div class="side-stack">
             <div class="metric">
-              <div class="metric-label">Agent Roles</div>
-              <div class="metric-value">3 个角色协同</div>
+              <div class="metric-label">Part 1</div>
+              <div class="metric-value">Agentic Workflow</div>
+              <div class="metric-note">Planner, Executor, and Reviewer coordinate the investigation loop.</div>
             </div>
             <div class="metric">
-              <div class="metric-label">Shared State</div>
-              <div class="metric-value">SQLite 共享黑板</div>
+              <div class="metric-label">Part 2</div>
+              <div class="metric-value">Working Memory</div>
+              <div class="metric-note">Round state, TTT outputs, and execution traces stay in the shared runtime context.</div>
             </div>
             <div class="metric">
-              <div class="metric-label">Current Focus</div>
-              <div class="metric-value">Workflow 打通 + 数据集调优</div>
+              <div class="metric-label">Part 3</div>
+              <div class="metric-value">Long-Term Memory</div>
+              <div class="metric-note">Reusable knowledge and prior context are loaded before task breakdown begins.</div>
             </div>
           </div>
         </div>
       </section>
 
       <section class="slide">
-        <div class="slide-number">02 / 05</div>
-        <div class="eyebrow">Overall Progress</div>
-        <h2>1. 当前整体进展</h2>
-        <p class="lede">围绕“Event → TTT → Execution → RoundReview → TTT”的链路，已经把核心流程接通，并开始在开源数据集上做反复验证。</p>
+        <div class="slide-number">02 / 06</div>
+        <div class="eyebrow">Progress</div>
+        <h2>1. Overall Progress</h2>
+        <p class="lede">The core loop around “Event → TTT → Execution → RoundReview → TTT” is now connected end to end, and repeated validation has begun on open datasets.</p>
 
         <div class="section-grid">
           <div class="card">
-            <h3>已经完成的部分</h3>
+            <h3>Completed so far</h3>
             <ul>
-              <li>Planner、Executor、Reviewer 三角色职责已经拆分清楚。</li>
-              <li>TTT 溯源任务树、执行记录、轮次复盘均已结构化落库。</li>
-              <li>Web 首页和 war room 已经能展示真实运行状态，而不是假数据页面。</li>
-              <li>支持多轮推进，能够观察事件从待处理到完成的全过程。</li>
+              <li>Established a three-role collaboration framework for coordinated traceback analysis.</li>
+              <li>Designed a three-tier Traceback Task Tree (TTT) to serve as the core working memory.</li>
+              <li>Integrated a long-term memory layer for reusable knowledge and prior context.</li>
+              <li>Validated the end-to-end pipeline through single-alert investigation runs.</li>
             </ul>
           </div>
-
           <div class="card">
-            <h3>当前调优重点</h3>
+            <h3>Current tuning focus</h3>
             <ul>
-              <li>在 BOTS 数据集上测试不同告警输入下的任务拆解质量。</li>
-              <li>优化 Executor 的工具路由与 Splunk 查询意图翻译。</li>
-              <li>观察每轮复盘是否能有效收敛问题并驱动下一轮调查。</li>
-              <li>验证前后端展示与后端真实状态的一致性。</li>
+              <li>Further strengthen the long-term memory layer for more effective context reuse and knowledge accumulation.</li>
+              <li>Extend the system to integrate and adapt to a broader set of investigation tools.</li>
+              <li>Conduct more systematic evaluation on the BOTS open dataset across diverse alert scenarios.</li>
             </ul>
           </div>
         </div>
 
-        <div class="highlight">一句话概括当前阶段：整体 workflow 已经打通，接下来主要工作不是“再搭框架”，而是“持续在真实数据集上跑、看效果、改细节”。</div>
+        <div class="highlight">With the core workflow now in place, the next stage is to strengthen long-term memory, broaden tool integration, and carry out more systematic validation on the BOTS dataset.</div>
       </section>
 
       <section class="slide">
-        <div class="slide-number">03 / 05</div>
-        <div class="eyebrow">Dataset</div>
-        <h2>2. BOTS 数据集介绍</h2>
-        <p class="lede">BOTS（Boss of the SOC）是 Splunk 提供的开源安全分析数据集，适合用于攻击溯源、日志关联分析和查询策略验证。</p>
-
-        <div class="section-grid">
-          <div class="card">
-            <h3>为什么选它</h3>
-            <ul>
-              <li>数据公开，便于复现实验与阶段性展示。</li>
-              <li>包含主机、网络、边界设备等多类型日志。</li>
-              <li>适合模拟真实 SOC 调查中的证据链拼接过程。</li>
-              <li>有利于验证多轮调查 workflow 是否可泛化。</li>
-            </ul>
-          </div>
-
-          <div class="card">
-            <h3>当前项目中的使用方式</h3>
-            <ul>
-              <li>默认使用 `botsv1`，同时预留 `botsv2` 和 `botsv3`。</li>
-              <li>通过 Splunk REST API 执行真实检索，不是离线 mock。</li>
-              <li>重点验证 TTT 任务拆解与日志查询是否能对应起来。</li>
-              <li>持续观察查询摘要、样本事件与复盘结果是否合理。</li>
-            </ul>
-          </div>
-
-          <div class="card">
-            <h3>典型日志类型</h3>
-            <ul>
-              <li>Windows / Sysmon</li>
-              <li>IIS / HTTP / DNS / Stream</li>
-              <li>Suricata / FortiGate</li>
-              <li>注册表与主机行为日志</li>
-            </ul>
-          </div>
-
-          <div class="card">
-            <h3>对当前阶段的价值</h3>
-            <ul>
-              <li>能把“多智能体流程”落到实际日志调查场景中。</li>
-              <li>便于比较不同查询策略和任务树设计的优劣。</li>
-              <li>为后续接入更多安全工具提供统一验证基线。</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="slide">
-        <div class="slide-number">04 / 05</div>
-        <div class="eyebrow">Tech Stack</div>
-        <h2>3. 前后端技术栈</h2>
-        <p class="lede">当前实现以“轻量、可运行、便于快速迭代”为原则，优先保证链路真实可验证，而不是过早追求复杂部署。</p>
-
-        <div class="stack-columns">
-          <div class="stack-box backend">
-            <h3>后端</h3>
-            <ul>
-              <li>Python 3.13</li>
-              <li>Flask + Flask-SocketIO</li>
-              <li>SQLite 作为共享状态中心</li>
-              <li>OpenAI 兼容接口封装 LLM 调用</li>
-              <li>Splunk、VirusTotal、IPInfo 工具接入</li>
-            </ul>
-          </div>
-
-          <div class="stack-box frontend">
-            <h3>前端</h3>
-            <ul>
-              <li>Jinja2 模板页面</li>
-              <li>Bootstrap 5</li>
-              <li>原生 JavaScript</li>
-              <li>Socket.IO 实时消息推送</li>
-              <li>首页 + War Room 双页面结构</li>
-            </ul>
-          </div>
-
-          <div class="arch-box">
-            <h3>运行结构</h3>
-            <div class="arch-flow">
-              <div class="arch-node">Web 层</div>
-              <div class="arch-arrow">↓</div>
-              <div class="arch-node">Planner / Executor / Reviewer</div>
-              <div class="arch-arrow">↓</div>
-              <div class="arch-node">SQLite + TTT + Execution + Review</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="highlight">当前技术选型的目标很明确：先保证系统能稳定跑通、能被观察、能被验证，然后再逐步替换为更复杂的调度或存储方案。</div>
-      </section>
-
-      <section class="slide">
-        <div class="slide-number">05 / 06</div>
-        <div class="eyebrow">Interface</div>
-        <h2>4. 界面展示</h2>
-        <p class="lede">前端当前主要承担“创建事件”和“观察调查过程”两个职责，重点是帮助我们验证多角色协作过程是否清晰、状态是否可追踪。</p>
+        <div class="slide-number">03 / 06</div>
+        <div class="eyebrow">UI Preview</div>
+        <h2>2. UI Preview and Memory Landscape</h2>
 
         <div class="ui-grid">
           <div class="mock">
             <div class="mock-header">
-              <span>首页</span>
-              <span>Event Creation</span>
+              <span>Home Page</span>
+              <span>Event Entry</span>
             </div>
             <div class="mock-window">
-              <div class="mock-bar">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <span style="margin-left: 8px;">SOCAgent Home</span>
-              </div>
+              <div class="mock-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>SOCAgent Home</div>
               <div class="home-layout">
-                <div class="block blue">
-                  创建事件表单<br><br>
-                  录入事件名称、描述、上下文、严重等级与来源。
-                </div>
-                <div class="block soft">
-                  事件列表<br><br>
-                  展示当前所有调查任务，支持查看状态并进入 war room。
-                </div>
+                <div class="block blue">Event creation form<br><br>Enter event name, description, context, severity, and source.</div>
+                <div class="block soft">Event list<br><br>Shows all investigation tasks and lets us inspect status or enter the war room.</div>
               </div>
             </div>
-            <div class="tiny">作用：作为系统入口，方便快速创建实验事件并进入单事件视角。</div>
+            <div class="tiny">Purpose: the main entry point for creating experiment events and entering a single investigation workflow.</div>
           </div>
 
           <div class="mock">
             <div class="mock-header">
               <span>War Room</span>
-              <span>Live Investigation</span>
+              <span>Observability View</span>
             </div>
             <div class="mock-window">
-              <div class="mock-bar">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <span style="margin-left: 8px;">SOCAgent War Room</span>
-              </div>
+              <div class="mock-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>SOCAgent War Room</div>
               <div class="war-layout">
-                <div class="block dark">
-                  消息流<br><br>
-                  展示 Planner、Executor、Reviewer 的协作内容，以及每轮调查推进过程。
-                </div>
-                <div class="block darker">
-                  右侧状态栏<br><br>
-                  当前轮次、叶子节点数量、执行记录数、轮次复盘数、角色状态。
-                </div>
+                <div class="block dark">Message stream<br><br>Shows Planner, Executor, and Reviewer collaboration, plus how each investigation round progresses.</div>
+                <div class="block darker">Right-side status panel<br><br>Current round, leaf count, execution count, review count, and role status.</div>
               </div>
             </div>
-            <div class="tiny">作用：作为核心观测界面，便于展示 TTT、执行记录、轮次复盘和实时状态变化。</div>
+            <div class="tiny">Purpose: the main observability view for presenting the TTT, execution records, round reviews, and real-time state changes.</div>
+          </div>
+        </div>
+
+        <div class="data-grid">
+          <div class="card">
+            <h3>Integrated Tools and Data Sources</h3>
+            <ul>
+              <li><a href="https://www.splunk.com/" target="_blank" rel="noopener noreferrer">Splunk</a> serves as the primary investigation backend, and we have wrapped an SPL query tool for log search, entity pivoting, timeline reconstruction, and evidence collection on BOTS data.</li>
+              <li><a href="https://www.virustotal.com/" target="_blank" rel="noopener noreferrer">VirusTotal</a> provides IP threat reputation, detection summaries, and external intelligence pivoting for suspicious indicators.</li>
+              <li><a href="https://ipinfo.io/" target="_blank" rel="noopener noreferrer">IPInfo</a> adds ASN ownership, geolocation, network attribution, and related domain context for infrastructure enrichment.</li>
+              <li>...and this capability surface will continue to expand as new tools and data sources are explored, adapted, and integrated.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Long-Term Memory</h3>
+            <ul>
+              <li><strong>Semantic Knowledge</strong>: stores broad security knowledge, currently at roughly 1.2 GB scale.</li>
+              <li><strong>Procedural Knowledge</strong>: stores traceback workflows. Based on collected BOTS traceback references and LLM summarization, we currently maintain about 20 event-specific workflow categories under active testing and revision.</li>
+              <li><strong>Factual Knowledge</strong>: stores background context and environment facts. At the current stage, this mainly includes supporting background information for the BOTS dataset.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-number">04 / 06</div>
+        <div class="eyebrow">Dataset</div>
+        <h2>3. BOTS Dataset</h2>
+        <p class="lede">BOTS (Boss of the SOC) is an open security-analysis dataset provided by Splunk. It is well suited for attack traceback, log correlation analysis, and query-strategy validation.</p>
+
+        <div class="section-grid">
+          <div class="card">
+            <h3>Why we use it</h3>
+            <ul>
+              <li>The data is public, which makes experiments reproducible and easy to present.</li>
+              <li>It includes host, network, and perimeter-device logs.</li>
+              <li>It is suitable for simulating evidence-chain assembly in real SOC investigations.</li>
+              <li>It helps validate whether the multi-round workflow generalizes.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>How we use it now</h3>
+            <ul>
+              <li><code>botsv1</code> is the default dataset, with <code>botsv2</code> and <code>botsv3</code> reserved as well.</li>
+              <li>Queries run through the Splunk REST API rather than an offline mock.</li>
+              <li>The main goal is to verify whether TTT task decomposition maps well to real log queries.</li>
+              <li>We keep checking whether summaries, sample events, and review outputs are reasonable.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Typical log types</h3>
+            <ul>
+              <li>Windows / Sysmon</li>
+              <li>IIS / Stream / DNS / HTTP</li>
+              <li>Suricata / FortiGate</li>
+              <li>Registry and host-behavior logs</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Why it matters at this stage</h3>
+            <ul>
+              <li>It grounds the multi-agent workflow in a real log-investigation setting.</li>
+              <li>It makes it easier to compare different query strategies and task-tree designs.</li>
+              <li>It provides a unified validation baseline for future security-tool integrations.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-number">05 / 06</div>
+        <div class="eyebrow">Stack</div>
+        <h2>4. Frontend and Backend Stack</h2>
+        <p class="lede">The current implementation favors a lightweight, runnable setup that is easy to iterate on, prioritizing real and testable workflows over early deployment complexity.</p>
+
+        <div class="section-grid">
+          <div class="stack-box backend">
+            <h3>Backend</h3>
+            <ul>
+              <li>Python 3.13</li>
+              <li>Flask + Flask-SocketIO</li>
+              <li>SQLite as the shared state hub</li>
+              <li>OpenAI-compatible LLM integration</li>
+              <li>Splunk, VirusTotal, and IPInfo tool integration</li>
+            </ul>
+          </div>
+          <div class="stack-box frontend">
+            <h3>Frontend</h3>
+            <ul>
+              <li>Jinja2 template pages</li>
+              <li>Bootstrap 5</li>
+              <li>Vanilla JavaScript</li>
+              <li>Socket.IO real-time message updates</li>
+              <li>Home page + War Room two-page structure</li>
+            </ul>
           </div>
         </div>
       </section>
 
       <section class="slide">
         <div class="slide-number">06 / 06</div>
-        <div class="eyebrow">Next Step</div>
-        <h2>5. 下一步工作</h2>
-        <p class="lede">在当前闭环已经跑通的基础上，后续重点会从“搭框架”转向“提效果、补能力、做验证”。</p>
+        <div class="eyebrow">Next Steps</div>
+        <h2>5. Next Steps</h2>
+        <p class="lede">The next phase focuses on improving investigation quality, broadening runtime capability, and turning the current prototype into a more stable experimentation platform.</p>
 
-        <div class="section-grid">
-          <div class="card">
-            <h3>持续验证与调优</h3>
-            <ul>
-              <li>继续在 BOTS 数据集上测试不同类型告警输入。</li>
-              <li>观察 TTT 任务拆解是否稳定、是否贴合真实调查流程。</li>
-              <li>优化 Splunk 查询生成质量，减少无效检索和结果偏差。</li>
-              <li>对多轮复盘过程做分析，提升问题收敛效率。</li>
-            </ul>
-          </div>
-
-          <div class="card">
-            <h3>能力补全</h3>
-            <ul>
-              <li>继续丰富可调用的安全工具，增强证据获取能力。</li>
-              <li>完善前端展示，让 TTT、执行记录和复盘结果更直观。</li>
-              <li>补充更多标准化测试，提升系统稳定性和可复现性。</li>
-              <li>为后续替换更强的调度与存储方案打基础。</li>
-            </ul>
-          </div>
+        <div class="card" style="margin-top: 30px; position: relative; z-index: 1;">
+          <h3>Priority Directions</h3>
+          <ul>
+            <li>Deepen the long-term memory layer so prior context and accumulated knowledge can play a stronger role in future traceback rounds.</li>
+            <li>Expand the investigation capability surface by connecting more tools and improving how the agents adapt to each external interface.</li>
+            <li>Carry out broader and more systematic experiments on the BOTS open dataset to assess performance under varied alert conditions.</li>
+          </ul>
         </div>
-
-        <div class="highlight">下一阶段目标可以概括为三点：第一，让 workflow 在更多真实数据场景下跑稳；第二，让查询与复盘结果更准确；第三，让系统从“可运行原型”逐步走向“可持续迭代的研究平台”。</div>
       </section>
     </div>
   </div>

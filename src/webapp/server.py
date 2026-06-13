@@ -94,7 +94,7 @@ def register_routes(app: Flask) -> None:
         payload = request.get_json(silent=True) or {}
         message = str(payload.get("message") or "").strip()
         if not message:
-            return jsonify({"status": "error", "message": "事件消息不能为空"}), 400
+            return jsonify({"status": "error", "message": "Event message cannot be empty"}), 400
 
         initialize_local_state()
         storage = SQLiteStorage()
@@ -118,10 +118,10 @@ def register_routes(app: Flask) -> None:
                 round_id=event.current_round,
                 from_role=RoleName.SYSTEM,
                 message_type=MessageType.SYSTEM_INFO,
-                payload={"text": f"系统创建了安全事件: {event.event_name or event.event_id}"},
+                payload={"text": f"System created security event: {event.event_name or event.event_id}"},
             )
         )
-        return jsonify({"status": "success", "message": "事件创建成功", "data": event.to_dict()})
+        return jsonify({"status": "success", "message": "Event created successfully", "data": event.to_dict()})
 
     @app.route("/api/event/list")
     def list_events() -> Any:
@@ -145,7 +145,7 @@ def register_routes(app: Flask) -> None:
         storage = SQLiteStorage()
         event = storage.get_event(event_id)
         if event is None:
-            return jsonify({"status": "error", "message": "事件不存在"}), 404
+            return jsonify({"status": "error", "message": "Event not found"}), 404
         return jsonify({"status": "success", "data": event.to_dict()})
 
     @app.route("/api/event/<event_id>", methods=["DELETE"])
@@ -154,8 +154,8 @@ def register_routes(app: Flask) -> None:
         storage = SQLiteStorage()
         deleted = storage.delete_event(event_id)
         if not deleted:
-            return jsonify({"status": "error", "message": "事件不存在"}), 404
-        return jsonify({"status": "success", "message": "事件删除成功", "data": {"event_id": event_id}})
+            return jsonify({"status": "error", "message": "Event not found"}), 404
+        return jsonify({"status": "success", "message": "Event deleted successfully", "data": {"event_id": event_id}})
 
     @app.route("/api/event/<event_id>/messages")
     def get_event_messages(event_id: str) -> Any:
@@ -170,7 +170,7 @@ def register_routes(app: Flask) -> None:
         ttt_store = TTTStore()
         event = storage.get_event(event_id)
         if event is None:
-            return jsonify({"status": "error", "message": "事件不存在"}), 404
+            return jsonify({"status": "error", "message": "Event not found"}), 404
         latest_ttt = ttt_store.get_latest_ttt(event_id)
         leaf_count = len(ttt_store.list_leaf_nodes(latest_ttt)) if latest_ttt is not None else 0
         executions = storage.list_executions(event_id)
@@ -194,7 +194,7 @@ def register_routes(app: Flask) -> None:
         storage = SQLiteStorage()
         event = storage.get_event(event_id)
         if event is None:
-            return jsonify({"status": "error", "message": "事件不存在"}), 404
+            return jsonify({"status": "error", "message": "Event not found"}), 404
         executions = storage.list_executions(event_id)
         if status:
             executions = [item for item in executions if item.execution_status.value == status]
@@ -215,12 +215,12 @@ def register_routes(app: Flask) -> None:
         payload = request.get_json(silent=True) or {}
         text = str(payload.get("message") or "").strip()
         if not text:
-            return jsonify({"status": "error", "message": "消息内容不能为空"}), 400
+            return jsonify({"status": "error", "message": "Message content cannot be empty"}), 400
         storage = SQLiteStorage()
         bus = SQLiteMessageBus()
         event = storage.get_event(event_id)
         if event is None:
-            return jsonify({"status": "error", "message": "事件不存在"}), 404
+            return jsonify({"status": "error", "message": "Event not found"}), 404
         envelope = MessageEnvelope(
             event_id=event_id,
             round_id=event.current_round,
@@ -229,7 +229,7 @@ def register_routes(app: Flask) -> None:
             payload={"text": text},
         )
         bus.publish(envelope)
-        return jsonify({"status": "success", "message": "消息发送成功", "data": envelope.to_dict()})
+        return jsonify({"status": "success", "message": "Message sent successfully", "data": envelope.to_dict()})
 
 
 def register_socket_events(socketio: SocketIO) -> None:
@@ -241,7 +241,7 @@ def register_socket_events(socketio: SocketIO) -> None:
     def handle_join(data: dict[str, Any]) -> None:
         event_id = str((data or {}).get("event_id") or "").strip()
         if not event_id:
-            emit("error", {"message": "缺少 event_id"})
+            emit("error", {"message": "Missing event_id"})
             return
         join_room(event_id)
         emit("status", {"status": "joined", "event_id": event_id})

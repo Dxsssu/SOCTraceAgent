@@ -148,43 +148,43 @@ class SplunkToolConfig:
 
 
 BOTSV1_SOURCETYPES: tuple[SourcetypeCatalogEntry, ...] = (
-    SourcetypeCatalogEntry("stream:sip", "SIP 通信日志", ("src_ip", "dest_ip", "method", "request_call_id", "caller_user_phone", "callee_user_phone")),
-    SourcetypeCatalogEntry("stream:snmp", "SNMP 访问日志", ("src_ip", "dest_ip", "community{}", "method{}", "request_id", "timestamp")),
-    SourcetypeCatalogEntry("stream:dhcp", "DHCP 网络流日志", ("src_ip", "dest_ip", "chaddr", "opcode", "dns_server", "lease_duration")),
-    SourcetypeCatalogEntry("fgt_event", "FortiGate 事件日志", ("devname", "logdesc", "action", "interface", "dhcp_msg", "ip")),
-    SourcetypeCatalogEntry("nessus:scan", "Nessus 漏洞扫描结果", ("host", "host-ip", "pluginName", "severity", "port", "protocol")),
-    SourcetypeCatalogEntry("stream:ldap", "LDAP 目录访问日志", ("src_ip", "dest_ip", "message_type", "message_id", "assertion_description{}", "assertion_value{}")),
-    SourcetypeCatalogEntry("stream:mapi", "MAPI/邮件客户端协议日志", ("src_ip", "dest_ip", "login", "domain", "auth_type", "login_server")),
-    SourcetypeCatalogEntry("stream:dns", "DNS 查询日志", ("src_ip", "dest_ip", "query{}", "query_type{}", "answer", "rcode")),
-    SourcetypeCatalogEntry("stream:icmp", "ICMP 流量日志", ("src_ip", "dest_ip", "code", "code_string", "sequence", "timestamp")),
-    SourcetypeCatalogEntry("iis", "IIS Web 访问日志", ("c_ip", "s_ip", "cs_method", "cs_uri_stem", "cs_uri_query", "sc_status")),
-    SourcetypeCatalogEntry("stream:http", "HTTP 请求日志", ("src_ip", "dest_ip", "http_method", "site", "uri", "src_headers")),
-    SourcetypeCatalogEntry("fgt_utm", "FortiGate UTM/威胁检测日志", ("srcip", "dstip", "file_name", "file_hash", "appcat", "action")),
-    SourcetypeCatalogEntry("stream:tcp", "TCP 会话日志", ("src_ip", "dest_ip", "src_port", "dest_port", "connection", "refused")),
-    SourcetypeCatalogEntry("fgt_traffic", "FortiGate 流量日志", ("srcip", "dstip", "srcport", "dstport", "app", "action")),
-    SourcetypeCatalogEntry("stream:ip", "通用 IP 流量日志", ("src_ip", "dest_ip", "protocol", "bytes_in", "bytes_out", "packets")),
-    SourcetypeCatalogEntry("WinRegistry", "Windows 注册表活动日志", ("host", "registry_path", "registry_value_name", "registry_value_data", "action", "process_image")),
-    SourcetypeCatalogEntry("wineventlog", "Windows 事件日志，适合认证、系统与应用行为调查", ("ComputerName", "EventCode", "Account_Name", "LogonType", "IpAddress", "Message")),
-    SourcetypeCatalogEntry("suricata", "Suricata IDS 告警日志", ("src_ip", "dest_ip", "signature", "category", "severity", "http.http_method")),
-    SourcetypeCatalogEntry("stream:smb", "SMB 文件共享日志", ("src_ip", "dest_ip", "filename", "path", "command{}", "nt_status{}")),
-    SourcetypeCatalogEntry("XmlWinEventLog:Microsoft-Windows-Sysmon/Operational", "Sysmon 进程、网络、文件与注册表行为日志", ("EventCode", "Image", "CommandLine", "ParentImage", "SourceIp", "DestinationIp")),
+    SourcetypeCatalogEntry("stream:sip", "SIP communication logs", ("src_ip", "dest_ip", "method", "request_call_id", "caller_user_phone", "callee_user_phone")),
+    SourcetypeCatalogEntry("stream:snmp", "SNMP access logs", ("src_ip", "dest_ip", "community{}", "method{}", "request_id", "timestamp")),
+    SourcetypeCatalogEntry("stream:dhcp", "DHCP network-flow logs", ("src_ip", "dest_ip", "chaddr", "opcode", "dns_server", "lease_duration")),
+    SourcetypeCatalogEntry("fgt_event", "FortiGate event logs", ("devname", "logdesc", "action", "interface", "dhcp_msg", "ip")),
+    SourcetypeCatalogEntry("nessus:scan", "Nessus vulnerability scan results", ("host", "host-ip", "pluginName", "severity", "port", "protocol")),
+    SourcetypeCatalogEntry("stream:ldap", "LDAP directory-access logs", ("src_ip", "dest_ip", "message_type", "message_id", "assertion_description{}", "assertion_value{}")),
+    SourcetypeCatalogEntry("stream:mapi", "MAPI/mail-client protocol logs", ("src_ip", "dest_ip", "login", "domain", "auth_type", "login_server")),
+    SourcetypeCatalogEntry("stream:dns", "DNS query logs", ("src_ip", "dest_ip", "query{}", "query_type{}", "answer", "rcode")),
+    SourcetypeCatalogEntry("stream:icmp", "ICMP traffic logs", ("src_ip", "dest_ip", "code", "code_string", "sequence", "timestamp")),
+    SourcetypeCatalogEntry("iis", "IIS web access logs", ("c_ip", "s_ip", "cs_method", "cs_uri_stem", "cs_uri_query", "sc_status")),
+    SourcetypeCatalogEntry("stream:http", "HTTP request logs", ("src_ip", "dest_ip", "http_method", "site", "uri", "src_headers")),
+    SourcetypeCatalogEntry("fgt_utm", "FortiGate UTM/threat-detection logs", ("srcip", "dstip", "file_name", "file_hash", "appcat", "action")),
+    SourcetypeCatalogEntry("stream:tcp", "TCP session logs", ("src_ip", "dest_ip", "src_port", "dest_port", "connection", "refused")),
+    SourcetypeCatalogEntry("fgt_traffic", "FortiGate traffic logs", ("srcip", "dstip", "srcport", "dstport", "app", "action")),
+    SourcetypeCatalogEntry("stream:ip", "Generic IP traffic logs", ("src_ip", "dest_ip", "protocol", "bytes_in", "bytes_out", "packets")),
+    SourcetypeCatalogEntry("WinRegistry", "Windows registry activity logs", ("host", "registry_path", "registry_value_name", "registry_value_data", "action", "process_image")),
+    SourcetypeCatalogEntry("wineventlog", "Windows event logs for authentication, system, and application investigations", ("ComputerName", "EventCode", "Account_Name", "LogonType", "IpAddress", "Message")),
+    SourcetypeCatalogEntry("suricata", "Suricata IDS alert logs", ("src_ip", "dest_ip", "signature", "category", "severity", "http.http_method")),
+    SourcetypeCatalogEntry("stream:smb", "SMB file-sharing logs", ("src_ip", "dest_ip", "filename", "path", "command{}", "nt_status{}")),
+    SourcetypeCatalogEntry("XmlWinEventLog:Microsoft-Windows-Sysmon/Operational", "Sysmon process, network, file, and registry behavior logs", ("EventCode", "Image", "CommandLine", "ParentImage", "SourceIp", "DestinationIp")),
 )
 
 
 DATASET_CATALOG: dict[str, DatasetCatalogEntry] = {
     "botsv1": DatasetCatalogEntry(
         dataset="botsv1",
-        description="Boss of the SOC v1 攻击数据集，包含 Windows、Sysmon、FortiGate、IIS、Stream、Suricata 等日志。",
+        description="Boss of the SOC v1 attack dataset, including Windows, Sysmon, FortiGate, IIS, Stream, and Suricata logs.",
         sourcetypes=BOTSV1_SOURCETYPES,
     ),
     "botsv2": DatasetCatalogEntry(
         dataset="botsv2",
-        description="Boss of the SOC v2 攻击数据集，包含 Windows、Sysmon、Apache、IIS、PAN、Suricata、Stream 等日志。",
+        description="Boss of the SOC v2 attack dataset, including Windows, Sysmon, Apache, IIS, PAN, Suricata, and Stream logs.",
         sourcetypes=BOTSV1_SOURCETYPES,
     ),
     "botsv3": DatasetCatalogEntry(
         dataset="botsv3",
-        description="Boss of the SOC v3 数据集，覆盖云、Windows、Sysmon、O365、AWS、Suricata、Stream 等日志。",
+        description="Boss of the SOC v3 dataset, covering cloud, Windows, Sysmon, O365, AWS, Suricata, and Stream logs.",
         sourcetypes=BOTSV1_SOURCETYPES,
     ),
 }
@@ -264,12 +264,12 @@ class SplunkSearchTool:
         context_text = json.dumps(additional_context or {}, ensure_ascii=False, indent=2)
         user_prompt = "\n".join(
             [
-                "请把以下 TTT 调查意图转换为可执行的 Splunk 查询规格，只输出 YAML。",
-                "只允许这些字段：dataset, index, sourcetype, earliest, latest, keywords, ip, host, source, field_filters, limit, fields。",
-                "field_filters 的 value 只能是字符串或字符串数组。",
-                "不要输出 SPL，不要输出额外解释。",
-                "你必须结合下面给出的数据集、sourcetype 和字段背景信息来选择最合理的日志范围。",
-                f"dataset 默认值: {dataset_name}",
+                "Convert the TTT investigation intent below into an executable Splunk query spec and return YAML only.",
+                "Only these fields are allowed: dataset, index, sourcetype, earliest, latest, keywords, ip, host, source, field_filters, limit, fields.",
+                "field_filters values may only be strings or arrays of strings.",
+                "Do not output SPL and do not provide extra explanation.",
+                "You must use the dataset, sourcetype, and field-background information below to choose the most reasonable log scope.",
+                f"default dataset: {dataset_name}",
                 f"dataset_context: {json.dumps(dataset_context, ensure_ascii=False, indent=2)}",
                 f"intent: {intent}",
                 f"context: {context_text}",
@@ -277,12 +277,12 @@ class SplunkSearchTool:
         )
         response_text = call_llm(
             """
-你是一个 Splunk SPL 规划器。
-你的任务是把 TTT 的自然语言调查意图转换为结构化查询规格，并让该规格能够进一步生成可执行 SPL。
-严禁输出 SPL、解释文字或未列出的字段。
-你会收到完整的数据集背景，包括可用 sourcetype 和代表字段。
-请优先选择最相关的 sourcetype，并尽量为 fields 补充最有调查价值的字段。
-如果意图里没有给出字段，可以留空，但不要编造不存在的 sourcetype。
+You are a Splunk SPL planner.
+Your task is to convert a natural-language TTT investigation intent into a structured query spec that can later be turned into executable SPL.
+Do not output SPL, explanatory prose, or any fields not listed in the schema.
+You will receive full dataset background, including available sourcetypes and representative fields.
+Prefer the most relevant sourcetype and add the most investigation-useful fields when appropriate.
+If the intent does not specify fields, you may leave them empty, but do not invent nonexistent sourcetypes.
 """.strip(),
             user_prompt,
             extra_body={"thinking": {"type": "enabled"}},

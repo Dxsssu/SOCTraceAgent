@@ -12,7 +12,7 @@ def utc_now() -> datetime:
 
 
 class EventStatus(StrEnum):
-    """三角色版本下的事件状态。"""
+    """Event states for the three-agent workflow."""
 
     PENDING = "pending"
     PLANNED = "planned"
@@ -33,7 +33,7 @@ class SeverityLevel(StrEnum):
 
 @dataclass(slots=True, frozen=True)
 class Event:
-    """安全事件主对象。"""
+    """Primary security event object."""
 
     event_name: str
     message: str

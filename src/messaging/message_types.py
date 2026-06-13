@@ -4,7 +4,7 @@ from enum import StrEnum
 
 
 class MessageType(StrEnum):
-    """系统内部使用的结构化消息类型。"""
+    """Structured message types used internally by the system."""
 
     USER_MESSAGE = "user_message"
     PLANNER_ANALYSIS_COMPLETED = "planner_analysis_completed"
@@ -28,7 +28,7 @@ class MessageType(StrEnum):
 
 
 class RoleName(StrEnum):
-    """系统中的 Agent 角色名。"""
+    """Agent role names used by the system."""
 
     USER = "user"
     PLANNER = "_planner"

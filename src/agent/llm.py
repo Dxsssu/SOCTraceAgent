@@ -15,9 +15,10 @@ load_dotenv()
 
 @dataclass(frozen=True, slots=True)
 class LLMConfig:
-    """LLM 配置。
+    """LLM configuration.
 
-    当前按 DeepSeek 的 OpenAI 兼容接口封装，后续可继续扩展。
+    Currently wrapped around DeepSeek's OpenAI-compatible interface and may be
+    extended further in the future.
     """
 
     api_key: str
@@ -31,7 +32,7 @@ class LLMConfig:
     def from_env(cls) -> "LLMConfig":
         api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
         if not api_key:
-            raise ValueError("缺少环境变量 DEEPSEEK_API_KEY")
+            raise ValueError("Missing environment variable DEEPSEEK_API_KEY")
 
         return cls(
             api_key=api_key,
@@ -45,7 +46,7 @@ class LLMConfig:
 
 
 class LLMClient:
-    """Agent 目录下统一使用的 LLM 接口。"""
+    """Shared LLM interface used across agent runtimes."""
 
     def __init__(self, config: LLMConfig | None = None) -> None:
         self.config = config or LLMConfig.from_env()
@@ -96,7 +97,7 @@ def call_llm(
     extra_body: dict[str, Any] | None = None,
     additional_messages: list[dict[str, str]] | None = None,
 ) -> str:
-    """简化调用入口，供各 Agent 角色直接使用。"""
+    """Convenience wrapper used directly by agent roles."""
 
     client = LLMClient()
     return client.chat(
@@ -110,7 +111,7 @@ def call_llm(
 
 
 def parse_yaml_response(response_text: str) -> dict[str, Any] | None:
-    """解析 LLM 返回的 YAML。"""
+    """Parse YAML returned by the LLM."""
 
     text = (response_text or "").strip()
     if not text:

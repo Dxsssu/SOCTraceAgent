@@ -10,7 +10,7 @@ from .event import utc_now
 
 @dataclass(slots=True, frozen=True)
 class RoundReview:
-    """Reviewer 在每一轮结束后生成的总结对象。"""
+    """Summary object created by the Reviewer at the end of each round."""
 
     event_id: str
     round_id: int

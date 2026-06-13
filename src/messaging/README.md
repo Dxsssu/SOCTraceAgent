@@ -1,53 +1,55 @@
-# 通信设计
+# Messaging Design
 
-## 目标
+## Goal
 
-对于当前 `Planner / Executor / Reviewer` 三角色版本的 SOCAgent，通信应分成两层：
+For the current three-role SOCAgent architecture (`Planner / Executor / Reviewer`), communication should be divided into two layers:
 
-1. `业务通信层`：负责 Agent 之间的真实协作
-2. `观测消息层`：负责日志、审计、调试和未来前端展示
+1. The business coordination layer
+2. The observable message layer
 
-第一版实现应优先保证业务通信简单、稳定、可追踪。
+The first implementation should prioritize simplicity, stability, and traceability for the business coordination path.
 
-## 推荐方案
+## Recommended approach
 
-不要让 `Planner`、`Executor`、`Reviewer` 通过彼此直接消费“聊天消息”来协作。
+`Planner`, `Executor`, and `Reviewer` should not coordinate by directly consuming each other's free-form chat messages.
 
-应采用以下方式：
+Use this model instead:
 
-1. 以共享持久化状态作为主通信机制
-2. 以结构化消息作为辅助审计和观测机制
+1. Shared persistent state as the primary coordination mechanism
+2. Structured messages as an auxiliary auditing and observability mechanism
 
-具体来说：
+Concretely:
 
-- `Planner` 读取 `Event` 和最新的 `RoundReview`，然后写入新的 `TTT` 快照
-- `Executor` 读取最新的 `TTT`，领取一个可执行叶子节点，执行工具后写入 `Execution`
-- `Reviewer` 读取当前轮的 `Execution` 结果，总结后写入 `RoundReview`
+- `Planner` reads `Event` and the latest `RoundReview`, then writes a new `TTT` snapshot
+- `Executor` reads the latest `TTT`, claims an executable leaf node, runs a tool, and writes an `Execution`
+- `Reviewer` reads current-round `Execution` results, summarizes them, and writes a `RoundReview`
 
-因此，真实的业务交接链路应为：
+The real business handoff chain is:
 
-`Event -> TTT -> Execution -> RoundReview -> TTT`
+```text
+Event -> TTT -> Execution -> RoundReview -> TTT
+```
 
-## 为什么这比直接照搬 DeepSOC 更合适
+## Why this fits better than directly copying DeepSOC
 
-`deepsoc` 的真实协作机制，本质上也是数据库状态驱动，RabbitMQ 主要用于前端通知。
+The real collaboration mechanism in `deepsoc` is also database-state driven. RabbitMQ is mainly used for front-end notification.
 
-对于当前精简后的三角色架构：
+For the simplified three-role architecture here:
 
-- 不需要再保留 `Task -> Action -> Command` 这些中间通信层
-- 第一版不需要 RabbitMQ
-- 必须保留显式、可持久化的状态流转
+- We do not need intermediate layers such as `Task -> Action -> Command`
+- The first version does not need RabbitMQ
+- We do need explicit, persistent state transitions
 
-这样更贴合当前项目的溯源流程，也更容易实现和维护。
+This aligns better with the traceback workflow in this repository and is easier to implement and maintain.
 
-## messaging 目录的职责范围
+## Scope of `src/messaging`
 
-`src/messaging` 只负责定义消息契约和事件类型，不负责实现工作流本身。
+`src/messaging` only defines message contracts and event types. It does not implement the workflow itself.
 
-建议包含以下内容：
+Recommended contents:
 
 1. `message_types.py`
-   定义内部消息或事件类型，例如：
+   Defines internal message or event types, such as:
    - `TTT_INITIALIZED`
    - `LEAF_CLAIMED`
    - `EXECUTION_COMPLETED`
@@ -55,7 +57,7 @@
    - `TTT_UPDATED`
 
 2. `models.py`
-   定义轻量消息封装结构，用于审计和追踪，例如：
+   Defines lightweight message-envelope structures for auditing and tracing, such as:
    - `event_id`
    - `round_id`
    - `from_role`
@@ -65,57 +67,56 @@
    - `created_at`
 
 3. `bus.py`
-   定义一个最小消息总线接口，例如：
+   Defines a minimal message-bus interface, such as:
    - `publish(message)`
    - `list_messages(event_id, round_id=None)`
 
-第一版 `bus.py` 应优先面向持久化存储实现，而不是先做队列驱动实现。
+The first version of `bus.py` should prioritize persistence-backed behavior rather than queue-driven behavior.
 
-## 业务通信规则
+## Business communication rules
 
-业务协作建议遵循以下规则：
+Recommended rules:
 
-1. `Planner` 不直接向 `Reviewer` 下发执行指令
-2. `Reviewer` 不直接改写 `TTT`
-3. `Executor` 不负责重规划
-4. 任意跨 Agent 的交接，都必须对应一个可持久化的状态对象
+1. `Planner` does not issue execution instructions directly to `Reviewer`
+2. `Reviewer` does not rewrite the `TTT` directly
+3. `Executor` is not responsible for replanning
+4. Every cross-agent handoff must correspond to a persistent state object
 
-这意味着：
+This means:
 
-- `Planner -> Executor`：通过 `TTT` 叶子节点交接
-- `Executor -> Reviewer`：通过 `Execution` 交接
-- `Reviewer -> Planner`：通过 `RoundReview` 交接
+- `Planner -> Executor`: handoff through `TTT` leaf nodes
+- `Executor -> Reviewer`: handoff through `Execution`
+- `Reviewer -> Planner`: handoff through `RoundReview`
 
-## 观测消息规则
+## Observable-message rules
 
-结构化消息依然有价值，但它们只应用于：
+Structured messages are still valuable, but they should only be used for:
 
-- 审计
-- 调试
-- 回放
-- 未来前端展示
+- auditing
+- debugging
+- replay
+- future front-end presentation
 
-例如：
+For example:
 
-- `Planner` 发布 `TTT_INITIALIZED`
-- `Executor` 发布 `LEAF_CLAIMED` 和 `EXECUTION_COMPLETED`
-- `Reviewer` 发布 `ROUND_REVIEW_CREATED`
+- `Planner` publishes `TTT_INITIALIZED`
+- `Executor` publishes `LEAF_CLAIMED` and `EXECUTION_COMPLETED`
+- `Reviewer` publishes `ROUND_REVIEW_CREATED`
 
-这些消息不应成为唯一事实来源，唯一事实来源应始终是共享持久化状态。
+These messages must not become the only source of truth. The source of truth should always be the shared persistent state.
 
-## 第一阶段编码建议
+## First-phase implementation advice
 
-`src/messaging` 的第一阶段建议只做三件事：
+In the first phase, `src/messaging` should only do three things:
 
-1. 定义消息类型枚举
-2. 定义轻量消息封装结构
-3. 定义最小消息总线接口
+1. Define message-type enums
+2. Define lightweight message-envelope structures
+3. Define a minimal message-bus interface
 
-当前阶段不要引入 RabbitMQ。
+Do not introduce RabbitMQ at this stage.
 
-只有在后续确实需要以下能力时，再考虑增加消息队列：
+Only consider adding a message queue later if you truly need:
 
-- 对外流式输出
-- 实时前端推送
-- 多机部署下的解耦通信
-
+- streaming output to external consumers
+- real-time front-end push at a larger scale
+- decoupled communication across multiple machines

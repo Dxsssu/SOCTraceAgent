@@ -49,7 +49,7 @@ def start_role(role_name: str, poll_interval: float) -> None:
     if normalized in {"_reviewer", "reviewer"}:
         run_reviewer(poll_interval=poll_interval)
         return
-    raise ValueError(f"未知角色: {role_name}")
+    raise ValueError(f"Unknown role: {role_name}")
 
 
 def start_all_services(poll_interval: float) -> None:
@@ -71,9 +71,9 @@ def start_all_services(poll_interval: float) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="SOCAgent bootstrap")
-    parser.add_argument("-role", type=str, help="角色: _planner, _executor, _reviewer")
-    parser.add_argument("-init-db", action="store_true", help="初始化本地 SQLite 数据库")
-    parser.add_argument("-web", action="store_true", help="启动 Web 界面")
+    parser.add_argument("-role", type=str, help="Role: _planner, _executor, _reviewer")
+    parser.add_argument("-init-db", action="store_true", help="Initialize the local SQLite database")
+    parser.add_argument("-web", action="store_true", help="Start the web UI")
     args = parser.parse_args()
 
     print_banner()

@@ -25,12 +25,12 @@ class PlannerRuntimeTests(unittest.TestCase):
     def test_parse_yaml_response_accepts_prefixed_explanation(self) -> None:
         parsed = parse_yaml_response(
             """
-我们按照示例格式。
-确认 event_id 和 round_id 来自输入。
+We follow the example format.
+Confirm that event_id and round_id come from the input.
 
 ttt:
   root_nodes:
-    - title: 阶段一：确认真实性
+    - title: Stage 1: Confirm authenticity
       status: todo
       children: []
 """
@@ -60,33 +60,33 @@ ttt:
             event = Event(
                 event_id="planner-analysis-order",
                 event_name="Suspicious Login",
-                message="外部 IP 11.22.33.44 对邮件网关出现异常登录尝试",
+                message="External IP 11.22.33.44 attempted abnormal logins against the mail gateway",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
             )
             storage.save_event(event)
 
             responses = [
-                "需要确认异常登录是否成功，并优先核查源 IP 的信誉、认证日志以及同时间窗内的关联活动。",
+                "We need to confirm whether the abnormal login succeeded and prioritize checking source-IP reputation, authentication logs, and related activity in the same time window.",
                 """
 ttt:
   root_nodes:
-    - title: 方向一：确认告警真实性
+    - title: Direction 1: Confirm the authenticity of the alert
       status: todo
       children:
-        - title: 问题1.1：邮件网关是否出现来自 11.22.33.44 的真实登录尝试？
+        - title: Question 1.1: Did the mail gateway receive a real login attempt from 11.22.33.44?
           status: todo
           children:
-            - title: 查询该 IP 的基础情报
+            - title: Look up the basic intelligence for this IP
               status: todo
               children: []
-    - title: 方向二：评估源 IP 风险
+    - title: Direction 2: Assess source-IP risk
       status: todo
       children:
-        - title: 问题2.1：11.22.33.44 是否具备恶意信誉？
+        - title: Question 2.1: Does 11.22.33.44 have malicious reputation?
           status: todo
           children:
-            - title: 查询该 IP 的威胁情报标签
+            - title: Look up threat-intelligence labels for this IP
               status: todo
               children: []
 """,
@@ -100,11 +100,11 @@ ttt:
             analysis_prompt = mocked_call_llm.call_args_list[0].args[0]
             ttt_prompt = mocked_call_llm.call_args_list[1].args[0]
             ttt_user_prompt = mocked_call_llm.call_args_list[1].args[1]
-            self.assertIn("Planner 分析助手", analysis_prompt)
+            self.assertIn("Planner analysis assistant", analysis_prompt)
             self.assertIn("Traceback Task Tree", ttt_prompt)
-            self.assertIn("多个调查大方向", ttt_prompt)
-            self.assertIn("完整实体信息", ttt_prompt)
-            self.assertNotIn("需要确认异常登录是否成功", ttt_user_prompt)
+            self.assertIn("multiple investigation directions", ttt_prompt)
+            self.assertIn("complete entity information", ttt_prompt)
+            self.assertNotIn("confirm whether the abnormal login succeeded", ttt_user_prompt)
 
             latest_ttt = ttt_store.get_latest_ttt(event.event_id)
             self.assertIsNotNone(latest_ttt)
@@ -138,14 +138,14 @@ ttt:
             event = Event(
                 event_id="planner-analysis-before-failure",
                 event_name="Suspicious Login",
-                message="外部 IP 11.22.33.44 对邮件网关出现异常登录尝试",
+                message="External IP 11.22.33.44 attempted abnormal logins against the mail gateway",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
             )
             storage.save_event(event)
 
             responses = [
-                "已完成初始分析，当前应优先检查认证日志与源 IP 风险。",
+                "Initial analysis is complete. The current priority is to inspect authentication logs and source-IP risk.",
                 "not yaml at all",
             ]
 
@@ -221,26 +221,26 @@ Use threat intel first.
             event = Event(
                 event_id="planner-memory-match",
                 event_name="Suspicious Login",
-                message="检测到邮件系统异常登录尝试",
+                message="Detected abnormal login attempts against the mail system",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
             )
 
             responses = [
-                "需要先检查认证日志，并判断是否存在真实成功登录。",
+                "Authentication logs must be checked first to determine whether any real successful login occurred.",
                 """
 document_id: suspicious_login
 """,
                 """
 ttt:
   root_nodes:
-    - title: 阶段一：确认账号登录风险
+    - title: Stage 1: Confirm account-login risk
       status: todo
       children:
-        - title: 问题1.1：是否存在真实成功登录？
+        - title: Question 1.1: Was there any real successful login?
           status: todo
           children:
-            - title: 查询认证日志中的成功登录记录
+            - title: Search for successful-login records in authentication logs
               status: todo
               children: []
 """,
@@ -252,13 +252,13 @@ ttt:
             self.assertEqual(mocked_call_llm.call_count, 3)
             memory_selection_user_prompt = mocked_call_llm.call_args_list[1].args[1]
             self.assertIn("Suspicious Login Workflow", memory_selection_user_prompt)
-            self.assertNotIn("需要先检查认证日志", memory_selection_user_prompt)
+            self.assertNotIn("Authentication logs must be checked first", memory_selection_user_prompt)
             ttt_generation_user_prompt = mocked_call_llm.call_args_list[2].args[1]
             self.assertIn("Use auth logs first.", ttt_generation_user_prompt)
             self.assertIn("Use Splunk BOTS logs as the primary evidence source.", ttt_generation_user_prompt)
             self.assertIn("\"server_name\": \"splunk\"", ttt_generation_user_prompt)
             self.assertIn("\"name\": \"log_search\"", ttt_generation_user_prompt)
-            self.assertNotIn("需要先检查认证日志", ttt_generation_user_prompt)
+            self.assertNotIn("Authentication logs must be checked first", ttt_generation_user_prompt)
 
             latest_ttt = ttt_store.get_latest_ttt(event.event_id)
             self.assertIsNotNone(latest_ttt)
@@ -285,24 +285,24 @@ ttt:
             event = Event(
                 event_id="planner-ttt-retry",
                 event_name="Suspicious Login",
-                message="检测到邮件系统异常登录尝试",
+                message="Detected abnormal login attempts against the mail system",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
             )
 
             responses = [
-                "先给出一段分析文本。",
-                "我们按照示例格式输出。",
+                "Provide an analysis paragraph first.",
+                "We output according to the example format.",
                 """
 ttt:
   root_nodes:
-    - title: 阶段一：确认账号登录风险
+    - title: Stage 1: Confirm account-login risk
       status: todo
       children:
-        - title: 问题1.1：是否存在真实成功登录？
+        - title: Question 1.1: Was there any real successful login?
           status: todo
           children:
-            - title: 查询认证日志中的成功登录记录
+            - title: Search for successful-login records in authentication logs
               status: todo
               children: []
 """,
@@ -322,14 +322,14 @@ ttt:
             ttt_payload={
                 "root_nodes": [
                     {
-                        "title": "方向一：评估攻击源",
+                        "title": "Direction 1: Assess the attack source",
                         "children": [
                             {
-                                "title": "问题1.1：源 IP 是否存在风险？",
+                                "title": "Question 1.1: Does the source IP present risk?",
                                 "children": [
-                                    {"title": "查询该 IP 的威胁情报"},
-                                    {"title": "查询该主机 的后续活动"},
-                                    {"title": "查询该账号的登录记录"},
+                                    {"title": "Look up threat intelligence for this IP"},
+                                    {"title": "Look up subsequent activity for this host"},
+                                    {"title": "Look up login records for this account"},
                                 ],
                             }
                         ],
@@ -343,7 +343,7 @@ ttt:
             },
         )
         leaves = tree.root_nodes[0].children[0].children
-        self.assertEqual(leaves[0].title, "查询11.22.33.44 的威胁情报")
+        self.assertEqual(leaves[0].title, "Look up threat intelligence for 11.22.33.44")
         self.assertIn("mail_server_01", leaves[1].title)
         self.assertIn("alice", leaves[2].title)
 
@@ -363,7 +363,7 @@ ttt:
             event = Event(
                 event_id="planner-replanning-policy",
                 event_name="Suspicious Login",
-                message="外部 IP 11.22.33.44 对邮件网关出现异常登录尝试",
+                message="External IP 11.22.33.44 attempted abnormal logins against the mail gateway",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
                 event_status=EventStatus.REPLANNING,
@@ -377,12 +377,12 @@ ttt:
                     ttt_payload={
                         "root_nodes": [
                             {
-                                "title": "方向一：确认告警真实性",
+                                "title": "Direction 1: Confirm the authenticity of the alert",
                                 "children": [
                                     {
-                                        "title": "问题1.1：邮件网关是否出现来自 11.22.33.44 的真实登录尝试？",
+                                        "title": "Question 1.1: Did the mail gateway receive a real login attempt from 11.22.33.44?",
                                         "children": [
-                                            {"title": "查询告警中的源 IP 11.22.33.44 的基础情报"},
+                                            {"title": "Look up the basic intelligence for source IP 11.22.33.44 from the alert"},
                                         ],
                                     }
                                 ],
@@ -396,7 +396,7 @@ ttt:
                 RoundReview(
                     event_id=event.event_id,
                     round_id=1,
-                    summary_text="已获得源 IP 基础情报，但尚未出现新的调查方向，下一轮继续补充相关情报查询即可。",
+                    summary_text="The basic intelligence for the source IP has been collected, and no new investigation direction has emerged. The next round can continue by adding the remaining intelligence lookups.",
                 )
             )
             storage.save_execution(
@@ -404,7 +404,7 @@ ttt:
                     event_id=event.event_id,
                     round_id=1,
                     node_id="1-1-1",
-                    node_title="查询告警中的源 IP 11.22.33.44 的基础情报",
+                    node_title="Look up the basic intelligence for source IP 11.22.33.44 from the alert",
                     tool_name="ipinfo",
                     tool_input={"intent": "lookup 11.22.33.44"},
                     result={"ip": "11.22.33.44"},
@@ -416,13 +416,13 @@ ttt:
                 """
 ttt:
   root_nodes:
-    - title: 方向一：确认告警真实性
+    - title: Direction 1: Confirm the authenticity of the alert
       status: todo
       children:
-        - title: 问题1.1：邮件网关是否出现来自 11.22.33.44 的真实登录尝试？
+        - title: Question 1.1: Did the mail gateway receive a real login attempt from 11.22.33.44?
           status: done
           children:
-            - title: 查询告警中的源 IP 11.22.33.44 的基础情报
+            - title: Look up the basic intelligence for source IP 11.22.33.44 from the alert
               status: done
               children: []
 """,
@@ -432,9 +432,9 @@ ttt:
 
             self.assertEqual(updated_event.event_status, EventStatus.COMPLETED)
             replanning_prompt = mocked_call_llm.call_args_list[0].args[1]
-            self.assertIn("默认只更新相关节点状态和最小必要调整", replanning_prompt)
-            self.assertIn("多个 L1 根节点", replanning_prompt)
-            self.assertIn("已经是 done 的节点必须保持 done", replanning_prompt)
+            self.assertIn("by default only update related node states and make the minimum necessary adjustments", replanning_prompt)
+            self.assertIn("multiple L1 root nodes", replanning_prompt)
+            self.assertIn("nodes that are already done must remain done", replanning_prompt)
 
     def test_process_replanning_keeps_done_nodes_frozen(self) -> None:
         with TemporaryDirectory() as tmpdir:
@@ -451,7 +451,7 @@ ttt:
             event = Event(
                 event_id="planner-freeze-done",
                 event_name="Web Defacement",
-                message="外部 IP 40.80.148.42 持续访问对外网站并出现篡改迹象",
+                message="External IP 40.80.148.42 continuously accessed a public-facing website and signs of defacement appeared",
                 source="unit_test",
                 severity=SeverityLevel.HIGH,
                 event_status=EventStatus.REPLANNING,
@@ -464,13 +464,13 @@ ttt:
                 ttt_payload={
                     "root_nodes": [
                         {
-                            "title": "方向一：评估源 IP 风险",
+                            "title": "Direction 1: Assess source-IP risk",
                             "children": [
                                 {
-                                    "title": "问题1.1：40.80.148.42 是否具备恶意情报？",
+                                    "title": "Question 1.1: Does 40.80.148.42 have malicious intelligence indicators?",
                                     "children": [
                                         {
-                                            "title": "查询 40.80.148.42 的 VirusTotal 威胁情报",
+                                            "title": "Look up VirusTotal threat intelligence for 40.80.148.42",
                                             "status": "done",
                                         }
                                     ],
@@ -486,7 +486,7 @@ ttt:
                 RoundReview(
                     event_id=event.event_id,
                     round_id=1,
-                    summary_text="本轮已确认源 IP 存在可疑情报，但没有新增调查方向。",
+                    summary_text="This round confirmed suspicious intelligence for the source IP, but no new investigation direction emerged.",
                 )
             )
             storage.save_execution(
@@ -494,7 +494,7 @@ ttt:
                     event_id=event.event_id,
                     round_id=1,
                     node_id="1-1-1",
-                    node_title="查询 40.80.148.42 的 VirusTotal 威胁情报",
+                    node_title="Look up VirusTotal threat intelligence for 40.80.148.42",
                     tool_name="virustotal",
                     tool_input={"intent": "lookup 40.80.148.42"},
                     result={"malicious_votes": 5},
@@ -506,13 +506,13 @@ ttt:
                 """
 ttt:
   root_nodes:
-    - title: 方向一：评估源 IP 风险
+    - title: Direction 1: Assess source-IP risk
       status: todo
       children:
-        - title: 问题1.1：40.80.148.42 是否具备恶意情报？
+        - title: Question 1.1: Does 40.80.148.42 have malicious intelligence indicators?
           status: todo
           children:
-            - title: 查询 40.80.148.42 的 VirusTotal 威胁情报
+            - title: Look up VirusTotal threat intelligence for 40.80.148.42
               status: todo
               children: []
 """,
@@ -542,7 +542,7 @@ ttt:
             event = Event(
                 event_id="planner-reuse-existing-ttt",
                 event_name="Suspicious Login",
-                message="外部 IP 11.22.33.44 对邮件网关出现异常登录尝试",
+                message="External IP 11.22.33.44 attempted abnormal logins against the mail gateway",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
                 event_status=EventStatus.REPLANNING,
@@ -555,17 +555,17 @@ ttt:
                 ttt_payload={
                     "root_nodes": [
                         {
-                            "title": "方向一：评估源 IP 风险",
+                            "title": "Direction 1: Assess source-IP risk",
                             "children": [
                                 {
-                                    "title": "问题1.1：11.22.33.44 是否具备恶意情报？",
+                                    "title": "Question 1.1: Does 11.22.33.44 have malicious intelligence indicators?",
                                     "children": [
                                         {
-                                            "title": "查询 11.22.33.44 的基础情报",
+                                            "title": "Look up the basic intelligence for 11.22.33.44",
                                             "status": "done",
                                         },
                                         {
-                                            "title": "查询 11.22.33.44 的威胁情报",
+                                            "title": "Look up the threat intelligence for 11.22.33.44",
                                             "status": "todo",
                                         },
                                     ],
@@ -581,7 +581,7 @@ ttt:
                 RoundReview(
                     event_id=event.event_id,
                     round_id=1,
-                    summary_text="已拿到源 IP 基础情报，当前没有新的关键证据或新的调查方向，建议沿现有 TTT 继续执行剩余节点。",
+                    summary_text="The basic intelligence for the source IP has been collected. There is no new key evidence or new investigation direction, so continue executing the remaining nodes in the current TTT.",
                 )
             )
             storage.save_execution(
@@ -589,7 +589,7 @@ ttt:
                     event_id=event.event_id,
                     round_id=1,
                     node_id="1-1-1",
-                    node_title="查询 11.22.33.44 的基础情报",
+                    node_title="Look up the basic intelligence for 11.22.33.44",
                     tool_name="splunk",
                     tool_input={"intent": "lookup 11.22.33.44"},
                     result={"no_data_found": True, "result_count": 0},
@@ -627,7 +627,7 @@ ttt:
             event = Event(
                 event_id="planner-no-data-replan",
                 event_name="Suspicious Login",
-                message="外部 IP 11.22.33.44 对邮件网关出现异常登录尝试",
+                message="External IP 11.22.33.44 attempted abnormal logins against the mail gateway",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
                 event_status=EventStatus.REPLANNING,
@@ -641,13 +641,13 @@ ttt:
                     ttt_payload={
                         "root_nodes": [
                             {
-                                "title": "方向一：评估源 IP 风险",
+                                "title": "Direction 1: Assess source-IP risk",
                                 "children": [
                                     {
-                                        "title": "问题1.1：11.22.33.44 是否具备恶意情报？",
+                                        "title": "Question 1.1: Does 11.22.33.44 have malicious intelligence indicators?",
                                         "children": [
                                             {
-                                                "title": "查询 11.22.33.44 的相关日志",
+                                                "title": "Search the related logs for 11.22.33.44",
                                                 "status": "done",
                                             }
                                         ],
@@ -663,7 +663,7 @@ ttt:
                 RoundReview(
                     event_id=event.event_id,
                     round_id=1,
-                    summary_text="当前查询没有命中相关日志，建议尝试调整日志粒度后继续验证。",
+                    summary_text="The current query returned no matching logs. Try adjusting log granularity and continue validation.",
                 )
             )
             storage.save_execution(
@@ -671,7 +671,7 @@ ttt:
                     event_id=event.event_id,
                     round_id=1,
                     node_id="1-1-1",
-                    node_title="查询 11.22.33.44 的相关日志",
+                    node_title="Search the related logs for 11.22.33.44",
                     tool_name="splunk",
                     tool_input={"intent": "lookup 11.22.33.44"},
                     result={"no_data_found": True, "result_count": 0},
@@ -682,11 +682,11 @@ ttt:
             with patch("src.agent.planner.call_llm", return_value="""
 ttt:
   root_nodes:
-    - title: 方向一：评估源 IP 风险
+    - title: Direction 1: Assess source-IP risk
       children:
-        - title: 问题1.1：11.22.33.44 是否具备恶意情报？
+        - title: Question 1.1: Does 11.22.33.44 have malicious intelligence indicators?
           children:
-            - title: 放宽日志条件后再次查询 11.22.33.44 的相关日志
+            - title: Search the related logs for 11.22.33.44 again after broadening log conditions
               status: todo
               children: []
 """) as mocked_call_llm:
@@ -711,7 +711,7 @@ ttt:
             event = Event(
                 event_id="planner-replan-non-yaml-fallback",
                 event_name="Suspicious Login",
-                message="外部 IP 11.22.33.44 对邮件网关出现异常登录尝试",
+                message="External IP 11.22.33.44 attempted abnormal logins against the mail gateway",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
                 event_status=EventStatus.REPLANNING,
@@ -724,17 +724,17 @@ ttt:
                 ttt_payload={
                     "root_nodes": [
                         {
-                            "title": "方向一：评估源 IP 风险",
+                            "title": "Direction 1: Assess source-IP risk",
                             "children": [
                                 {
-                                    "title": "问题1.1：11.22.33.44 是否具备恶意情报？",
+                                    "title": "Question 1.1: Does 11.22.33.44 have malicious intelligence indicators?",
                                     "children": [
                                         {
-                                            "title": "查询 11.22.33.44 的基础情报",
+                                            "title": "Look up the basic intelligence for 11.22.33.44",
                                             "status": "done",
                                         },
                                         {
-                                            "title": "查询 11.22.33.44 的威胁情报",
+                                            "title": "Look up the threat intelligence for 11.22.33.44",
                                             "status": "todo",
                                         },
                                     ],
@@ -750,7 +750,7 @@ ttt:
                 RoundReview(
                     event_id=event.event_id,
                     round_id=1,
-                    summary_text="当前需要继续推进下一条威胁情报查询。",
+                    summary_text="The next threat-intelligence query still needs to be executed.",
                 )
             )
             storage.save_execution(
@@ -758,7 +758,7 @@ ttt:
                     event_id=event.event_id,
                     round_id=1,
                     node_id="1-1-1",
-                    node_title="查询 11.22.33.44 的基础情报",
+                    node_title="Look up the basic intelligence for 11.22.33.44",
                     tool_name="splunk",
                     tool_input={"intent": "lookup 11.22.33.44"},
                     result={"no_data_found": True, "result_count": 0},
@@ -797,7 +797,7 @@ ttt:
             event = Event(
                 event_id="planner-replan-timeout-fallback",
                 event_name="Web Defacement",
-                message="外部 IP 40.80.148.42 持续访问对外站点并出现篡改迹象",
+                message="External IP 40.80.148.42 continuously accessed a public-facing site and signs of defacement appeared",
                 source="unit_test",
                 severity=SeverityLevel.HIGH,
                 event_status=EventStatus.REPLANNING,
@@ -810,17 +810,17 @@ ttt:
                 ttt_payload={
                     "root_nodes": [
                         {
-                            "title": "方向一：评估源 IP 风险",
+                            "title": "Direction 1: Assess source-IP risk",
                             "children": [
                                 {
-                                    "title": "问题1.1：40.80.148.42 是否具备恶意情报？",
+                                    "title": "Question 1.1: Does 40.80.148.42 have malicious intelligence indicators?",
                                     "children": [
                                         {
-                                            "title": "查询 40.80.148.42 的 VirusTotal 威胁情报",
+                                            "title": "Look up VirusTotal threat intelligence for 40.80.148.42",
                                             "status": "done",
                                         },
                                         {
-                                            "title": "查询 40.80.148.42 的后续 Web 访问日志",
+                                            "title": "Search subsequent Web access logs for 40.80.148.42",
                                             "status": "todo",
                                         },
                                     ],
@@ -836,7 +836,7 @@ ttt:
                 RoundReview(
                     event_id=event.event_id,
                     round_id=7,
-                    summary_text="本轮需要继续推进后续 Web 日志核查。",
+                    summary_text="This round needs to continue with follow-up Web-log validation.",
                 )
             )
             storage.save_execution(
@@ -844,7 +844,7 @@ ttt:
                     event_id=event.event_id,
                     round_id=7,
                     node_id="1-1-1",
-                    node_title="查询 40.80.148.42 的 VirusTotal 威胁情报",
+                    node_title="Look up VirusTotal threat intelligence for 40.80.148.42",
                     tool_name="virustotal",
                     tool_input={"intent": "lookup 40.80.148.42"},
                     result={"no_data_found": True, "result_count": 0},
@@ -876,22 +876,22 @@ ttt:
                 root_nodes=(
                     TTTNode(
                         node_id="1",
-                        title="方向一：确认真实性",
+                        title="Direction 1: Confirm authenticity",
                         status=TTTNodeStatus.IN_PROGRESS,
                         children=(
                             TTTNode(
                                 node_id="1-1",
-                                title="问题1.1：是否存在真实攻击行为？",
+                                title="Question 1.1: Is there real attack activity?",
                                 status=TTTNodeStatus.IN_PROGRESS,
                                 children=(
                                     TTTNode(
                                         node_id="1-1-1",
-                                        title="查询相关日志",
+                                        title="Search the related logs",
                                         status=TTTNodeStatus.IN_PROGRESS,
                                     ),
                                     TTTNode(
                                         node_id="1-1-2",
-                                        title="查询威胁情报",
+                                        title="Search threat intelligence",
                                         status=TTTNodeStatus.DONE,
                                     ),
                                 ),
@@ -916,21 +916,21 @@ ttt:
             root_nodes=(
                 TTTNode(
                     node_id="1",
-                    title="方向一：评估源 IP 风险",
+                    title="Direction 1: Assess source-IP risk",
                     children=(
                         TTTNode(
                             node_id="1-1",
-                            title="问题1.1：40.80.148.42 是否仍需继续查证？",
+                            title="Question 1.1: Does 40.80.148.42 still require further validation?",
                             metadata={"replan_attempt_count": 3},
                             children=(
                                 TTTNode(
                                     node_id="1-1-1",
-                                    title="查询 40.80.148.42 的相关日志",
+                                    title="Search related logs for 40.80.148.42",
                                     status=TTTNodeStatus.TODO,
                                 ),
                                 TTTNode(
                                     node_id="1-1-2",
-                                    title="查询 40.80.148.42 的威胁情报",
+                                    title="Search threat intelligence for 40.80.148.42",
                                     status=TTTNodeStatus.DONE,
                                 ),
                             ),
@@ -945,20 +945,20 @@ ttt:
             root_nodes=(
                 TTTNode(
                     node_id="1",
-                    title="方向一：评估源 IP 风险",
+                    title="Direction 1: Assess source-IP risk",
                     children=(
                         TTTNode(
                             node_id="1-1",
-                            title="问题1.1：40.80.148.42 是否仍需继续查证？",
+                            title="Question 1.1: Does 40.80.148.42 still require further validation?",
                             children=(
                                 TTTNode(
                                     node_id="1-1-1",
-                                    title="放宽条件后再次查询 40.80.148.42 的相关日志",
+                                    title="Search related logs for 40.80.148.42 again after broadening conditions",
                                     status=TTTNodeStatus.TODO,
                                 ),
                                 TTTNode(
                                     node_id="1-1-2",
-                                    title="查询 40.80.148.42 的威胁情报",
+                                    title="Search threat intelligence for 40.80.148.42",
                                     status=TTTNodeStatus.DONE,
                                 ),
                             ),
@@ -984,16 +984,16 @@ ttt:
             root_nodes=(
                 TTTNode(
                     node_id="1",
-                    title="方向三：确认页面篡改影响",
+                    title="Direction 3: Confirm the impact of page defacement",
                     children=(
                         TTTNode(
                             node_id="1-1",
-                            title="问题3.1：页面被篡改的具体表现是什么？",
+                            title="Question 3.1: What are the concrete signs of page defacement?",
                             metadata={"replan_attempt_count": 2},
                             children=(
                                 TTTNode(
                                     node_id="1-1-1",
-                                    title="查询篡改页面相关日志",
+                                    title="Search logs related to the defaced page",
                                     status=TTTNodeStatus.TODO,
                                 ),
                             ),
@@ -1022,27 +1022,27 @@ ttt:
             root_nodes=(
                 TTTNode(
                     node_id="1",
-                    title="方向一：评估源 IP 风险",
+                    title="Direction 1: Assess source-IP risk",
                     status=TTTNodeStatus.TODO,
                     children=(
                         TTTNode(
                             node_id="1-1",
-                            title="问题1.1：40.80.148.42 是否具备恶意情报？",
+                            title="Question 1.1: Does 40.80.148.42 have malicious intelligence indicators?",
                             status=TTTNodeStatus.TODO,
                             children=(
                                 TTTNode(
                                     node_id="1-1-1",
-                                    title="查询 40.80.148.42 的基础情报",
+                                    title="Search basic intelligence for 40.80.148.42",
                                     status=TTTNodeStatus.DONE,
                                 ),
                                 TTTNode(
                                     node_id="1-1-2",
-                                    title="查询 40.80.148.42 的威胁情报",
+                                    title="Search threat intelligence for 40.80.148.42",
                                     status=TTTNodeStatus.TODO,
                                 ),
                                 TTTNode(
                                     node_id="1-1-3",
-                                    title="查询 40.80.148.42 的后续行为",
+                                    title="Search subsequent activity for 40.80.148.42",
                                     status=TTTNodeStatus.TODO,
                                 ),
                             ),
@@ -1058,25 +1058,25 @@ ttt:
             ttt_payload={
                 "root_nodes": [
                     {
-                        "title": "方向一：评估源 IP 风险",
+                        "title": "Direction 1: Assess source-IP risk",
                         "status": "todo",
                         "children": [
                             {
-                                "title": "问题1.1：40.80.148.42 是否具备恶意情报？",
+                                "title": "Question 1.1: Does 40.80.148.42 have malicious intelligence indicators?",
                                 "status": "todo",
                                 "children": [
                                     {
-                                        "title": "查询 40.80.148.42 的基础情报",
+                                        "title": "Search basic intelligence for 40.80.148.42",
                                         "status": "done",
                                         "children": [],
                                     },
                                     {
-                                        "title": "查询 40.80.148.42 的威胁情报",
+                                        "title": "Search threat intelligence for 40.80.148.42",
                                         "status": "in_progress",
                                         "children": [],
                                     },
                                     {
-                                        "title": "查询 40.80.148.42 的后续行为",
+                                        "title": "Search subsequent activity for 40.80.148.42",
                                         "status": "n/a",
                                         "children": [],
                                     },
@@ -1111,7 +1111,7 @@ ttt:
             event = Event(
                 event_id="planner-overall-assessment",
                 event_name="Suspicious Login",
-                message="外部 IP 11.22.33.44 对邮件网关出现异常登录尝试",
+                message="External IP 11.22.33.44 attempted abnormal logins against the mail gateway",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
                 event_status=EventStatus.REPLANNING,
@@ -1125,13 +1125,13 @@ ttt:
                     ttt_payload={
                         "root_nodes": [
                             {
-                                "title": "方向一：评估源 IP 风险",
+                                "title": "Direction 1: Assess source-IP risk",
                                 "children": [
                                     {
-                                        "title": "问题1.1：11.22.33.44 是否具备恶意情报？",
+                                        "title": "Question 1.1: Does 11.22.33.44 have malicious intelligence indicators?",
                                         "children": [
                                             {
-                                                "title": "查询 11.22.33.44 的基础情报",
+                                                "title": "Look up the basic intelligence for 11.22.33.44",
                                                 "status": "done",
                                             }
                                         ],
@@ -1147,7 +1147,7 @@ ttt:
                 RoundReview(
                     event_id=event.event_id,
                     round_id=1,
-                    summary_text="本轮已完成核心核查，没有新的待执行问题。",
+                    summary_text="This round completed the core validation and produced no new pending issues.",
                 )
             )
             storage.save_execution(
@@ -1155,7 +1155,7 @@ ttt:
                     event_id=event.event_id,
                     round_id=1,
                     node_id="1-1-1",
-                    node_title="查询 11.22.33.44 的基础情报",
+                    node_title="Look up the basic intelligence for 11.22.33.44",
                     tool_name="splunk",
                     tool_input={"intent": "lookup 11.22.33.44"},
                     result={"events": [{"src_ip": "11.22.33.44"}]},
@@ -1167,15 +1167,15 @@ ttt:
                 """
 ttt:
   root_nodes:
-    - title: 方向一：评估源 IP 风险
+    - title: Direction 1: Assess source-IP risk
       children:
-        - title: 问题1.1：11.22.33.44 是否具备恶意情报？
+        - title: Question 1.1: Does 11.22.33.44 have malicious intelligence indicators?
           children:
-            - title: 查询 11.22.33.44 的基础情报
+            - title: Look up the basic intelligence for 11.22.33.44
               status: done
               children: []
 """,
-                "## 整体研判\n\n当前事件已经完成调查，现有证据不足以支持更深入扩展。",
+                "## Overall Assessment\n\nThe current event investigation is complete, and the available evidence does not support deeper expansion at this time.",
             ]
 
             with patch("src.agent.planner.call_llm", side_effect=responses):

@@ -23,7 +23,7 @@ class SplunkTTTIntegrationTests(unittest.TestCase):
         event = Event(
             event_id="event-live-splunk-ttt",
             event_name="Live Splunk TTT Query Test",
-            message="SOC 调查：请使用 Splunk 分析 botsv1 中的网络相关日志。",
+            message="SOC investigation: please use Splunk to analyze network-related logs in botsv1.",
             context={
                 "splunk_dataset": "botsv1",
                 "splunk_fields": ["_time", "src", "dest", "query", "answer", "sourcetype"],
@@ -33,7 +33,7 @@ class SplunkTTTIntegrationTests(unittest.TestCase):
         )
         node = TTTNode(
             node_id="1-1-1",
-            title="查询 botsv1 中的 DNS 请求日志样本，确认常见的源 IP、目的 IP、query 和 answer 字段，返回前几条结果。",
+            title="Query sample DNS request logs in botsv1, confirm the common source IP, destination IP, query, and answer fields, and return the first few results.",
         )
 
         tool_selection = runtime._select_tool(node, event)

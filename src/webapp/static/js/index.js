@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const confirmButton = document.getElementById("confirm-delete-event");
       if (confirmButton) {
         confirmButton.disabled = false;
-        confirmButton.textContent = "确认删除";
+        confirmButton.textContent = "Delete";
       }
     });
   }
@@ -36,12 +36,12 @@ async function submitEventForm(event) {
   };
 
   if (!payload.message) {
-    showToast("事件描述不能为空", "error");
+    showToast("Event description cannot be empty", "error");
     return;
   }
 
   submitButton.disabled = true;
-  submitButton.textContent = "创建中...";
+  submitButton.textContent = "Creating...";
   try {
     const response = await fetch(`${API_BASE_URL}/event/create`, {
       method: "POST",
@@ -50,10 +50,10 @@ async function submitEventForm(event) {
     });
     const data = await response.json();
     if (!response.ok || data.status !== "success") {
-      throw new Error(data.message || "创建失败");
+      throw new Error(data.message || "Failed to create event");
     }
 
-    showToast("事件创建成功", "success");
+    showToast("Event created successfully", "success");
     document.getElementById("event-form").reset();
     document.getElementById("event-source").value = "web_manual";
     document.getElementById("event-severity").value = "medium";
@@ -63,7 +63,7 @@ async function submitEventForm(event) {
     }, 600);
   } catch (error) {
     console.error(error);
-    showToast(error.message || "创建失败", "error");
+    showToast(error.message || "Failed to create event", "error");
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = originalText;
@@ -76,7 +76,7 @@ async function fetchEvents() {
   eventsContainer.innerHTML = `
     <div class="text-center py-5">
       <div class="spinner-border text-primary" role="status"></div>
-      <p class="mt-2">加载事件列表...</p>
+      <p class="mt-2">Loading events...</p>
     </div>
   `;
 
@@ -84,13 +84,13 @@ async function fetchEvents() {
     const response = await fetch(`${API_BASE_URL}/event/list`);
     const data = await response.json();
     if (!response.ok || data.status !== "success") {
-      throw new Error(data.message || "加载失败");
+      throw new Error(data.message || "Failed to load events");
     }
 
     if (!data.data.length) {
       eventsContainer.innerHTML = `
         <div class="text-center py-5">
-          <p class="text-muted">暂无安全事件</p>
+          <p class="text-muted">No security events yet</p>
         </div>
       `;
       return;
@@ -101,7 +101,7 @@ async function fetchEvents() {
     console.error(error);
     eventsContainer.innerHTML = `
       <div class="alert alert-danger" role="alert">
-        加载失败: ${escapeHtml(error.message || "未知错误")}
+        Failed to load events: ${escapeHtml(error.message || "Unknown error")}
       </div>
     `;
   }
@@ -115,15 +115,15 @@ function renderEventCard(event) {
     <a href="/warroom/${escapeHtml(event.event_id)}" class="list-group-item list-group-item-action event-card severity-${escapeHtml(event.severity)}">
       <div class="d-flex w-100 justify-content-between">
         <div class="d-flex align-items-start flex-grow-1 me-3">
-          <h5 class="mb-1 event-card-title">${escapeHtml(event.event_name || "未命名事件")}</h5>
+          <h5 class="mb-1 event-card-title">${escapeHtml(event.event_name || "Untitled Event")}</h5>
           <button
             type="button"
             class="btn btn-sm btn-outline-danger event-delete-button"
             data-action="delete-event"
             data-event-id="${escapeHtml(event.event_id)}"
-            data-event-name="${escapeHtml(event.event_name || "未命名事件")}"
-            aria-label="删除事件 ${escapeHtml(event.event_name || event.event_id)}"
-            title="删除事件"
+            data-event-name="${escapeHtml(event.event_name || "Untitled Event")}"
+            aria-label="Delete event ${escapeHtml(event.event_name || event.event_id)}"
+            title="Delete event"
           >
             <i class="bi bi-trash"></i>
           </button>
@@ -136,7 +136,7 @@ function renderEventCard(event) {
           <span class="badge rounded-pill ${severityBadge.className}">${severityBadge.text}</span>
           <span class="badge rounded-pill ${statusBadge.className}">${statusBadge.text}</span>
         </div>
-        <small>来源: ${escapeHtml(event.source || "-")}</small>
+        <small>Source: ${escapeHtml(event.source || "-")}</small>
       </div>
     </a>
   `;
@@ -150,12 +150,12 @@ function handleEventListClick(event) {
 
   pendingDeleteEvent = {
     eventId: deleteButton.dataset.eventId,
-    eventName: deleteButton.dataset.eventName || "未命名事件",
+    eventName: deleteButton.dataset.eventName || "Untitled Event",
   };
 
   const textElement = document.getElementById("delete-event-modal-text");
   if (textElement) {
-    textElement.textContent = `确定要删除事件“${pendingDeleteEvent.eventName}”吗？`;
+    textElement.textContent = `Are you sure you want to delete event "${pendingDeleteEvent.eventName}"?`;
   }
   deleteModalInstance?.show();
 }
@@ -163,10 +163,10 @@ function handleEventListClick(event) {
 async function confirmDeleteEvent() {
   if (!pendingDeleteEvent?.eventId) return;
   const confirmButton = document.getElementById("confirm-delete-event");
-  const originalText = confirmButton?.textContent || "确认删除";
+  const originalText = confirmButton?.textContent || "Delete";
   if (confirmButton) {
     confirmButton.disabled = true;
-    confirmButton.textContent = "删除中...";
+    confirmButton.textContent = "Deleting...";
   }
 
   try {
@@ -175,14 +175,14 @@ async function confirmDeleteEvent() {
     });
     const data = await response.json();
     if (!response.ok || data.status !== "success") {
-      throw new Error(data.message || "删除失败");
+      throw new Error(data.message || "Failed to delete event");
     }
     deleteModalInstance?.hide();
-    showToast("事件删除成功", "success");
+    showToast("Event deleted successfully", "success");
     await fetchEvents();
   } catch (error) {
     console.error(error);
-    showToast(error.message || "删除失败", "error");
+    showToast(error.message || "Failed to delete event", "error");
     if (confirmButton) {
       confirmButton.disabled = false;
       confirmButton.textContent = originalText;
@@ -192,25 +192,25 @@ async function confirmDeleteEvent() {
 
 function getSeverityBadge(severity) {
   const mapping = {
-    low: { className: "bg-success", text: "低" },
-    medium: { className: "bg-warning text-dark", text: "中" },
-    high: { className: "bg-danger", text: "高" },
-    critical: { className: "bg-dark", text: "严重" },
+    low: { className: "bg-success", text: "Low" },
+    medium: { className: "bg-warning text-dark", text: "Medium" },
+    high: { className: "bg-danger", text: "High" },
+    critical: { className: "bg-dark", text: "Critical" },
   };
-  return mapping[severity] || { className: "bg-secondary", text: severity || "未知" };
+  return mapping[severity] || { className: "bg-secondary", text: severity || "Unknown" };
 }
 
 function getStatusBadge(status) {
   const mapping = {
-    pending: { className: "bg-warning text-dark", text: "待规划" },
-    planned: { className: "bg-info text-dark", text: "已规划" },
-    executing: { className: "bg-primary", text: "执行中" },
-    reviewing: { className: "bg-secondary", text: "复盘中" },
-    replanning: { className: "bg-info", text: "重规划" },
-    completed: { className: "bg-success", text: "已完成" },
-    failed: { className: "bg-danger", text: "失败" },
+    pending: { className: "bg-warning text-dark", text: "Pending Planning" },
+    planned: { className: "bg-info text-dark", text: "Planned" },
+    executing: { className: "bg-primary", text: "Executing" },
+    reviewing: { className: "bg-secondary", text: "Reviewing" },
+    replanning: { className: "bg-info", text: "Replanning" },
+    completed: { className: "bg-success", text: "Completed" },
+    failed: { className: "bg-danger", text: "Failed" },
   };
-  return mapping[status] || { className: "bg-secondary", text: status || "未知" };
+  return mapping[status] || { className: "bg-secondary", text: status || "Unknown" };
 }
 
 function showToast(message, type = "info") {
@@ -237,7 +237,7 @@ function showToast(message, type = "info") {
 function formatDateTime(value) {
   if (!value) return "-";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("zh-CN");
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("en-US");
 }
 
 function escapeHtml(value) {

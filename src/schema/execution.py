@@ -18,7 +18,7 @@ class ExecutionStatus(StrEnum):
 
 @dataclass(slots=True, frozen=True)
 class Execution:
-    """Executor 对单个 TTT 叶子节点的执行记录。"""
+    """Execution record for a single TTT leaf node handled by the Executor."""
 
     event_id: str
     round_id: int

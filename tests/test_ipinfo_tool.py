@@ -21,7 +21,7 @@ class IPInfoToolTests(unittest.TestCase):
         tool = get_registered_tool("ipinfo_lookup_ips")
         self.assertIsNotNone(tool)
 
-        intent = "请查询 IP 8.8.8.8 的归属地、国家、ASN 和 ISP 信息。"
+        intent = "Please look up the location, country, ASN, and ISP information for IP 8.8.8.8."
         result = tool.execute(intent=intent)
 
         print("\n=== Query Intent ===")

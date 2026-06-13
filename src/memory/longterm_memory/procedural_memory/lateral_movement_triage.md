@@ -7,46 +7,46 @@ tags:
   - east_west
   - privilege
   - host
-summary: 适用于主机间异常访问、可疑凭据复用和横向移动线索的初始排查流程。
+summary: Initial triage workflow for suspicious host-to-host access, credential reuse, and lateral movement indicators.
 ---
 
-# 适用场景
+# Applicable Scenarios
 
-当告警涉及内部主机之间的异常连接、远程执行、管理员账号复用、高权限认证或跨主机访问扩散时，可优先参考本流程。
+Use this workflow when the alert involves unusual internal host-to-host connections, remote execution, administrator account reuse, privileged authentication, or expanding cross-host access.
 
-# 调查主线 / Workflow
+# Investigation Workflow
 
-1. 先确认横向访问是否真实存在，明确源主机、目标主机和涉及账号。
-2. 再判断使用了什么协议、认证方式和执行路径。
-3. 最后检查目标主机上是否产生了后续执行、持久化、数据访问或继续横向扩展。
+1. First confirm whether the lateral access actually happened, and identify the source host, destination host, and involved account.
+2. Then determine which protocol, authentication method, and execution path were used.
+3. Finally, inspect whether the destination host shows follow-up execution, persistence, data access, or continued lateral spread.
 
-# L1 目标建议
+# Suggested L1 Goals
 
-- 可拆成多个 L1，例如“确认横向链路真实性”“评估账号与权限风险”“检查目标主机后续执行与扩散范围”。
+- You can split the tree into multiple L1s, such as "Confirm the lateral path is real", "Assess account and privilege risk", and "Inspect follow-on execution and spread on the target host".
 
-# L2 问题候选
+# Candidate L2 Questions
 
-- 是否存在从源主机到目标主机的成功认证或远程执行？
-- 涉及账号是否具备高权限、异常登录模式或凭据复用迹象？
-- 目标主机是否出现了新的可疑进程、服务、任务计划或出站连接？
-- 当前活动是否扩展到了更多主机、账号或协议路径？
+- Was there a successful authentication or remote execution from the source host to the destination host?
+- Does the involved account show elevated privileges, unusual login patterns, or signs of credential reuse?
+- Did the destination host produce new suspicious processes, services, scheduled tasks, or outbound connections?
+- Did the activity spread to more hosts, accounts, or protocol paths?
 
-# L3 查询动作候选
+# Candidate L3 Actions
 
-- 查询告警中的源主机与目标主机之间的认证、SMB、RDP、WinRM 或其他远程访问日志。
-- 查询告警中涉及账号的认证历史、权限级别和时间窗内的跨主机使用情况。
-- 查询告警中的目标主机上的进程创建、服务安装、计划任务、注册表或网络连接日志。
-- 查询是否存在从目标主机继续访问其他主机的后续活动。
-- 查询与横向访问相关的安全检测日志，确认是否有阻断、告警或关联证据。
+- Query authentication, SMB, RDP, WinRM, or other remote-access logs between the source host and destination host named in the alert.
+- Query authentication history, privilege level, and cross-host use of the involved account within the alert time window.
+- Query process creation, service installation, scheduled task, registry, or network connection logs on the alert's destination host.
+- Query whether the destination host subsequently accessed other hosts.
+- Query security detection logs related to the lateral activity to confirm blocking, alerts, or supporting evidence.
 
-# 证据来源 / 工具提示
+# Evidence Sources / Tool Hints
 
-- Windows 登录日志、Sysmon、SMB/RDP/网络流日志适合确认横向链路。
-- 如果当前环境主要是 Splunk 日志查询，L3 应尽量明确实体、协议和主机范围。
-- 若需要区分源主机与目标主机的后续行为，建议拆成多个细粒度 L3，而不是合并成单条模糊查询。
+- Windows logon logs, Sysmon, and SMB/RDP/network-flow logs are useful for validating the lateral path.
+- If the current environment mainly relies on Splunk log queries, L3 nodes should state the entities, protocols, and host scope as explicitly as possible.
+- If you need to distinguish follow-up activity on the source host versus the destination host, split the work into multiple granular L3 nodes instead of one vague query.
 
-# 收敛与下一步判断
+# Convergence and Next-Step Guidance
 
-- 如果确认存在成功横向认证或远程执行，应优先围绕目标主机和继续扩散路径扩线。
-- 如果仅有连接痕迹但无认证/执行证据，可先验证是否为正常运维或误报。
-- 如果目标主机缺乏后续异常证据，应先确认数据覆盖，再决定是否继续扩大范围。
+- If successful lateral authentication or remote execution is confirmed, prioritize the destination host and any continued spread paths.
+- If there are only connection traces but no authentication or execution evidence, first determine whether this was legitimate administration or a false positive.
+- If the destination host lacks follow-up anomaly evidence, confirm data coverage before widening the investigation.

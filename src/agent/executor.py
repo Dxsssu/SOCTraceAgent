@@ -19,37 +19,37 @@ logger = logging.getLogger(__name__)
 
 
 EXECUTOR_SYSTEM_PROMPT = """
-你是多智能体驱动的 SOC 智能溯源系统中的 Executor。
-你的职责是读取 TTT 中下一个待执行的叶子节点，理解节点意图，选择合适工具并执行。
+You are the Executor in a multi-agent SOC traceback system.
+Your job is to read the next executable leaf node in the TTT, understand its intent, choose the most suitable tool, and execute it.
 
-你的职责只有一类：
-1. 消费 TTT 的 L3 叶子节点，并完成证据检索或动作执行。
+You have exactly one responsibility:
+1. Consume L3 leaf nodes from the TTT and complete evidence retrieval or action execution.
 
-你的边界：
-- 你不负责全局规划，不更新整棵 TTT。
-- 你不负责最终总结，不代替 Reviewer。
-- 你只能围绕当前叶子节点执行，不得自行扩展任务范围。
-- 如果不存在合适工具，必须明确返回无法执行的原因，不能编造工具结果。
+Your boundaries:
+- You are not responsible for global planning and must not update the full TTT.
+- You are not responsible for the final summary and must not replace the Reviewer.
+- You may only act on the current leaf node and must not expand the task scope on your own.
+- If no suitable tool exists, you must explicitly return why the action cannot be executed and must not fabricate results.
 
-你的输出必须严格使用 YAML，且只能输出以下两种 response_type：
+Your output must be strict YAML and may only use these response_type values:
 - ROGER
 - EXECUTION_RESULT
 
-执行要求：
-- 必须先理解当前叶子节点的目标对象、时间范围、证据类型，再决定工具。
-- 输出中要明确本次执行的节点、所选工具、执行结果和失败原因。
-- 若无可用工具，必须如实说明缺失能力。
+Execution requirements:
+- Understand the target entity, time range, and evidence type implied by the current leaf node before choosing a tool.
+- Clearly state the node being executed, the selected tool, the execution result, and any failure reason.
+- If no tool is available, state the missing capability truthfully.
 
-输出示例：
+Example output:
 ```yaml
 type: llm_response
 from: _executor
-event_id: "{ 来自输入 }"
-round_id: "{ 来自输入 }"
+event_id: "{ from input }"
+round_id: "{ from input }"
 response_type: EXECUTION_RESULT
 execution:
   node_id: "1-1-1"
-  node_title: "查询源 IP 基础情报与历史行为"
+  node_title: "Query basic intelligence and historical activity for source IP 11.22.33.44"
   tool_name: "ip_reputation_lookup"
   status: success
   result:
@@ -68,11 +68,11 @@ class ExecutorAgent:
 
     role_name: str = "_executor"
     display_name: str = "Executor"
-    description: str = "负责检索 TTT 的下一个叶子节点，并调用合适工具执行。"
+    description: str = "Claims the next TTT leaf node and executes it with the most suitable tool."
     responsibilities: tuple[str, ...] = (
-        "读取当前待执行的 TTT 叶子节点。",
-        "基于节点语义选择最匹配的工具。",
-        "输出结构化执行结果或明确的失败原因。",
+        "Read the next executable TTT leaf node.",
+        "Choose the best matching tool from the node semantics.",
+        "Return a structured execution result or a clear failure reason.",
     )
     allowed_response_types: tuple[str, ...] = (
         "ROGER",
@@ -82,7 +82,7 @@ class ExecutorAgent:
 
 
 class ExecutorRuntime:
-    """Executor 角色运行时实现。"""
+    """Runtime implementation for the Executor role."""
 
     def __init__(
         self,
@@ -266,9 +266,9 @@ class ExecutorRuntime:
         allowed_names = [tool["name"] for tool in tools]
         user_prompt = "\n".join(
             [
-                "请根据当前 TTT 叶子节点标题，从可用 MCP tools 中选择唯一一个最合适的工具。",
-                "只输出 YAML，且只能包含一个字段：tool_name。",
-                "tool_name 必须严格等于候选列表中的一个值，不要输出其他字段，不要解释。",
+                "Choose exactly one best-fit tool from the available MCP tools for the current TTT leaf node title.",
+                "Return YAML only and include exactly one field: tool_name.",
+                "tool_name must exactly match one value from the candidate list. Do not return any other fields or explanations.",
                 f"intent: {intent}",
                 f"allowed_tool_names: {json.dumps(allowed_names, ensure_ascii=False)}",
                 f"tools: {json.dumps(tools, ensure_ascii=False, indent=2)}",
@@ -277,9 +277,9 @@ class ExecutorRuntime:
         parsed = parse_yaml_response(
             call_llm(
                 """
-你是一个 SOC 多工具路由器。
-你的任务是根据当前 TTT 叶子节点标题，从候选 MCP 工具列表中选择唯一一个最合适的工具。
-你只能返回一个合法的 tool_name。
+You are a SOC multi-tool router.
+Your task is to choose the single most appropriate tool from the candidate MCP tool list based on the current TTT leaf node title.
+You may only return one valid tool_name.
 """.strip(),
                 user_prompt,
                 extra_body={"thinking": {"type": "enabled"}},
@@ -308,7 +308,7 @@ class ExecutorRuntime:
                 {
                     "tool_name": tool_name,
                     "node_id": getattr(node, "node_id", ""),
-                    "note": "未找到对应工具定义。",
+                    "note": "No matching tool definition was found.",
                 },
                 f"tool_not_found:{tool_name}",
                 {

@@ -15,7 +15,7 @@ load_dotenv()
 
 
 class SQLiteStorage:
-    """SOCAgent 共享 SQLite 仓储。"""
+    """Shared SQLite storage for SOCAgent."""
 
     def __init__(self, db_path: str | Path | None = None) -> None:
         resolved = db_path or os.environ.get("SOCAGENT_DB_PATH", "data/socagent.db")

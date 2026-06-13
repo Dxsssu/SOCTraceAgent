@@ -17,24 +17,24 @@ logger = logging.getLogger(__name__)
 
 
 REVIEWER_SYSTEM_PROMPT = """
-你是多智能体驱动的 SOC 智能溯源系统中的 Reviewer。
-你的职责是观察并总结一轮执行结果，识别当前证据支持了什么、缺失了什么，并把这些结论反馈给 Planner。
+You are the Reviewer in a multi-agent SOC traceback system.
+Your job is to observe and summarize one execution round, identify what the current evidence supports and what is still missing, and feed those conclusions back to the Planner.
 
-你的职责只有一类：
-1. 总结当前轮的执行结果，并形成供 Planner 下一轮更新 TTT 的反馈。
+You have exactly one responsibility:
+1. Summarize the current round's execution results and produce feedback for the Planner to update the next-round TTT.
 
-你的边界：
-- 你不直接执行工具。
-- 你不初始化或改写 TTT，只提出总结与建议。
-- 你必须严格基于实际执行结果给出判断，不能编造证据。
-- 若执行失败或能力缺失，应真实指出，而不是掩盖。
+Your boundaries:
+- You do not execute tools directly.
+- You do not initialize or rewrite the TTT; you only provide summary and recommendations.
+- You must base your judgment strictly on actual execution results and must not fabricate evidence.
+- If execution failed or a capability is missing, you must state it honestly rather than hide it.
 
-总结要求：
-- 总结本轮工具执行结果。
-- 总结目前已经收集到的结论。
-- 只给 Planner 1 条下一轮 TTT 调整建议，不要给多条建议清单。
-- 如果当前步骤已经成功执行并返回了所需结果，且没有出现新的关键证据或新的调查方向，应明确建议 Planner 尽量保持 TTT 不变，沿现有节点继续向下执行。
-- 如果合适，可以自然地使用简洁 Markdown（如小标题、列表、加粗）来提高可读性，但不要为了格式牺牲判断质量。
+Summary requirements:
+- Summarize the current round's tool execution results.
+- Summarize the conclusions collected so far.
+- Give exactly one suggestion for how the Planner should adjust the next-round TTT; do not provide multiple suggestions.
+- If the current step succeeded and returned the needed result, and there is no new key evidence or new investigation direction, explicitly recommend keeping the TTT mostly unchanged and continuing down the existing tree.
+- If helpful, you may use concise Markdown such as headings, bullets, or bold text, but do not sacrifice judgment quality for formatting.
 """.strip()
 
 
@@ -44,17 +44,17 @@ class ReviewerAgent:
 
     role_name: str = "_reviewer"
     display_name: str = "Reviewer"
-    description: str = "负责总结每一轮执行结果，并将结果反馈给 Planner。"
+    description: str = "Summarizes each execution round and feeds the result back to the Planner."
     responsibilities: tuple[str, ...] = (
-        "总结本轮工具执行结果。",
-        "总结已经收集到的结论。",
-        "给出 1 条 TTT 调整建议。",
+        "Summarize the current round's tool execution results.",
+        "Summarize the conclusions gathered so far.",
+        "Provide one TTT adjustment recommendation.",
     )
     system_prompt: str = REVIEWER_SYSTEM_PROMPT
 
 
 class ReviewerRuntime:
-    """Reviewer 角色运行时实现。"""
+    """Runtime implementation for the Reviewer role."""
 
     def __init__(
         self,
@@ -161,9 +161,9 @@ class ReviewerRuntime:
         execution_payload = [execution.to_dict() for execution in executions]
         user_prompt = "\n".join(
             [
-                "请根据以下事件、TTT 和本轮执行记录，直接输出一段轮次总结内容。",
-                "如果你觉得合适，可以自然使用简洁 Markdown 来提升可读性；不必强行套格式。",
-                "不要输出 YAML 或 JSON。",
+                "Based on the event, TTT, and execution records below, output a direct round summary.",
+                "If helpful, you may use concise Markdown naturally; do not force a rigid format.",
+                "Do not output YAML or JSON.",
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(ttt_payload, ensure_ascii=False, indent=2),
                 json.dumps(execution_payload, ensure_ascii=False, indent=2),

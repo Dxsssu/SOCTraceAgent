@@ -7,47 +7,47 @@ tags:
   - identity
   - authentication
   - login
-summary: 适用于异常登录、暴力破解和账号接管相关告警的初始溯源流程。
+summary: Initial traceback workflow for suspicious login, brute-force, and account takeover alerts.
 ---
 
-# 适用场景
+# Applicable Scenarios
 
-当事件描述中出现异常登录、异地登录、爆破尝试、邮件网关登录异常或账号可能被盗用的线索时，优先参考本流程。
+Use this workflow when the event description mentions abnormal logins, impossible-travel logins, brute-force attempts, suspicious mail-gateway authentication, or signs of possible account compromise.
 
-# 调查主线 / Workflow
+# Investigation Workflow
 
-1. 先确认告警中的登录行为是否真实存在，是否涉及成功登录。
-2. 再判断源 IP、账号、目标系统是否具备明显风险或异常特征。
-3. 最后扩大范围，确认是否存在后续访问、权限滥用或横向活动。
+1. First confirm whether the login activity in the alert actually happened and whether it includes successful authentication.
+2. Then determine whether the source IP, account, and target system show clear risk or anomalous characteristics.
+3. Finally, widen the scope to confirm whether follow-on access, privilege abuse, or lateral activity occurred.
 
-# L1 目标建议
+# Suggested L1 Goals
 
-- 可拆成多个 L1，例如“确认登录真实性”“评估源 IP 风险”“评估账号与目标系统影响范围”。
+- You can split the tree into multiple L1s, such as "Confirm login authenticity", "Assess source IP risk", and "Assess account and target-system impact".
 
-# L2 问题候选
+# Candidate L2 Questions
 
-- 该账号在告警时间窗内是否发生了真实成功登录？
-- 源 IP 是否具备恶意标签、异常地理位置或历史高风险活动？
-- 目标系统上是否存在同账号的后续访问或敏感操作？
-- 是否存在同源 IP、同账号或相邻时间窗内的批量失败登录现象？
+- Did the account actually perform a successful login within the alert time window?
+- Does the source IP have malicious tags, unusual geolocation, or a history of high-risk activity?
+- Is there follow-on access or sensitive activity on the target system by the same account?
+- Are there bulk failed-login patterns involving the same source IP, the same account, or adjacent time windows?
 
-# L3 查询动作候选
+# Candidate L3 Actions
 
-- 查询告警中的源 IP 与目标邮件网关在告警时间窗内的成功/失败认证日志，确认是否存在真实登录。
-- 查询目标邮件网关、VPN 或 SSO 入口日志，确认告警中的认证入口与目标系统。
-- 查询告警中的源 IP 的基础信息、地理位置、ASN 和所属组织。
-- 查询告警中的源 IP 的威胁情报标签、信誉和历史恶意记录。
-- 查询告警中的相关账号在同一时间窗内的后续访问、主机登录或敏感资源访问痕迹。
-- 查询同源 IP 或同账号是否触发了批量失败登录、密码喷洒或横向登录迹象。
+- Query successful and failed authentication logs between the alert source IP and the target mail gateway within the alert time window to confirm whether a real login occurred.
+- Query logs from the target mail gateway, VPN, or SSO entry point to confirm the authentication channel and target system.
+- Query the alert source IP's basic intelligence, geolocation, ASN, and organization.
+- Query threat-intelligence tags, reputation, and historical malicious records for the alert source IP.
+- Query follow-on access, host logins, or sensitive-resource activity for the relevant account within the same time window.
+- Query whether the same source IP or the same account triggered bulk failed logins, password spraying, or lateral-login indicators.
 
-# 证据来源 / 工具提示
+# Evidence Sources / Tool Hints
 
-- 认证日志、邮件网关日志、VPN / SSO 日志适合确认登录真实性和时间窗。
-- IP 基础情报与外部威胁情报工具适合判断源 IP 风险背景。
-- 如果系统当前主要依赖 Splunk 检索，应优先将 L3 写成可直接落地的日志查询动作。
+- Authentication logs, mail-gateway logs, and VPN/SSO logs are useful for validating login authenticity and time windows.
+- Basic IP intelligence and external threat-intelligence tools are useful for judging the source IP's risk background.
+- If the current system mainly relies on Splunk, prefer L3 nodes that can be executed directly as concrete log-search actions.
 
-# 收敛与下一步判断
+# Convergence and Next-Step Guidance
 
-- 如果已确认成功登录且源 IP 高风险，应优先围绕受影响账号、主机和后续访问做扩线。
-- 如果只有失败登录且无成功证据，可先收敛到爆破/喷洒验证，再决定是否扩到资产影响。
-- 如果数据不足，应先补齐时间窗、认证入口和目标系统的基础上下文，再继续规划 TTT。
+- If a successful login is confirmed and the source IP is high risk, prioritize the affected account, host, and follow-on access for expansion.
+- If there are only failed logins and no success evidence, first narrow to brute-force/password-spraying validation before deciding whether to expand into asset impact.
+- If the data is insufficient, fill in the time window, authentication entry point, and target-system context before planning further TTT work.

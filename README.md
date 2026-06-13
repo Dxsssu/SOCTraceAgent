@@ -1,174 +1,144 @@
 # SOCAgent
 
-SOCAgent 是一个面向安全告警溯源场景的三角色多智能体原型。当前版本以本地 `SQLite` 作为共享状态中心，通过 `Planner`、`Executor`、`Reviewer` 三个角色围绕同一事件进行多轮协作，逐步形成 `TTT`（Traceback Task Tree，溯源任务树）、执行记录和轮次复盘结果。
+SOCAgent is a three-role multi-agent prototype for security alert traceback. The current version uses local `SQLite` as a shared state hub. `Planner`, `Executor`, and `Reviewer` collaborate on the same event across multiple rounds and progressively produce a `TTT` (Traceback Task Tree), execution records, and round reviews.
 
-项目目前更接近“可运行的架构骨架”而不是完整产品：
+The project is currently closer to a runnable architecture skeleton than a finished product:
 
-- 有清晰的多角色状态流转
-- 有持久化的共享黑板和消息留痕
-- 有可用的 Web 首页和 war room 界面
-- 有基于 Socket.IO 的事件实时推送
-- 有 LLM 接口封装
-- 有独立的多轮链路烟雾测试
-- 还没有接入真实外部安全工具
+- Clear multi-role state transitions
+- A persistent shared blackboard plus structured message history
+- A working Web home page and war room UI
+- Real-time event updates through Socket.IO
+- An OpenAI-compatible LLM wrapper
+- A standalone multi-round smoke test
+- Real external security tools are only partially integrated
 
-## 项目目标
+## Goal
 
-这个仓库当前验证的是一条最小闭环：
+This repository validates a minimal closed loop:
 
-1. `Planner` 接收告警并初始化 `TTT`
-2. `Executor` 领取 `TTT` 中的 L3 叶子节点并执行
-3. `Reviewer` 在一次 `Execution` 完成后立即汇总当前轮结果并生成 `RoundReview`
-4. `Planner` 根据 `RoundReview` 更新下一轮 `TTT`
-5. 如果还有未完成叶子节点，则继续下一轮；否则事件结束
+1. `Planner` receives an alert and initializes a `TTT`
+2. `Executor` claims an `L3` leaf node from the `TTT` and runs a tool
+3. `Reviewer` summarizes the current round after an `Execution` completes and writes a `RoundReview`
+4. `Planner` updates the next-round `TTT` from the `RoundReview`
+5. If open leaf nodes remain, the next round starts; otherwise the event is completed
 
-对应的核心业务链路是：
+Core workflow:
 
 ```text
 Event -> TTT -> Execution -> RoundReview -> TTT
 ```
 
-这里的结构化消息只是审计、调试和未来前端展示用的观测层，不是业务事实来源。业务事实来源始终是 SQLite 中的持久化状态。
+Structured messages are used for auditing, debugging, and UI presentation. The source of truth is always the persistent SQLite state.
 
-## 当前架构
+## Architecture
 
-### 角色职责
+### Roles
 
 - `Planner`
-  - 读取新告警
-  - 先对告警做系统分析，并匹配 procedural memory
-  - 初始化第一版 `TTT`
-  - 在每轮结束后基于 `RoundReview` 更新下一轮 `TTT`
+  - Reads new alerts
+  - Performs initial analysis and matches procedural memory
+  - Builds the first `TTT`
+  - Updates the next-round `TTT` after each `RoundReview`
 
 - `Executor`
-  - 从当前 `TTT` 中领取一个待执行的 L3 叶子节点
-  - 选择工具并生成 `Execution`
-  - 将叶子节点状态推进为 `done` 或 `n/a`
-  - 单次执行完成后立即 handoff 给 `Reviewer`
+  - Claims one executable `L3` leaf node from the current `TTT`
+  - Selects a tool and creates an `Execution`
+  - Advances the leaf node to `done` or `n/a`
+  - Hands control to `Reviewer` after each execution
 
 - `Reviewer`
-  - 在每次执行后汇总当前轮的 `Execution`
-  - 识别已验证结论、证据缺口、能力缺口
-  - 写入 `RoundReview` 并把事件状态切回 `replanning`
+  - Summarizes the round from current `Execution` records
+  - Identifies validated conclusions, evidence gaps, and capability gaps
+  - Writes a `RoundReview` and moves the event back to `replanning`
 
-### 共享状态对象
+### Shared state objects
 
 - `Event`
-  - 事件主对象，维护当前轮次和总体状态
-
+  - The main event object, including current round and overall status
 - `TracebackTaskTree`
-  - 按版本保存的任务树快照
-  - 严格限制为三层：`L1 -> L2 -> L3`
-
+  - Versioned task tree snapshots
+  - Strictly limited to `L1 -> L2 -> L3`
 - `Execution`
-  - `Executor` 针对某个 L3 叶子节点的一次执行记录
-
+  - One execution record for one `L3` leaf node
 - `RoundReview`
-  - `Reviewer` 在每轮结束后的总结
-
+  - The review summary after each round
 - `MessageEnvelope`
-  - 用于审计和调试的结构化消息
+  - Structured audit/debug messages
 
-### 状态流转
-
-`EventStatus` 当前定义如下：
+### Event status
 
 ```text
 pending -> planned -> executing -> reviewing -> replanning -> planned/completed
 ```
 
-其中：
+- `pending`: a new event waiting for `Planner`
+- `planned`: a `TTT` exists and has executable leaves
+- `executing`: `Executor` is handling a leaf node
+- `reviewing`: new execution results are waiting for `Reviewer`
+- `replanning`: `Reviewer` has written a summary and `Planner` needs to update the next round
+- `completed`: no open leaf nodes remain
 
-- `pending`：新事件，等待 `Planner`
-- `planned`：已有待执行 `TTT`
-- `executing`：`Executor` 正在处理叶子节点
-- `reviewing`：当前轮已有新的执行结果，等待 `Reviewer`
-- `replanning`：`Reviewer` 已输出总结，等待 `Planner` 更新下一轮
-- `completed`：任务树无开放叶子节点，事件结束
+## TTT constraints
 
-## TTT 约束
+Current `Planner` output must follow these rules:
 
-当前实现里，`Planner` 输出的 `TTT` 必须满足这些规则：
+- The `TTT` must be a full snapshot, not an incremental patch
+- It must have exactly three levels
+- `L1` represents an independent investigation direction
+- `L2` represents a question that must be answered under one `L1`
+- `L3` represents a concrete query or evidence-gathering action
+- `node_id` uses numeric hierarchical IDs such as `1`, `1-2`, `1-2-3`
+- `Executor` only consumes `L3` leaf nodes
 
-- 必须是完整快照，不是增量 patch
-- 严格只有三层
-- `L1` 表示一个独立的调查大方向；如果事件存在多个明显方向，应拆成多个 `L1`
-- `L2` 表示围绕 `L1` 需要回答的问题
-- `L3` 表示为回答该问题需要执行的查询或取证动作，并应尽量携带完整实体信息
-- `node_id` 使用纯数字分层编号，例如 `1`、`1-2`、`1-2-3`
-- `Executor` 只消费 `L3` 叶子节点
-
-## Long-term Memory
-
-当前项目在 `src/memory/longterm_memory/procedural_memory/` 下维护 procedural memory 知识库。
-
-- `procedural_memory/`：存放不同事件类型的调查 workflow 记忆，正文建议直接按 `L1/L2/L3` 语义组织
-- `factual_memory/`：存放企业背景、数据环境和调查约束等事实型记忆
-- 两类文档格式都为 `YAML front matter + Markdown 正文`
-- `Planner` 在首次初始化 TTT 前会先读取所有 procedural memory 摘要
-- 再用 LLM 从中筛选最匹配的一篇 workflow 记忆作为建树上下文
-- 同时固定注入全部 factual memory 文档，以及当前注册的 MCP server/tool 能力清单
-- 初始 TTT 的上下文来源因此包括：事件、初始分析、procedural memory、factual memory、MCP tools
-
-节点状态使用：
+Node statuses:
 
 - `todo`
 - `in_progress`
 - `done`
 - `n/a`
 
-## 目录结构
+## Long-term memory
+
+The long-term memory base lives under `src/memory/longterm_memory/`.
+
+- `procedural_memory/`
+  - Investigation workflow memory for different event types, usually organized directly as `L1/L2/L3`
+- `factual_memory/`
+  - Enterprise background, data-environment facts, and investigation constraints
+- Both use `YAML front matter + Markdown body`
+- Before initializing the first `TTT`, `Planner` reads all procedural-memory summaries
+- The LLM then selects the best matching workflow memory as context
+- All factual-memory documents and the registered MCP/tool capability list are also injected
+
+Initial `TTT` context therefore includes the event, initial analysis, procedural memory, factual memory, and available tools.
+
+## Repository layout
 
 ```text
 SOCAgent/
-├─ main.py                         # 入口：初始化数据库 / 启动角色 / 启动 Web
-├─ pyproject.toml                 # 项目元数据
+├─ main.py
+├─ pyproject.toml
 ├─ src/
 │  ├─ agent/
-│  │  ├─ planner.py               # Planner 运行时
-│  │  ├─ executor.py              # Executor 运行时
-│  │  ├─ reviewer.py              # Reviewer 运行时
-│  │  └─ llm.py                   # OpenAI 兼容 LLM 封装
-│  ├─ memory/working_memory/
-│  │  └─ ttt_store.py             # TTT 快照与节点状态维护
+│  ├─ memory/
 │  ├─ messaging/
-│  │  ├─ bus.py                   # SQLite / 内存消息总线
-│  │  ├─ models.py                # MessageEnvelope / MessageQuery
-│  │  ├─ message_types.py         # 消息类型与角色名
-│  │  └─ README.md                # 通信设计说明
 │  ├─ schema/
-│  │  ├─ event.py                 # Event / EventStatus / SeverityLevel
-│  │  ├─ execution.py             # Execution
-│  │  ├─ round_review.py          # RoundReview
-│  │  └─ ttt.py                   # TTT / TTTNode
-│  └─ storage/
-│     └─ sqlite.py                # Event / Execution / RoundReview 持久化
+│  ├─ storage/
+│  ├─ tools/
 │  └─ webapp/
-│     ├─ server.py                # Flask + Socket.IO Web 层
-│     ├─ templates/
-│     │  ├─ index.html            # 首页：创建事件 + 事件列表
-│     │  └─ warroom.html          # 作战室：消息流 + 状态 + 执行记录
-│     └─ static/
-│        ├─ css/
-│        └─ js/
 ├─ tests/
-│  └─ test_multi_agent_loop.py    # 多轮闭环烟雾测试脚本
 └─ data/
-   ├─ socagent.db                 # 默认 SQLite 数据库
-   └─ splunk-bots-docker/         # 预置的 BOTS/Splunk 相关数据
 ```
 
-## 运行环境
+## Environment
 
 ### Python
 
-`pyproject.toml` 当前要求：
+`pyproject.toml` currently requires:
 
 - Python `>= 3.13`
 
-### 依赖
-
-当前项目依赖很少：
+### Dependencies
 
 - `flask`
 - `flask-socketio`
@@ -176,21 +146,21 @@ SOCAgent/
 - `python-dotenv`
 - `pyyaml`
 
-推荐使用 `uv` 安装：
+Recommended install:
 
 ```bash
 uv sync
 ```
 
-如果你不用 `uv`，也可以手动安装：
+Or:
 
 ```bash
 pip install flask flask-socketio openai python-dotenv pyyaml
 ```
 
-## 环境变量
+## Environment variables
 
-项目通过 `.env` 加载配置。当前代码读取的变量如下：
+The project reads configuration from `.env`:
 
 ```env
 DEEPSEEK_API_KEY=your_api_key
@@ -214,37 +184,36 @@ SPLUNK_BOTSV3_BASE_URL=http://127.0.0.1:8030
 SPLUNK_BOTSV3_INDEX=botsv3
 ```
 
-说明：
+Notes:
 
 - `DEEPSEEK_*`
-  - 由 `src/agent/llm.py` 使用
-  - 采用 OpenAI 兼容接口调用模型
+  - Used by `src/agent/llm.py`
+  - The app uses an OpenAI-compatible API surface
 - `SOCAGENT_DB_PATH`
-  - 所有角色共享的 SQLite 文件路径
+  - Shared SQLite file path for all roles
 - `SOCAGENT_POLL_INTERVAL`
-  - 角色运行时轮询数据库的时间间隔，单位秒
+  - Poll interval for role runtimes in seconds
 - `SOCAGENT_WEB_HOST` / `SOCAGENT_WEB_PORT`
-  - Web 首页和 war room 的监听地址
+  - Host and port for the Web UI
 - `SPLUNK_*`
-  - 由 `src/tools/splunk.py` 使用
-  - 用于配置 Splunk Docker 的用户名、密码、数据集默认值与端口映射
-  - 默认按 `botsv1 -> 8000`、`botsv2 -> 8020`、`botsv3 -> 8030` 连接
+  - Used by `src/tools/splunk.py`
+  - Configures Splunk Docker credentials, default dataset, and port mappings
 
-注意：
+Security notes:
 
-- 仓库中的 `.env` 不应该保存真实密钥，建议改为占位值并使用你自己的 API Key
-- 如果真实密钥已经入库，应该立即轮换
-- `Planner` 和 `Reviewer` 现在要求真实 LLM 可用；如果 `DEEPSEEK_API_KEY` 缺失或模型返回非法 YAML，事件会直接进入 `failed`，不会再自动生成模拟结果
+- Do not keep real keys in the repository `.env`
+- Rotate any real key that has already been committed
+- `Planner` and `Reviewer` now require a working LLM; if `DEEPSEEK_API_KEY` is missing or the model returns invalid YAML, the event will be marked `failed`
 
-## 初始化与启动
+## Startup
 
-### 1. 初始化本地状态
+### 1. Initialize the database
 
 ```bash
 python main.py -init-db
 ```
 
-这一步会初始化：
+This creates:
 
 - `events`
 - `executions`
@@ -252,38 +221,38 @@ python main.py -init-db
 - `ttt_snapshots`
 - `messages`
 
-### 2. 启动 Web 界面
+### 2. Start the Web UI
 
 ```bash
 python main.py -web
 ```
 
-默认会启动在：
+Default address:
 
 ```text
 http://127.0.0.1:5008
 ```
 
-首页能力：
+The home page supports:
 
-- 创建事件
-- 查看事件列表
-- 进入单事件 war room
+- Creating events
+- Viewing the event list
+- Opening a single-event war room
 
-war room 能看到：
+The war room shows:
 
-- 事件基本信息
-- 实时消息流
-- 当前轮次
-- 执行记录
-- RoundReview 结果
-- TTT / Execution / Review 层级概览
+- Event details
+- Real-time message flow
+- Current round
+- Execution records
+- RoundReview results
+- TTT / Execution / Review hierarchy
 
-### 3. 分别启动三个角色
+### 3. Start the three roles
 
-项目当前不是单进程调度器，而是通过三个独立进程轮询同一个 SQLite 文件。
+The current system is not a single-process scheduler. It uses three independent processes polling the same SQLite file.
 
-分别打开三个终端执行：
+Open three terminals:
 
 ```bash
 python main.py -role planner
@@ -291,23 +260,23 @@ python main.py -role executor
 python main.py -role reviewer
 ```
 
-角色名也兼容：
+Supported role names also include:
 
 - `_planner`
 - `_executor`
 - `_reviewer`
 
-### 4. 写入事件
+### 4. Create an event
 
-当前版本已经有 Web/API，两种方式都可以：
+You can create events in multiple ways:
 
-- 通过首页表单创建事件
-- 通过测试脚本创建测试事件
-- 或在你自己的脚本中调用 `SQLiteStorage.save_event(...)`
+- Submit the form on the home page
+- Use the test script
+- Call `SQLiteStorage.save_event(...)` in your own script
 
-### 5. 推荐的联调启动顺序
+### 5. Recommended local setup
 
-建议开四个终端：
+Recommended four-terminal workflow:
 
 ```bash
 python main.py -web
@@ -316,25 +285,25 @@ python main.py -role executor
 python main.py -role reviewer
 ```
 
-然后在浏览器打开首页创建事件，进入 war room 观察闭环推进。
+Then open the browser home page, create an event, and watch the loop progress in the war room.
 
-## 推荐的本地验证方式
+## Validation
 
-最直接的验证入口是烟雾测试脚本：
+The easiest validation entry point is the smoke test:
 
 ```bash
 python tests/test_multi_agent_loop.py
 ```
 
-这个脚本会：
+It will:
 
-1. 创建测试专用 SQLite 文件
-2. 启动 `Planner / Executor / Reviewer`
-3. 直接写入一条测试事件
-4. 持续轮询 `Event / TTT / Execution / RoundReview / Message`
-5. 判断多轮链路是否形成闭环
+1. Create a test-specific SQLite file
+2. Start `Planner / Executor / Reviewer`
+3. Insert a test event directly
+4. Poll `Event / TTT / Execution / RoundReview / Message`
+5. Check whether the multi-round loop closes successfully
 
-常用参数示例：
+Common examples:
 
 ```bash
 python tests/test_multi_agent_loop.py --timeout 240 --target-rounds 2
@@ -342,11 +311,11 @@ python tests/test_multi_agent_loop.py --show-process-logs
 python tests/test_multi_agent_loop.py --db-path tests/runtime/test_multi_agent_loop.db
 ```
 
-## 当前实现细节
+## Current implementation details
 
-### 数据存储
+### Storage
 
-当前状态全部保存在同一个 SQLite 文件中：
+All current state lives in one SQLite file:
 
 - `events`
 - `executions`
@@ -354,48 +323,45 @@ python tests/test_multi_agent_loop.py --db-path tests/runtime/test_multi_agent_l
 - `ttt_snapshots`
 - `messages`
 
-其中：
+Responsibilities:
 
-- `src/storage/sqlite.py` 负责 `Event / Execution / RoundReview`
-- `src/memory/working_memory/ttt_store.py` 负责 `TTT`
-- `src/messaging/bus.py` 负责结构化消息留痕
+- `src/storage/sqlite.py` stores `Event / Execution / RoundReview`
+- `src/memory/working_memory/ttt_store.py` stores `TTT`
+- `src/messaging/bus.py` stores structured message history
 
-### Web 交互层
+### Web layer
 
-`src/webapp/server.py` 当前提供了一个最小 Web 层，整体交互方式参考 `deepsoc`：
+`src/webapp/server.py` provides a minimal Web layer inspired by `deepsoc`:
 
-- 首页通过 HTTP API 创建事件、拉取事件列表
-- war room 首屏通过 HTTP 拉取：
-  - 事件详情
-  - 消息流
-  - 执行记录
-  - RoundReview
-  - 轮次层级结构
-- 页面通过 Socket.IO `join(event_id)` 进入事件房间
-- 后端通过 SQLite watcher 检测数据库变化，并把新消息和状态变化实时推送到 war room
+- The home page uses HTTP APIs to create events and fetch the event list
+- The war room uses HTTP for initial data:
+  - event details
+  - message stream
+  - execution records
+  - round reviews
+  - round hierarchy
+- The page joins a Socket.IO room with `join(event_id)`
+- The backend watches SQLite changes and pushes new messages and state changes to the war room in real time
 
-这意味着当前 Web 界面不是前端假数据模拟，而是直接消费本项目自己的真实 SQLite 状态。
+The UI therefore consumes real project state rather than front-end mock data.
 
-### LLM 调用
+### LLM calls
 
-`src/agent/llm.py` 当前通过 `OpenAI` Python SDK 调用 OpenAI 兼容接口，但环境变量命名采用 `DEEPSEEK_*`。这意味着：
+`src/agent/llm.py` uses the `OpenAI` Python SDK against an OpenAI-compatible API while keeping `DEEPSEEK_*` environment-variable names. If you switch providers, you mainly need to change `base_url`, `model`, and `api_key`.
 
-- 目前默认是给 DeepSeek 兼容接口准备的
-- 如果你切换到其他 OpenAI 兼容服务，只需要替换 `base_url / model / api_key`
+### Tool execution
 
-### 工具执行现状
+`Executor` already integrates real Splunk MCP-style tooling:
 
-`Executor` 当前已经接入一套真实的 Splunk MCP 工具能力：
+- `log_search` lets the LLM choose a tool from a routing step based on the `TTT` leaf intent
+- Once selected, `src/tools/splunk.py` translates the investigation intent into query specs and SPL
+- The tool then runs a real query through the Splunk REST API and returns a summary plus sample events
 
-- `log_search` 会根据 TTT 叶子节点的自然语言意图，先由 LLM 在内置路由阶段选择工具
-- 选中 `log_search` 后，再由 `src/tools/splunk.py` 把调查意图翻译成查询规格与 SPL
-- 最终通过 Splunk REST API 执行真实查询，并返回摘要与样本事件
+`src/tools` currently registers multiple MCP-style tool providers, including `splunk`, `ipinfo`, and `virustotal`. `Executor` no longer relies on hard-coded title keywords alone.
 
-当前 `src/tools` 已注册多个 MCP server，包括 `splunk`、`ipinfo`、`virustotal`。`Executor` 不再依赖标题关键词硬编码挑工具，而是读取当前可用 MCP tools 的描述、用途与限制，用 LLM 做一次内置工具选择，然后调用被选中的 tool。
+### Minimal Splunk examples
 
-### Splunk 工具最小调用示例
-
-结构化查询：
+Structured query:
 
 ```python
 from src.tools import SplunkSearchTool
@@ -413,61 +379,49 @@ result = tool.search(
 )
 ```
 
-自然语言调查意图：
+Natural-language investigation intent:
 
 ```python
 from src.tools import SplunkSearchTool
 
 tool = SplunkSearchTool()
 spec = tool.interpret_intent(
-    "查询 botsv1 中和 11.22.33.44 相关的失败登录日志",
+    "Search failed login logs in botsv1 related to 11.22.33.44",
     dataset="botsv1",
 )
 query = tool.build_query(spec)
 result = tool.search(spec=spec)
 ```
 
-## 已实现能力
+## Implemented capabilities
 
-- 三角色运行时拆分清晰
-- 基于 SQLite 的跨进程共享状态
-- Web 首页和 war room 界面
-- 基于 Socket.IO 的实时消息推送
-- TTT 版本化快照
-- 节点领取与状态推进
-- 执行结果持久化
-- 轮次复盘持久化
-- 结构化消息留痕
-- 独立的多轮闭环测试脚本
-- LLM 结果校验与失败显式落库
+- Clear separation across three role runtimes
+- Cross-process shared state through SQLite
+- Web home page and war room UI
+- Real-time message updates through Socket.IO
+- Versioned TTT snapshots
+- Leaf claiming and status advancement
+- Persistent execution records
+- Persistent round reviews
+- Structured audit messages
+- Standalone multi-round smoke testing
+- Explicit LLM validation and failure persistence
 
-## 当前局限
+## Current limitations
 
-- 没有真实外部工具接入
-- 没有统一的 supervisor 管理三个角色进程
-- SQLite 适合单机原型，不适合复杂并发和分布式部署
-- `Executor` 的工具选择仍是规则驱动占位实现
-- 测试脚本是终端脚本，不是标准 `pytest` 用例
-- 当前 Web 层没有用户认证、权限和持久会话管理
-- 当前实时推送基于本地 SQLite watcher，不是消息队列架构
+- External tool coverage is still limited
+- No unified supervisor for the three role processes
+- SQLite is suitable for a single-machine prototype, not distributed deployment
+- Some tool-selection logic is still a placeholder
+- The smoke test is a terminal script, not a full pytest suite
+- The Web layer has no authentication, authorization, or session management
+- Real-time updates still depend on a local SQLite watcher instead of a queue/event-stream architecture
 
-## 后续建议
+## Next steps
 
-- 为 `Executor` 接入真实日志检索、资产查询、威胁情报工具
-- 为 `Planner` / `Reviewer` 增加更稳定的输出约束与校验
-- 为 war room 增加更细粒度的 TTT 可视化和节点 drill-down
-- 增加数据库快照查看和回放工具
-- 增加标准化测试覆盖，而不只依赖烟雾测试
-- 如果后续需要更稳定的实时推送，再把当前 watcher 扩展成消息队列或事件流架构
-
-## 相关文件
-
-- 入口：[main.py](/d:/Research/SOCAgent/main.py)
-- Web 服务：[src/webapp/server.py](/d:/Research/SOCAgent/src/webapp/server.py)
-- 首页模板：[src/webapp/templates/index.html](/d:/Research/SOCAgent/src/webapp/templates/index.html)
-- War Room 模板：[src/webapp/templates/warroom.html](/d:/Research/SOCAgent/src/webapp/templates/warroom.html)
-- 多轮测试：[tests/test_multi_agent_loop.py](/d:/Research/SOCAgent/tests/test_multi_agent_loop.py)
-- 通信设计：[src/messaging/README.md](/d:/Research/SOCAgent/src/messaging/README.md)
-- Planner：[src/agent/planner.py](/d:/Research/SOCAgent/src/agent/planner.py)
-- Executor：[src/agent/executor.py](/d:/Research/SOCAgent/src/agent/executor.py)
-- Reviewer：[src/agent/reviewer.py](/d:/Research/SOCAgent/src/agent/reviewer.py)
+- Add richer log search, asset lookup, and threat-intelligence tools for `Executor`
+- Strengthen `Planner` / `Reviewer` output constraints and validation
+- Add deeper TTT visualization and node drill-down in the war room
+- Add database snapshot inspection and replay tools
+- Expand standardized test coverage beyond smoke tests
+- Replace or extend the current watcher with a queue/event-stream architecture if stronger real-time delivery is needed

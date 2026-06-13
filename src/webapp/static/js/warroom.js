@@ -12,6 +12,7 @@ let currentEvent = null;
 let refreshTimer = null;
 let messageRenderQueue = [];
 let isRenderingMessage = false;
+let hasHydratedInitialMessages = false;
 
 const elements = {
   chatMessages: document.getElementById("chat-messages"),
@@ -30,10 +31,8 @@ const elements = {
   commandCount: document.getElementById("command-count"),
   messageCount: document.getElementById("message-count"),
   connectionStatus: document.getElementById("connection-status"),
-  executionIndicator: document.getElementById("execution-indicator"),
-  executionCount: document.querySelector(".execution-count"),
   executionCountDisplay: document.getElementById("execution-count-display"),
-  executionPanel: document.getElementById("execution-panel"),
+  executionListModal: document.getElementById("execution-list-modal"),
   executionList: document.getElementById("execution-list"),
   executionEmpty: document.getElementById("execution-empty"),
   executionModal: document.getElementById("execution-modal"),
@@ -72,19 +71,20 @@ function bindEvents() {
     }
   });
 
-  document.getElementById("event-details-btn")?.addEventListener("click", () => {
+  document.getElementById("event-overview-btn")?.addEventListener("click", () => {
     openModal(elements.eventDetailsModal);
   });
-  document.getElementById("event-tree-btn")?.addEventListener("click", () => {
+  document.getElementById("task-tree-btn")?.addEventListener("click", () => {
     openModal(elements.eventTreeModal);
+  });
+  document.getElementById("execution-log-btn")?.addEventListener("click", () => {
+    openModal(elements.executionListModal);
   });
   document.getElementById("settings-btn")?.addEventListener("click", () => {
     refreshAll();
-    showToast("已手动刷新", "success");
+    showToast("Refreshed manually", "success");
   });
   document.getElementById("close-execution-detail")?.addEventListener("click", closeAllModals);
-  document.querySelector(".execution-panel-close")?.addEventListener("click", toggleExecutionPanel);
-  elements.executionIndicator?.addEventListener("click", toggleExecutionPanel);
 
   document.querySelectorAll(".cyber-modal-close").forEach((button) => {
     button.addEventListener("click", closeAllModals);
@@ -107,15 +107,15 @@ function bindEvents() {
 
 function initializeSocket() {
   socket.on("connect", () => {
-    updateConnectionStatus("connected", "已连接");
+    updateConnectionStatus("connected", "Connected");
     socket.emit("join", { event_id: eventId });
   });
   socket.on("disconnect", () => {
-    updateConnectionStatus("disconnected", "已断开");
+    updateConnectionStatus("disconnected", "Disconnected");
   });
   socket.on("status", (payload) => {
     if (payload.status === "joined") {
-      updateConnectionStatus("connected", "已加入");
+      updateConnectionStatus("connected", "Joined");
     }
     if (payload.event_status && currentEvent) {
       currentEvent.event_status = payload.event_status;
@@ -133,7 +133,7 @@ function initializeSocket() {
     });
   });
   socket.on("error", (payload) => {
-    showToast(payload.message || "WebSocket 出错", "error");
+    showToast(payload.message || "WebSocket error", "error");
   });
 }
 
@@ -166,7 +166,26 @@ async function fetchEventMessages() {
     const response = await fetch(`${API_BASE_URL}/event/${eventId}/messages?after_rowid=${lastMessageId}`);
     const data = await response.json();
     if (data.status !== "success") return;
+    const incomingMessages = [];
     for (const message of data.data) {
+      if (displayedMessageKeys.has(getMessageKey(message))) {
+        lastMessageId = Math.max(lastMessageId, Number(message.id || 0));
+        continue;
+      }
+      incomingMessages.push(message);
+    }
+    if (!incomingMessages.length) {
+      if (messagesData.length || lastMessageId > 0) {
+        hasHydratedInitialMessages = true;
+      }
+      return;
+    }
+    if (!hasHydratedInitialMessages && !messagesData.length) {
+      renderMessageBatch(incomingMessages);
+      hasHydratedInitialMessages = true;
+      return;
+    }
+    for (const message of incomingMessages) {
       enqueueMessage(message, false);
       lastMessageId = Math.max(lastMessageId, Number(message.id || 0));
     }
@@ -243,21 +262,21 @@ async function submitUserMessage() {
     });
     const data = await response.json();
     if (data.status !== "success") {
-      throw new Error(data.message || "发送失败");
+      throw new Error(data.message || "Failed to send message");
     }
-    showToast("消息已写入事件流", "success");
+    showToast("Message added to the event stream", "success");
   } catch (error) {
-    showToast(error.message || "发送失败", "error");
+    showToast(error.message || "Failed to send message", "error");
   }
 }
 
 function displayEventDetails(event) {
-  elements.eventName.textContent = event.event_name || "未命名事件";
+  elements.eventName.textContent = event.event_name || "Untitled event";
   elements.eventIdDisplay.textContent = `ID: ${event.event_id}`;
-  elements.eventRound.textContent = `轮次: ${event.current_round}`;
-  elements.eventSource.textContent = `来源: ${event.source || "-"}`;
-  elements.eventSeverity.textContent = `严重程度: ${getSeverityText(event.severity)}`;
-  elements.eventCreated.textContent = `创建时间: ${formatDateTime(event.created_at)}`;
+  elements.eventRound.textContent = `Round: ${event.current_round}`;
+  elements.eventSource.textContent = `Source: ${event.source || "-"}`;
+  elements.eventSeverity.textContent = `Severity: ${getSeverityText(event.severity)}`;
+  elements.eventCreated.textContent = `Created: ${formatDateTime(event.created_at)}`;
   elements.currentRound.textContent = event.current_round;
 
   const statusClass = getStatusClass(event.event_status);
@@ -270,7 +289,7 @@ function displayEventDetails(event) {
 
 function renderSummaries() {
   if (!reviewsData.length) {
-    elements.eventSummaryList.innerHTML = `<div class="system-notification"><p>当前还没有 RoundReview。</p></div>`;
+    elements.eventSummaryList.innerHTML = `<div class="system-notification"><p>No RoundReview entries yet.</p></div>`;
     return;
   }
   elements.eventSummaryList.innerHTML = reviewsData
@@ -292,7 +311,7 @@ function renderSummaries() {
 
 function renderHierarchy() {
   if (!hierarchyData.length) {
-    elements.eventTreeContainer.innerHTML = `<p>暂无溯源任务树</p>`;
+    elements.eventTreeContainer.innerHTML = `<p>No traceback task tree available yet.</p>`;
     return;
   }
   const latestRound = [...hierarchyData]
@@ -302,18 +321,18 @@ function renderHierarchy() {
   if (!latestTree?.root_nodes?.length) {
     elements.eventTreeContainer.innerHTML = `
       <div class="event-tree-round">
-        <div class="event-tree-round-title">最新 Round ${escapeHtml(latestRound?.round_id || "--")}</div>
-        <p>当前轮次还没有可展示的溯源任务树。</p>
+        <div class="event-tree-round-title">Latest Task Tree · Round ${escapeHtml(latestRound?.round_id || "--")}</div>
+        <p>No task tree is available for the current round.</p>
       </div>
     `;
     return;
   }
   elements.eventTreeContainer.innerHTML = `
     <div class="event-tree-round">
-      <div class="event-tree-round-title">最新溯源任务树 · Round ${escapeHtml(latestRound.round_id)}</div>
+      <div class="event-tree-round-title">Latest Task Tree · Round ${escapeHtml(latestRound.round_id)}</div>
       <div class="event-tree-summary">
-        <span>根方向数：${escapeHtml(latestTree.root_nodes.length)}</span>
-        <span>Executions：${escapeHtml(latestRound.executions.length)}</span>
+        <span>Root directions: ${escapeHtml(latestTree.root_nodes.length)}</span>
+        <span>Execution records: ${escapeHtml(latestRound.executions.length)}</span>
         <span>Reviews：${escapeHtml(latestRound.reviews.length)}</span>
       </div>
       <div class="ttt-tree modal-ttt-tree">${renderTTTTree(latestTree.root_nodes || [])}</div>
@@ -322,7 +341,7 @@ function renderHierarchy() {
 }
 
 function enqueueMessage(message, fromSocket) {
-  const messageKey = message.message_id || `${message.id}-${message.created_at}`;
+  const messageKey = getMessageKey(message);
   if (displayedMessageKeys.has(messageKey)) {
     return false;
   }
@@ -339,7 +358,33 @@ function processMessageQueue() {
   isRenderingMessage = true;
   const { message, fromSocket } = messageRenderQueue.shift();
   messagesData.push(message);
+  const messageNode = createMessageNode(message);
+  const sender = getSenderName(message);
+  elements.chatMessages.appendChild(messageNode);
+  scrollToBottom();
+  if (fromSocket) {
+    showToast(`${sender}: new message received`, "info");
+  }
+  window.setTimeout(() => {
+    isRenderingMessage = false;
+    processMessageQueue();
+  }, getMessageRenderDelay(message.message_type));
+  return true;
+}
 
+function renderMessageBatch(messages) {
+  const fragment = document.createDocumentFragment();
+  for (const message of messages) {
+    displayedMessageKeys.add(getMessageKey(message));
+    messagesData.push(message);
+    fragment.appendChild(createMessageNode(message));
+    lastMessageId = Math.max(lastMessageId, Number(message.id || 0));
+  }
+  elements.chatMessages.appendChild(fragment);
+  scrollToBottom();
+}
+
+function createMessageNode(message) {
   const messageNode = document.createElement("div");
   const sender = getSenderName(message);
   const roleClass = getMessageClass(message.message_from);
@@ -352,7 +397,7 @@ function processMessageQueue() {
       <span class="message-sender">${escapeHtml(sender)}</span>
       <div class="message-time-container">
         <span class="message-time">${escapeHtml(formatDateTime(message.created_at))}</span>
-        <span class="message-source-btn" title="查看源码">{"{}"}</span>
+        <span class="message-source-btn" title="View source">{"{}"}</span>
       </div>
     </div>
     <div class="message-content">${summary}</div>
@@ -360,16 +405,11 @@ function processMessageQueue() {
   messageNode.querySelector(".message-source-btn").addEventListener("click", () => {
     showMessageSourceModal(message);
   });
-  elements.chatMessages.appendChild(messageNode);
-  scrollToBottom();
-  if (fromSocket) {
-    showToast(`${sender}: 新消息到达`, "info");
-  }
-  window.setTimeout(() => {
-    isRenderingMessage = false;
-    processMessageQueue();
-  }, getMessageRenderDelay(message.message_type));
-  return true;
+  return messageNode;
+}
+
+function getMessageKey(message) {
+  return message.message_id || `${message.id}-${message.created_at}`;
 }
 
 function normalizePayload(message) {
@@ -382,31 +422,31 @@ function formatMessageContent(messageType, payload) {
     return renderPlannerAnalysis(payload);
   }
   if (messageType === "ttt_initialized") {
-    return renderTTTMessage("初始化 TTT 完成", payload.ttt, "Planner 已给出初始任务树。");
+    return renderTTTMessage("TTT initialized", payload.ttt, "Planner produced the initial task tree.");
   }
   if (messageType === "ttt_updated") {
-    return renderTTTMessage("TTT 更新完成", payload.ttt, "Planner 已根据 review 调整了下一轮任务树。");
+    return renderTTTMessage("TTT updated", payload.ttt, "Planner adjusted the next-round task tree based on the review.");
   }
   if (messageType === "overall_assessment_created") {
     return renderOverallAssessmentCard(payload);
   }
   if (messageType === "leaf_claimed") {
-    return renderInfoCard("选中 TTT 节点", [
-      payload.node_title || payload.node_id || "已领取一个待执行叶子节点",
+    return renderInfoCard("TTT node claimed", [
+      payload.node_title || payload.node_id || "A pending leaf node has been claimed",
     ]);
   }
   if (messageType === "tool_selected") {
-    return renderInfoCard("选择执行工具", [
-      `工具：${payload.tool_name || "未选择"}`,
-      payload.node_id ? `节点：${payload.node_id}` : "",
+    return renderInfoCard("Execution tool selected", [
+      `Tool: ${payload.tool_name || "Not selected"}`,
+      payload.node_id ? `Node: ${payload.node_id}` : "",
     ].filter(Boolean));
   }
   if (messageType === "execution_started") {
     return renderInfoCard(
-      "开始执行",
+      "Execution started",
       [
-        payload.tool_name ? `正在调用 ${payload.tool_name}` : "正在执行工具",
-        payload.node_id ? `节点：${payload.node_id}` : "",
+        payload.tool_name ? `Calling ${payload.tool_name}` : "Running tool",
+        payload.node_id ? `Node: ${payload.node_id}` : "",
       ].filter(Boolean),
       { loading: true },
     );
@@ -415,19 +455,19 @@ function formatMessageContent(messageType, payload) {
     return renderExecutionResultCard(payload, messageType === "execution_completed");
   }
   if (messageType === "round_review_started") {
-    return renderInfoCard("开始 Review", [
-      `Reviewer 正在基于当前执行结果进行总结`,
-      payload.execution_count !== undefined ? `执行记录数：${payload.execution_count}` : "",
+    return renderInfoCard("Review started", [
+      "Reviewer is summarizing the current execution results",
+      payload.execution_count !== undefined ? `Execution count: ${payload.execution_count}` : "",
     ].filter(Boolean));
   }
   if (messageType === "round_review_created") {
     return renderReviewCard(payload);
   }
   if (messageType === "handoff_to_planner") {
-    return renderInfoCard("交回 Planner", ["本轮 review 已完成，等待更新 TTT。"]);
+    return renderInfoCard("Handed back to Planner", ["This round review is complete. Waiting for the next TTT update."]);
   }
   if (messageType === "handoff_to_reviewer") {
-    return renderInfoCard("交回 Reviewer", ["本次执行已完成，等待 Reviewer 总结。"]);
+    return renderInfoCard("Handed back to Reviewer", ["Execution finished. Waiting for Reviewer to summarize the results."]);
   }
   if (messageType === "user_message") {
     return `<p>${escapeHtml(payload.text || "")}</p>`;
@@ -447,47 +487,47 @@ function formatMessageContent(messageType, payload) {
 function renderSystemInfoMessage(payload) {
   const text = payload.text || "";
   if (text === "planner_start_initial_planning") {
-    return renderInfoCard("接收到告警，开始初始分析", [
-      payload.event_name ? `事件：${payload.event_name}` : "Planner 正在理解这条新告警。",
+    return renderInfoCard("Alert received, starting initial analysis", [
+      payload.event_name ? `Event: ${payload.event_name}` : "Planner is interpreting the new alert.",
     ]);
   }
   if (text === "planner_start_procedural_memory_lookup") {
-    return renderInfoCard("开始检索 Long-term Memory", [
-      "Planner 正在检索 procedural memory，寻找可复用的调查 workflow。",
+    return renderInfoCard("Searching long-term memory", [
+      "Planner is searching procedural memory for a reusable investigation workflow.",
     ]);
   }
   if (text === "planner_procedural_memory_lookup_completed") {
     const selected = payload.selected_procedural_memory;
     const lines = selected
       ? [
-          `检索到：${selected.title || selected.document_id}`,
+          `Matched: ${selected.title || selected.document_id}`,
           selected.summary || "",
         ].filter(Boolean)
-      : ["未检索到合适的 procedural memory，将直接基于告警分析构建 TTT。"];
-    return renderInfoCard("Long-term Memory 检索完成", lines, {
+      : ["No suitable procedural memory was found. Planner will build the TTT directly from the alert analysis."];
+    return renderInfoCard("Long-term memory search completed", lines, {
       collapsibleJson: selected || { matched: false },
-      collapsibleTitle: selected ? "查看检索命中详情" : "查看检索结果",
+      collapsibleTitle: selected ? "View matched memory details" : "View search result",
     });
   }
   if (text === "planner_start_ttt_initialization") {
-    return renderInfoCard("根据检索结果，开始初始化 TTT", [
-      "Planner 正在把告警分析与 procedural memory 转成任务树。",
+    return renderInfoCard("Initializing TTT from the retrieved context", [
+      "Planner is turning the alert analysis and procedural memory into a task tree.",
     ]);
   }
   if (text === "planner_start_ttt_replanning") {
-    return renderInfoCard("根据 Review 结果，开始调整 TTT", [
-      payload.review_round ? `基于 Round ${payload.review_round} 的总结进行重规划。` : "Planner 正在更新任务树。",
+    return renderInfoCard("Updating TTT from the review", [
+      payload.review_round ? `Replanning from the Round ${payload.review_round} summary.` : "Planner is updating the task tree.",
     ]);
   }
-  return `<p>${escapeHtml(text || "系统消息")}</p>`;
+  return `<p>${escapeHtml(text || "System message")}</p>`;
 }
 
 function renderPlannerAnalysis(payload) {
   const analysis = payload.analysis || "";
   return `
     <div class="dialog-card">
-      <div class="dialog-title">初始分析结果</div>
-      <div class="dialog-markdown markdown-content">${renderMarkdown(analysis || "Planner 已完成初始分析。")}</div>
+      <div class="dialog-title">Initial analysis</div>
+      <div class="dialog-markdown markdown-content">${renderMarkdown(analysis || "Planner completed the initial analysis.")}</div>
     </div>
   `;
 }
@@ -507,17 +547,17 @@ function renderExecutionResultCard(payload, success) {
   const resultText = JSON.stringify(result, null, 2);
   return `
     <div class="dialog-card">
-      <div class="dialog-title">${success ? "执行结果" : "执行失败"}</div>
+      <div class="dialog-title">${success ? "Execution result" : "Execution failed"}</div>
       ${renderKeyValueGrid([
-        ["节点", payload.node_title || payload.node_id || "-"],
-        ["工具", payload.tool_name || "-"],
-        ["状态", success ? "成功" : "失败"],
+        ["Node", payload.node_title || payload.node_id || "-"],
+        ["Tool", payload.tool_name || "-"],
+        ["Status", success ? "Success" : "Failed"],
       ])}
       ${payload.error_message ? `<p class="dialog-error">${escapeHtml(payload.error_message)}</p>` : ""}
       <div class="collapsible-result">
         <div class="collapsible-header">
           <span class="collapse-icon collapsed">▸</span>
-          <span>查看执行结果</span>
+          <span>View execution output</span>
         </div>
         <div class="collapsible-content collapsed">
           <pre>${escapeHtml(resultText)}</pre>
@@ -530,8 +570,8 @@ function renderExecutionResultCard(payload, success) {
 function renderReviewCard(payload) {
   return `
     <div class="dialog-card">
-      <div class="dialog-title">Review 结果</div>
-      <div class="dialog-markdown markdown-content">${renderMarkdown(payload.summary_text || "Reviewer 已完成本轮总结。")}</div>
+      <div class="dialog-title">Review result</div>
+      <div class="dialog-markdown markdown-content">${renderMarkdown(payload.summary_text || "Reviewer completed the round summary.")}</div>
     </div>
   `;
 }
@@ -539,8 +579,8 @@ function renderReviewCard(payload) {
 function renderOverallAssessmentCard(payload) {
   return `
     <div class="dialog-card">
-      <div class="dialog-title">整体研判结论</div>
-      <div class="dialog-markdown markdown-content">${renderMarkdown(payload.summary_text || "Planner 已完成整体研判总结。")}</div>
+      <div class="dialog-title">Overall assessment</div>
+      <div class="dialog-markdown markdown-content">${renderMarkdown(payload.summary_text || "Planner completed the overall assessment.")}</div>
     </div>
   `;
 }
@@ -559,7 +599,7 @@ function renderInfoCard(title, lines, options = {}) {
         <div class="collapsible-result">
           <div class="collapsible-header">
             <span class="collapse-icon collapsed">▸</span>
-            <span>${escapeHtml(options.collapsibleTitle || "查看详情")}</span>
+            <span>${escapeHtml(options.collapsibleTitle || "View details")}</span>
           </div>
           <div class="collapsible-content collapsed">
             <pre>${escapeHtml(JSON.stringify(options.collapsibleJson, null, 2))}</pre>
@@ -611,7 +651,7 @@ function renderKeyValueGrid(items) {
 }
 
 function renderTTTTree(nodes) {
-  if (!Array.isArray(nodes) || !nodes.length) return "<p>暂无 TTT</p>";
+  if (!Array.isArray(nodes) || !nodes.length) return "<p>No TTT available yet.</p>";
   return `
     <ul class="ttt-tree-list">
       ${nodes.map((node) => renderTTTNode(node)).join("")}
@@ -664,8 +704,8 @@ function getSenderName(message) {
     _planner: "Planner",
     _executor: "Executor",
     _reviewer: "Reviewer",
-    user: "用户",
-    system: "系统",
+    user: "User",
+    system: "System",
   };
   return mapping[message.message_from] || message.message_from;
 }
@@ -674,7 +714,7 @@ function showRoleHistory(role) {
   const roleMessages = messagesData.filter((message) => message.message_from === role);
   const roleLabel = getSenderName({ message_from: role });
   elements.roleHistoryModal.dataset.role = role;
-  elements.roleHistoryTitle.textContent = `${roleLabel} 历史`;
+  elements.roleHistoryTitle.textContent = `${roleLabel} History`;
   elements.roleHistoryList.innerHTML = roleMessages.length
     ? roleMessages
         .map((message) => {
@@ -689,15 +729,13 @@ function showRoleHistory(role) {
           `;
         })
         .join("")
-    : `<div class="system-notification"><p>当前还没有该角色的消息。</p></div>`;
+    : `<div class="system-notification"><p>No messages for this role yet.</p></div>`;
   openModal(elements.roleHistoryModal);
 }
 
 function updateExecutionIndicator() {
   const count = executionsData.length;
-  elements.executionCount.textContent = count;
   elements.executionCountDisplay.textContent = count;
-  elements.executionIndicator.classList.toggle("has-waiting", count > 0);
 }
 
 function updateExecutionList() {
@@ -717,9 +755,9 @@ function updateExecutionList() {
             <span class="execution-item-time">${escapeHtml(formatDateTime(execution.created_at))}</span>
           </div>
           <div class="execution-item-command">${escapeHtml(execution.tool_name || execution.node_id)}</div>
-          <div class="execution-item-desc">${escapeHtml(execution.node_title || "无标题")}</div>
+          <div class="execution-item-desc">${escapeHtml(execution.node_title || "Untitled")}</div>
           <div class="execution-item-action">
-            <button class="execution-item-btn">查看</button>
+            <button class="execution-item-btn">View</button>
           </div>
         </div>
       `;
@@ -740,17 +778,13 @@ function showExecutionModal(execution) {
   elements.executionId.textContent = execution.execution_id;
   elements.executionCommand.textContent = execution.tool_name || execution.node_id;
   elements.executionTime.textContent = formatDateTime(execution.created_at);
-  elements.executionResult.value = JSON.stringify(execution.result || {}, null, 2);
+  elements.executionResult.textContent = JSON.stringify(execution.result || {}, null, 2);
   elements.contextContent.innerHTML = `
-    <div class="context-item"><span class="label">节点</span><pre>${escapeHtml(execution.node_title || "-")}</pre></div>
-    <div class="context-item"><span class="label">状态</span><pre>${escapeHtml(execution.execution_status || "-")}</pre></div>
-    <div class="context-item"><span class="label">错误</span><pre>${escapeHtml(execution.error_message || "-")}</pre></div>
+    <div class="context-item"><span class="label">Node</span><pre>${escapeHtml(execution.node_title || "-")}</pre></div>
+    <div class="context-item"><span class="label">Status</span><pre>${escapeHtml(execution.execution_status || "-")}</pre></div>
+    <div class="context-item"><span class="label">Error</span><pre>${escapeHtml(execution.error_message || "-")}</pre></div>
   `;
   openModal(elements.executionModal);
-}
-
-function toggleExecutionPanel() {
-  elements.executionPanel.classList.toggle("active");
 }
 
 function toggleExecutionContext() {
@@ -767,7 +801,7 @@ function showMessageSourceModal(message) {
 
 function copyMessageSource() {
   navigator.clipboard.writeText(elements.messageSourceContent.textContent || "");
-  showToast("已复制消息源码", "success");
+  showToast("Message source copied", "success");
 }
 
 function openModal(element) {
@@ -791,24 +825,24 @@ function scrollToBottom() {
 
 function getSeverityText(severity) {
   const mapping = {
-    low: "低",
-    medium: "中",
-    high: "高",
-    critical: "严重",
-    unknown: "未知",
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    critical: "Critical",
+    unknown: "Unknown",
   };
-  return mapping[severity] || severity || "未知";
+  return mapping[severity] || severity || "Unknown";
 }
 
 function getStatusText(status) {
   const mapping = {
-    pending: "待规划",
-    planned: "已规划",
-    executing: "执行中",
-    reviewing: "复盘中",
-    replanning: "重规划",
-    completed: "已完成",
-    failed: "失败",
+    pending: "Pending planning",
+    planned: "Planned",
+    executing: "Executing",
+    reviewing: "Reviewing",
+    replanning: "Replanning",
+    completed: "Completed",
+    failed: "Failed",
   };
   return mapping[status] || status;
 }
@@ -828,7 +862,7 @@ function getStatusClass(status) {
 
 function renderBulletList(items) {
   if (!items || !items.length) {
-    return "<ul><li>无</li></ul>";
+    return "<ul><li>None</li></ul>";
   }
   return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
 }

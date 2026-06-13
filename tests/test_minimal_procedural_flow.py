@@ -49,28 +49,28 @@ class MinimalProceduralFlowTests(unittest.TestCase):
             event = Event(
                 event_id="procedural-public-ip-demo",
                 event_name="Public IP Reputation Demo",
-                message="告警：公网 IP 8.8.8.8 多次访问外部服务，当前仅需做最小验证，请先确认该 IP 的基础归属与外部威胁情报。",
+                message="Alert: public IP 8.8.8.8 repeatedly accessed external services. For this minimal validation flow, first confirm its basic attribution and external threat intelligence.",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
             )
             storage.save_event(event)
 
             initial_planner_responses = [
-                "该告警只给出了一个公网 IP，当前最小可行排查应先补齐基础属性，再检查外部威胁情报，暂不扩展到更复杂日志分析。",
+                "This alert only provides one public IP. The minimum viable investigation should first complete the basic attribution, then check external threat intelligence, without expanding into more complex log analysis yet.",
                 "document_id: public_ip_reputation_triage",
                 """
 ttt:
   root_nodes:
-    - title: 方向一：评估公网 IP 8.8.8.8 的风险背景
+    - title: Direction 1: Assess the risk background of public IP 8.8.8.8
       status: todo
       children:
-        - title: 问题1.1：公网 IP 8.8.8.8 的基础归属和外部信誉如何？
+        - title: Question 1.1: What are the basic attribution and external reputation of public IP 8.8.8.8?
           status: todo
           children:
-            - title: 查询公网 IP 8.8.8.8 的基础情报
+            - title: Look up the basic intelligence for public IP 8.8.8.8
               status: todo
               children: []
-            - title: 查询公网 IP 8.8.8.8 的威胁情报报告
+            - title: Look up the threat-intelligence report for public IP 8.8.8.8
               status: todo
               children: []
 """,
@@ -123,7 +123,7 @@ ttt:
 
             with patch(
                 "src.agent.reviewer.call_llm",
-                return_value="已完成 8.8.8.8 的基础情报查询，拿到了国家、ASN 和组织归属。当前没有新的关键调查方向，建议保持 TTT 不变，继续执行公网 IP 8.8.8.8 的威胁情报查询。",
+                return_value="The basic intelligence lookup for 8.8.8.8 is complete, including country, ASN, and organization attribution. There is no new key investigation direction right now, so keep the TTT unchanged and continue with the threat-intelligence lookup for public IP 8.8.8.8.",
             ):
                 reviewed = reviewer.process_event(round1_event)
 
@@ -184,7 +184,7 @@ ttt:
 
             with patch(
                 "src.agent.reviewer.call_llm",
-                return_value="已完成 8.8.8.8 的基础情报和 VirusTotal 威胁情报查询。当前没有新的证据缺口，建议结束这一最小排查流程。",
+                return_value="The basic intelligence lookup and VirusTotal threat-intelligence lookup for 8.8.8.8 are complete. There are no new evidence gaps at the moment, so this minimal investigation flow should be concluded.",
             ):
                 reviewed = reviewer.process_event(round2_reviewing_event)
 
@@ -198,20 +198,20 @@ ttt:
                 """
 ttt:
   root_nodes:
-    - title: 方向一：评估公网 IP 8.8.8.8 的风险背景
+    - title: Direction 1: Assess the risk background of public IP 8.8.8.8
       status: done
       children:
-        - title: 问题1.1：公网 IP 8.8.8.8 的基础归属和外部信誉如何？
+        - title: Question 1.1: What are the basic attribution and external reputation of public IP 8.8.8.8?
           status: done
           children:
-            - title: 查询公网 IP 8.8.8.8 的基础情报
+            - title: Look up the basic intelligence for public IP 8.8.8.8
               status: done
               children: []
-            - title: 查询公网 IP 8.8.8.8 的威胁情报报告
+            - title: Look up the threat-intelligence report for public IP 8.8.8.8
               status: done
               children: []
 """,
-                "整体结论：8.8.8.8 的基础归属与外部威胁情报已补齐，当前未见明确恶意命中，这条最小 procedural flow 已按预期完成。",
+                "Overall conclusion: the basic attribution and external threat intelligence for 8.8.8.8 have been collected, no clear malicious hit is currently present, and this minimal procedural flow has completed as expected.",
             ]
             with patch("src.agent.planner.call_llm", side_effect=final_planner_responses):
                 completed_event = planner.process_replanning(final_replanning_event)

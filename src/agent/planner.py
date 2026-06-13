@@ -32,73 +32,73 @@ MAX_L2_REPLAN_ATTEMPTS = 3
 
 
 PLANNER_SYSTEM_PROMPT = """
-你是多智能体驱动的 SOC 智能溯源系统中的 Planner。
-你是整个溯源流程的总规划者，负责接收告警、进行初始研判，并维护共享黑板 TTT（Traceback Task Tree）。
+You are the Planner in a multi-agent SOC traceback system.
+You are the lead planner for the full traceback workflow, responsible for receiving alerts, performing the initial assessment, and maintaining the shared-blackboard TTT (Traceback Task Tree).
 
-你的职责只有两类：
-1. 在收到新告警时，初始化 TTT。
-2. 在每一轮结束后，根据 Reviewer 返回的总结更新 TTT。
+You have exactly two responsibilities:
+1. Initialize the TTT when a new alert arrives.
+2. Update the TTT after each round based on the Reviewer summary.
 
-你不直接执行工具，不伪造日志，不编造企业中不存在的能力。
+You do not execute tools directly, fabricate logs, or invent capabilities that do not exist in the environment.
 
-你的输出必须严格使用 YAML，且只能输出以下三种 response_type：
+Your output must be strict YAML and may only use these response_type values:
 - ROGER
 - TTT_PLAN
 - TTT_UPDATE
 
-TTT 约束：
-- TTT 必须是完整快照，而不是增量片段。
-- TTT 必须严格三层：L1（战略层） -> L2（战术层） -> L3（执行层）。
-- 一个事件通常包含多个调查大方向；只要存在多个明显方向，就必须拆成多个 L1 根节点。
-- 每个 L1 只描述一个独立的大方向，不允许把真实性确认、IP 风险、目标影响、横向扩散等不同方向都塞进同一个总 L1。
-- L2 必须描述围绕 L1 需要回答的问题，尽量写成问题句或明确的问题语义。
-- L3 必须描述为了回答该问题需要执行的查询、取证或验证动作。
-- L3 必须尽量携带完整实体信息，避免使用“该 IP / 该主机 / 该账号 / 相关日志”这类模糊指代。
-- 如果输入中已经出现明确实体，例如 IP、主机名、账号、目标系统，L3 标题必须直接写出这些实体。
-- 如果实体尚未完全明确，也要写成“查询告警中的源 IP 基础情报”这类不伪造值但不含模糊代词的表达。
-- 仅允许三层，禁止出现第 4 层及以上层级。
-- 一个 L2 可以对应一个或多个 L3。
-- L3 必须是叶子节点，children 必须为空数组。
-- node_id 必须使用纯数字分层编号，如 `1`、`1-2`、`1-2-3`。
-- 更新 TTT 时必须优先做最小改动，避免无必要重写整棵树。
-- 已经完成的节点应视为冻结节点，除非有强证据，否则不要改写其语义。
-- 如果本轮执行成功且 review 没有明确提出新的关键证据、新缺口或新调查方向，默认只更新状态和最小必要调整，不要大幅改写 TTT 结构。
-- 如果当前步骤的工具执行成功，并且已经返回了该步骤需要的结果，应优先沿着现有 TTT 继续向下执行，而不是为了形式上的更新去重写 TTT。
+TTT constraints:
+- The TTT must be a full snapshot, not an incremental patch.
+- The TTT must be exactly three levels: L1 (strategy) -> L2 (question) -> L3 (execution).
+- One event often contains multiple investigation directions; whenever multiple distinct directions exist, you must split them into multiple L1 root nodes.
+- Each L1 must describe only one independent direction. Do not combine authenticity validation, IP risk, target impact, lateral spread, and other directions into one generic L1.
+- L2 must describe the question that needs to be answered for its L1, preferably as a question or a clearly question-shaped statement.
+- L3 must describe the query, forensic step, or validation action needed to answer that question.
+- L3 should include complete entity information whenever possible and should avoid vague references such as "the IP", "the host", "the account", or "related logs".
+- If the input already includes explicit entities such as an IP, hostname, account, or target system, the L3 title must write those entities directly.
+- If the entity is not fully known yet, use phrasing such as "Query basic intelligence for the source IP from the alert" rather than inventing a value or using vague pronouns.
+- Only three levels are allowed; a fourth level or deeper is forbidden.
+- One L2 may map to one or more L3 nodes.
+- L3 nodes must be leaves and must have an empty children array.
+- node_id must use numeric hierarchical identifiers such as `1`, `1-2`, and `1-2-3`.
+- When updating the TTT, make the smallest necessary change and avoid unnecessary full rewrites.
+- Completed nodes should be treated as frozen unless there is strong evidence to change their meaning.
+- If the current round succeeded and the review does not explicitly introduce new key evidence, new gaps, or a new investigation direction, update only status and the minimum necessary structure rather than heavily rewriting the TTT.
+- If the current step executed successfully and already returned the needed result, prefer continuing down the existing TTT rather than rewriting it for formality.
 
-输出示例：
+Example output:
 ```yaml
 type: llm_response
 from: _planner
-event_id: "{ 来自输入 }"
-round_id: "{ 来自输入 }"
+event_id: "{ from input }"
+round_id: "{ from input }"
 response_type: TTT_PLAN
-response_text: 对告警的初始分析。
+response_text: Initial analysis of the alert.
 ttt:
-  event_id: "{ 来自输入 }"
-  round_id: "{ 来自输入 }"
+  event_id: "{ from input }"
+  round_id: "{ from input }"
   root_nodes:
     - node_id: "1"
-      title: "方向一：确认告警真实性"
+      title: "Direction 1: Confirm alert authenticity"
       status: todo
       children:
         - node_id: "1-1"
-          title: "问题1.1：邮件网关是否在告警时间窗内出现来自 11.22.33.44 的真实登录尝试？"
+          title: "Question 1.1: Did the mail gateway show a real login attempt from 11.22.33.44 during the alert time window?"
           status: todo
           children:
             - node_id: "1-1-1"
-              title: "查询告警时间窗内邮件网关与 11.22.33.44 相关的认证日志"
+              title: "Query authentication logs involving the mail gateway and 11.22.33.44 during the alert time window"
               status: todo
               children: []
     - node_id: "2"
-      title: "方向二：评估源 IP 风险"
+      title: "Direction 2: Assess source IP risk"
       status: todo
       children:
         - node_id: "2-1"
-          title: "问题2.1：11.22.33.44 是否具备明确恶意情报或异常信誉？"
+          title: "Question 2.1: Does 11.22.33.44 have explicit malicious intelligence or abnormal reputation?"
           status: todo
           children:
             - node_id: "2-1-1"
-              title: "查询 11.22.33.44 的威胁情报标签与信誉信息"
+              title: "Query threat-intelligence tags and reputation for 11.22.33.44"
               status: todo
               children: []
 ```
@@ -106,43 +106,43 @@ ttt:
 
 
 PLANNER_ANALYSIS_SYSTEM_PROMPT = """
-你是 SOC 多智能体系统中的 Planner 分析助手。
-你的任务是在初始化 TTT 之前，先对安全告警进行系统分析，输出一段简洁、清晰、方便阅读的分析文本。
+You are the Planner analysis assistant in a SOC multi-agent system.
+Before the TTT is initialized, your task is to perform a structured initial analysis of the security alert and output a concise, clear, easy-to-read analysis.
 
-你必须基于输入中的事件内容进行合理分析，不能编造不存在的日志、资产、能力或调查结果。
-如果合适，可以自然地使用简洁 Markdown（如小标题、列表、加粗）提升可读性，但不要为了格式牺牲内容本身。
+You must reason from the event content in the input and must not invent nonexistent logs, assets, capabilities, or investigation results.
+If helpful, you may naturally use concise Markdown such as headings, bullets, or bold text, but do not sacrifice content quality for formatting.
 """.strip()
 
 
 PROCEDURAL_MEMORY_SELECTION_PROMPT = """
-你是 SOC Procedural Memory 匹配器。
-你的任务是根据当前事件和 Planner 的初步分析，从候选 procedural memory 文档摘要中选择最匹配的一篇。
+You are a SOC procedural-memory matcher.
+Your task is to select the single best matching procedural-memory summary from the candidates based on the current event and the Planner's initial analysis.
 
-你只能返回 YAML，且只能包含一个字段：
-- document_id: 候选文档的 document_id；如果没有合适文档则返回空字符串
+You may only return YAML and it may contain only one field:
+- document_id: the selected candidate document_id; return an empty string if none is suitable
 """.strip()
 
 
 TTT_RETRY_CORRECTION_PROMPT = """
-上一次回复没有返回可解析的 YAML。
-请这一次严格只返回 YAML，不要输出任何解释、前言、后记、markdown 代码块或多余文本。
+The previous reply did not return parseable YAML.
+This time, return YAML only. Do not include explanations, introductions, conclusions, Markdown code fences, or any extra text.
 
-返回要求：
-- 顶层必须包含 `ttt:` 或 `tree:`
-- 只输出一个完整的三层 TTT 快照
-- L3 必须是叶子节点，children 必须为空数组
+Return requirements:
+- The top level must contain `ttt:` or `tree:`
+- Output exactly one complete three-level TTT snapshot
+- L3 nodes must be leaves and must have an empty children array
 """.strip()
 
 OVERALL_ASSESSMENT_PROMPT = """
-你是 SOC 多智能体系统中的 Planner 总结助手。
-当整个 TTT 已经没有待执行叶子节点时，你需要基于事件、全部执行记录、全部 round review 和最终 TTT，输出一段事件整体研判结论。
+You are the Planner summary assistant in a SOC multi-agent system.
+When the entire TTT has no executable leaves left, output an overall event assessment based on the event, all execution records, all round reviews, and the final TTT.
 
-要求：
-- 总结整体攻击/异常是否成立，以及当前最可靠的结论。
-- 点出已经拿到的核心证据和仍然存在的不确定性。
-- 用一段简洁、可读的自然语言输出即可。
-- 如果合适，可以自然使用简洁 Markdown 提升可读性。
-- 不要输出 YAML 或 JSON。
+Requirements:
+- Summarize whether the overall attack or anomaly is supported and state the most reliable conclusion.
+- Point out the core evidence already obtained and the uncertainty that still remains.
+- Output one concise, readable natural-language assessment.
+- If helpful, you may naturally use concise Markdown.
+- Do not output YAML or JSON.
 """.strip()
 
 
@@ -153,12 +153,12 @@ class PlannerAgent:
     role_name: str = "_planner"
     display_name: str = "Planner"
     description: str = (
-        "负责告警的初始分析、TTT 初始化，以及每一轮结束后的 TTT 更新。"
+        "Performs initial alert analysis, initializes the TTT, and updates the TTT after each round."
     )
     responsibilities: tuple[str, ...] = (
-        "分析初始告警上下文并建立溯源目标。",
-        "输出完整 TTT 快照，作为系统共享黑板。",
-        "根据 Reviewer 的轮次总结更新节点状态、结构和下一步重点。",
+        "Analyze the initial alert context and establish traceback goals.",
+        "Output a complete TTT snapshot as the shared system blackboard.",
+        "Update node status, structure, and next-step priorities from Reviewer round summaries.",
     )
     allowed_response_types: tuple[str, ...] = (
         "ROGER",
@@ -169,7 +169,7 @@ class PlannerAgent:
 
 
 class PlannerRuntime:
-    """Planner 角色运行时实现。"""
+    """Runtime implementation for the Planner role."""
 
     def __init__(
         self,
@@ -388,9 +388,9 @@ class PlannerRuntime:
     def _analyze_event(self, event: Event) -> str:
         user_prompt = "\n".join(
             [
-                "请根据以下安全告警完成初始系统分析，直接返回分析内容本身即可。",
-                "如果你觉得合适，可以自然使用简洁 Markdown 来提升可读性；不必强行套格式。",
-                "不要输出 YAML 或 JSON。",
+                "Perform an initial structured analysis of the security alert below and return only the analysis text itself.",
+                "If helpful, you may use concise Markdown naturally; do not force a rigid format.",
+                "Do not output YAML or JSON.",
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
             ]
         )
@@ -414,7 +414,7 @@ class PlannerRuntime:
 
         user_prompt = "\n".join(
             [
-                "请从以下 procedural memory 摘要中选择最适合当前事件的一篇。",
+                "Choose the single best matching procedural-memory summary for the current event from the candidates below.",
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(
                     [document.summary_payload() for document in documents],
@@ -444,17 +444,17 @@ class PlannerRuntime:
         available_tools: list[dict[str, Any]],
     ) -> TracebackTaskTree:
         prompt_parts = [
-            "请根据以下安全告警初始化 TTT，并只返回 YAML。",
-            "请先理解事件内容，再参考 procedural memory、factual memory 与当前 MCP 工具能力构建更贴切的初始 TTT。",
-            "其中：procedural memory 是调查 workflow 参考；factual memory 是企业与数据环境背景；MCP tools 代表当前真实可执行能力，L3 应尽量贴合这些能力。",
-            "如果事件存在多个明显调查方向，必须拆成多个 L1 根节点；不要把多个方向都塞进一个总 L1。",
-            "L3 必须尽量写出具体实体，例如具体 IP、主机名、账号；避免使用“该 IP / 该主机 / 该账号”这类模糊指代。",
+            "Initialize the TTT for the security alert below and return YAML only.",
+            "Understand the event first, then use the procedural memory, factual memory, and current MCP tool capabilities to build a better-fitting initial TTT.",
+            "procedural memory provides workflow guidance; factual memory provides enterprise and data-environment background; MCP tools represent the currently executable capabilities, so L3 nodes should align closely with them.",
+            "If the event has multiple clear investigation directions, split them into multiple L1 root nodes rather than forcing them into one generic L1.",
+            "L3 nodes should name explicit entities whenever possible, such as concrete IPs, hostnames, or accounts, and should avoid vague phrasing like 'the IP', 'the host', or 'the account'.",
             json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
         ]
         if selected_memory is not None:
             prompt_parts.extend(
                 [
-                    "以下是匹配到的 procedural memory 文档：",
+                    "Matched procedural-memory document:",
                     json.dumps(selected_memory.summary_payload(), ensure_ascii=False, indent=2),
                     selected_memory.content,
                 ]
@@ -462,7 +462,7 @@ class PlannerRuntime:
         if factual_memories:
             prompt_parts.extend(
                 [
-                    "以下是当前固定注入的 factual memory 文档：",
+                    "Injected factual-memory documents:",
                     json.dumps(
                         [document.summary_payload() for document in factual_memories],
                         ensure_ascii=False,
@@ -479,7 +479,7 @@ class PlannerRuntime:
         if available_tools:
             prompt_parts.extend(
                 [
-                    "以下是当前可用的 MCP server 与 tools：",
+                    "Currently available MCP servers and tools:",
                     json.dumps(available_tools, ensure_ascii=False, indent=2),
                 ]
             )
@@ -515,11 +515,11 @@ class PlannerRuntime:
         )
         user_prompt = "\n".join(
             [
-                "请根据以下事件、上一轮 TTT 和 Reviewer 总结，更新下一轮 TTT，并只返回 YAML。",
+                "Update the next-round TTT from the event, previous-round TTT, and Reviewer summary below, and return YAML only.",
                 replanning_policy,
-                "如果事件存在多个明显调查方向，必须分别保持或拆分为多个 L1 根节点。",
-                "已经是 done 的节点必须保持 done，不要在新一轮里把它改回 todo 或 in_progress。",
-                "L3 必须尽量写出具体实体；若输入中已有明确 IP、主机名、账号，不要写成“该 IP / 该主机 / 该账号”。",
+                "If the event contains multiple clear investigation directions, preserve or split them into multiple L1 root nodes as needed.",
+                "Nodes already marked done must remain done; do not revert them to todo or in_progress in the new round.",
+                "L3 nodes should use explicit entities whenever possible. If the input already includes an IP, hostname, or account, do not rewrite it as 'the IP', 'the host', or 'the account'.",
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(latest_ttt.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps([execution.to_dict() for execution in executions], ensure_ascii=False, indent=2),
@@ -592,7 +592,7 @@ class PlannerRuntime:
                 round_reviews.append(review)
         user_prompt = "\n".join(
             [
-                "请基于以下完整溯源过程输出事件整体研判结论。",
+                "Based on the complete traceback process below, output an overall event assessment.",
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(latest_ttt.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps([execution.to_dict() for execution in executions], ensure_ascii=False, indent=2),
@@ -633,7 +633,7 @@ class PlannerRuntime:
         executions: list[Any],
     ) -> str:
         if not executions:
-            return "本轮缺少执行记录，可根据 review 自主补充下一轮 TTT，但仍应保持三层结构与实体完整性。"
+            return "This round has no execution records. You may supplement the next-round TTT from the review, but it must still keep a three-level structure and complete entities."
 
         successes = [
             execution
@@ -645,16 +645,16 @@ class PlannerRuntime:
         if successes and not has_failures:
             return "\n".join(
                 [
-                    "重规划策略提示：本轮执行整体成功。",
-                    "如果 review 没有明确提出新的关键证据、新缺口或新的调查方向，默认只更新相关节点状态和最小必要调整，不要新增、重排或大幅重写 TTT。",
-                    "如果当前步骤的工具执行成功且已经返回所需结果，应尽量不要更新 TTT，直接沿着当前树继续向下执行剩余节点。",
-                    f"当前 review 文本：{review_text}",
+                    "Replanning policy hint: this round executed successfully overall.",
+                    "If the review does not explicitly raise new key evidence, new gaps, or a new investigation direction, update only node status and the minimum necessary structure rather than adding, reordering, or heavily rewriting the TTT.",
+                    "If the current step executed successfully and returned the needed result, avoid changing the TTT and continue down the remaining nodes of the current tree.",
+                    f"Current review text: {review_text}",
                 ]
             )
         return "\n".join(
             [
-                "重规划策略提示：本轮存在失败执行、阻塞或未完成项，可根据 review 补充新的问题、L3 或新的 L1 方向，但仍应保持最小必要改动。",
-                f"当前 review 文本：{review_text}",
+                "Replanning policy hint: this round contains failed executions, blockers, or unfinished items. You may add new questions, L3 nodes, or new L1 directions from the review, but still keep the change set minimal.",
+                f"Current review text: {review_text}",
             ]
         )
 
@@ -682,18 +682,17 @@ class PlannerRuntime:
 
         review_text = (review.summary_text or "").lower()
         change_indicators = (
-            "新方向",
-            "新增方向",
-            "新的调查方向",
-            "扩线",
-            "转向",
-            "新增问题",
-            "新增l1",
-            "新增 l1",
-            "新增 l2",
-            "新增 l3",
-            "补充新问题",
-            "新的关键证据",
+            "new direction",
+            "added direction",
+            "new investigation direction",
+            "expand",
+            "pivot",
+            "new question",
+            "new l1",
+            "new l2",
+            "new l3",
+            "supplemental new question",
+            "new key evidence",
         )
         return not any(indicator in review_text for indicator in change_indicators)
 
@@ -835,36 +834,36 @@ class PlannerRuntime:
         account_value = entity_context.get("account")
 
         replacements = [
-            ("该 IP", ip_value),
-            ("这个 IP", ip_value),
-            ("源 IP", ip_value),
-            ("该主机", host_value),
-            ("目标主机", host_value),
-            ("该账号", account_value),
-            ("该用户", account_value),
+            ("the IP", ip_value),
+            ("this IP", ip_value),
+            ("source IP", ip_value),
+            ("the host", host_value),
+            ("target host", host_value),
+            ("the account", account_value),
+            ("the user", account_value),
         ]
         for needle, replacement in replacements:
             if replacement and needle in normalized:
                 normalized = normalized.replace(needle, replacement)
 
-        if ip_value and "IP" in normalized and ip_value not in normalized and "告警中的" not in normalized:
+        if ip_value and "IP" in normalized and ip_value not in normalized and "from the alert" not in normalized:
             normalized = normalized.replace("IP", f"IP {ip_value}", 1)
-        if host_value and "主机" in normalized and host_value not in normalized and "告警中的" not in normalized:
-            normalized = normalized.replace("主机", f"主机 {host_value}", 1)
-        if account_value and ("账号" in normalized or "用户" in normalized) and account_value not in normalized and "告警中的" not in normalized:
-            if "账号" in normalized:
-                normalized = normalized.replace("账号", f"账号 {account_value}", 1)
+        if host_value and "host" in normalized and host_value not in normalized and "from the alert" not in normalized:
+            normalized = normalized.replace("host", f"host {host_value}", 1)
+        if account_value and ("account" in normalized or "user" in normalized) and account_value not in normalized and "from the alert" not in normalized:
+            if "account" in normalized:
+                normalized = normalized.replace("account", f"account {account_value}", 1)
             else:
-                normalized = normalized.replace("用户", f"用户 {account_value}", 1)
+                normalized = normalized.replace("user", f"user {account_value}", 1)
 
         fallback_replacements = {
-            "该 IP": "告警中的源 IP",
-            "这个 IP": "告警中的源 IP",
-            "源 IP": "告警中的源 IP",
-            "该主机": "告警中的相关主机",
-            "目标主机": "告警中的目标主机",
-            "该账号": "告警中的相关账号",
-            "该用户": "告警中的相关用户",
+            "the IP": "source IP from the alert",
+            "this IP": "source IP from the alert",
+            "source IP": "source IP from the alert",
+            "the host": "related host from the alert",
+            "target host": "target host from the alert",
+            "the account": "related account from the alert",
+            "the user": "related user from the alert",
         }
         for needle, replacement in fallback_replacements.items():
             if needle in normalized:

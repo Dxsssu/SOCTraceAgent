@@ -13,12 +13,12 @@ from src.tools.virustotal import _extract_ip_address
 
 
 class ToolIPExtractionTests(unittest.TestCase):
-    def test_ipinfo_extracts_ipv4_followed_by_chinese_text(self) -> None:
-        extracted = _extract_ip_addresses("查询源IP 1.2.3.4的基础信息（地理位置、ASN、历史活动）")
+    def test_ipinfo_extracts_ipv4_followed_by_text(self) -> None:
+        extracted = _extract_ip_addresses("Look up the basic information for source IP 1.2.3.4, including geolocation, ASN, and prior activity.")
         self.assertEqual(extracted, ["1.2.3.4"])
 
-    def test_virustotal_extracts_ipv4_followed_by_chinese_text(self) -> None:
-        extracted = _extract_ip_address("查询源IP 1.2.3.4的威胁情报标签与信誉评分")
+    def test_virustotal_extracts_ipv4_followed_by_text(self) -> None:
+        extracted = _extract_ip_address("Look up threat-intelligence labels and reputation scoring for source IP 1.2.3.4.")
         self.assertEqual(extracted, "1.2.3.4")
 
 

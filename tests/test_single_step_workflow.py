@@ -25,9 +25,9 @@ class SingleStepWorkflowTests(unittest.TestCase):
         self.assertEqual(
             agent.responsibilities,
             (
-                "总结本轮工具执行结果。",
-                "总结已经收集到的结论。",
-                "给出 1 条 TTT 调整建议。",
+                "Summarize the tool execution results for this round.",
+                "Summarize the conclusions collected so far.",
+                "Provide 1 suggestion for adjusting the TTT.",
             ),
         )
 
@@ -42,7 +42,7 @@ class SingleStepWorkflowTests(unittest.TestCase):
             event = Event(
                 event_id="single-step-executor",
                 event_name="Single Step Executor Test",
-                message="测试单次执行后立即交给 Reviewer",
+                message="Test that a single execution is handed to Reviewer immediately",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
                 event_status=EventStatus.PLANNED,
@@ -55,14 +55,14 @@ class SingleStepWorkflowTests(unittest.TestCase):
                     root_nodes=(
                         TTTNode(
                             node_id="1",
-                            title="阶段一：确认可疑登录风险",
+                            title="Stage 1: Confirm suspicious login risk",
                             children=(
                                 TTTNode(
                                     node_id="1-1",
-                                    title="问题1.1：源 IP 是否为恶意来源？",
+                                    title="Question 1.1: Is the source IP malicious?",
                                     children=(
-                                        TTTNode(node_id="1-1-1", title="查询源 IP 的基础情报"),
-                                        TTTNode(node_id="1-1-2", title="查询源 IP 的威胁情报"),
+                                        TTTNode(node_id="1-1-1", title="Look up the basic intelligence for the source IP"),
+                                        TTTNode(node_id="1-1-2", title="Look up the threat intelligence for the source IP"),
                                     ),
                                 ),
                             ),
@@ -115,7 +115,7 @@ class SingleStepWorkflowTests(unittest.TestCase):
             event = Event(
                 event_id="single-step-zero-log-search",
                 event_name="Zero Result Search Test",
-                message="测试查询无日志时不要直接变成 n/a",
+                message="Test that no-log searches do not become n/a directly",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
                 event_status=EventStatus.PLANNED,
@@ -128,13 +128,13 @@ class SingleStepWorkflowTests(unittest.TestCase):
                     root_nodes=(
                         TTTNode(
                             node_id="1",
-                            title="方向一：确认日志是否存在",
+                            title="Direction 1: Confirm whether the logs exist",
                             children=(
                                 TTTNode(
                                     node_id="1-1",
-                                    title="问题1.1：是否存在相关 Web 日志？",
+                                    title="Question 1.1: Are the relevant Web logs present?",
                                     children=(
-                                        TTTNode(node_id="1-1-1", title="查询相关 Web 日志"),
+                                        TTTNode(node_id="1-1-1", title="Search the relevant Web logs"),
                                     ),
                                 ),
                             ),
@@ -177,7 +177,7 @@ class SingleStepWorkflowTests(unittest.TestCase):
             event = Event(
                 event_id="single-step-reviewer",
                 event_name="Single Step Reviewer Test",
-                message="测试未执行完所有叶子也能 review",
+                message="Test that review can proceed before all leaves are executed",
                 source="unit_test",
                 severity=SeverityLevel.MEDIUM,
                 event_status=EventStatus.REVIEWING,
@@ -190,14 +190,14 @@ class SingleStepWorkflowTests(unittest.TestCase):
                     root_nodes=(
                         TTTNode(
                             node_id="1",
-                            title="阶段一：确认可疑登录风险",
+                            title="Stage 1: Confirm suspicious login risk",
                             children=(
                                 TTTNode(
                                     node_id="1-1",
-                                    title="问题1.1：源 IP 是否为恶意来源？",
+                                    title="Question 1.1: Is the source IP malicious?",
                                     children=(
-                                        TTTNode(node_id="1-1-1", title="查询源 IP 的基础情报"),
-                                        TTTNode(node_id="1-1-2", title="查询源 IP 的威胁情报"),
+                                        TTTNode(node_id="1-1-1", title="Look up the basic intelligence for the source IP"),
+                                        TTTNode(node_id="1-1-2", title="Look up the threat intelligence for the source IP"),
                                     ),
                                 ),
                             ),
@@ -222,7 +222,7 @@ class SingleStepWorkflowTests(unittest.TestCase):
                     event_id=event.event_id,
                     round_id=1,
                     node_id="1-1-1",
-                    node_title="查询源 IP 的基础情报",
+                    node_title="Look up the basic intelligence for the source IP",
                     tool_name="ipinfo",
                     tool_input={"intent": "lookup"},
                     result={"ip": "11.22.33.44"},
@@ -232,7 +232,7 @@ class SingleStepWorkflowTests(unittest.TestCase):
 
             with patch(
                 "src.agent.reviewer.call_llm",
-                return_value="已获得源 IP 基础情报，但尚未查询源 IP 的威胁情报。下一轮应优先补充相关情报查询。",
+                return_value="The basic intelligence for the source IP has been collected, but the threat-intelligence lookup has not been completed yet. The next round should prioritize that lookup.",
             ):
                 did_work = runtime.process_event(event)
 
@@ -245,7 +245,7 @@ class SingleStepWorkflowTests(unittest.TestCase):
             review = storage.get_round_review(event.event_id, 1)
             self.assertIsNotNone(review)
             assert review is not None
-            self.assertIn("尚未查询源 IP 的威胁情报", review.summary_text)
+            self.assertIn("the threat-intelligence lookup has not been completed yet", review.summary_text)
 
             messages = bus.list_messages(MessageQuery(event_id=event.event_id))
             message_types = [message.message_type for message in messages]

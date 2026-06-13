@@ -23,7 +23,7 @@ class ExecutorToolRoutingTests(unittest.TestCase):
         event = Event(
             event_id="event-executor-routing-log-search",
             event_name="Windows Login Log Search Test",
-            message="SOC 调查：需要查询 Windows 登录相关日志。",
+            message="SOC investigation: search for Windows login-related logs.",
             context={
                 "splunk_dataset": "botsv1",
             },
@@ -32,7 +32,7 @@ class ExecutorToolRoutingTests(unittest.TestCase):
         )
         node = TTTNode(
             node_id="1-2-1",
-            title="查询windows登陆日志",
+            title="Search Windows login logs",
         )
 
         tool_selection = runtime._select_tool(node, event)

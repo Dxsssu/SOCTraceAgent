@@ -16,11 +16,11 @@ load_dotenv()
 
 
 class MessageBus(ABC):
-    """最小消息总线接口。
+    """Minimal message bus interface.
 
-    注意：
-    - 它不是业务状态机本身
-    - 它只负责发布和查询结构化消息
+    Notes:
+    - It is not the business state machine itself.
+    - It is only responsible for publishing and querying structured messages.
     """
 
     @abstractmethod
@@ -33,10 +33,10 @@ class MessageBus(ABC):
 
 
 class InMemoryMessageBus(MessageBus):
-    """内存版消息总线。
+    """In-memory message bus.
 
-    适合当前骨架阶段、本地调试和单进程测试。
-    不适合作为跨进程最终实现。
+    Suitable for the current skeleton stage, local debugging, and single-process tests.
+    Not suitable as the final cross-process implementation.
     """
 
     def __init__(self) -> None:
@@ -73,10 +73,11 @@ class InMemoryMessageBus(MessageBus):
 
 
 class SQLiteMessageBus(MessageBus):
-    """基于 SQLite 的持久化消息总线。
+    """SQLite-backed persistent message bus.
 
-    适合当前阶段的单机、多进程消息留痕需求。
-    它的职责仅是保存和查询结构化消息，不负责业务状态推进。
+    Suitable for the current single-host, multi-process message-audit use case.
+    Its responsibility is limited to storing and querying structured messages;
+    it does not drive business-state transitions.
     """
 
     def __init__(self, db_path: str | Path | None = None) -> None:

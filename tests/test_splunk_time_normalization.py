@@ -46,7 +46,7 @@ class SplunkTimeNormalizationTests(unittest.TestCase):
                 "earliest": "04:40:00",
                 "latest": "05:10:00",
             },
-            intent="2016-08-19 05:10:00，外部 IP 40.80.148.42 持续访问目标站点。",
+            intent="2016-08-19 05:10:00, external IP 40.80.148.42 continuously accessed the target site.",
             additional_context={},
         )
         self.assertEqual(patched["earliest"], "2016-08-19T04:40:00")
@@ -61,7 +61,7 @@ class SplunkTimeNormalizationTests(unittest.TestCase):
                 "latest": "05:10:00",
                 "keywords": ["web"],
             },
-            intent="2016-08-19 05:10:00，外部 IP 40.80.148.42 持续访问目标站点。",
+            intent="2016-08-19 05:10:00, external IP 40.80.148.42 continuously accessed the target site.",
             additional_context={},
         )
         query = tool.build_query(SplunkQuerySpec.from_dict(patched))

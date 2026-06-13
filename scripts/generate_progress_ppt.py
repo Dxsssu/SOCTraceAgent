@@ -10,16 +10,11 @@ ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = ROOT / "docs" / "report"
 OUTPUT_FILE = OUTPUT_DIR / "socagent_progress_report.pptx"
 
-
 EMU_PER_INCH = 914400
 
 
 def emu(inches: float) -> int:
     return int(inches * EMU_PER_INCH)
-
-
-SLIDE_W = emu(13.333)
-SLIDE_H = emu(7.5)
 
 
 def xml_text_runs(text: str, size: int = 2400, bold: bool = False, color: str = "1F2937") -> str:
@@ -28,7 +23,7 @@ def xml_text_runs(text: str, size: int = 2400, bold: bool = False, color: str = 
         line = raw_line if raw_line else " "
         paragraphs.append(
             "<a:p>"
-            f'<a:r><a:rPr lang="zh-CN" sz="{size}" b="{1 if bold else 0}" dirty="0" smtClean="0">'
+            f'<a:r><a:rPr lang="en-US" sz="{size}" b="{1 if bold else 0}" dirty="0" smtClean="0">'
             f'<a:solidFill><a:srgbClr val="{color}"/></a:solidFill>'
             "</a:rPr>"
             f"<a:t>{escape(line)}</a:t></a:r>"
@@ -127,7 +122,7 @@ def make_slide(title: str, shapes: list[str], bg_color: str = "F8FAFC") -> str:
 
 def title_slide() -> str:
     shapes = [
-        shape_textbox(3, "Hero", emu(0.8), emu(1.4), emu(6.0), emu(2.1), "SOCAgent\n阶段性进展汇报", size=3000, bold=True, color="0F172A"),
+        shape_textbox(3, "Hero", emu(0.8), emu(1.4), emu(6.0), emu(2.1), "SOCAgent\nProgress Report", size=3000, bold=True, color="0F172A"),
         shape_textbox(
             4,
             "Subtitle",
@@ -135,143 +130,151 @@ def title_slide() -> str:
             emu(3.65),
             emu(5.8),
             emu(1.3),
-            "面向安全告警溯源场景的三角色多智能体原型\n当前重点：打通 workflow、在开源数据集上持续验证与调优",
-            size=1800,
+            "A three-role multi-agent prototype for security alert traceback\nCurrent focus: run the workflow end to end and keep validating and tuning on open datasets",
+            size=1700,
             color="475569",
         ),
-        shape_textbox(5, "Card1", emu(7.1), emu(1.35), emu(2.0), emu(1.05), "Planner\n任务规划", size=1800, bold=True, color="FFFFFF", fill="2563EB"),
-        shape_textbox(6, "Card2", emu(9.3), emu(1.35), emu(2.0), emu(1.05), "Executor\n执行检索", size=1800, bold=True, color="FFFFFF", fill="0F766E"),
-        shape_textbox(7, "Card3", emu(11.5), emu(1.35), emu(1.1), emu(1.05), "Reviewer\n复盘", size=1500, bold=True, color="FFFFFF", fill="DC2626"),
+        shape_textbox(5, "Card1", emu(7.1), emu(1.35), emu(2.0), emu(1.05), "Planner\nTask Planning", size=1700, bold=True, color="FFFFFF", fill="2563EB"),
+        shape_textbox(6, "Card2", emu(9.3), emu(1.35), emu(2.0), emu(1.05), "Executor\nTool Execution", size=1700, bold=True, color="FFFFFF", fill="0F766E"),
+        shape_textbox(7, "Card3", emu(11.5), emu(1.35), emu(1.1), emu(1.05), "Reviewer\nReview", size=1400, bold=True, color="FFFFFF", fill="DC2626"),
         shape_textbox(8, "Flow", emu(7.1), emu(3.0), emu(5.5), emu(2.3), "Event\n↓\nTTT\n↓\nExecution\n↓\nRoundReview\n↓\nNext-round TTT", size=1700, bold=True, color="0F172A", fill="E2E8F0", line="CBD5E1"),
-        shape_textbox(9, "Footer", emu(0.8), emu(6.6), emu(5.8), emu(0.35), f"生成时间：{datetime.now().strftime('%Y-%m-%d')}", size=1200, color="64748B"),
+        shape_textbox(9, "Footer", emu(0.8), emu(6.6), emu(5.8), emu(0.35), f"Generated: {datetime.now().strftime('%Y-%m-%d')}", size=1200, color="64748B"),
     ]
-    return make_slide("导师汇报", shapes)
+    return make_slide("Advisor Report", shapes)
 
 
 def progress_slide() -> str:
     left = (
-        "1. 已打通多角色闭环 workflow\n"
-        "• Planner 生成 TTT（Traceback Task Tree）\n"
-        "• Executor 领取 L3 叶子节点并执行\n"
-        "• Reviewer 生成 RoundReview，并驱动下一轮 replanning\n"
-        "• 核心链路已形成 Event -> TTT -> Execution -> RoundReview -> TTT"
+        "1. Multi-role closed-loop workflow is connected\n"
+        "• Planner builds the TTT (Traceback Task Tree)\n"
+        "• Executor claims and executes L3 leaf nodes\n"
+        "• Reviewer produces RoundReview and drives replanning\n"
+        "• Core chain: Event -> TTT -> Execution -> RoundReview -> TTT"
     )
     right = (
-        "2. 当前验证方式\n"
-        "• 基于 SQLite 共享状态，支持多进程协同\n"
-        "• 通过 Web 首页创建事件，在 war room 观察实时推进\n"
-        "• 已有多轮闭环烟雾测试脚本，可持续验证整体链路"
+        "2. Current validation approach\n"
+        "• Shared state through SQLite for multi-process collaboration\n"
+        "• Create events from the Web home page and observe progress in the war room\n"
+        "• Multi-round smoke tests are available for end-to-end validation"
     )
     bottom = (
-        "3. 当前阶段重点\n"
-        "• 在开源 BOTS 数据集上反复测试查询效果与任务拆解质量\n"
-        "• 针对 TTT 构建、工具路由、Splunk 查询意图翻译持续调优\n"
-        "• 让前端展示的状态、消息流、执行记录与真实 SQLite 状态保持一致"
+        "3. Current focus\n"
+        "• Repeatedly test query quality and task decomposition on the open BOTS dataset\n"
+        "• Keep tuning TTT construction, tool routing, and Splunk intent translation\n"
+        "• Keep front-end status, message flow, and executions aligned with real SQLite state"
     )
     shapes = [
-        shape_textbox(3, "L", emu(0.7), emu(1.25), emu(5.8), emu(2.35), left, size=1750, color="0F172A", fill="DBEAFE", line="93C5FD"),
-        shape_textbox(4, "R", emu(6.85), emu(1.25), emu(5.8), emu(2.35), right, size=1750, color="0F172A", fill="DCFCE7", line="86EFAC"),
-        shape_textbox(5, "B", emu(0.7), emu(4.0), emu(11.95), emu(2.2), bottom, size=1750, color="0F172A", fill="F8FAFC", line="CBD5E1"),
+        shape_textbox(3, "L", emu(0.7), emu(1.25), emu(5.8), emu(2.35), left, size=1700, color="0F172A", fill="DBEAFE", line="93C5FD"),
+        shape_textbox(4, "R", emu(6.85), emu(1.25), emu(5.8), emu(2.35), right, size=1700, color="0F172A", fill="DCFCE7", line="86EFAC"),
+        shape_textbox(5, "B", emu(0.7), emu(4.0), emu(11.95), emu(2.2), bottom, size=1700, color="0F172A", fill="F8FAFC", line="CBD5E1"),
         shape_line(6, "divider", emu(6.45), emu(1.4), emu(6.45), emu(3.4)),
     ]
-    return make_slide("1. 当前整体进展", shapes)
+    return make_slide("1. Overall Progress", shapes)
 
 
 def bots_slide() -> str:
     intro = (
-        "BOTS（Boss of the SOC）是 Splunk 提供的开源安全分析数据集，\n"
-        "适合用来验证攻击溯源、日志关联分析与查询策略。"
+        "BOTS (Boss of the SOC) is an open security-analysis dataset from Splunk,\n"
+        "well suited for attack traceback, log correlation analysis, and query-strategy validation."
     )
     detail = (
-        "当前项目中的使用方式\n"
-        "• 默认接入 botsv1，也预留了 botsv2 / botsv3 配置\n"
-        "• 通过 Splunk REST API 执行真实查询，而不是前端假数据\n"
-        "• 便于验证多轮调查流程在不同日志类型上的泛化能力"
+        "How we use it in this project\n"
+        "• botsv1 is the default dataset, with botsv2 / botsv3 reserved as well\n"
+        "• Queries run through the Splunk REST API rather than front-end mock data\n"
+        "• It helps validate whether the multi-round workflow generalizes across log types"
     )
     logs = (
-        "botsv1 典型日志类型\n"
+        "Typical botsv1 log types\n"
         "• Windows / Sysmon\n"
         "• IIS / Stream / DNS / HTTP\n"
         "• Suricata / FortiGate\n"
-        "• 注册表与主机行为日志"
+        "• Registry and host-behavior logs"
     )
     value = (
-        "为什么适合当前阶段\n"
-        "• 数据公开，便于复现实验\n"
-        "• 既有网络流量，也有主机日志\n"
-        "• 能支撑从告警到证据链的完整验证"
+        "Why it fits the current stage\n"
+        "• Public data makes experiments easy to reproduce\n"
+        "• Includes both network traffic and host logs\n"
+        "• Supports full validation from alert to evidence chain"
     )
     shapes = [
-        shape_textbox(3, "Intro", emu(0.7), emu(1.2), emu(12.0), emu(1.0), intro, size=1900, color="0F172A", fill="FEF3C7", line="FCD34D"),
-        shape_textbox(4, "Detail", emu(0.7), emu(2.45), emu(5.8), emu(2.6), detail, size=1700, color="0F172A", fill="EFF6FF", line="93C5FD"),
-        shape_textbox(5, "Logs", emu(6.9), emu(2.45), emu(2.75), emu(2.6), logs, size=1650, color="0F172A", fill="ECFDF5", line="86EFAC"),
-        shape_textbox(6, "Value", emu(9.95), emu(2.45), emu(2.75), emu(2.6), value, size=1650, color="0F172A", fill="FDF2F8", line="F9A8D4"),
+        shape_textbox(3, "Intro", emu(0.7), emu(1.2), emu(12.0), emu(1.0), intro, size=1800, color="0F172A", fill="FEF3C7", line="FCD34D"),
+        shape_textbox(4, "Detail", emu(0.7), emu(2.45), emu(5.8), emu(2.6), detail, size=1650, color="0F172A", fill="EFF6FF", line="93C5FD"),
+        shape_textbox(5, "Logs", emu(6.9), emu(2.45), emu(2.75), emu(2.6), logs, size=1600, color="0F172A", fill="ECFDF5", line="86EFAC"),
+        shape_textbox(6, "Value", emu(9.95), emu(2.45), emu(2.75), emu(2.6), value, size=1600, color="0F172A", fill="FDF2F8", line="F9A8D4"),
     ]
-    return make_slide("2. BOTS 数据集介绍", shapes)
+    return make_slide("2. BOTS Dataset", shapes)
 
 
 def stack_slide() -> str:
     backend = (
-        "后端\n"
+        "Backend\n"
         "• Python 3.13\n"
         "• Flask + Flask-SocketIO\n"
-        "• SQLite 作为共享状态中心\n"
-        "• OpenAI 兼容 LLM 接口封装\n"
-        "• Splunk / VirusTotal / IPInfo 工具接入"
+        "• SQLite as the shared state hub\n"
+        "• OpenAI-compatible LLM integration\n"
+        "• Splunk / VirusTotal / IPInfo tool integration"
     )
     frontend = (
-        "前端\n"
-        "• Jinja2 模板页面\n"
+        "Frontend\n"
+        "• Jinja2 template pages\n"
         "• Bootstrap 5\n"
-        "• 原生 JavaScript\n"
-        "• Socket.IO 实时消息推送\n"
-        "• 首页 + War Room 双页面结构"
+        "• Vanilla JavaScript\n"
+        "• Socket.IO real-time message updates\n"
+        "• Home page + War Room structure"
     )
     arch = (
-        "运行结构\n"
-        "Web 层\n"
+        "Runtime structure\n"
+        "Web layer\n"
         "↓\n"
         "Planner / Executor / Reviewer\n"
         "↓\n"
         "SQLite + TTT + Execution + Review"
     )
     shapes = [
-        shape_textbox(3, "Backend", emu(0.7), emu(1.35), emu(4.0), emu(3.5), backend, size=1750, color="FFFFFF", fill="1D4ED8"),
-        shape_textbox(4, "Frontend", emu(4.95), emu(1.35), emu(4.0), emu(3.5), frontend, size=1750, color="FFFFFF", fill="0F766E"),
-        shape_textbox(5, "Arch", emu(9.2), emu(1.35), emu(3.45), emu(3.5), arch, size=1700, bold=True, color="0F172A", fill="E2E8F0", line="94A3B8"),
-        shape_textbox(6, "Bottom", emu(0.7), emu(5.2), emu(11.95), emu(1.1), "特点：当前系统已经不是静态演示页面，而是前后端联动、消费真实状态数据的可运行原型。", size=1750, color="334155", fill="F8FAFC", line="CBD5E1"),
+        shape_textbox(3, "Backend", emu(0.7), emu(1.35), emu(4.0), emu(3.5), backend, size=1700, color="FFFFFF", fill="1D4ED8"),
+        shape_textbox(4, "Frontend", emu(4.95), emu(1.35), emu(4.0), emu(3.5), frontend, size=1700, color="FFFFFF", fill="0F766E"),
+        shape_textbox(5, "Arch", emu(9.2), emu(1.35), emu(3.45), emu(3.5), arch, size=1650, bold=True, color="0F172A", fill="E2E8F0", line="94A3B8"),
+        shape_textbox(6, "Bottom", emu(0.7), emu(5.2), emu(11.95), emu(1.1), "The current system is not a static demo page. It is a runnable prototype where the frontend and backend consume real runtime state together.", size=1600, color="334155", fill="F8FAFC", line="CBD5E1"),
     ]
-    return make_slide("3. 前后端技术栈", shapes)
+    return make_slide("3. Frontend and Backend Stack", shapes)
 
 
 def ui_slide() -> str:
     home = (
-        "首页\n"
-        "• 创建安全事件\n"
-        "• 查看事件列表\n"
-        "• 进入单事件 war room"
+        "Home page\n"
+        "• Create security events\n"
+        "• View the event list\n"
+        "• Enter a single-event war room"
     )
     war = (
         "War Room\n"
-        "• 事件详情与状态\n"
-        "• 三角色消息流\n"
-        "• TTT 层级结构\n"
-        "• 执行记录与轮次复盘\n"
-        "• Socket.IO 实时更新"
+        "• Event details and status\n"
+        "• Three-role message stream\n"
+        "• TTT hierarchy\n"
+        "• Execution records and round reviews\n"
+        "• Socket.IO real-time updates"
+    )
+    next_steps = (
+        "Next steps\n"
+        "• Keep testing different alert types on BOTS\n"
+        "• Improve TTT quality and Splunk query generation\n"
+        "• Expand callable security tools\n"
+        "• Add more standardized tests and stronger UI observability"
     )
     shapes = [
-        shape_textbox(3, "HomeFrame", emu(0.8), emu(1.45), emu(5.8), emu(4.8), "", fill="FFFFFF", line="94A3B8"),
-        shape_textbox(4, "HomeNav", emu(1.0), emu(1.7), emu(5.4), emu(0.45), "SOCAgent Home", size=1500, bold=True, color="FFFFFF", fill="2563EB"),
-        shape_textbox(5, "HomeLeft", emu(1.05), emu(2.35), emu(2.0), emu(2.8), "创建事件表单", size=1800, bold=True, color="0F172A", fill="DBEAFE", line="93C5FD"),
-        shape_textbox(6, "HomeRight", emu(3.3), emu(2.35), emu(2.9), emu(2.8), "事件列表\n\n按状态与时间查看\n已创建的调查任务", size=1600, color="0F172A", fill="F8FAFC", line="CBD5E1"),
-        shape_textbox(7, "HomeNote", emu(0.95), emu(5.55), emu(5.45), emu(0.55), home, size=1450, color="334155"),
-        shape_textbox(8, "WarFrame", emu(6.8), emu(1.45), emu(5.75), emu(4.8), "", fill="0F172A", line="38BDF8"),
-        shape_textbox(9, "WarHeader", emu(7.0), emu(1.7), emu(5.35), emu(0.45), "SOCAgent War Room", size=1500, bold=True, color="FFFFFF", fill="0EA5E9"),
-        shape_textbox(10, "WarMain", emu(7.05), emu(2.35), emu(3.55), emu(2.9), "消息流\n\nPlanner / Executor /\nReviewer 的实时协作内容", size=1600, color="E2E8F0", fill="111827", line="334155"),
-        shape_textbox(11, "WarSide", emu(10.8), emu(2.35), emu(1.8), emu(2.9), "右侧状态栏\n\n轮次\n节点数\n执行数\n角色状态", size=1500, color="E2E8F0", fill="1E293B", line="334155"),
-        shape_textbox(12, "WarNote", emu(6.95), emu(5.55), emu(5.45), emu(0.7), war, size=1450, color="334155"),
+        shape_textbox(3, "HomeFrame", emu(0.8), emu(1.45), emu(4.0), emu(3.8), "", fill="FFFFFF", line="94A3B8"),
+        shape_textbox(4, "HomeNav", emu(1.0), emu(1.7), emu(3.6), emu(0.45), "SOCAgent Home", size=1500, bold=True, color="FFFFFF", fill="2563EB"),
+        shape_textbox(5, "HomeLeft", emu(1.05), emu(2.35), emu(1.4), emu(2.1), "Event Form", size=1700, bold=True, color="0F172A", fill="DBEAFE", line="93C5FD"),
+        shape_textbox(6, "HomeRight", emu(2.65), emu(2.35), emu(1.9), emu(2.1), "Event List\n\nView created investigations\nby status and time", size=1450, color="0F172A", fill="F8FAFC", line="CBD5E1"),
+        shape_textbox(7, "HomeNote", emu(0.95), emu(5.45), emu(3.7), emu(0.7), home, size=1350, color="334155"),
+        shape_textbox(8, "WarFrame", emu(5.15), emu(1.45), emu(4.2), emu(3.8), "", fill="0F172A", line="38BDF8"),
+        shape_textbox(9, "WarHeader", emu(5.35), emu(1.7), emu(3.8), emu(0.45), "SOCAgent War Room", size=1500, bold=True, color="FFFFFF", fill="0EA5E9"),
+        shape_textbox(10, "WarMain", emu(5.4), emu(2.35), emu(2.55), emu(2.2), "Message Stream\n\nPlanner / Executor /\nReviewer collaboration", size=1450, color="E2E8F0", fill="111827", line="334155"),
+        shape_textbox(11, "WarSide", emu(8.15), emu(2.35), emu(1.0), emu(2.2), "Status\n\nRound\nLeaves\nExecs\nRoles", size=1350, color="E2E8F0", fill="1E293B", line="334155"),
+        shape_textbox(12, "WarNote", emu(5.3), emu(5.45), emu(3.9), emu(0.8), war, size=1300, color="334155"),
+        shape_textbox(13, "NextSteps", emu(9.7), emu(1.45), emu(2.7), emu(4.7), next_steps, size=1450, color="0F172A", fill="FEF3C7", line="FCD34D"),
     ]
-    return make_slide("4. 界面展示", shapes)
+    return make_slide("4. UI Preview and Next Steps", shapes)
 
 
 def rels_xml() -> str:
@@ -355,9 +358,7 @@ def core_xml() -> str:
 
 
 def presentation_xml(slide_count: int) -> str:
-    slide_ids = "".join(
-        f'<p:sldId id="{255 + i}" r:id="rId{i + 1}"/>' for i in range(1, slide_count + 1)
-    )
+    slide_ids = "".join(f'<p:sldId id="{255 + i}" r:id="rId{i + 1}"/>' for i in range(1, slide_count + 1))
     return (
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         '<p:presentation xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
@@ -466,8 +467,8 @@ def theme_xml() -> str:
         "<a:folHlink><a:srgbClr val=\"7C3AED\"/></a:folHlink>"
         "</a:clrScheme>"
         "<a:fontScheme name=\"Office\">"
-        "<a:majorFont><a:latin typeface=\"Aptos Display\"/><a:ea typeface=\"Microsoft YaHei\"/><a:cs typeface=\"Arial\"/></a:majorFont>"
-        "<a:minorFont><a:latin typeface=\"Aptos\"/><a:ea typeface=\"Microsoft YaHei\"/><a:cs typeface=\"Arial\"/></a:minorFont>"
+        "<a:majorFont><a:latin typeface=\"Aptos Display\"/><a:ea typeface=\"Arial\"/><a:cs typeface=\"Arial\"/></a:majorFont>"
+        "<a:minorFont><a:latin typeface=\"Aptos\"/><a:ea typeface=\"Arial\"/><a:cs typeface=\"Arial\"/></a:minorFont>"
         "</a:fontScheme>"
         '<a:fmtScheme name="Office"><a:fillStyleLst/><a:lnStyleLst/><a:effectStyleLst/><a:bgFillStyleLst/></a:fmtScheme>'
         "</a:themeElements>"

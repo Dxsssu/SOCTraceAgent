@@ -38,7 +38,7 @@ def coerce_ttt_node_status(value: Any) -> TTTNodeStatus:
 
 @dataclass(slots=True, frozen=True)
 class TTTNode:
-    """TTT 单个节点。"""
+    """Single node in the Traceback Task Tree."""
 
     node_id: str
     title: str
@@ -68,7 +68,7 @@ class TTTNode:
 
 @dataclass(slots=True, frozen=True)
 class TracebackTaskTree:
-    """按版本保存的 TTT 快照。"""
+    """Versioned snapshot of the Traceback Task Tree."""
 
     event_id: str
     round_id: int
