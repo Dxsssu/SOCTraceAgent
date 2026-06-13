@@ -22,29 +22,18 @@
             <!-- 顶部事件信息栏 -->
             <div class="event-header">
                 <div class="event-title">
-                    <div class="d-flex align-items-center">
+                    <div class="event-title-main d-flex align-items-start">
                         <a href="/">
                             <span class="logo-img me-3 d-inline-flex align-items-center justify-content-center" style="height: 36px; width: 36px; border-radius: 10px; background: rgba(0, 168, 255, 0.18); color: #00a8ff; font-weight: 700;">SA</span>
                         </a>
                         <h1 id="event-name">加载中...</h1>
-                        <button id="event-tree-btn" class="cyber-btn small ms-2" title="溯源任务树">
-                            <i class="bi bi-diagram-3"></i>
-                        </button>
                     </div>
                     <div class="event-status-container">
                         <div id="connection-status" class="status-connecting">连接中...</div>
-                        <!-- 执行任务指示器 -->
-                        <div id="execution-indicator" class="execution-indicator">
-                            <span class="execution-count">0</span>
-                            <span class="execution-icon"><i class="fas fa-tasks"></i></span>
-                        </div>
                         <div id="event-status" class="event-status pending">
                             <span class="status-indicator"></span>
                             <span class="status-text">待处理</span>
                         </div>
-                        <button id="event-details-btn" class="cyber-btn small">
-                            <span class="cyber-btn-text">详情</span>
-                        </button>
                     </div>
                 </div>
                 <div class="event-meta">
@@ -78,23 +67,28 @@
             <!-- 状态区域 -->
             <div class="status-section">
                 <h2 class="section-title">事件状态</h2>
-                <div class="status-grid">
-                    <div class="status-item">
-                        <div class="status-label">当前轮次</div>
-                        <div class="status-value" id="current-round">1</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">叶子节点</div>
-                        <div class="status-value" id="task-count">0</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">执行记录</div>
-                        <div class="status-value" id="action-count">0</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">轮次复盘</div>
-                        <div class="status-value" id="command-count">0</div>
-                    </div>
+                <div class="status-actions">
+                    <button id="task-tree-btn" class="status-action-btn" type="button">
+                        <span class="status-action-icon"><i class="bi bi-diagram-3"></i></span>
+                        <span class="status-action-copy">
+                            <span class="status-action-title">溯源任务树</span>
+                            <span class="status-action-meta"><span id="task-count">0</span> 个叶子节点</span>
+                        </span>
+                    </button>
+                    <button id="execution-log-btn" class="status-action-btn" type="button">
+                        <span class="status-action-icon"><i class="fas fa-tasks"></i></span>
+                        <span class="status-action-copy">
+                            <span class="status-action-title">执行记录</span>
+                            <span class="status-action-meta"><span id="action-count">0</span> 条执行</span>
+                        </span>
+                    </button>
+                    <button id="event-overview-btn" class="status-action-btn" type="button">
+                        <span class="status-action-icon"><i class="bi bi-file-earmark-text"></i></span>
+                        <span class="status-action-copy">
+                            <span class="status-action-title">事件概览</span>
+                            <span class="status-action-meta">Round <span id="current-round">1</span> · <span id="command-count">0</span> 条复盘</span>
+                        </span>
+                    </button>
                 </div>
             </div>
             
@@ -231,19 +225,21 @@
         </div>
     </div>
 
-    <!-- 执行任务列表面板 -->
-    <div id="execution-panel" class="execution-panel">
-        <div class="execution-panel-header">
-            <h3>执行记录 (<span id="execution-count-display">0</span>)</h3>
-            <button class="execution-panel-close"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="execution-panel-body">
-            <div id="execution-list" class="execution-list">
-                <!-- 执行任务列表将通过JS动态生成 -->
+    <!-- 执行任务列表模态框 -->
+    <div id="execution-list-modal" class="cyber-modal">
+        <div class="cyber-modal-content execution-list-modal-content">
+            <div class="cyber-modal-header">
+                <h2>执行记录 (<span id="execution-count-display">0</span>)</h2>
+                <button class="cyber-modal-close">&times;</button>
             </div>
-            <div id="execution-empty" class="execution-empty">
-                <i class="fas fa-check-circle"></i>
-                <p>当前没有执行记录</p>
+            <div class="cyber-modal-body execution-list-modal-body">
+                <div id="execution-list" class="execution-list">
+                    <!-- 执行任务列表将通过JS动态生成 -->
+                </div>
+                <div id="execution-empty" class="execution-empty">
+                    <i class="fas fa-check-circle"></i>
+                    <p>当前没有执行记录</p>
+                </div>
             </div>
         </div>
     </div>
@@ -283,7 +279,7 @@
                 
                 <div class="execution-result-input">
                     <label for="execution-result">执行结果:</label>
-                    <textarea id="execution-result" readonly placeholder="执行结果将在这里展示..."></textarea>
+                    <pre id="execution-result" class="execution-result-view" tabindex="0"></pre>
                 </div>
                 
                 <div class="execution-actions">

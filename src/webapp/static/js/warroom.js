@@ -12,6 +12,7 @@ let currentEvent = null;
 let refreshTimer = null;
 let messageRenderQueue = [];
 let isRenderingMessage = false;
+let hasHydratedInitialMessages = false;
 
 const elements = {
   chatMessages: document.getElementById("chat-messages"),
@@ -30,10 +31,8 @@ const elements = {
   commandCount: document.getElementById("command-count"),
   messageCount: document.getElementById("message-count"),
   connectionStatus: document.getElementById("connection-status"),
-  executionIndicator: document.getElementById("execution-indicator"),
-  executionCount: document.querySelector(".execution-count"),
   executionCountDisplay: document.getElementById("execution-count-display"),
-  executionPanel: document.getElementById("execution-panel"),
+  executionListModal: document.getElementById("execution-list-modal"),
   executionList: document.getElementById("execution-list"),
   executionEmpty: document.getElementById("execution-empty"),
   executionModal: document.getElementById("execution-modal"),
@@ -72,19 +71,20 @@ function bindEvents() {
     }
   });
 
-  document.getElementById("event-details-btn")?.addEventListener("click", () => {
+  document.getElementById("event-overview-btn")?.addEventListener("click", () => {
     openModal(elements.eventDetailsModal);
   });
-  document.getElementById("event-tree-btn")?.addEventListener("click", () => {
+  document.getElementById("task-tree-btn")?.addEventListener("click", () => {
     openModal(elements.eventTreeModal);
+  });
+  document.getElementById("execution-log-btn")?.addEventListener("click", () => {
+    openModal(elements.executionListModal);
   });
   document.getElementById("settings-btn")?.addEventListener("click", () => {
     refreshAll();
     showToast("已手动刷新", "success");
   });
   document.getElementById("close-execution-detail")?.addEventListener("click", closeAllModals);
-  document.querySelector(".execution-panel-close")?.addEventListener("click", toggleExecutionPanel);
-  elements.executionIndicator?.addEventListener("click", toggleExecutionPanel);
 
   document.querySelectorAll(".cyber-modal-close").forEach((button) => {
     button.addEventListener("click", closeAllModals);
@@ -166,7 +166,26 @@ async function fetchEventMessages() {
     const response = await fetch(`${API_BASE_URL}/event/${eventId}/messages?after_rowid=${lastMessageId}`);
     const data = await response.json();
     if (data.status !== "success") return;
+    const incomingMessages = [];
     for (const message of data.data) {
+      if (displayedMessageKeys.has(getMessageKey(message))) {
+        lastMessageId = Math.max(lastMessageId, Number(message.id || 0));
+        continue;
+      }
+      incomingMessages.push(message);
+    }
+    if (!incomingMessages.length) {
+      if (messagesData.length || lastMessageId > 0) {
+        hasHydratedInitialMessages = true;
+      }
+      return;
+    }
+    if (!hasHydratedInitialMessages && !messagesData.length) {
+      renderMessageBatch(incomingMessages);
+      hasHydratedInitialMessages = true;
+      return;
+    }
+    for (const message of incomingMessages) {
       enqueueMessage(message, false);
       lastMessageId = Math.max(lastMessageId, Number(message.id || 0));
     }
@@ -322,7 +341,7 @@ function renderHierarchy() {
 }
 
 function enqueueMessage(message, fromSocket) {
-  const messageKey = message.message_id || `${message.id}-${message.created_at}`;
+  const messageKey = getMessageKey(message);
   if (displayedMessageKeys.has(messageKey)) {
     return false;
   }
@@ -339,7 +358,33 @@ function processMessageQueue() {
   isRenderingMessage = true;
   const { message, fromSocket } = messageRenderQueue.shift();
   messagesData.push(message);
+  const messageNode = createMessageNode(message);
+  const sender = getSenderName(message);
+  elements.chatMessages.appendChild(messageNode);
+  scrollToBottom();
+  if (fromSocket) {
+    showToast(`${sender}: 新消息到达`, "info");
+  }
+  window.setTimeout(() => {
+    isRenderingMessage = false;
+    processMessageQueue();
+  }, getMessageRenderDelay(message.message_type));
+  return true;
+}
 
+function renderMessageBatch(messages) {
+  const fragment = document.createDocumentFragment();
+  for (const message of messages) {
+    displayedMessageKeys.add(getMessageKey(message));
+    messagesData.push(message);
+    fragment.appendChild(createMessageNode(message));
+    lastMessageId = Math.max(lastMessageId, Number(message.id || 0));
+  }
+  elements.chatMessages.appendChild(fragment);
+  scrollToBottom();
+}
+
+function createMessageNode(message) {
   const messageNode = document.createElement("div");
   const sender = getSenderName(message);
   const roleClass = getMessageClass(message.message_from);
@@ -360,16 +405,11 @@ function processMessageQueue() {
   messageNode.querySelector(".message-source-btn").addEventListener("click", () => {
     showMessageSourceModal(message);
   });
-  elements.chatMessages.appendChild(messageNode);
-  scrollToBottom();
-  if (fromSocket) {
-    showToast(`${sender}: 新消息到达`, "info");
-  }
-  window.setTimeout(() => {
-    isRenderingMessage = false;
-    processMessageQueue();
-  }, getMessageRenderDelay(message.message_type));
-  return true;
+  return messageNode;
+}
+
+function getMessageKey(message) {
+  return message.message_id || `${message.id}-${message.created_at}`;
 }
 
 function normalizePayload(message) {
@@ -695,9 +735,7 @@ function showRoleHistory(role) {
 
 function updateExecutionIndicator() {
   const count = executionsData.length;
-  elements.executionCount.textContent = count;
   elements.executionCountDisplay.textContent = count;
-  elements.executionIndicator.classList.toggle("has-waiting", count > 0);
 }
 
 function updateExecutionList() {
@@ -740,17 +778,13 @@ function showExecutionModal(execution) {
   elements.executionId.textContent = execution.execution_id;
   elements.executionCommand.textContent = execution.tool_name || execution.node_id;
   elements.executionTime.textContent = formatDateTime(execution.created_at);
-  elements.executionResult.value = JSON.stringify(execution.result || {}, null, 2);
+  elements.executionResult.textContent = JSON.stringify(execution.result || {}, null, 2);
   elements.contextContent.innerHTML = `
     <div class="context-item"><span class="label">节点</span><pre>${escapeHtml(execution.node_title || "-")}</pre></div>
     <div class="context-item"><span class="label">状态</span><pre>${escapeHtml(execution.execution_status || "-")}</pre></div>
     <div class="context-item"><span class="label">错误</span><pre>${escapeHtml(execution.error_message || "-")}</pre></div>
   `;
   openModal(elements.executionModal);
-}
-
-function toggleExecutionPanel() {
-  elements.executionPanel.classList.toggle("active");
 }
 
 function toggleExecutionContext() {
