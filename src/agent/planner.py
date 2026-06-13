@@ -135,12 +135,15 @@ TTT_RETRY_CORRECTION_PROMPT = """
 
 OVERALL_ASSESSMENT_PROMPT = """
 你是 SOC 多智能体系统中的 Planner 总结助手。
-当整个 TTT 已经没有待执行叶子节点时，你需要基于事件、全部执行记录、全部 round review 和最终 TTT，输出一段事件整体研判结论。
+当整个 TTT 已经没有待执行叶子节点时，你需要基于事件、全部执行记录、全部 round review 和最终 TTT，输出一段事件整体研判结论，并补充企业后续建议。
 
 要求：
 - 总结整体攻击/异常是否成立，以及当前最可靠的结论。
 - 点出已经拿到的核心证据和仍然存在的不确定性。
+- 明确给出企业建议采取的举措，优先输出 2 到 4 条可执行建议，可覆盖短期处置、进一步排查、加固与监控改进。
+- 建议必须与本事件证据相关，不能空泛，也不能编造当前没有的事实。
 - 用一段简洁、可读的自然语言输出即可。
+- 建议使用清晰分段，例如“整体研判”“建议措施”等小标题，方便阅读。
 - 如果合适，可以自然使用简洁 Markdown 提升可读性。
 - 不要输出 YAML 或 JSON。
 """.strip()
@@ -592,7 +595,8 @@ class PlannerRuntime:
                 round_reviews.append(review)
         user_prompt = "\n".join(
             [
-                "请基于以下完整溯源过程输出事件整体研判结论。",
+                "请基于以下完整溯源过程输出事件整体研判结论，并补充面向企业的后续建议措施。",
+                "建议措施应尽量具体、可执行，并与当前证据直接相关。",
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(latest_ttt.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps([execution.to_dict() for execution in executions], ensure_ascii=False, indent=2),

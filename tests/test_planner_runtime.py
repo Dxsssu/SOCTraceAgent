@@ -1186,6 +1186,83 @@ ttt:
             message_types = [message.message_type for message in messages]
             self.assertIn(MessageType.OVERALL_ASSESSMENT_CREATED, message_types)
 
+    def test_generate_overall_assessment_prompt_requests_recommendations(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "planner.db"
+            storage = SQLiteStorage(db_path)
+            ttt_store = TTTStore(db_path)
+            bus = SQLiteMessageBus(db_path)
+            runtime = PlannerRuntime(
+                storage=storage,
+                ttt_store=ttt_store,
+                bus=bus,
+                procedural_memory=ProceduralMemoryLibrary(Path(tmpdir) / "procedural_memory"),
+                factual_memory=FactualMemoryLibrary(Path(tmpdir) / "factual_memory"),
+            )
+            event = Event(
+                event_id="planner-overall-recommendations",
+                event_name="Suspicious Login",
+                message="外部 IP 11.22.33.44 对邮件网关出现异常登录尝试",
+                source="unit_test",
+                severity=SeverityLevel.MEDIUM,
+                event_status=EventStatus.COMPLETED,
+                current_round=1,
+            )
+            latest_ttt = runtime._normalize_ttt_payload(
+                event_id=event.event_id,
+                round_id=1,
+                ttt_payload={
+                    "root_nodes": [
+                        {
+                            "title": "方向一：评估源 IP 风险",
+                            "children": [
+                                {
+                                    "title": "问题1.1：11.22.33.44 是否具备恶意情报？",
+                                    "children": [
+                                        {
+                                            "title": "查询 11.22.33.44 的基础情报",
+                                            "status": "done",
+                                            "children": [],
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ]
+                },
+                entity_context={"ip": "11.22.33.44"},
+            )
+            storage.save_execution(
+                Execution(
+                    event_id=event.event_id,
+                    round_id=1,
+                    node_id="1-1-1",
+                    node_title="查询 11.22.33.44 的基础情报",
+                    tool_name="virustotal",
+                    tool_input={"ip": "11.22.33.44"},
+                    result={"summary": {"malicious": 3}},
+                    execution_status=ExecStatus.COMPLETED,
+                )
+            )
+            storage.save_round_review(
+                RoundReview(
+                    event_id=event.event_id,
+                    round_id=1,
+                    summary_text="本轮已完成核心核查，没有新的待执行问题。",
+                )
+            )
+
+            with patch("src.agent.planner.call_llm", return_value="## 整体研判\n\n调查完成。\n\n## 建议措施\n\n- 立即封禁源 IP。") as mocked_call:
+                summary_text = runtime._generate_overall_assessment(
+                    event=event,
+                    latest_ttt=latest_ttt,
+                )
+
+            self.assertIn("建议措施", summary_text)
+            system_prompt, user_prompt = mocked_call.call_args.args[:2]
+            self.assertIn("企业后续建议", system_prompt)
+            self.assertIn("后续建议措施", user_prompt)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -579,8 +579,8 @@ function renderReviewCard(payload) {
 function renderOverallAssessmentCard(payload) {
   return `
     <div class="dialog-card">
-      <div class="dialog-title">整体研判结论</div>
-      <div class="dialog-markdown markdown-content">${renderMarkdown(payload.summary_text || "Planner 已完成整体研判总结。")}</div>
+      <div class="dialog-title">整体研判与建议</div>
+      <div class="dialog-markdown markdown-content">${renderMarkdown(payload.summary_text || "Planner 已完成整体研判与建议总结。")}</div>
     </div>
   `;
 }
