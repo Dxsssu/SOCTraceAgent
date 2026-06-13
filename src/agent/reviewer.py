@@ -33,8 +33,21 @@ REVIEWER_SYSTEM_PROMPT = """
 - 总结本轮工具执行结果。
 - 总结目前已经收集到的结论。
 - 只给 Planner 1 条下一轮 TTT 调整建议，不要给多条建议清单。
+- 如果输入中提供了“截至上一轮的累计事实摘要”，默认这些结论继续成立；只有当本轮出现明确反证时，才允许改写为相反结论。
+- “本轮没有新增证据”不等于“上一轮已确认结论失效”。
 - 如果当前步骤已经成功执行并返回了所需结果，且没有出现新的关键证据或新的调查方向，应明确建议 Planner 尽量保持 TTT 不变，沿现有节点继续向下执行。
 - 如果合适，可以自然地使用简洁 Markdown（如小标题、列表、加粗）来提高可读性，但不要为了格式牺牲判断质量。
+""".strip()
+
+CUMULATIVE_FACT_SUMMARY_PROMPT = """
+你是 SOC 多智能体系统中的 Reviewer 事实摘要助手。
+你的任务是基于上一轮累计事实、本轮执行结果和本轮总结，输出一句供下一轮继承的累计事实摘要。
+
+要求：
+- 只输出一句自然语言，不要输出 YAML、JSON、Markdown 或列表。
+- 优先保留已经确认且本轮没有明确反证推翻的结论。
+- 如果本轮没有反证，不得把上一轮已确认结论改写为相反结论。
+- 可以在一句话后半段补充当前仍需继续确认的关键问题，但整句要简洁稳定。
 """.strip()
 
 
@@ -109,6 +122,12 @@ class ReviewerRuntime:
         latest_ttt = self.ttt_store.get_latest_ttt(event.event_id)
         if latest_ttt is None:
             return False
+        previous_review = self.storage.get_round_review(event.event_id, event.current_round - 1)
+        previous_cumulative_fact_summary = (
+            previous_review.cumulative_fact_summary.strip()
+            if previous_review is not None
+            else ""
+        )
 
         self._publish(
             event_id=event.event_id,
@@ -117,7 +136,12 @@ class ReviewerRuntime:
             payload={"execution_count": len(executions)},
         )
         try:
-            review = self._generate_round_review(event, latest_ttt.to_dict(), executions)
+            review = self._generate_round_review(
+                event,
+                latest_ttt.to_dict(),
+                executions,
+                previous_cumulative_fact_summary=previous_cumulative_fact_summary,
+            )
         except Exception as exc:
             logger.exception("Reviewer round review generation failed")
             self._fail_event(event, f"Reviewer round review generation failed: {exc}")
@@ -157,18 +181,30 @@ class ReviewerRuntime:
         event: Event,
         ttt_payload: dict[str, object],
         executions: list[object],
+        *,
+        previous_cumulative_fact_summary: str = "",
     ) -> RoundReview:
         execution_payload = [execution.to_dict() for execution in executions]
-        user_prompt = "\n".join(
+        prompt_parts = [
+            "请根据以下事件、TTT 和本轮执行记录，直接输出一段轮次总结内容。",
+            "如果你觉得合适，可以自然使用简洁 Markdown 来提升可读性；不必强行套格式。",
+            "不要输出 YAML 或 JSON。",
+        ]
+        if previous_cumulative_fact_summary:
+            prompt_parts.extend(
+                [
+                    "以下是截至上一轮的累计事实摘要。除非本轮出现明确反证，否则你必须默认它继续成立，不能改写成相反结论：",
+                    previous_cumulative_fact_summary,
+                ]
+            )
+        prompt_parts.extend(
             [
-                "请根据以下事件、TTT 和本轮执行记录，直接输出一段轮次总结内容。",
-                "如果你觉得合适，可以自然使用简洁 Markdown 来提升可读性；不必强行套格式。",
-                "不要输出 YAML 或 JSON。",
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(ttt_payload, ensure_ascii=False, indent=2),
                 json.dumps(execution_payload, ensure_ascii=False, indent=2),
             ]
         )
+        user_prompt = "\n".join(prompt_parts)
         response_text = call_llm(
             self.agent.system_prompt,
             user_prompt,
@@ -177,14 +213,79 @@ class ReviewerRuntime:
         summary_text = (response_text or "").strip()
         if not summary_text:
             raise ValueError("Reviewer returned empty content")
+        cumulative_fact_summary = self._generate_cumulative_fact_summary(
+            event=event,
+            ttt_payload=ttt_payload,
+            executions=execution_payload,
+            summary_text=summary_text,
+            previous_cumulative_fact_summary=previous_cumulative_fact_summary,
+        )
         return RoundReview(
             event_id=event.event_id,
             round_id=event.current_round,
             summary_text=summary_text,
+            cumulative_fact_summary=cumulative_fact_summary,
             created_by=self.agent.role_name,
             created_at=utc_now(),
             updated_at=utc_now(),
         )
+
+    def _generate_cumulative_fact_summary(
+        self,
+        *,
+        event: Event,
+        ttt_payload: dict[str, object],
+        executions: list[dict[str, object]],
+        summary_text: str,
+        previous_cumulative_fact_summary: str,
+    ) -> str:
+        user_prompt = "\n".join(
+            [
+                "请基于以下信息输出一句供下一轮继承的累计事实摘要。",
+                "如果上一轮累计事实没有被本轮明确反证推翻，请保留它的核心结论。",
+                f"上一轮累计事实摘要：{previous_cumulative_fact_summary or '无'}",
+                "本轮总结：",
+                summary_text,
+                json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
+                json.dumps(ttt_payload, ensure_ascii=False, indent=2),
+                json.dumps(executions, ensure_ascii=False, indent=2),
+            ]
+        )
+        try:
+            response_text = call_llm(
+                CUMULATIVE_FACT_SUMMARY_PROMPT,
+                user_prompt,
+                extra_body={"thinking": {"type": "enabled"}},
+            )
+        except Exception:
+            logger.exception("Reviewer cumulative fact summary generation failed")
+            return self._fallback_cumulative_fact_summary(
+                previous_cumulative_fact_summary=previous_cumulative_fact_summary,
+                summary_text=summary_text,
+            )
+        normalized = " ".join((response_text or "").strip().split())
+        if normalized:
+            return normalized
+        return self._fallback_cumulative_fact_summary(
+            previous_cumulative_fact_summary=previous_cumulative_fact_summary,
+            summary_text=summary_text,
+        )
+
+    @staticmethod
+    def _fallback_cumulative_fact_summary(
+        *,
+        previous_cumulative_fact_summary: str,
+        summary_text: str,
+    ) -> str:
+        previous = " ".join((previous_cumulative_fact_summary or "").strip().split())
+        if previous:
+            return previous
+        compact_summary = " ".join((summary_text or "").strip().split())
+        if not compact_summary:
+            return ""
+        if len(compact_summary) <= 120:
+            return compact_summary
+        return compact_summary[:117].rstrip() + "..."
 
     def _fail_event(self, event: Event, reason: str) -> Event:
         failed_event = Event(

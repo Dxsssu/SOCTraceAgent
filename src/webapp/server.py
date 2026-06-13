@@ -393,7 +393,7 @@ def query_round_reviews(event_id: str) -> list[dict[str, Any]]:
     if not db_path.exists():
         return []
     sql = """
-    SELECT review_id, event_id, round_id, summary_text, findings_json, gaps_json, recommendations_json, created_by, created_at, updated_at
+    SELECT review_id, event_id, round_id, summary_text, cumulative_fact_summary, findings_json, gaps_json, recommendations_json, created_by, created_at, updated_at
     FROM round_reviews
     WHERE event_id = ?
     ORDER BY round_id ASC
@@ -409,6 +409,9 @@ def query_round_reviews(event_id: str) -> list[dict[str, Any]]:
                 "event_id": row["event_id"],
                 "round_id": int(row["round_id"]),
                 "summary_text": row["summary_text"] if "summary_text" in row.keys() else "",
+                "cumulative_fact_summary": (
+                    row["cumulative_fact_summary"] if "cumulative_fact_summary" in row.keys() else ""
+                ),
                 "findings": json.loads(row["findings_json"] or "[]"),
                 "gaps": json.loads(row["gaps_json"] or "[]"),
                 "recommendations": json.loads(row["recommendations_json"] or "[]"),
