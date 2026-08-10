@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import logging
 import time
 from typing import Any
 
+from src.agent.llm import call_llm, parse_yaml_response
 from src.memory.working_memory import TTTStore
 from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageBus
 from src.schema import Event, EventStatus, Execution, ExecutionStatus, TTTNodeStatus
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
+from src.tools import get_registered_tool, list_registered_tools
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +48,7 @@ event_id: "{ 来自输入 }"
 round_id: "{ 来自输入 }"
 response_type: EXECUTION_RESULT
 execution:
-  node_id: "phase-1:l2-1:l3-1"
+  node_id: "1-1-1"
   node_title: "执行意图1.1.1：查询源 IP 基础情报与历史行为"
   tool_name: "ip_reputation_lookup"
   status: success
@@ -175,12 +178,18 @@ class ExecutorRuntime:
             payload={"node_id": claimed.node_id, "node_title": claimed.title},
         )
 
-        tool_name = self._select_tool_name(claimed)
+        tool_selection = self._select_tool(claimed, event)
+        tool_name = tool_selection["tool_name"]
         self._publish(
             event_id=event.event_id,
             round_id=event.current_round,
             message_type=MessageType.TOOL_SELECTED,
-            payload={"node_id": claimed.node_id, "tool_name": tool_name},
+            payload={
+                "node_id": claimed.node_id,
+                "tool_name": tool_name,
+                "reason": tool_selection.get("reason", ""),
+                "confidence": tool_selection.get("confidence", ""),
+            },
         )
 
         self._publish(
@@ -189,14 +198,19 @@ class ExecutorRuntime:
             message_type=MessageType.EXECUTION_STARTED,
             payload={"node_id": claimed.node_id, "tool_name": tool_name},
         )
-        success, result, error_message = self._execute_tool(event, claimed, tool_name)
+        success, result, error_message, tool_input = self._execute_tool(
+            event,
+            claimed,
+            tool_name,
+            tool_selection=tool_selection,
+        )
         execution = Execution(
             event_id=event.event_id,
             round_id=event.current_round,
             node_id=claimed.node_id,
             node_title=claimed.title,
             tool_name=tool_name,
-            tool_input={"node_title": claimed.title, "task_type": claimed.task_type},
+            tool_input=tool_input,
             result=result,
             execution_status=ExecutionStatus.COMPLETED if success else ExecutionStatus.FAILED,
             error_message=error_message,
@@ -225,40 +239,123 @@ class ExecutorRuntime:
         )
         return True
 
-    def _select_tool_name(self, node: Any) -> str:
-        title = (getattr(node, "title", "") or "").lower()
-        if "上下文" in title or "告警" in title:
-            return "event_context_lookup"
-        if "ip" in title or "情报" in title:
-            return "threat_intel_lookup"
-        if "资产" in title:
-            return "asset_inventory_lookup"
-        if "日志" in title or "认证" in title or "登录" in title:
-            return "log_search"
-        return "investigation_notebook"
+    def _select_tool(self, node: Any, event: Event) -> dict[str, str]:
+        tools = self._list_available_tools()
+        if not tools:
+            return {
+                "tool_name": "",
+                "reason": "No MCP tools are currently registered for routing.",
+                "confidence": "low",
+            }
 
-    def _execute_tool(self, event: Event, node: Any, tool_name: str) -> tuple[bool, dict[str, Any], str]:
-        if tool_name == "event_context_lookup":
-            return (
-                True,
-                {
-                    "event_id": event.event_id,
-                    "event_name": event.event_name,
-                    "message": event.message,
-                    "context": event.context,
-                    "source": event.source,
-                    "note": "从当前事件记录中提取已有上下文。",
-                },
-                "",
+        intent = str(getattr(node, "title", "") or "")
+        user_prompt = "\n".join(
+            [
+                "请从可用 MCP 工具中选择最适合执行当前 TTT 叶子节点任务的工具，只输出 YAML。",
+                "输出字段只允许：tool_name, reason, confidence。",
+                "confidence 只允许：high, medium, low。",
+                "不得输出未列出的工具名。",
+                f"intent: {intent}",
+                f"event: {json.dumps(event.to_dict(), ensure_ascii=False, indent=2)}",
+                f"node: {json.dumps({'node_id': getattr(node, 'node_id', ''), 'title': intent}, ensure_ascii=False, indent=2)}",
+                f"context: {json.dumps(event.context or {}, ensure_ascii=False, indent=2)}",
+                f"tools: {json.dumps(tools, ensure_ascii=False, indent=2)}",
+            ]
+        )
+        parsed = parse_yaml_response(
+            call_llm(
+                """
+你是一个 SOC 多工具路由器。
+你的任务是根据当前调查意图，从候选 MCP 工具列表中选择唯一一个最合适的工具。
+必须基于工具用途和限制做选择，不能编造工具名。
+如果当前只有一个工具，就在解释原因后直接选择它。
+""".strip(),
+                user_prompt,
+                extra_body={"thinking": {"type": "enabled"}},
             )
-        return (
-            False,
-            {
-                "tool_name": tool_name,
-                "node_id": getattr(node, "node_id", ""),
-                "note": "当前项目尚未接入真实外部工具。",
-            },
-            f"tool_not_implemented:{tool_name}",
+        )
+        valid_names = {tool["name"] for tool in tools}
+        selected_name = str((parsed or {}).get("tool_name") or "").strip()
+        if selected_name not in valid_names:
+            selected_name = tools[0]["name"]
+            reason = "Tool router returned an invalid tool name, so the first available MCP tool was selected as fallback."
+            confidence = "low"
+        else:
+            reason = str((parsed or {}).get("reason") or "").strip()
+            confidence = str((parsed or {}).get("confidence") or "medium").strip().lower()
+        if confidence not in {"high", "medium", "low"}:
+            confidence = "medium"
+        return {
+            "tool_name": selected_name,
+            "reason": reason,
+            "confidence": confidence,
+        }
+
+    def _execute_tool(
+        self,
+        event: Event,
+        node: Any,
+        tool_name: str,
+        *,
+        tool_selection: dict[str, str],
+    ) -> tuple[bool, dict[str, Any], str, dict[str, Any]]:
+        tool = get_registered_tool(tool_name)
+        if tool is None:
+            return (
+                False,
+                {
+                    "tool_name": tool_name,
+                    "node_id": getattr(node, "node_id", ""),
+                    "note": "未找到对应工具定义。",
+                },
+                f"tool_not_found:{tool_name}",
+                {
+                    "node_title": getattr(node, "title", ""),
+                    "selected_by": "executor_builtin_router",
+                    "selection_reason": tool_selection.get("reason", ""),
+                    "selection_confidence": tool_selection.get("confidence", ""),
+                },
+            )
+
+        tool_response = tool.execute(
+            intent=self._build_tool_intent(event, node),
+        )
+        tool_input = {
+            "node_title": getattr(node, "title", ""),
+            "selected_by": "executor_builtin_router",
+            "selection_reason": tool_selection.get("reason", ""),
+            "selection_confidence": tool_selection.get("confidence", ""),
+            **dict(tool_response.get("tool_input") or {}),
+        }
+        result = dict(tool_response.get("result") or {})
+        error_message = str(tool_response.get("error_message") or "")
+        success = bool(tool_response.get("success"))
+        return success, result, error_message, tool_input
+
+    @staticmethod
+    def _list_available_tools() -> list[dict[str, Any]]:
+        return [
+            tool.to_dict()
+            for tool in list_registered_tools(include_non_routable=False)
+        ]
+
+    @staticmethod
+    def _build_tool_intent(event: Event, node: Any) -> str:
+        node_title = str(getattr(node, "title", "") or "").strip()
+        node_id = str(getattr(node, "node_id", "") or "").strip()
+        context_text = json.dumps(event.context or {}, ensure_ascii=False, indent=2)
+        return "\n".join(
+            [
+                "请基于以下事件背景与待执行任务，完成本次调查查询。",
+                f"事件名称: {event.event_name}",
+                f"事件描述: {event.message}",
+                f"事件来源: {event.source}",
+                f"事件严重级别: {event.severity.value}",
+                f"TTT 节点 ID: {node_id}",
+                f"TTT 叶子节点任务: {node_title}",
+                "事件上下文:",
+                context_text,
+            ]
         )
 
     def _publish(

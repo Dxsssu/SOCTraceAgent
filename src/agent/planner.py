@@ -9,7 +9,7 @@ from typing import Any
 from src.agent.llm import call_llm, parse_yaml_response
 from src.memory.working_memory import TTTStore
 from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageBus
-from src.schema import Event, EventStatus, RoundReview, TTTNode, TTTNodeLevel, TTTNodeStatus, TracebackTaskTree
+from src.schema import Event, EventStatus, RoundReview, TTTNode, TTTNodeStatus, TracebackTaskTree
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
 
@@ -40,7 +40,7 @@ TTT 约束：
 - L3 才是可执行的证据搜集意图。
 - 仅允许三层，禁止出现第 4 层及以上层级。
 - L3 必须是叶子节点，children 必须为空数组。
-- 每个 L3 节点必须包含 task_type 和 assignee。
+- node_id 必须使用纯数字分层编号，如 `1`、`1-2`、`1-2-3`。
 - 更新 TTT 时必须优先做最小改动，避免无必要重写整棵树。
 - 已经完成的节点应视为冻结节点，除非有强证据，否则不要改写其语义。
 
@@ -53,23 +53,20 @@ round_id: "{ 来自输入 }"
 response_type: TTT_PLAN
 response_text: 对告警的初始分析。
 ttt:
-  schema_version: "1.0"
   event_id: "{ 来自输入 }"
   round_id: "{ 来自输入 }"
   root_nodes:
-    - node_id: "phase-1"
+    - node_id: "1"
       title: "阶段一：确认告警真实性与攻击范围"
       status: todo
       children:
-        - node_id: "phase-1:l2-1"
+        - node_id: "1-1"
           title: "子目标1.1：确认告警中的源与目标是否可信"
           status: todo
           children:
-            - node_id: "phase-1:l2-1:l3-1"
+            - node_id: "1-1-1"
               title: "执行意图1.1.1：查询源 IP 基础情报与历史行为"
               status: todo
-              task_type: query
-              assignee: _executor
               children: []
 ```
 """.strip()
@@ -157,7 +154,11 @@ class PlannerRuntime:
             payload={"text": "planner_start_initial_planning", "event_name": event.event_name},
         )
 
-        candidate_tree = self._generate_initial_ttt(event)
+        try:
+            candidate_tree = self._generate_initial_ttt(event)
+        except Exception as exc:
+            logger.exception("Planner initial TTT generation failed")
+            return self._fail_event(event, f"Planner initial TTT generation failed: {exc}")
         snapshot = self.ttt_store.save_snapshot(candidate_tree)
 
         next_status = (
@@ -193,12 +194,16 @@ class PlannerRuntime:
             return event
 
         next_round = event.current_round + 1
-        candidate_tree = self._generate_updated_ttt(
-            event=event,
-            latest_review=latest_review,
-            latest_ttt=latest_ttt,
-            next_round=next_round,
-        )
+        try:
+            candidate_tree = self._generate_updated_ttt(
+                event=event,
+                latest_review=latest_review,
+                latest_ttt=latest_ttt,
+                next_round=next_round,
+            )
+        except Exception as exc:
+            logger.exception("Planner TTT update failed")
+            return self._fail_event(event, f"Planner TTT update failed: {exc}")
         snapshot = self.ttt_store.save_snapshot(candidate_tree)
         next_status = (
             EventStatus.PLANNED if self.ttt_store.has_open_work(event.event_id, snapshot.round_id) else EventStatus.COMPLETED
@@ -231,24 +236,22 @@ class PlannerRuntime:
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
             ]
         )
-        try:
-            response_text = call_llm(
-                self.agent.system_prompt,
-                user_prompt,
-                extra_body={"thinking": {"type": "enabled"}},
-            )
-            parsed = parse_yaml_response(response_text)
-            if parsed:
-                ttt_payload = parsed.get("ttt") or parsed.get("tree")
-                if isinstance(ttt_payload, dict):
-                    return self._normalize_ttt_payload(
-                        event_id=event.event_id,
-                        round_id=event.current_round,
-                        ttt_payload=ttt_payload,
-                    )
-        except Exception:
-            logger.exception("Planner initial TTT generation failed, using fallback")
-        return self._build_fallback_ttt(event, event.current_round)
+        response_text = call_llm(
+            self.agent.system_prompt,
+            user_prompt,
+            extra_body={"thinking": {"type": "enabled"}},
+        )
+        parsed = parse_yaml_response(response_text)
+        if not parsed:
+            raise ValueError("Planner returned empty or non-YAML content")
+        ttt_payload = parsed.get("ttt") or parsed.get("tree")
+        if not isinstance(ttt_payload, dict):
+            raise ValueError("Planner response missing `ttt`/`tree` object")
+        return self._normalize_ttt_payload(
+            event_id=event.event_id,
+            round_id=event.current_round,
+            ttt_payload=ttt_payload,
+        )
 
     def _generate_updated_ttt(
         self,
@@ -266,24 +269,22 @@ class PlannerRuntime:
                 json.dumps(latest_review.to_dict(), ensure_ascii=False, indent=2),
             ]
         )
-        try:
-            response_text = call_llm(
-                self.agent.system_prompt,
-                user_prompt,
-                extra_body={"thinking": {"type": "enabled"}},
-            )
-            parsed = parse_yaml_response(response_text)
-            if parsed:
-                ttt_payload = parsed.get("ttt") or parsed.get("tree")
-                if isinstance(ttt_payload, dict):
-                    return self._normalize_ttt_payload(
-                        event_id=event.event_id,
-                        round_id=next_round,
-                        ttt_payload=ttt_payload,
-                    )
-        except Exception:
-            logger.exception("Planner TTT update failed, using fallback")
-        return self._build_fallback_ttt(event, next_round, latest_review=latest_review)
+        response_text = call_llm(
+            self.agent.system_prompt,
+            user_prompt,
+            extra_body={"thinking": {"type": "enabled"}},
+        )
+        parsed = parse_yaml_response(response_text)
+        if not parsed:
+            raise ValueError("Planner returned empty or non-YAML content")
+        ttt_payload = parsed.get("ttt") or parsed.get("tree")
+        if not isinstance(ttt_payload, dict):
+            raise ValueError("Planner response missing `ttt`/`tree` object")
+        return self._normalize_ttt_payload(
+            event_id=event.event_id,
+            round_id=next_round,
+            ttt_payload=ttt_payload,
+        )
 
     def _normalize_ttt_payload(
         self,
@@ -294,132 +295,54 @@ class PlannerRuntime:
     ) -> TracebackTaskTree:
         roots = ttt_payload.get("root_nodes") or ttt_payload.get("nodes") or []
         normalized_roots = tuple(
-            self._normalize_node(node, depth=1, path=f"phase-{index}")
+            self._normalize_node(node, path=str(index))
             for index, node in enumerate(roots, start=1)
         )
         return TracebackTaskTree(
             event_id=event_id,
             round_id=round_id,
             root_nodes=normalized_roots,
-            schema_version=str(ttt_payload.get("schema_version") or "1.0"),
-            updated_by=self.agent.role_name,
         )
 
-    def _normalize_node(self, node: dict[str, Any], *, depth: int, path: str) -> TTTNode:
-        level = {
-            1: TTTNodeLevel.PHASE,
-            2: TTTNodeLevel.SUB_GOAL,
-            3: TTTNodeLevel.ATOMIC_INTENT,
-        }.get(depth, TTTNodeLevel.ATOMIC_INTENT)
+    def _normalize_node(self, node: dict[str, Any], *, path: str) -> TTTNode:
         status = TTTNodeStatus(str(node.get("status") or TTTNodeStatus.TODO.value))
         children_raw = node.get("children") or []
         children = tuple(
             self._normalize_node(
                 child,
-                depth=min(depth + 1, 3),
-                path=f"{path}:{child_index}",
+                path=f"{path}-{child_index}",
             )
             for child_index, child in enumerate(children_raw, start=1)
         )
-        task_type = node.get("task_type")
-        assignee = node.get("assignee")
-        if level == TTTNodeLevel.ATOMIC_INTENT:
-            task_type = str(task_type or "query")
-            assignee = str(assignee or "_executor")
         return TTTNode(
-            node_id=str(node.get("node_id") or path),
+            node_id=path,
             title=str(node.get("title") or path),
-            node_level=level,
             status=status,
-            task_type=str(task_type) if task_type is not None else None,
-            assignee=str(assignee) if assignee is not None else None,
             children=children,
             metadata=dict(node.get("metadata") or {}),
         )
 
-    def _build_fallback_ttt(
-        self,
-        event: Event,
-        round_id: int,
-        latest_review: RoundReview | None = None,
-    ) -> TracebackTaskTree:
-        focus = "确认告警真实性与攻击路径"
-        if latest_review and latest_review.recommendations:
-            focus = latest_review.recommendations[0]
-
-        roots = (
-            TTTNode(
-                node_id=f"event-{event.event_id}-phase-1",
-                title="阶段一：确认告警真实性与核心对象",
-                node_level=TTTNodeLevel.PHASE,
-                status=TTTNodeStatus.TODO,
-                children=(
-                    TTTNode(
-                        node_id=f"event-{event.event_id}-phase-1:l2-1",
-                        title="子目标1.1：确认攻击源的基础画像",
-                        node_level=TTTNodeLevel.SUB_GOAL,
-                        status=TTTNodeStatus.TODO,
-                        children=(
-                            TTTNode(
-                                node_id=f"event-{event.event_id}-phase-1:l2-1:l3-1",
-                                title="执行意图1.1.1：查询源 IP 基础情报",
-                                node_level=TTTNodeLevel.ATOMIC_INTENT,
-                                status=TTTNodeStatus.TODO,
-                                task_type="query",
-                                assignee="_executor",
-                            ),
-                        ),
-                    ),
-                    TTTNode(
-                        node_id=f"event-{event.event_id}-phase-1:l2-2",
-                        title="子目标1.2：确认告警涉及的关键上下文",
-                        node_level=TTTNodeLevel.SUB_GOAL,
-                        status=TTTNodeStatus.TODO,
-                        children=(
-                            TTTNode(
-                                node_id=f"event-{event.event_id}-phase-1:l2-2:l3-1",
-                                title="执行意图1.2.1：提取当前事件已有上下文",
-                                node_level=TTTNodeLevel.ATOMIC_INTENT,
-                                status=TTTNodeStatus.TODO,
-                                task_type="query",
-                                assignee="_executor",
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-            TTTNode(
-                node_id=f"event-{event.event_id}-phase-2",
-                title=f"阶段二：围绕“{focus}”推进后续判断",
-                node_level=TTTNodeLevel.PHASE,
-                status=TTTNodeStatus.TODO,
-                children=(
-                    TTTNode(
-                        node_id=f"event-{event.event_id}-phase-2:l2-1",
-                        title="子目标2.1：关联目标资产和日志线索",
-                        node_level=TTTNodeLevel.SUB_GOAL,
-                        status=TTTNodeStatus.TODO,
-                        children=(
-                            TTTNode(
-                                node_id=f"event-{event.event_id}-phase-2:l2-1:l3-1",
-                                title="执行意图2.1.1：查询目标资产或日志能力缺口",
-                                node_level=TTTNodeLevel.ATOMIC_INTENT,
-                                status=TTTNodeStatus.TODO,
-                                task_type="query",
-                                assignee="_executor",
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        )
-        return TracebackTaskTree(
+    def _fail_event(self, event: Event, reason: str) -> Event:
+        failed_event = Event(
             event_id=event.event_id,
-            round_id=round_id,
-            root_nodes=roots,
-            schema_version="1.0",
-            updated_by=self.agent.role_name,
+            event_name=event.event_name,
+            message=event.message,
+            context=event.context,
+            source=event.source,
+            severity=event.severity,
+            event_status=EventStatus.FAILED,
+            current_round=event.current_round,
+            created_at=event.created_at,
+            updated_at=utc_now(),
         )
+        self.storage.save_event(failed_event)
+        self._publish(
+            event_id=event.event_id,
+            round_id=event.current_round,
+            message_type=MessageType.SYSTEM_ERROR,
+            payload={"text": reason},
+        )
+        return failed_event
 
     def _publish(
         self,

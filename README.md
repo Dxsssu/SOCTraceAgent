@@ -93,7 +93,7 @@ pending -> planned -> executing -> reviewing -> replanning -> planned/completed
 - `L1` 表示阶段性目标
 - `L2` 表示待验证的子问题或假设
 - `L3` 表示可执行意图
-- 只有 `L3` 才允许填写 `task_type` 和 `assignee`
+- `node_id` 使用纯数字分层编号，例如 `1`、`1-2`、`1-2-3`
 - `Executor` 只消费 `L3` 叶子节点
 
 节点状态使用：
@@ -188,6 +188,16 @@ SOCAGENT_DB_PATH=data/socagent.db
 SOCAGENT_POLL_INTERVAL=5
 SOCAGENT_WEB_HOST=127.0.0.1
 SOCAGENT_WEB_PORT=5008
+SPLUNK_USERNAME=admin
+SPLUNK_PASSWORD=changeme
+SPLUNK_VERIFY_TLS=false
+SPLUNK_DEFAULT_DATASET=botsv1
+SPLUNK_BOTSV1_BASE_URL=http://127.0.0.1:8000
+SPLUNK_BOTSV1_INDEX=botsv1
+SPLUNK_BOTSV2_BASE_URL=http://127.0.0.1:8020
+SPLUNK_BOTSV2_INDEX=botsv2
+SPLUNK_BOTSV3_BASE_URL=http://127.0.0.1:8030
+SPLUNK_BOTSV3_INDEX=botsv3
 ```
 
 说明：
@@ -201,11 +211,16 @@ SOCAGENT_WEB_PORT=5008
   - 角色运行时轮询数据库的时间间隔，单位秒
 - `SOCAGENT_WEB_HOST` / `SOCAGENT_WEB_PORT`
   - Web 首页和 war room 的监听地址
+- `SPLUNK_*`
+  - 由 `src/tools/splunk.py` 使用
+  - 用于配置 Splunk Docker 的用户名、密码、数据集默认值与端口映射
+  - 默认按 `botsv1 -> 8000`、`botsv2 -> 8020`、`botsv3 -> 8030` 连接
 
 注意：
 
 - 仓库中的 `.env` 不应该保存真实密钥，建议改为占位值并使用你自己的 API Key
 - 如果真实密钥已经入库，应该立即轮换
+- `Planner` 和 `Reviewer` 现在要求真实 LLM 可用；如果 `DEEPSEEK_API_KEY` 缺失或模型返回非法 YAML，事件会直接进入 `failed`，不会再自动生成模拟结果
 
 ## 初始化与启动
 
@@ -356,12 +371,47 @@ python tests/test_multi_agent_loop.py --db-path tests/runtime/test_multi_agent_l
 
 ### 工具执行现状
 
-`Executor` 当前只有非常轻量的占位逻辑：
+`Executor` 当前已经接入一套真实的 Splunk MCP 工具能力：
 
-- `event_context_lookup` 会直接从当前 `Event` 提取上下文，返回成功
-- 其他工具名如 `threat_intel_lookup`、`asset_inventory_lookup`、`log_search` 目前都会返回未实现
+- `log_search` 会根据 TTT 叶子节点的自然语言意图，先由 LLM 在内置路由阶段选择工具
+- 选中 `log_search` 后，再由 `src/tools/splunk.py` 把调查意图翻译成查询规格与 SPL
+- 最终通过 Splunk REST API 执行真实查询，并返回摘要与样本事件
 
-这意味着当前多轮闭环更偏向“流程验证”，而不是“真实安全分析能力验证”。
+当前 `src/tools` 只保留一个 MCP server：`src/tools/splunk.py`。`Executor` 不再依赖标题关键词硬编码挑工具，而是读取当前可用 MCP tools 的描述、用途与限制，用 LLM 做一次内置工具选择，然后调用被选中的 tool。
+
+### Splunk 工具最小调用示例
+
+结构化查询：
+
+```python
+from src.tools import SplunkSearchTool
+
+tool = SplunkSearchTool()
+result = tool.search(
+    spec={
+        "dataset": "botsv1",
+        "sourcetype": "WinEventLog:Security",
+        "keywords": ["failed login"],
+        "ip": "11.22.33.44",
+        "limit": 5,
+        "fields": ["_time", "host", "user", "src"],
+    }
+)
+```
+
+自然语言调查意图：
+
+```python
+from src.tools import SplunkSearchTool
+
+tool = SplunkSearchTool()
+spec = tool.interpret_intent(
+    "查询 botsv1 中和 11.22.33.44 相关的失败登录日志",
+    dataset="botsv1",
+)
+query = tool.build_query(spec)
+result = tool.search(spec=spec)
+```
 
 ## 已实现能力
 
@@ -375,7 +425,7 @@ python tests/test_multi_agent_loop.py --db-path tests/runtime/test_multi_agent_l
 - 轮次复盘持久化
 - 结构化消息留痕
 - 独立的多轮闭环测试脚本
-- LLM 失败时的 fallback 逻辑
+- LLM 结果校验与失败显式落库
 
 ## 当前局限
 
