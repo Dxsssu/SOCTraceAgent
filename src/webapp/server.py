@@ -427,7 +427,7 @@ def query_round_hierarchy(event_id: str) -> list[dict[str, Any]]:
         conn.row_factory = sqlite3.Row
         ttt_rows = conn.execute(
             """
-            SELECT event_id, round_id, ttt_version, tree_json, updated_at
+            SELECT event_id, round_id, tree_json, updated_at
             FROM ttt_snapshots
             WHERE event_id = ?
             ORDER BY round_id ASC, ttt_version DESC
@@ -449,7 +449,6 @@ def query_round_hierarchy(event_id: str) -> list[dict[str, Any]]:
         if round_id not in latest_ttt_by_round:
             latest_ttt_by_round[round_id] = {
                 "round_id": round_id,
-                "ttt_version": int(row["ttt_version"]),
                 "tree": json.loads(row["tree_json"]),
                 "executions": [],
                 "reviews": [],
@@ -462,7 +461,6 @@ def query_round_hierarchy(event_id: str) -> list[dict[str, Any]]:
         if round_id not in latest_ttt_by_round:
             latest_ttt_by_round[round_id] = {
                 "round_id": round_id,
-                "ttt_version": 0,
                 "tree": None,
                 "executions": [],
                 "reviews": [],
@@ -482,7 +480,6 @@ def query_round_hierarchy(event_id: str) -> list[dict[str, Any]]:
         if round_id not in latest_ttt_by_round:
             latest_ttt_by_round[round_id] = {
                 "round_id": round_id,
-                "ttt_version": 0,
                 "tree": None,
                 "executions": [],
                 "reviews": [],

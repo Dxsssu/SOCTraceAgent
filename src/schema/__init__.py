@@ -1,7 +1,7 @@
 from .event import Event, EventStatus, SeverityLevel
 from .execution import Execution, ExecutionStatus
 from .round_review import RoundReview
-from .ttt import TTTNode, TTTNodeLevel, TTTNodeStatus, TracebackTaskTree
+from .ttt import TTTNode, TTTNodeStatus, TracebackTaskTree
 
 __all__ = [
     "Event",
@@ -11,7 +11,6 @@ __all__ = [
     "RoundReview",
     "SeverityLevel",
     "TTTNode",
-    "TTTNodeLevel",
     "TTTNodeStatus",
     "TracebackTaskTree",
 ]

@@ -59,16 +59,12 @@ class TTTStore:
         connection.row_factory = sqlite3.Row
         return connection
 
-    def save_snapshot(self, tree: TracebackTaskTree) -> TracebackTaskTree:
-        latest = self.get_latest_ttt(tree.event_id)
-        next_version = 1 if latest is None else latest.ttt_version + 1
+    def save_snapshot(self, tree: TracebackTaskTree, *, updated_by: str = "_planner") -> TracebackTaskTree:
+        next_version = self._get_next_version(tree.event_id)
         snapshot = TracebackTaskTree(
             event_id=tree.event_id,
             round_id=tree.round_id,
             root_nodes=tree.root_nodes,
-            ttt_version=next_version,
-            schema_version=tree.schema_version,
-            updated_by=tree.updated_by,
             created_at=tree.created_at,
             updated_at=utc_now(),
         )
@@ -84,9 +80,9 @@ class TTTStore:
                     (
                         snapshot.event_id,
                         snapshot.round_id,
-                        snapshot.ttt_version,
-                        snapshot.schema_version,
-                        snapshot.updated_by,
+                        next_version,
+                        "1.0",
+                        updated_by,
                         json.dumps(snapshot.to_dict(), ensure_ascii=False, sort_keys=True),
                         snapshot.created_at.isoformat(),
                         snapshot.updated_at.isoformat(),
@@ -214,12 +210,10 @@ class TTTStore:
         new_tree = TracebackTaskTree.from_dict(
             {
                 **mutable_tree,
-                "ttt_version": tree.ttt_version,
-                "updated_by": updated_by,
                 "updated_at": utc_now().isoformat(),
             }
         )
-        return self.save_snapshot(new_tree)
+        return self.save_snapshot(new_tree, updated_by=updated_by)
 
     def find_node_by_id(self, tree: TracebackTaskTree, node_id: str) -> TTTNode | None:
         def walk(node: TTTNode) -> TTTNode | None:
@@ -261,6 +255,15 @@ class TTTStore:
             ):
                 return True
         return False
+
+    def _get_next_version(self, event_id: str) -> int:
+        with self._lock:
+            with self.connect() as conn:
+                row = conn.execute(
+                    "SELECT COALESCE(MAX(ttt_version), 0) AS max_version FROM ttt_snapshots WHERE event_id = ?",
+                    (event_id,),
+                ).fetchone()
+        return int(row["max_version"]) + 1 if row else 1
 
 
 __all__ = ["TTTStore"]
