@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://socagent.local/schemas/excytin-procedural-memory-v1.json",
+  "title": "ExCyTIn-Bench Procedural Memory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format_version",
+    "generated_at",
+    "generation_policy",
+    "environment_id",
+    "semantic_catalog",
+    "episodic_catalog",
+    "catalog",
+    "procedures"
+  ],
+  "properties": {
+    "format_version": {"const": "1.0"},
+    "generated_at": {"type": "string"},
+    "generation_policy": {
+      "type": "object",
+      "required": [
+        "source_split",
+        "contains_sql",
+        "contains_log_values",
+        "contains_answers",
+        "contains_test_data",
+        "skill_oriented"
+      ],
+      "properties": {
+        "source_split": {"const": "train"},
+        "contains_sql": {"const": false},
+        "contains_log_values": {"const": false},
+        "contains_answers": {"const": false},
+        "contains_test_data": {"const": false},
+        "skill_oriented": {"const": true}
+      }
+    },
+    "environment_id": {"type": "string", "minLength": 1},
+    "semantic_catalog": {
+      "type": "object",
+      "required": ["catalog_id", "schema_hash"]
+    },
+    "episodic_catalog": {
+      "type": "object",
+      "required": ["episodic_catalog_id", "source_sha256"]
+    },
+    "catalog": {
+      "type": "object",
+      "required": [
+        "procedural_catalog_id",
+        "name",
+        "version",
+        "semantic_source",
+        "semantic_source_sha256",
+        "episodic_source",
+        "episodic_source_sha256",
+        "insights_source",
+        "insights_source_sha256",
+        "insight_count",
+        "procedure_count",
+        "phase_count",
+        "support_edge_count",
+        "exemplar_edge_count"
+      ]
+    },
+    "procedures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "procedure_id",
+          "skill_id",
+          "skill_path",
+          "name",
+          "category",
+          "goal",
+          "description",
+          "entry_entity_types",
+          "applicable_log_types",
+          "semantic_table_ids",
+          "semantic_join_key_ids",
+          "extends_procedure_id",
+          "source_insight_indexes",
+          "support_episode_ids",
+          "support_episode_count",
+          "support_attempt_count",
+          "support_incidents",
+          "reference_solution_count",
+          "reference_path_count",
+          "status",
+          "retrieval_eligible",
+          "retrieval_text",
+          "phases",
+          "transitions"
+        ],
+        "properties": {
+          "category": {"enum": ["base_workflow", "domain_workflow"]},
+          "status": {"const": "active"},
+          "retrieval_eligible": {"const": true},
+          "phases": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "phase_id",
+                "sequence_no",
+                "name",
+                "goal",
+                "required_log_types",
+                "required_semantic_types",
+                "semantic_table_ids",
+                "semantic_join_key_ids",
+                "exemplar_attempt_ids",
+                "success_condition",
+                "retrieval_text"
+              ]
+            }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["from_phase_id", "to_phase_id"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

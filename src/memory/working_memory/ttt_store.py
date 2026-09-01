@@ -20,7 +20,7 @@ class TTTStore:
     """基于 SQLite 的 TTT 工作记忆存储。"""
 
     def __init__(self, db_path: str | Path | None = None) -> None:
-        resolved = db_path or os.environ.get("SOCAGENT_DB_PATH", "data/socagent.db")
+        resolved = db_path or os.environ.get("SOCAGENT_DB_PATH", "runtime/socagent.db")
         self._db_path = Path(resolved)
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = Lock()

@@ -139,8 +139,9 @@ SOCAgent/
 │        └─ js/
 ├─ tests/
 │  └─ test_multi_agent_loop.py    # 多轮闭环烟雾测试脚本
+├─ runtime/                       # 本地运行数据（不提交到 Git）
+│  └─ socagent.db                 # 默认 SQLite 数据库（运行时自动创建）
 └─ data/
-   ├─ socagent.db                 # 默认 SQLite 数据库
    └─ splunk-bots-docker/         # 预置的 BOTS/Splunk 相关数据
 ```
 
@@ -184,7 +185,7 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_MODEL=deepseek-v4-flash
 DEEPSEEK_REASONING_EFFORT=high
 DEEPSEEK_THINKING_ENABLED=true
-SOCAGENT_DB_PATH=data/socagent.db
+SOCAGENT_DB_PATH=runtime/socagent.db
 SOCAGENT_POLL_INTERVAL=5
 SOCAGENT_WEB_HOST=127.0.0.1
 SOCAGENT_WEB_PORT=5008
@@ -325,7 +326,7 @@ python tests/test_multi_agent_loop.py
 ```bash
 python tests/test_multi_agent_loop.py --timeout 240 --target-rounds 2
 python tests/test_multi_agent_loop.py --show-process-logs
-python tests/test_multi_agent_loop.py --db-path tests/runtime/test_multi_agent_loop.db
+python tests/test_multi_agent_loop.py --db-path runtime/test_multi_agent_loop.db
 ```
 
 ## 当前实现细节

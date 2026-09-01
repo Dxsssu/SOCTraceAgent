@@ -1,0 +1,1986 @@
+{
+  "format_version": "1.0",
+  "generated_at": "2026-09-01T08:50:11.629984+00:00",
+  "generation_policy": {
+    "source_split": "train",
+    "contains_sql": false,
+    "contains_log_values": false,
+    "contains_answers": false,
+    "contains_test_data": false,
+    "skill_oriented": true
+  },
+  "environment_id": "excytin-azure-mysql",
+  "semantic_catalog": {
+    "catalog_id": "excytin-schema-v1",
+    "schema_hash": "31b55bf700988854043da408bcab6b16ff88ee3ca8db146472449329fd80f881"
+  },
+  "episodic_catalog": {
+    "episodic_catalog_id": "excytin-episodes-v1",
+    "source_sha256": "b121f145e07937caccb493df717245c75db6678f6acb23c477a1e9bdf9da5a4b"
+  },
+  "catalog": {
+    "procedural_catalog_id": "excytin-procedures-v1",
+    "name": "ExCyTIn-Bench Investigation Skills",
+    "version": "1.0",
+    "semantic_source": "src/memory/longterm_memory/semantic_memory/excytin_bench/semantic_memory.json",
+    "semantic_source_sha256": "6af8cd9903460bb08644cacff68a172cf044f90614bdd39e26ef0f742f369b83",
+    "episodic_source": "src/memory/longterm_memory/episodic_memory/excytin_bench/episodic_memory.json",
+    "episodic_source_sha256": "e63e904adc93a77544d5bebdc1191fa20d59dd4bd67dd7b5145d75ccfcec8cd7",
+    "insights_source": "data/excytin-bench/github/secgym/agents/expel_train/insights.json",
+    "insights_source_sha256": "3bcc1f419985df8f97517f0ec3b51eb4fca5c04fb9846fe193837a1fc0974c8e",
+    "insight_count": 151,
+    "procedure_count": 5,
+    "phase_count": 27,
+    "support_edge_count": 460,
+    "exemplar_edge_count": 100
+  },
+  "procedures": [
+    {
+      "procedure_id": "excytin-procedures-v1:procedure:alert-centered-investigation",
+      "skill_id": "alert-centered-investigation",
+      "skill_path": "skills/alert-centered-investigation/SKILL.md",
+      "name": "Alert-Centered Investigation",
+      "category": "base_workflow",
+      "goal": "Trace an initial security alert through entities, raw logs, a bounded timeline, and validated evidence.",
+      "description": "Default investigation workflow shared by all ExCyTIn-Bench security-log investigations.",
+      "entry_entity_types": [
+        "ALERT_ID",
+        "INCIDENT_ID"
+      ],
+      "applicable_log_types": [
+        "incident_alert",
+        "identity_signin",
+        "endpoint_process",
+        "endpoint_file",
+        "endpoint_network",
+        "email",
+        "firewall_network",
+        "cloud_application"
+      ],
+      "semantic_table_ids": [
+        "excytin-schema-v1:AADManagedIdentitySignInLogs",
+        "excytin-schema-v1:AADNonInteractiveUserSignInLogs",
+        "excytin-schema-v1:AADProvisioningLogs",
+        "excytin-schema-v1:AADRiskyUsers",
+        "excytin-schema-v1:AADServicePrincipalSignInLogs",
+        "excytin-schema-v1:AADUserRiskEvents",
+        "excytin-schema-v1:AZFWApplicationRule",
+        "excytin-schema-v1:AZFWApplicationRuleAggregation",
+        "excytin-schema-v1:AZFWDnsQuery",
+        "excytin-schema-v1:AZFWFlowTrace",
+        "excytin-schema-v1:AZFWIdpsSignature",
+        "excytin-schema-v1:AZFWNatRule",
+        "excytin-schema-v1:AZFWNatRuleAggregation",
+        "excytin-schema-v1:AZFWNetworkRule",
+        "excytin-schema-v1:AZFWNetworkRuleAggregation",
+        "excytin-schema-v1:AZFWThreatIntel",
+        "excytin-schema-v1:Alert",
+        "excytin-schema-v1:AlertEvidence",
+        "excytin-schema-v1:AlertInfo",
+        "excytin-schema-v1:Anomalies",
+        "excytin-schema-v1:AuditLogs",
+        "excytin-schema-v1:CloudAppEvents",
+        "excytin-schema-v1:DeviceEvents",
+        "excytin-schema-v1:DeviceFileCertificateInfo",
+        "excytin-schema-v1:DeviceFileEvents",
+        "excytin-schema-v1:DeviceImageLoadEvents",
+        "excytin-schema-v1:DeviceInfo",
+        "excytin-schema-v1:DeviceLogonEvents",
+        "excytin-schema-v1:DeviceNetworkEvents",
+        "excytin-schema-v1:DeviceNetworkInfo",
+        "excytin-schema-v1:DeviceProcessEvents",
+        "excytin-schema-v1:DeviceRegistryEvents",
+        "excytin-schema-v1:EmailAttachmentInfo",
+        "excytin-schema-v1:EmailEvents",
+        "excytin-schema-v1:EmailPostDeliveryEvents",
+        "excytin-schema-v1:EmailUrlInfo",
+        "excytin-schema-v1:IdentityDirectoryEvents",
+        "excytin-schema-v1:IdentityLogonEvents",
+        "excytin-schema-v1:IdentityQueryEvents",
+        "excytin-schema-v1:IntuneAuditLogs",
+        "excytin-schema-v1:IntuneDeviceComplianceOrg",
+        "excytin-schema-v1:IntuneDevices",
+        "excytin-schema-v1:IntuneOperationalLogs",
+        "excytin-schema-v1:MicrosoftAzureBastionAuditLogs",
+        "excytin-schema-v1:MicrosoftGraphActivityLogs",
+        "excytin-schema-v1:OfficeActivity",
+        "excytin-schema-v1:SecurityAlert",
+        "excytin-schema-v1:SecurityIncident",
+        "excytin-schema-v1:SigninLogs",
+        "excytin-schema-v1:ThreatIntelligenceIndicator",
+        "excytin-schema-v1:UrlClickEvents"
+      ],
+      "semantic_join_key_ids": [
+        "excytin-schema-v1:join-key:account_upn",
+        "excytin-schema-v1:join-key:alert_id",
+        "excytin-schema-v1:join-key:device_id",
+        "excytin-schema-v1:join-key:email_address",
+        "excytin-schema-v1:join-key:ip_address",
+        "excytin-schema-v1:join-key:network_message_id",
+        "excytin-schema-v1:join-key:process_id",
+        "excytin-schema-v1:join-key:system_alert_id"
+      ],
+      "extends_procedure_id": null,
+      "source_insight_indexes": [
+        0,
+        1,
+        4,
+        5,
+        9
+      ],
+      "support_episode_ids": [
+        "excytin-episodes-v1:episode:002a9ca8c108f060d983",
+        "excytin-episodes-v1:episode:01132a27188a98aa59b6",
+        "excytin-episodes-v1:episode:01a5d0d38540ce1d360b",
+        "excytin-episodes-v1:episode:025ba584d1e4d845286c",
+        "excytin-episodes-v1:episode:042f4efe828c93485a21",
+        "excytin-episodes-v1:episode:05860412528cd1bbc2a1",
+        "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9",
+        "excytin-episodes-v1:episode:06923cdcb005e225b640",
+        "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8",
+        "excytin-episodes-v1:episode:0cea3ddad40d1bf3ca96",
+        "excytin-episodes-v1:episode:0d32c8580c608b88936f",
+        "excytin-episodes-v1:episode:0dd1fcacafaea3abbb47",
+        "excytin-episodes-v1:episode:1024fde7e1b2e578fc65",
+        "excytin-episodes-v1:episode:11775209617027be8cd4",
+        "excytin-episodes-v1:episode:11a0936dfcdb89f888b5",
+        "excytin-episodes-v1:episode:159e4608e24ab167b19d",
+        "excytin-episodes-v1:episode:15f9d8f8ed24ff3e7df7",
+        "excytin-episodes-v1:episode:16387313360733deb69a",
+        "excytin-episodes-v1:episode:16bec16edd8607dec18d",
+        "excytin-episodes-v1:episode:1701ede09982d9d1ed75",
+        "excytin-episodes-v1:episode:1710bb43ca5d9641ffdb",
+        "excytin-episodes-v1:episode:1881c38c953cb065d4ad",
+        "excytin-episodes-v1:episode:1903b55655aaffc3c13a",
+        "excytin-episodes-v1:episode:1933c51579855bbcb47c",
+        "excytin-episodes-v1:episode:19f53b0ec224c2635651",
+        "excytin-episodes-v1:episode:1a1056940e9dc9e2e5f0",
+        "excytin-episodes-v1:episode:1a43eef38b2a45b5c9ed",
+        "excytin-episodes-v1:episode:1b8868f98d60500bb487",
+        "excytin-episodes-v1:episode:1ba8875e168fa31dbd0f",
+        "excytin-episodes-v1:episode:1cf0707b3de32348ecb3",
+        "excytin-episodes-v1:episode:1dbf6f83e836fbe224d5",
+        "excytin-episodes-v1:episode:207e566f72753a22491b",
+        "excytin-episodes-v1:episode:20c238f07b1b62ba11b3",
+        "excytin-episodes-v1:episode:222236c5dccd68647462",
+        "excytin-episodes-v1:episode:23c584bedc147be157fb",
+        "excytin-episodes-v1:episode:24fe25303eddc246078e",
+        "excytin-episodes-v1:episode:2561cdc547d929aac378",
+        "excytin-episodes-v1:episode:269e289086fd7e3af0a5",
+        "excytin-episodes-v1:episode:2825fcfee8dfadc372ea",
+        "excytin-episodes-v1:episode:298850f3ae94177f4fae",
+        "excytin-episodes-v1:episode:29a75e13bad02293b549",
+        "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535",
+        "excytin-episodes-v1:episode:2e8a6795c6d64c0d56b1",
+        "excytin-episodes-v1:episode:2f1fea4c726237fac45c",
+        "excytin-episodes-v1:episode:2fbfcf929522a3845bb8",
+        "excytin-episodes-v1:episode:30122a96e7d75b177b03",
+        "excytin-episodes-v1:episode:3021311acfe4c1a41b27",
+        "excytin-episodes-v1:episode:302b2adcbacdeef42aa0",
+        "excytin-episodes-v1:episode:32486238ea4c79c04992",
+        "excytin-episodes-v1:episode:324b85e581c9d6d1e6fb",
+        "excytin-episodes-v1:episode:325ccff78beba84c5cb2",
+        "excytin-episodes-v1:episode:39a91ac90fac354bc594",
+        "excytin-episodes-v1:episode:3a29fcc1ccdc518771a4",
+        "excytin-episodes-v1:episode:3c697908b7640c8403c9",
+        "excytin-episodes-v1:episode:3d422f4be2b37e07d723",
+        "excytin-episodes-v1:episode:3eab956a54b8da6d295b",
+        "excytin-episodes-v1:episode:3fdcd8a2f3369e6ed4b8",
+        "excytin-episodes-v1:episode:3ff884fb1a345ee0a063",
+        "excytin-episodes-v1:episode:3ffcbb0abf86bd75ffd4",
+        "excytin-episodes-v1:episode:4558e269bc4e6cb3fa20",
+        "excytin-episodes-v1:episode:4822c34d5a2e9be58747",
+        "excytin-episodes-v1:episode:484d2ae9ed3adcf68932",
+        "excytin-episodes-v1:episode:490640c5070cde2fe73d",
+        "excytin-episodes-v1:episode:49718b85c7c2a19845cc",
+        "excytin-episodes-v1:episode:4a75af4ad6d009bdb086",
+        "excytin-episodes-v1:episode:4a7f33b1209c6465cb4b",
+        "excytin-episodes-v1:episode:4a99d86c8997c1deef05",
+        "excytin-episodes-v1:episode:4f137aadd406c15e6d96",
+        "excytin-episodes-v1:episode:502824d55a36b1d9d66b",
+        "excytin-episodes-v1:episode:5202a217dcf6928cc583",
+        "excytin-episodes-v1:episode:5234933dd03bd668cce2",
+        "excytin-episodes-v1:episode:531896415e67e87a2e8b",
+        "excytin-episodes-v1:episode:53782df7b0c1640695e4",
+        "excytin-episodes-v1:episode:5385db06cb7ed4a86783",
+        "excytin-episodes-v1:episode:53c249b163981af0b21e",
+        "excytin-episodes-v1:episode:54051f7523a63fda5a3e",
+        "excytin-episodes-v1:episode:55126028abd0af08d8ff",
+        "excytin-episodes-v1:episode:55c129c5bbc93a29db38",
+        "excytin-episodes-v1:episode:55f6150ca3383aa46c0a",
+        "excytin-episodes-v1:episode:567c7c34551b271fb8cd",
+        "excytin-episodes-v1:episode:56b203f7318655393232",
+        "excytin-episodes-v1:episode:57d39206ed0470cde481",
+        "excytin-episodes-v1:episode:58afb3d10a35c1594ed2",
+        "excytin-episodes-v1:episode:58b1e8c58a37a80e93c3",
+        "excytin-episodes-v1:episode:5a3d447dbdfbe200b8e8",
+        "excytin-episodes-v1:episode:5b9944818fe97bbcc3e0",
+        "excytin-episodes-v1:episode:5c36cc90fcd812c34484",
+        "excytin-episodes-v1:episode:5c7ca264c7fc04f61542",
+        "excytin-episodes-v1:episode:5d6c63e5279c06331743",
+        "excytin-episodes-v1:episode:5e2978cdf960998fe6c7",
+        "excytin-episodes-v1:episode:5f02beafbcce20b9d237",
+        "excytin-episodes-v1:episode:5fe5b4331266d2a70fc0",
+        "excytin-episodes-v1:episode:60b66e25215fc90913cf",
+        "excytin-episodes-v1:episode:61fd73349ce995be1b8b",
+        "excytin-episodes-v1:episode:65422f3a9e2246895c1a",
+        "excytin-episodes-v1:episode:664b7305b729b9ba961a",
+        "excytin-episodes-v1:episode:6689822b1f242df2689c",
+        "excytin-episodes-v1:episode:697b6540e4940e49f8d1",
+        "excytin-episodes-v1:episode:6a25720da5972e181cff",
+        "excytin-episodes-v1:episode:6ab2e9cbf766c62bda2a",
+        "excytin-episodes-v1:episode:6bccc49a257b49f22b63",
+        "excytin-episodes-v1:episode:6bf4d8d5a5bcb5b45e47",
+        "excytin-episodes-v1:episode:6c12d7fe0efafdd78399",
+        "excytin-episodes-v1:episode:6c5fa92639fda46b117a",
+        "excytin-episodes-v1:episode:6c7019a07b25c12758d0",
+        "excytin-episodes-v1:episode:6d4149da6826f34ff7b5",
+        "excytin-episodes-v1:episode:6e836428f4a91b499575",
+        "excytin-episodes-v1:episode:6f56a17ba76d80f2ff22",
+        "excytin-episodes-v1:episode:6f5af28ac5b6ba008209",
+        "excytin-episodes-v1:episode:7099b3755aa18dabc059",
+        "excytin-episodes-v1:episode:715f8efa01ba83248c89",
+        "excytin-episodes-v1:episode:71a83aaca1259bb03297",
+        "excytin-episodes-v1:episode:72a5bbd772cf144dc670",
+        "excytin-episodes-v1:episode:747d774898c3a2690eaa",
+        "excytin-episodes-v1:episode:75a72adf671ba22045dc",
+        "excytin-episodes-v1:episode:75f0e5c2d98225fbf65d",
+        "excytin-episodes-v1:episode:76b4056bfb39928bd1e6",
+        "excytin-episodes-v1:episode:76df10ff56303ff8c3d7",
+        "excytin-episodes-v1:episode:77e863dbe8b0743a040d",
+        "excytin-episodes-v1:episode:78142d0d6457745d12f0",
+        "excytin-episodes-v1:episode:79680807f74e0f810f3b",
+        "excytin-episodes-v1:episode:79eb5fb0ea072932f320",
+        "excytin-episodes-v1:episode:7a1fab2dee44a3eacd5c",
+        "excytin-episodes-v1:episode:7a2d378481199146737c",
+        "excytin-episodes-v1:episode:7c932fe0b4ce4d5c8223",
+        "excytin-episodes-v1:episode:7cd8d7d985e935b48708",
+        "excytin-episodes-v1:episode:7e36a8ab81999463ca16",
+        "excytin-episodes-v1:episode:7f3cd720c7cb24a3ccb6",
+        "excytin-episodes-v1:episode:7f4d525d2c3ae13f8459",
+        "excytin-episodes-v1:episode:7f7240d769d1596c7e68",
+        "excytin-episodes-v1:episode:805aef9b21c9d7d1f424",
+        "excytin-episodes-v1:episode:81606075cab2cc69a09f",
+        "excytin-episodes-v1:episode:832e4720484c5410129b",
+        "excytin-episodes-v1:episode:844b190e3ed69ebadb98",
+        "excytin-episodes-v1:episode:85639a70479c21547027",
+        "excytin-episodes-v1:episode:88335bcfcefb83cde2c3",
+        "excytin-episodes-v1:episode:88b4ba550bf12febb8a4",
+        "excytin-episodes-v1:episode:898e68dec1ae60e8eadb",
+        "excytin-episodes-v1:episode:8b1d899e980ef43ba58d",
+        "excytin-episodes-v1:episode:8b8b00343efdde9ff503",
+        "excytin-episodes-v1:episode:8cf1f9cb532f08236be2",
+        "excytin-episodes-v1:episode:8cf468e5e9b5cca1e2e3",
+        "excytin-episodes-v1:episode:8d93ddc59c1695c9c5ef",
+        "excytin-episodes-v1:episode:90d5e9f8e54b1be5ec6d",
+        "excytin-episodes-v1:episode:91d9ad13ab3a1104b5e3",
+        "excytin-episodes-v1:episode:91fb7a14e56a36b2d5ba",
+        "excytin-episodes-v1:episode:93e9f230277a3a0fa634",
+        "excytin-episodes-v1:episode:94d8c0da555f8a4ddf98",
+        "excytin-episodes-v1:episode:95cffccbf1e1449a6f9d",
+        "excytin-episodes-v1:episode:9618ee347cf076ef61fb",
+        "excytin-episodes-v1:episode:9640ca0f10e3cb0d6f8f",
+        "excytin-episodes-v1:episode:975bc460d2b5c2ff24f9",
+        "excytin-episodes-v1:episode:990bd5315b316b9a319e",
+        "excytin-episodes-v1:episode:9b8952f9fd816b375eb8",
+        "excytin-episodes-v1:episode:9e5b6d176eb032d0033c",
+        "excytin-episodes-v1:episode:a03d65687317e53d023d",
+        "excytin-episodes-v1:episode:a0d06541ce274941915f",
+        "excytin-episodes-v1:episode:a232f04865c85d3745ed",
+        "excytin-episodes-v1:episode:a5862babde2ac9271d86",
+        "excytin-episodes-v1:episode:a58c95c0d13a7f0fa51e",
+        "excytin-episodes-v1:episode:a6718114a75cf78e1e62",
+        "excytin-episodes-v1:episode:a847e32ebdbc72aa9edb",
+        "excytin-episodes-v1:episode:a894faab3f9538667073",
+        "excytin-episodes-v1:episode:a89fe79ef92e49affc5b",
+        "excytin-episodes-v1:episode:aab52ee79019d302fbbb",
+        "excytin-episodes-v1:episode:ab69ff49c06cf13447ed",
+        "excytin-episodes-v1:episode:ac388c3f3de042b3f14b",
+        "excytin-episodes-v1:episode:ac56ad007740d19b2e48",
+        "excytin-episodes-v1:episode:acaa8927860635aa1f97",
+        "excytin-episodes-v1:episode:ad7ea314bc3ba9fc3fe0",
+        "excytin-episodes-v1:episode:ad94bf0f69d8efc9c2fc",
+        "excytin-episodes-v1:episode:af5aad00229cfb661584",
+        "excytin-episodes-v1:episode:b24fd45ef484d67c664c",
+        "excytin-episodes-v1:episode:b529136088e46ee7f8d5",
+        "excytin-episodes-v1:episode:b56cb68c72429691b468",
+        "excytin-episodes-v1:episode:b81e737137227d3c4d81",
+        "excytin-episodes-v1:episode:b91dd3dac06b88858185",
+        "excytin-episodes-v1:episode:b998bdc8a344d3560096",
+        "excytin-episodes-v1:episode:ba890997da086eb3024a",
+        "excytin-episodes-v1:episode:bc7237ef6b084e1f42bb",
+        "excytin-episodes-v1:episode:bcae6f33a2e1eab56bf3",
+        "excytin-episodes-v1:episode:be4f2cb1a97a0ebd2aba",
+        "excytin-episodes-v1:episode:beb10c80b5bb52ff9f70",
+        "excytin-episodes-v1:episode:c07c2f19c1072d36018c",
+        "excytin-episodes-v1:episode:c0e9688ad44c3b23e695",
+        "excytin-episodes-v1:episode:c1c234411b17efd05cb6",
+        "excytin-episodes-v1:episode:c2f670790f265f79ef98",
+        "excytin-episodes-v1:episode:c3fe59ba408ea50ae156",
+        "excytin-episodes-v1:episode:c61438fb425e59f15f1d",
+        "excytin-episodes-v1:episode:c7c4d7dbb22a62964cc3",
+        "excytin-episodes-v1:episode:ca0501b718f14b9d2cea",
+        "excytin-episodes-v1:episode:ca7d41f83fdb790c399a",
+        "excytin-episodes-v1:episode:cc1e50d2810eee828dda",
+        "excytin-episodes-v1:episode:cd3f52a8a7b57dcfb1b7",
+        "excytin-episodes-v1:episode:cdde85841b9bcfe1856f",
+        "excytin-episodes-v1:episode:ce0a451218ea0a15decf",
+        "excytin-episodes-v1:episode:d22c442c4b3f6fba66b4",
+        "excytin-episodes-v1:episode:d36b2a4d2556cbb0ea9c",
+        "excytin-episodes-v1:episode:d51c7b54ae2422752d27",
+        "excytin-episodes-v1:episode:d64478bab0282fb9df08",
+        "excytin-episodes-v1:episode:d675eff05f31919d5ddc",
+        "excytin-episodes-v1:episode:d7200fbccd676eda3509",
+        "excytin-episodes-v1:episode:d78d62ad569d9ad93c4e",
+        "excytin-episodes-v1:episode:d98c06883c1b32990735",
+        "excytin-episodes-v1:episode:da1817c52b5371223be6",
+        "excytin-episodes-v1:episode:db4f2c9fd1fa38846666",
+        "excytin-episodes-v1:episode:db8328d2629251c3d707",
+        "excytin-episodes-v1:episode:dc731de23f30ef698205",
+        "excytin-episodes-v1:episode:dcfc375ca2ce3d4afa4c",
+        "excytin-episodes-v1:episode:dd4b2b46e2a301cd8ff6",
+        "excytin-episodes-v1:episode:de0cdffd82d86479f540",
+        "excytin-episodes-v1:episode:dec20dfa042fe8c4bdf9",
+        "excytin-episodes-v1:episode:e1e26a70c6e7854555c4",
+        "excytin-episodes-v1:episode:e2b36046a619014263b3",
+        "excytin-episodes-v1:episode:e5c3b34886c98bc5a122",
+        "excytin-episodes-v1:episode:e5fff277056d1db3b709",
+        "excytin-episodes-v1:episode:e607c27f9aebfc754365",
+        "excytin-episodes-v1:episode:e60edbc32510ee17d4bc",
+        "excytin-episodes-v1:episode:e66d4dcc9d5c20e2d1ad",
+        "excytin-episodes-v1:episode:e6a6d1daa464b2b205c9",
+        "excytin-episodes-v1:episode:e6d28969c08998abf69d",
+        "excytin-episodes-v1:episode:e8c40b2127d0d8a57efd",
+        "excytin-episodes-v1:episode:eb28c655c1177a182c9f",
+        "excytin-episodes-v1:episode:ebdab368fd2b8e06aab4",
+        "excytin-episodes-v1:episode:edee6d99413426632152",
+        "excytin-episodes-v1:episode:f1e9cdc9b300e5958b16",
+        "excytin-episodes-v1:episode:f3486a55130050991067",
+        "excytin-episodes-v1:episode:f565e1e64d91a17c5e0e",
+        "excytin-episodes-v1:episode:f86ae02eaea631df10d3",
+        "excytin-episodes-v1:episode:f98bbf0587cbaa527d41",
+        "excytin-episodes-v1:episode:fac592a15d3e3229e075",
+        "excytin-episodes-v1:episode:faf5703cb14b3628e18e",
+        "excytin-episodes-v1:episode:fc819702a1a170fa8830",
+        "excytin-episodes-v1:episode:fd296eda80bf0b7e5ebb",
+        "excytin-episodes-v1:episode:fdda88c68dee1e73850c",
+        "excytin-episodes-v1:episode:fe3d36f89e63320eb207",
+        "excytin-episodes-v1:episode:ff0db7cd8d6e166a01ca"
+      ],
+      "support_episode_count": 237,
+      "support_attempt_count": 1605,
+      "support_incidents": [
+        "incident_134",
+        "incident_166",
+        "incident_322",
+        "incident_34",
+        "incident_38",
+        "incident_39",
+        "incident_5",
+        "incident_55"
+      ],
+      "reference_solution_count": 237,
+      "reference_path_count": 237,
+      "status": "active",
+      "retrieval_eligible": true,
+      "retrieval_text": "Alert-Centered Investigation | Trace an initial security alert through entities, raw logs, a bounded timeline, and validated evidence. | entities: ALERT_ID INCIDENT_ID | logs: incident_alert identity_signin endpoint_process endpoint_file endpoint_network email firewall_network cloud_application",
+      "phases": [
+        {
+          "phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:ground-environment",
+          "sequence_no": 1,
+          "name": "Ground the environment",
+          "goal": "Confirm the active log catalog before choosing evidence sources.",
+          "required_log_types": [],
+          "required_semantic_types": [],
+          "semantic_table_ids": [],
+          "semantic_join_key_ids": [],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:002a9ca8c108f060d983:attempt:01",
+            "excytin-episodes-v1:episode:01132a27188a98aa59b6:attempt:01",
+            "excytin-episodes-v1:episode:01a5d0d38540ce1d360b:attempt:01",
+            "excytin-episodes-v1:episode:025ba584d1e4d845286c:attempt:01",
+            "excytin-episodes-v1:episode:042f4efe828c93485a21:attempt:01"
+          ],
+          "success_condition": "Candidate tables and their valid fields are known.",
+          "retrieval_text": "Alert-Centered Investigation | Ground the environment | Confirm the active log catalog before choosing evidence sources."
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:locate-initial-alert",
+          "sequence_no": 2,
+          "name": "Locate the initial alert",
+          "goal": "Anchor the investigation in the alert described by the task context.",
+          "required_log_types": [
+            "incident_alert"
+          ],
+          "required_semantic_types": [
+            "ALERT_ID",
+            "INCIDENT_ID",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:alert_id",
+            "excytin-schema-v1:join-key:system_alert_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:01132a27188a98aa59b6:attempt:04",
+            "excytin-episodes-v1:episode:05860412528cd1bbc2a1:attempt:08",
+            "excytin-episodes-v1:episode:06923cdcb005e225b640:attempt:06",
+            "excytin-episodes-v1:episode:0cea3ddad40d1bf3ca96:attempt:09",
+            "excytin-episodes-v1:episode:0d32c8580c608b88936f:attempt:06"
+          ],
+          "success_condition": "The initial alert and its time range are identified.",
+          "retrieval_text": "Alert-Centered Investigation | Locate the initial alert | Anchor the investigation in the alert described by the task context. | incident_alert | ALERT_ID INCIDENT_ID TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:extract-evidence-entities",
+          "sequence_no": 3,
+          "name": "Extract evidence entities",
+          "goal": "Extract accounts, devices, network indicators, messages, files, and processes from structured alert evidence.",
+          "required_log_types": [
+            "incident_alert"
+          ],
+          "required_semantic_types": [
+            "ACCOUNT_ID",
+            "EMAIL_ADDRESS",
+            "DEVICE_ID",
+            "IP_ADDRESS",
+            "MESSAGE_ID",
+            "FILE_HASH",
+            "PROCESS_ID"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:alert_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:20c238f07b1b62ba11b3:attempt:09",
+            "excytin-episodes-v1:episode:2e8a6795c6d64c0d56b1:attempt:04",
+            "excytin-episodes-v1:episode:39a91ac90fac354bc594:attempt:10",
+            "excytin-episodes-v1:episode:3d422f4be2b37e07d723:attempt:08",
+            "excytin-episodes-v1:episode:4822c34d5a2e9be58747:attempt:09"
+          ],
+          "success_condition": "At least one scoped pivot entity is supported by alert evidence.",
+          "retrieval_text": "Alert-Centered Investigation | Extract evidence entities | Extract accounts, devices, network indicators, messages, files, and processes from structured alert evidence. | incident_alert | ACCOUNT_ID EMAIL_ADDRESS DEVICE_ID IP_ADDRESS MESSAGE_ID FILE_HASH PROCESS_ID"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:select-investigation-branch",
+          "sequence_no": 4,
+          "name": "Select an investigation branch",
+          "goal": "Choose email, endpoint, identity, or network investigation according to the supported entity types.",
+          "required_log_types": [],
+          "required_semantic_types": [],
+          "semantic_table_ids": [],
+          "semantic_join_key_ids": [],
+          "exemplar_attempt_ids": [],
+          "success_condition": "A branch is selected from evidence rather than keyword guessing.",
+          "retrieval_text": "Alert-Centered Investigation | Select an investigation branch | Choose email, endpoint, identity, or network investigation according to the supported entity types."
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:correlate-events",
+          "sequence_no": 5,
+          "name": "Correlate events",
+          "goal": "Expand evidence only through Semantic Memory join keys and their required scopes.",
+          "required_log_types": [],
+          "required_semantic_types": [],
+          "semantic_table_ids": [],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:account_upn",
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:email_address",
+            "excytin-schema-v1:join-key:ip_address",
+            "excytin-schema-v1:join-key:network_message_id",
+            "excytin-schema-v1:join-key:process_id"
+          ],
+          "exemplar_attempt_ids": [],
+          "success_condition": "Every cross-log pivot has a valid identifier and scope.",
+          "retrieval_text": "Alert-Centered Investigation | Correlate events | Expand evidence only through Semantic Memory join keys and their required scopes."
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:build-timeline",
+          "sequence_no": 6,
+          "name": "Build a bounded timeline",
+          "goal": "Order the correlated evidence within the incident time window.",
+          "required_log_types": [],
+          "required_semantic_types": [
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [],
+          "semantic_join_key_ids": [],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:01132a27188a98aa59b6:attempt:04",
+            "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9:attempt:03",
+            "excytin-episodes-v1:episode:11775209617027be8cd4:attempt:14",
+            "excytin-episodes-v1:episode:159e4608e24ab167b19d:attempt:08",
+            "excytin-episodes-v1:episode:1881c38c953cb065d4ad:attempt:08"
+          ],
+          "success_condition": "Relevant events are temporally aligned with the initial alert.",
+          "retrieval_text": "Alert-Centered Investigation | Build a bounded timeline | Order the correlated evidence within the incident time window. |  | TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:validate-conclusion",
+          "sequence_no": 7,
+          "name": "Validate the conclusion",
+          "goal": "Require the final claim to reconnect to the initial alert through entities and time.",
+          "required_log_types": [],
+          "required_semantic_types": [],
+          "semantic_table_ids": [],
+          "semantic_join_key_ids": [],
+          "exemplar_attempt_ids": [],
+          "success_condition": "The answer is supported by an explicit, scoped evidence chain.",
+          "retrieval_text": "Alert-Centered Investigation | Validate the conclusion | Require the final claim to reconnect to the initial alert through entities and time."
+        }
+      ],
+      "transitions": [
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:ground-environment",
+          "to_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:locate-initial-alert"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:locate-initial-alert",
+          "to_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:extract-evidence-entities"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:extract-evidence-entities",
+          "to_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:select-investigation-branch"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:select-investigation-branch",
+          "to_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:correlate-events"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:correlate-events",
+          "to_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:build-timeline"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:build-timeline",
+          "to_phase_id": "excytin-procedures-v1:procedure:alert-centered-investigation:phase:validate-conclusion"
+        }
+      ]
+    },
+    {
+      "procedure_id": "excytin-procedures-v1:procedure:email-threat-investigation",
+      "skill_id": "email-threat-investigation",
+      "skill_path": "skills/email-threat-investigation/SKILL.md",
+      "name": "Email Threat Investigation",
+      "category": "domain_workflow",
+      "goal": "Trace an email alert through message, URL, sender, recipient, delivery, and remediation evidence.",
+      "description": "Use when alert evidence contains a URL, email address, or message identifier.",
+      "entry_entity_types": [
+        "URL",
+        "EMAIL_ADDRESS",
+        "MESSAGE_ID"
+      ],
+      "applicable_log_types": [
+        "email"
+      ],
+      "semantic_table_ids": [
+        "excytin-schema-v1:EmailAttachmentInfo",
+        "excytin-schema-v1:EmailEvents",
+        "excytin-schema-v1:EmailPostDeliveryEvents",
+        "excytin-schema-v1:EmailUrlInfo",
+        "excytin-schema-v1:OfficeActivity",
+        "excytin-schema-v1:UrlClickEvents"
+      ],
+      "semantic_join_key_ids": [
+        "excytin-schema-v1:join-key:alert_id",
+        "excytin-schema-v1:join-key:email_address",
+        "excytin-schema-v1:join-key:internet_message_id",
+        "excytin-schema-v1:join-key:ip_address",
+        "excytin-schema-v1:join-key:network_message_id"
+      ],
+      "extends_procedure_id": "excytin-procedures-v1:procedure:alert-centered-investigation",
+      "source_insight_indexes": [
+        75,
+        100,
+        105,
+        115,
+        126
+      ],
+      "support_episode_ids": [
+        "excytin-episodes-v1:episode:01a5d0d38540ce1d360b",
+        "excytin-episodes-v1:episode:025ba584d1e4d845286c",
+        "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8",
+        "excytin-episodes-v1:episode:11775209617027be8cd4",
+        "excytin-episodes-v1:episode:11a0936dfcdb89f888b5",
+        "excytin-episodes-v1:episode:1710bb43ca5d9641ffdb",
+        "excytin-episodes-v1:episode:1903b55655aaffc3c13a",
+        "excytin-episodes-v1:episode:1933c51579855bbcb47c",
+        "excytin-episodes-v1:episode:1a43eef38b2a45b5c9ed",
+        "excytin-episodes-v1:episode:1dbf6f83e836fbe224d5",
+        "excytin-episodes-v1:episode:2561cdc547d929aac378",
+        "excytin-episodes-v1:episode:298850f3ae94177f4fae",
+        "excytin-episodes-v1:episode:2fbfcf929522a3845bb8",
+        "excytin-episodes-v1:episode:30122a96e7d75b177b03",
+        "excytin-episodes-v1:episode:3d422f4be2b37e07d723",
+        "excytin-episodes-v1:episode:4a75af4ad6d009bdb086",
+        "excytin-episodes-v1:episode:58afb3d10a35c1594ed2",
+        "excytin-episodes-v1:episode:58b1e8c58a37a80e93c3",
+        "excytin-episodes-v1:episode:5a3d447dbdfbe200b8e8",
+        "excytin-episodes-v1:episode:60b66e25215fc90913cf",
+        "excytin-episodes-v1:episode:61fd73349ce995be1b8b",
+        "excytin-episodes-v1:episode:6c7019a07b25c12758d0",
+        "excytin-episodes-v1:episode:6f56a17ba76d80f2ff22",
+        "excytin-episodes-v1:episode:71a83aaca1259bb03297",
+        "excytin-episodes-v1:episode:747d774898c3a2690eaa",
+        "excytin-episodes-v1:episode:76b4056bfb39928bd1e6",
+        "excytin-episodes-v1:episode:78142d0d6457745d12f0",
+        "excytin-episodes-v1:episode:7a1fab2dee44a3eacd5c",
+        "excytin-episodes-v1:episode:7f3cd720c7cb24a3ccb6",
+        "excytin-episodes-v1:episode:805aef9b21c9d7d1f424",
+        "excytin-episodes-v1:episode:844b190e3ed69ebadb98",
+        "excytin-episodes-v1:episode:88b4ba550bf12febb8a4",
+        "excytin-episodes-v1:episode:9b8952f9fd816b375eb8",
+        "excytin-episodes-v1:episode:9e5b6d176eb032d0033c",
+        "excytin-episodes-v1:episode:a03d65687317e53d023d",
+        "excytin-episodes-v1:episode:a6718114a75cf78e1e62",
+        "excytin-episodes-v1:episode:a89fe79ef92e49affc5b",
+        "excytin-episodes-v1:episode:ac388c3f3de042b3f14b",
+        "excytin-episodes-v1:episode:b529136088e46ee7f8d5",
+        "excytin-episodes-v1:episode:b91dd3dac06b88858185",
+        "excytin-episodes-v1:episode:bc7237ef6b084e1f42bb",
+        "excytin-episodes-v1:episode:c61438fb425e59f15f1d",
+        "excytin-episodes-v1:episode:ca0501b718f14b9d2cea",
+        "excytin-episodes-v1:episode:ce0a451218ea0a15decf",
+        "excytin-episodes-v1:episode:d51c7b54ae2422752d27",
+        "excytin-episodes-v1:episode:da1817c52b5371223be6",
+        "excytin-episodes-v1:episode:de0cdffd82d86479f540",
+        "excytin-episodes-v1:episode:e6d28969c08998abf69d"
+      ],
+      "support_episode_count": 48,
+      "support_attempt_count": 205,
+      "support_incidents": [
+        "incident_134",
+        "incident_166",
+        "incident_322",
+        "incident_34",
+        "incident_39",
+        "incident_5",
+        "incident_55"
+      ],
+      "reference_solution_count": 48,
+      "reference_path_count": 48,
+      "status": "active",
+      "retrieval_eligible": true,
+      "retrieval_text": "Email Threat Investigation | Trace an email alert through message, URL, sender, recipient, delivery, and remediation evidence. | entities: URL EMAIL_ADDRESS MESSAGE_ID | logs: email",
+      "phases": [
+        {
+          "phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:anchor-email-alert",
+          "sequence_no": 1,
+          "name": "Anchor the email alert",
+          "goal": "Confirm the alert and structured email evidence before searching broad activity logs.",
+          "required_log_types": [
+            "incident_alert"
+          ],
+          "required_semantic_types": [
+            "ALERT_ID",
+            "URL",
+            "EMAIL_ADDRESS",
+            "MESSAGE_ID"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:alert_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:1a43eef38b2a45b5c9ed:attempt:07",
+            "excytin-episodes-v1:episode:3d422f4be2b37e07d723:attempt:08",
+            "excytin-episodes-v1:episode:60b66e25215fc90913cf:attempt:06",
+            "excytin-episodes-v1:episode:78142d0d6457745d12f0:attempt:10",
+            "excytin-episodes-v1:episode:9e5b6d176eb032d0033c:attempt:13"
+          ],
+          "success_condition": "An alert-linked email, URL, or message entity is identified.",
+          "retrieval_text": "Email Threat Investigation | Anchor the email alert | Confirm the alert and structured email evidence before searching broad activity logs. | incident_alert | ALERT_ID URL EMAIL_ADDRESS MESSAGE_ID"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:resolve-message",
+          "sequence_no": 2,
+          "name": "Resolve the message",
+          "goal": "Resolve URL or address evidence to a stable message identifier.",
+          "required_log_types": [
+            "email"
+          ],
+          "required_semantic_types": [
+            "URL",
+            "EMAIL_ADDRESS",
+            "MESSAGE_ID"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:EmailAttachmentInfo",
+            "excytin-schema-v1:EmailEvents",
+            "excytin-schema-v1:EmailPostDeliveryEvents",
+            "excytin-schema-v1:EmailUrlInfo",
+            "excytin-schema-v1:OfficeActivity",
+            "excytin-schema-v1:UrlClickEvents"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:internet_message_id",
+            "excytin-schema-v1:join-key:network_message_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:01a5d0d38540ce1d360b:attempt:06",
+            "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8:attempt:03",
+            "excytin-episodes-v1:episode:11a0936dfcdb89f888b5:attempt:05",
+            "excytin-episodes-v1:episode:1710bb43ca5d9641ffdb:attempt:02",
+            "excytin-episodes-v1:episode:1903b55655aaffc3c13a:attempt:02"
+          ],
+          "success_condition": "A message identifier is supported by email evidence.",
+          "retrieval_text": "Email Threat Investigation | Resolve the message | Resolve URL or address evidence to a stable message identifier. | email | URL EMAIL_ADDRESS MESSAGE_ID"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:inspect-delivery",
+          "sequence_no": 3,
+          "name": "Inspect delivery and participants",
+          "goal": "Identify sender, recipient, delivery state, and message time.",
+          "required_log_types": [
+            "email"
+          ],
+          "required_semantic_types": [
+            "EMAIL_ADDRESS",
+            "ACTION",
+            "STATUS",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:EmailAttachmentInfo",
+            "excytin-schema-v1:EmailEvents",
+            "excytin-schema-v1:EmailPostDeliveryEvents",
+            "excytin-schema-v1:EmailUrlInfo",
+            "excytin-schema-v1:OfficeActivity",
+            "excytin-schema-v1:UrlClickEvents"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:email_address",
+            "excytin-schema-v1:join-key:network_message_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:01a5d0d38540ce1d360b:attempt:06",
+            "excytin-episodes-v1:episode:025ba584d1e4d845286c:attempt:05",
+            "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8:attempt:03",
+            "excytin-episodes-v1:episode:1710bb43ca5d9641ffdb:attempt:02",
+            "excytin-episodes-v1:episode:1903b55655aaffc3c13a:attempt:02"
+          ],
+          "success_condition": "Message participants and delivery state are established.",
+          "retrieval_text": "Email Threat Investigation | Inspect delivery and participants | Identify sender, recipient, delivery state, and message time. | email | EMAIL_ADDRESS ACTION STATUS TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:inspect-remediation",
+          "sequence_no": 4,
+          "name": "Inspect post-delivery remediation",
+          "goal": "Determine whether and when the message was removed, quarantined, or otherwise remediated.",
+          "required_log_types": [
+            "email"
+          ],
+          "required_semantic_types": [
+            "ACTION",
+            "STATUS",
+            "MESSAGE_ID",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:EmailAttachmentInfo",
+            "excytin-schema-v1:EmailEvents",
+            "excytin-schema-v1:EmailPostDeliveryEvents",
+            "excytin-schema-v1:EmailUrlInfo",
+            "excytin-schema-v1:OfficeActivity",
+            "excytin-schema-v1:UrlClickEvents"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:network_message_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:01a5d0d38540ce1d360b:attempt:06",
+            "excytin-episodes-v1:episode:025ba584d1e4d845286c:attempt:05",
+            "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8:attempt:03",
+            "excytin-episodes-v1:episode:11a0936dfcdb89f888b5:attempt:05",
+            "excytin-episodes-v1:episode:1710bb43ca5d9641ffdb:attempt:02"
+          ],
+          "success_condition": "The post-delivery action is connected to the same message.",
+          "retrieval_text": "Email Threat Investigation | Inspect post-delivery remediation | Determine whether and when the message was removed, quarantined, or otherwise remediated. | email | ACTION STATUS MESSAGE_ID TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:validate-email-chain",
+          "sequence_no": 5,
+          "name": "Validate the email chain",
+          "goal": "Reconnect the message, participants, and remediation evidence to the original alert and time window.",
+          "required_log_types": [
+            "incident_alert",
+            "email"
+          ],
+          "required_semantic_types": [
+            "ALERT_ID",
+            "MESSAGE_ID",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:EmailAttachmentInfo",
+            "excytin-schema-v1:EmailEvents",
+            "excytin-schema-v1:EmailPostDeliveryEvents",
+            "excytin-schema-v1:EmailUrlInfo",
+            "excytin-schema-v1:OfficeActivity",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident",
+            "excytin-schema-v1:UrlClickEvents"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:alert_id",
+            "excytin-schema-v1:join-key:network_message_id"
+          ],
+          "exemplar_attempt_ids": [],
+          "success_condition": "The claimed email entity is supported across alert and email logs.",
+          "retrieval_text": "Email Threat Investigation | Validate the email chain | Reconnect the message, participants, and remediation evidence to the original alert and time window. | incident_alert email | ALERT_ID MESSAGE_ID TIMESTAMP"
+        }
+      ],
+      "transitions": [
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:anchor-email-alert",
+          "to_phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:resolve-message"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:resolve-message",
+          "to_phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:inspect-delivery"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:inspect-delivery",
+          "to_phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:inspect-remediation"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:inspect-remediation",
+          "to_phase_id": "excytin-procedures-v1:procedure:email-threat-investigation:phase:validate-email-chain"
+        }
+      ]
+    },
+    {
+      "procedure_id": "excytin-procedures-v1:procedure:endpoint-process-investigation",
+      "skill_id": "endpoint-process-investigation",
+      "skill_path": "skills/endpoint-process-investigation/SKILL.md",
+      "name": "Endpoint Process Investigation",
+      "category": "domain_workflow",
+      "goal": "Trace an endpoint alert through device, process, command line, file, network, registry, and logon evidence.",
+      "description": "Use when alert evidence contains a device, process, command line, file, or hash.",
+      "entry_entity_types": [
+        "DEVICE_ID",
+        "DEVICE_NAME",
+        "PROCESS_ID",
+        "COMMAND_LINE",
+        "FILE_HASH"
+      ],
+      "applicable_log_types": [
+        "endpoint_process",
+        "endpoint_file",
+        "endpoint_network"
+      ],
+      "semantic_table_ids": [
+        "excytin-schema-v1:DeviceEvents",
+        "excytin-schema-v1:DeviceFileCertificateInfo",
+        "excytin-schema-v1:DeviceFileEvents",
+        "excytin-schema-v1:DeviceImageLoadEvents",
+        "excytin-schema-v1:DeviceInfo",
+        "excytin-schema-v1:DeviceLogonEvents",
+        "excytin-schema-v1:DeviceNetworkEvents",
+        "excytin-schema-v1:DeviceNetworkInfo",
+        "excytin-schema-v1:DeviceProcessEvents",
+        "excytin-schema-v1:DeviceRegistryEvents"
+      ],
+      "semantic_join_key_ids": [
+        "excytin-schema-v1:join-key:account_sid",
+        "excytin-schema-v1:join-key:alert_id",
+        "excytin-schema-v1:join-key:device_id",
+        "excytin-schema-v1:join-key:device_name",
+        "excytin-schema-v1:join-key:ip_address",
+        "excytin-schema-v1:join-key:process_id",
+        "excytin-schema-v1:join-key:sha1",
+        "excytin-schema-v1:join-key:sha256"
+      ],
+      "extends_procedure_id": "excytin-procedures-v1:procedure:alert-centered-investigation",
+      "source_insight_indexes": [
+        9,
+        68,
+        80,
+        137,
+        148
+      ],
+      "support_episode_ids": [
+        "excytin-episodes-v1:episode:002a9ca8c108f060d983",
+        "excytin-episodes-v1:episode:05860412528cd1bbc2a1",
+        "excytin-episodes-v1:episode:1024fde7e1b2e578fc65",
+        "excytin-episodes-v1:episode:1881c38c953cb065d4ad",
+        "excytin-episodes-v1:episode:1b8868f98d60500bb487",
+        "excytin-episodes-v1:episode:1ba8875e168fa31dbd0f",
+        "excytin-episodes-v1:episode:1cf0707b3de32348ecb3",
+        "excytin-episodes-v1:episode:1dbf6f83e836fbe224d5",
+        "excytin-episodes-v1:episode:207e566f72753a22491b",
+        "excytin-episodes-v1:episode:222236c5dccd68647462",
+        "excytin-episodes-v1:episode:29a75e13bad02293b549",
+        "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535",
+        "excytin-episodes-v1:episode:2f1fea4c726237fac45c",
+        "excytin-episodes-v1:episode:2fbfcf929522a3845bb8",
+        "excytin-episodes-v1:episode:3021311acfe4c1a41b27",
+        "excytin-episodes-v1:episode:39a91ac90fac354bc594",
+        "excytin-episodes-v1:episode:3eab956a54b8da6d295b",
+        "excytin-episodes-v1:episode:3fdcd8a2f3369e6ed4b8",
+        "excytin-episodes-v1:episode:3ff884fb1a345ee0a063",
+        "excytin-episodes-v1:episode:3ffcbb0abf86bd75ffd4",
+        "excytin-episodes-v1:episode:4558e269bc4e6cb3fa20",
+        "excytin-episodes-v1:episode:490640c5070cde2fe73d",
+        "excytin-episodes-v1:episode:4a75af4ad6d009bdb086",
+        "excytin-episodes-v1:episode:4a7f33b1209c6465cb4b",
+        "excytin-episodes-v1:episode:4f137aadd406c15e6d96",
+        "excytin-episodes-v1:episode:531896415e67e87a2e8b",
+        "excytin-episodes-v1:episode:54051f7523a63fda5a3e",
+        "excytin-episodes-v1:episode:55c129c5bbc93a29db38",
+        "excytin-episodes-v1:episode:567c7c34551b271fb8cd",
+        "excytin-episodes-v1:episode:5b9944818fe97bbcc3e0",
+        "excytin-episodes-v1:episode:5c36cc90fcd812c34484",
+        "excytin-episodes-v1:episode:5c7ca264c7fc04f61542",
+        "excytin-episodes-v1:episode:5e2978cdf960998fe6c7",
+        "excytin-episodes-v1:episode:5f02beafbcce20b9d237",
+        "excytin-episodes-v1:episode:5fe5b4331266d2a70fc0",
+        "excytin-episodes-v1:episode:664b7305b729b9ba961a",
+        "excytin-episodes-v1:episode:6bf4d8d5a5bcb5b45e47",
+        "excytin-episodes-v1:episode:6c12d7fe0efafdd78399",
+        "excytin-episodes-v1:episode:6d4149da6826f34ff7b5",
+        "excytin-episodes-v1:episode:6e836428f4a91b499575",
+        "excytin-episodes-v1:episode:6f5af28ac5b6ba008209",
+        "excytin-episodes-v1:episode:72a5bbd772cf144dc670",
+        "excytin-episodes-v1:episode:75a72adf671ba22045dc",
+        "excytin-episodes-v1:episode:75f0e5c2d98225fbf65d",
+        "excytin-episodes-v1:episode:78142d0d6457745d12f0",
+        "excytin-episodes-v1:episode:7a2d378481199146737c",
+        "excytin-episodes-v1:episode:7f4d525d2c3ae13f8459",
+        "excytin-episodes-v1:episode:7f7240d769d1596c7e68",
+        "excytin-episodes-v1:episode:805aef9b21c9d7d1f424",
+        "excytin-episodes-v1:episode:81606075cab2cc69a09f",
+        "excytin-episodes-v1:episode:832e4720484c5410129b",
+        "excytin-episodes-v1:episode:844b190e3ed69ebadb98",
+        "excytin-episodes-v1:episode:85639a70479c21547027",
+        "excytin-episodes-v1:episode:898e68dec1ae60e8eadb",
+        "excytin-episodes-v1:episode:8b1d899e980ef43ba58d",
+        "excytin-episodes-v1:episode:8d93ddc59c1695c9c5ef",
+        "excytin-episodes-v1:episode:90d5e9f8e54b1be5ec6d",
+        "excytin-episodes-v1:episode:91fb7a14e56a36b2d5ba",
+        "excytin-episodes-v1:episode:9618ee347cf076ef61fb",
+        "excytin-episodes-v1:episode:9e5b6d176eb032d0033c",
+        "excytin-episodes-v1:episode:a232f04865c85d3745ed",
+        "excytin-episodes-v1:episode:a6718114a75cf78e1e62",
+        "excytin-episodes-v1:episode:a894faab3f9538667073",
+        "excytin-episodes-v1:episode:ab69ff49c06cf13447ed",
+        "excytin-episodes-v1:episode:acaa8927860635aa1f97",
+        "excytin-episodes-v1:episode:ad7ea314bc3ba9fc3fe0",
+        "excytin-episodes-v1:episode:af5aad00229cfb661584",
+        "excytin-episodes-v1:episode:b24fd45ef484d67c664c",
+        "excytin-episodes-v1:episode:b998bdc8a344d3560096",
+        "excytin-episodes-v1:episode:ba890997da086eb3024a",
+        "excytin-episodes-v1:episode:bcae6f33a2e1eab56bf3",
+        "excytin-episodes-v1:episode:be4f2cb1a97a0ebd2aba",
+        "excytin-episodes-v1:episode:beb10c80b5bb52ff9f70",
+        "excytin-episodes-v1:episode:c3fe59ba408ea50ae156",
+        "excytin-episodes-v1:episode:c7c4d7dbb22a62964cc3",
+        "excytin-episodes-v1:episode:ca7d41f83fdb790c399a",
+        "excytin-episodes-v1:episode:cc1e50d2810eee828dda",
+        "excytin-episodes-v1:episode:cd3f52a8a7b57dcfb1b7",
+        "excytin-episodes-v1:episode:d36b2a4d2556cbb0ea9c",
+        "excytin-episodes-v1:episode:d675eff05f31919d5ddc",
+        "excytin-episodes-v1:episode:d78d62ad569d9ad93c4e",
+        "excytin-episodes-v1:episode:d98c06883c1b32990735",
+        "excytin-episodes-v1:episode:db4f2c9fd1fa38846666",
+        "excytin-episodes-v1:episode:db8328d2629251c3d707",
+        "excytin-episodes-v1:episode:dcfc375ca2ce3d4afa4c",
+        "excytin-episodes-v1:episode:dd4b2b46e2a301cd8ff6",
+        "excytin-episodes-v1:episode:dec20dfa042fe8c4bdf9",
+        "excytin-episodes-v1:episode:e2b36046a619014263b3",
+        "excytin-episodes-v1:episode:e5fff277056d1db3b709",
+        "excytin-episodes-v1:episode:e607c27f9aebfc754365",
+        "excytin-episodes-v1:episode:e60edbc32510ee17d4bc",
+        "excytin-episodes-v1:episode:eb28c655c1177a182c9f",
+        "excytin-episodes-v1:episode:f3486a55130050991067",
+        "excytin-episodes-v1:episode:f86ae02eaea631df10d3",
+        "excytin-episodes-v1:episode:f98bbf0587cbaa527d41",
+        "excytin-episodes-v1:episode:fc819702a1a170fa8830",
+        "excytin-episodes-v1:episode:fd296eda80bf0b7e5ebb",
+        "excytin-episodes-v1:episode:ff0db7cd8d6e166a01ca"
+      ],
+      "support_episode_count": 98,
+      "support_attempt_count": 337,
+      "support_incidents": [
+        "incident_134",
+        "incident_166",
+        "incident_322",
+        "incident_34",
+        "incident_38",
+        "incident_39",
+        "incident_5",
+        "incident_55"
+      ],
+      "reference_solution_count": 98,
+      "reference_path_count": 98,
+      "status": "active",
+      "retrieval_eligible": true,
+      "retrieval_text": "Endpoint Process Investigation | Trace an endpoint alert through device, process, command line, file, network, registry, and logon evidence. | entities: DEVICE_ID DEVICE_NAME PROCESS_ID COMMAND_LINE FILE_HASH | logs: endpoint_process endpoint_file endpoint_network",
+      "phases": [
+        {
+          "phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:establish-device-scope",
+          "sequence_no": 1,
+          "name": "Establish device and time scope",
+          "goal": "Resolve the affected device and incident window before using process identifiers.",
+          "required_log_types": [
+            "incident_alert",
+            "endpoint_network"
+          ],
+          "required_semantic_types": [
+            "DEVICE_ID",
+            "DEVICE_NAME",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:DeviceInfo",
+            "excytin-schema-v1:DeviceLogonEvents",
+            "excytin-schema-v1:DeviceNetworkEvents",
+            "excytin-schema-v1:DeviceNetworkInfo",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:device_name"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:1881c38c953cb065d4ad:attempt:08",
+            "excytin-episodes-v1:episode:1dbf6f83e836fbe224d5:attempt:03",
+            "excytin-episodes-v1:episode:29a75e13bad02293b549:attempt:05",
+            "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535:attempt:08",
+            "excytin-episodes-v1:episode:3021311acfe4c1a41b27:attempt:04"
+          ],
+          "success_condition": "A device identity and bounded time window are known.",
+          "retrieval_text": "Endpoint Process Investigation | Establish device and time scope | Resolve the affected device and incident window before using process identifiers. | incident_alert endpoint_network | DEVICE_ID DEVICE_NAME TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:locate-process",
+          "sequence_no": 2,
+          "name": "Locate the process",
+          "goal": "Identify the relevant process, command line, account, and parent execution context.",
+          "required_log_types": [
+            "endpoint_process"
+          ],
+          "required_semantic_types": [
+            "PROCESS_ID",
+            "COMMAND_LINE",
+            "ACCOUNT_ID",
+            "FILE_NAME"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:DeviceEvents",
+            "excytin-schema-v1:DeviceImageLoadEvents",
+            "excytin-schema-v1:DeviceProcessEvents"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:account_sid",
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:process_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:002a9ca8c108f060d983:attempt:03",
+            "excytin-episodes-v1:episode:1cf0707b3de32348ecb3:attempt:03",
+            "excytin-episodes-v1:episode:1dbf6f83e836fbe224d5:attempt:04",
+            "excytin-episodes-v1:episode:29a75e13bad02293b549:attempt:03",
+            "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535:attempt:07"
+          ],
+          "success_condition": "The process is scoped by device and time, not PID alone.",
+          "retrieval_text": "Endpoint Process Investigation | Locate the process | Identify the relevant process, command line, account, and parent execution context. | endpoint_process | PROCESS_ID COMMAND_LINE ACCOUNT_ID FILE_NAME"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:expand-endpoint-evidence",
+          "sequence_no": 3,
+          "name": "Expand endpoint evidence",
+          "goal": "Follow the process into file, network, registry, and logon activity where relevant.",
+          "required_log_types": [
+            "endpoint_file",
+            "endpoint_network"
+          ],
+          "required_semantic_types": [
+            "FILE_HASH",
+            "FILE_PATH",
+            "IP_ADDRESS",
+            "ACTION"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:DeviceFileCertificateInfo",
+            "excytin-schema-v1:DeviceFileEvents",
+            "excytin-schema-v1:DeviceInfo",
+            "excytin-schema-v1:DeviceLogonEvents",
+            "excytin-schema-v1:DeviceNetworkEvents",
+            "excytin-schema-v1:DeviceNetworkInfo",
+            "excytin-schema-v1:DeviceRegistryEvents"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:ip_address",
+            "excytin-schema-v1:join-key:process_id",
+            "excytin-schema-v1:join-key:sha1",
+            "excytin-schema-v1:join-key:sha256"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:29a75e13bad02293b549:attempt:06",
+            "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535:attempt:05",
+            "excytin-episodes-v1:episode:2fbfcf929522a3845bb8:attempt:11",
+            "excytin-episodes-v1:episode:3021311acfe4c1a41b27:attempt:05",
+            "excytin-episodes-v1:episode:75a72adf671ba22045dc:attempt:05"
+          ],
+          "success_condition": "Downstream activity remains tied to the same device, process context, and time.",
+          "retrieval_text": "Endpoint Process Investigation | Expand endpoint evidence | Follow the process into file, network, registry, and logon activity where relevant. | endpoint_file endpoint_network | FILE_HASH FILE_PATH IP_ADDRESS ACTION"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:build-process-timeline",
+          "sequence_no": 4,
+          "name": "Build the process timeline",
+          "goal": "Order parent, child, file, and network events around the suspicious execution.",
+          "required_log_types": [
+            "endpoint_process",
+            "endpoint_file",
+            "endpoint_network"
+          ],
+          "required_semantic_types": [
+            "TIMESTAMP",
+            "PROCESS_ID",
+            "COMMAND_LINE"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:DeviceEvents",
+            "excytin-schema-v1:DeviceFileCertificateInfo",
+            "excytin-schema-v1:DeviceFileEvents",
+            "excytin-schema-v1:DeviceImageLoadEvents",
+            "excytin-schema-v1:DeviceInfo",
+            "excytin-schema-v1:DeviceLogonEvents",
+            "excytin-schema-v1:DeviceNetworkEvents",
+            "excytin-schema-v1:DeviceNetworkInfo",
+            "excytin-schema-v1:DeviceProcessEvents",
+            "excytin-schema-v1:DeviceRegistryEvents"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:process_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:002a9ca8c108f060d983:attempt:03",
+            "excytin-episodes-v1:episode:29a75e13bad02293b549:attempt:06",
+            "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535:attempt:07",
+            "excytin-episodes-v1:episode:2f1fea4c726237fac45c:attempt:11",
+            "excytin-episodes-v1:episode:2fbfcf929522a3845bb8:attempt:09"
+          ],
+          "success_condition": "The execution chain is temporally coherent.",
+          "retrieval_text": "Endpoint Process Investigation | Build the process timeline | Order parent, child, file, and network events around the suspicious execution. | endpoint_process endpoint_file endpoint_network | TIMESTAMP PROCESS_ID COMMAND_LINE"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:validate-endpoint-chain",
+          "sequence_no": 5,
+          "name": "Validate the endpoint chain",
+          "goal": "Confirm the attributed device, process, and activity reconnect to the alert evidence.",
+          "required_log_types": [
+            "incident_alert",
+            "endpoint_process"
+          ],
+          "required_semantic_types": [
+            "ALERT_ID",
+            "DEVICE_ID",
+            "PROCESS_ID",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:DeviceEvents",
+            "excytin-schema-v1:DeviceImageLoadEvents",
+            "excytin-schema-v1:DeviceProcessEvents",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:alert_id",
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:process_id"
+          ],
+          "exemplar_attempt_ids": [],
+          "success_condition": "No conclusion relies on an unscoped PID, device name, or shared indicator.",
+          "retrieval_text": "Endpoint Process Investigation | Validate the endpoint chain | Confirm the attributed device, process, and activity reconnect to the alert evidence. | incident_alert endpoint_process | ALERT_ID DEVICE_ID PROCESS_ID TIMESTAMP"
+        }
+      ],
+      "transitions": [
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:establish-device-scope",
+          "to_phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:locate-process"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:locate-process",
+          "to_phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:expand-endpoint-evidence"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:expand-endpoint-evidence",
+          "to_phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:build-process-timeline"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:build-process-timeline",
+          "to_phase_id": "excytin-procedures-v1:procedure:endpoint-process-investigation:phase:validate-endpoint-chain"
+        }
+      ]
+    },
+    {
+      "procedure_id": "excytin-procedures-v1:procedure:identity-signin-investigation",
+      "skill_id": "identity-signin-investigation",
+      "skill_path": "skills/identity-signin-investigation/SKILL.md",
+      "name": "Identity and Sign-in Investigation",
+      "category": "domain_workflow",
+      "goal": "Trace an identity alert through accounts, sign-ins, risk events, directory actions, and cloud activity.",
+      "description": "Use when evidence contains an account, UPN, SID, sign-in IP, or identity-risk signal.",
+      "entry_entity_types": [
+        "ACCOUNT_ID",
+        "ACCOUNT_NAME",
+        "EMAIL_ADDRESS",
+        "IP_ADDRESS"
+      ],
+      "applicable_log_types": [
+        "identity_signin",
+        "cloud_application"
+      ],
+      "semantic_table_ids": [
+        "excytin-schema-v1:AADManagedIdentitySignInLogs",
+        "excytin-schema-v1:AADNonInteractiveUserSignInLogs",
+        "excytin-schema-v1:AADProvisioningLogs",
+        "excytin-schema-v1:AADRiskyUsers",
+        "excytin-schema-v1:AADServicePrincipalSignInLogs",
+        "excytin-schema-v1:AADUserRiskEvents",
+        "excytin-schema-v1:Anomalies",
+        "excytin-schema-v1:AuditLogs",
+        "excytin-schema-v1:CloudAppEvents",
+        "excytin-schema-v1:IdentityDirectoryEvents",
+        "excytin-schema-v1:IdentityLogonEvents",
+        "excytin-schema-v1:IdentityQueryEvents",
+        "excytin-schema-v1:IntuneAuditLogs",
+        "excytin-schema-v1:IntuneDeviceComplianceOrg",
+        "excytin-schema-v1:IntuneDevices",
+        "excytin-schema-v1:IntuneOperationalLogs",
+        "excytin-schema-v1:MicrosoftGraphActivityLogs",
+        "excytin-schema-v1:SigninLogs"
+      ],
+      "semantic_join_key_ids": [
+        "excytin-schema-v1:join-key:account_object_id",
+        "excytin-schema-v1:join-key:account_sid",
+        "excytin-schema-v1:join-key:account_upn",
+        "excytin-schema-v1:join-key:alert_id",
+        "excytin-schema-v1:join-key:device_id",
+        "excytin-schema-v1:join-key:email_address",
+        "excytin-schema-v1:join-key:ip_address"
+      ],
+      "extends_procedure_id": "excytin-procedures-v1:procedure:alert-centered-investigation",
+      "source_insight_indexes": [
+        79,
+        87,
+        89,
+        119,
+        135
+      ],
+      "support_episode_ids": [
+        "excytin-episodes-v1:episode:025ba584d1e4d845286c",
+        "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9",
+        "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8",
+        "excytin-episodes-v1:episode:0cea3ddad40d1bf3ca96",
+        "excytin-episodes-v1:episode:0d32c8580c608b88936f",
+        "excytin-episodes-v1:episode:11775209617027be8cd4",
+        "excytin-episodes-v1:episode:159e4608e24ab167b19d",
+        "excytin-episodes-v1:episode:15f9d8f8ed24ff3e7df7",
+        "excytin-episodes-v1:episode:1a1056940e9dc9e2e5f0",
+        "excytin-episodes-v1:episode:207e566f72753a22491b",
+        "excytin-episodes-v1:episode:20c238f07b1b62ba11b3",
+        "excytin-episodes-v1:episode:24fe25303eddc246078e",
+        "excytin-episodes-v1:episode:2561cdc547d929aac378",
+        "excytin-episodes-v1:episode:2825fcfee8dfadc372ea",
+        "excytin-episodes-v1:episode:324b85e581c9d6d1e6fb",
+        "excytin-episodes-v1:episode:325ccff78beba84c5cb2",
+        "excytin-episodes-v1:episode:3fdcd8a2f3369e6ed4b8",
+        "excytin-episodes-v1:episode:4822c34d5a2e9be58747",
+        "excytin-episodes-v1:episode:49718b85c7c2a19845cc",
+        "excytin-episodes-v1:episode:502824d55a36b1d9d66b",
+        "excytin-episodes-v1:episode:5202a217dcf6928cc583",
+        "excytin-episodes-v1:episode:5234933dd03bd668cce2",
+        "excytin-episodes-v1:episode:57d39206ed0470cde481",
+        "excytin-episodes-v1:episode:6bccc49a257b49f22b63",
+        "excytin-episodes-v1:episode:6c5fa92639fda46b117a",
+        "excytin-episodes-v1:episode:6c7019a07b25c12758d0",
+        "excytin-episodes-v1:episode:6e836428f4a91b499575",
+        "excytin-episodes-v1:episode:6f56a17ba76d80f2ff22",
+        "excytin-episodes-v1:episode:7099b3755aa18dabc059",
+        "excytin-episodes-v1:episode:72a5bbd772cf144dc670",
+        "excytin-episodes-v1:episode:75f0e5c2d98225fbf65d",
+        "excytin-episodes-v1:episode:76df10ff56303ff8c3d7",
+        "excytin-episodes-v1:episode:77e863dbe8b0743a040d",
+        "excytin-episodes-v1:episode:79eb5fb0ea072932f320",
+        "excytin-episodes-v1:episode:90d5e9f8e54b1be5ec6d",
+        "excytin-episodes-v1:episode:a0d06541ce274941915f",
+        "excytin-episodes-v1:episode:a232f04865c85d3745ed",
+        "excytin-episodes-v1:episode:a58c95c0d13a7f0fa51e",
+        "excytin-episodes-v1:episode:bcae6f33a2e1eab56bf3",
+        "excytin-episodes-v1:episode:c0e9688ad44c3b23e695",
+        "excytin-episodes-v1:episode:c7c4d7dbb22a62964cc3",
+        "excytin-episodes-v1:episode:ce0a451218ea0a15decf",
+        "excytin-episodes-v1:episode:d51c7b54ae2422752d27",
+        "excytin-episodes-v1:episode:da1817c52b5371223be6",
+        "excytin-episodes-v1:episode:dc731de23f30ef698205",
+        "excytin-episodes-v1:episode:e1e26a70c6e7854555c4",
+        "excytin-episodes-v1:episode:f565e1e64d91a17c5e0e",
+        "excytin-episodes-v1:episode:faf5703cb14b3628e18e",
+        "excytin-episodes-v1:episode:fe3d36f89e63320eb207"
+      ],
+      "support_episode_count": 49,
+      "support_attempt_count": 212,
+      "support_incidents": [
+        "incident_134",
+        "incident_166",
+        "incident_322",
+        "incident_34",
+        "incident_38",
+        "incident_39",
+        "incident_5",
+        "incident_55"
+      ],
+      "reference_solution_count": 49,
+      "reference_path_count": 49,
+      "status": "active",
+      "retrieval_eligible": true,
+      "retrieval_text": "Identity and Sign-in Investigation | Trace an identity alert through accounts, sign-ins, risk events, directory actions, and cloud activity. | entities: ACCOUNT_ID ACCOUNT_NAME EMAIL_ADDRESS IP_ADDRESS | logs: identity_signin cloud_application",
+      "phases": [
+        {
+          "phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:establish-account-scope",
+          "sequence_no": 1,
+          "name": "Establish account and time scope",
+          "goal": "Resolve the account identifiers, tenant, source IP, and incident window.",
+          "required_log_types": [
+            "incident_alert",
+            "identity_signin"
+          ],
+          "required_semantic_types": [
+            "ACCOUNT_ID",
+            "EMAIL_ADDRESS",
+            "IP_ADDRESS",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AADManagedIdentitySignInLogs",
+            "excytin-schema-v1:AADNonInteractiveUserSignInLogs",
+            "excytin-schema-v1:AADProvisioningLogs",
+            "excytin-schema-v1:AADRiskyUsers",
+            "excytin-schema-v1:AADServicePrincipalSignInLogs",
+            "excytin-schema-v1:AADUserRiskEvents",
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:Anomalies",
+            "excytin-schema-v1:IdentityDirectoryEvents",
+            "excytin-schema-v1:IdentityLogonEvents",
+            "excytin-schema-v1:IdentityQueryEvents",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident",
+            "excytin-schema-v1:SigninLogs"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:account_object_id",
+            "excytin-schema-v1:join-key:account_sid",
+            "excytin-schema-v1:join-key:account_upn",
+            "excytin-schema-v1:join-key:email_address"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:025ba584d1e4d845286c:attempt:03",
+            "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9:attempt:03",
+            "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8:attempt:08",
+            "excytin-episodes-v1:episode:11775209617027be8cd4:attempt:11",
+            "excytin-episodes-v1:episode:159e4608e24ab167b19d:attempt:05"
+          ],
+          "success_condition": "The account and time scope are supported by alert or sign-in evidence.",
+          "retrieval_text": "Identity and Sign-in Investigation | Establish account and time scope | Resolve the account identifiers, tenant, source IP, and incident window. | incident_alert identity_signin | ACCOUNT_ID EMAIL_ADDRESS IP_ADDRESS TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:inspect-signins",
+          "sequence_no": 2,
+          "name": "Inspect sign-ins",
+          "goal": "Review interactive and non-interactive sign-ins, authentication outcome, application, IP, and risk.",
+          "required_log_types": [
+            "identity_signin"
+          ],
+          "required_semantic_types": [
+            "EMAIL_ADDRESS",
+            "IP_ADDRESS",
+            "APPLICATION_ID",
+            "STATUS",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AADManagedIdentitySignInLogs",
+            "excytin-schema-v1:AADNonInteractiveUserSignInLogs",
+            "excytin-schema-v1:AADProvisioningLogs",
+            "excytin-schema-v1:AADRiskyUsers",
+            "excytin-schema-v1:AADServicePrincipalSignInLogs",
+            "excytin-schema-v1:AADUserRiskEvents",
+            "excytin-schema-v1:Anomalies",
+            "excytin-schema-v1:IdentityDirectoryEvents",
+            "excytin-schema-v1:IdentityLogonEvents",
+            "excytin-schema-v1:IdentityQueryEvents",
+            "excytin-schema-v1:SigninLogs"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:account_upn",
+            "excytin-schema-v1:join-key:email_address",
+            "excytin-schema-v1:join-key:ip_address"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:025ba584d1e4d845286c:attempt:03",
+            "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9:attempt:03",
+            "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8:attempt:08",
+            "excytin-episodes-v1:episode:11775209617027be8cd4:attempt:11",
+            "excytin-episodes-v1:episode:159e4608e24ab167b19d:attempt:05"
+          ],
+          "success_condition": "Relevant sign-ins are separated from unrelated activity by account and time.",
+          "retrieval_text": "Identity and Sign-in Investigation | Inspect sign-ins | Review interactive and non-interactive sign-ins, authentication outcome, application, IP, and risk. | identity_signin | EMAIL_ADDRESS IP_ADDRESS APPLICATION_ID STATUS TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:inspect-risk-and-actions",
+          "sequence_no": 3,
+          "name": "Inspect risk and administrative actions",
+          "goal": "Correlate risk events, directory changes, audit operations, and cloud activity.",
+          "required_log_types": [
+            "identity_signin",
+            "cloud_application"
+          ],
+          "required_semantic_types": [
+            "ACCOUNT_ID",
+            "ACTION",
+            "STATUS",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AADManagedIdentitySignInLogs",
+            "excytin-schema-v1:AADNonInteractiveUserSignInLogs",
+            "excytin-schema-v1:AADProvisioningLogs",
+            "excytin-schema-v1:AADRiskyUsers",
+            "excytin-schema-v1:AADServicePrincipalSignInLogs",
+            "excytin-schema-v1:AADUserRiskEvents",
+            "excytin-schema-v1:Anomalies",
+            "excytin-schema-v1:AuditLogs",
+            "excytin-schema-v1:CloudAppEvents",
+            "excytin-schema-v1:IdentityDirectoryEvents",
+            "excytin-schema-v1:IdentityLogonEvents",
+            "excytin-schema-v1:IdentityQueryEvents",
+            "excytin-schema-v1:IntuneAuditLogs",
+            "excytin-schema-v1:IntuneDeviceComplianceOrg",
+            "excytin-schema-v1:IntuneDevices",
+            "excytin-schema-v1:IntuneOperationalLogs",
+            "excytin-schema-v1:MicrosoftGraphActivityLogs",
+            "excytin-schema-v1:SigninLogs"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:account_object_id",
+            "excytin-schema-v1:join-key:account_upn",
+            "excytin-schema-v1:join-key:email_address"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9:attempt:03",
+            "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8:attempt:08",
+            "excytin-episodes-v1:episode:11775209617027be8cd4:attempt:14",
+            "excytin-episodes-v1:episode:159e4608e24ab167b19d:attempt:08",
+            "excytin-episodes-v1:episode:15f9d8f8ed24ff3e7df7:attempt:10"
+          ],
+          "success_condition": "Identity actions are tied to the scoped account rather than name similarity alone.",
+          "retrieval_text": "Identity and Sign-in Investigation | Inspect risk and administrative actions | Correlate risk events, directory changes, audit operations, and cloud activity. | identity_signin cloud_application | ACCOUNT_ID ACTION STATUS TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:correlate-identity-context",
+          "sequence_no": 4,
+          "name": "Correlate identity context",
+          "goal": "Compare account, IP, device, application, tenant, and time before attributing activity.",
+          "required_log_types": [
+            "identity_signin",
+            "cloud_application"
+          ],
+          "required_semantic_types": [
+            "ACCOUNT_ID",
+            "IP_ADDRESS",
+            "DEVICE_ID",
+            "APPLICATION_ID",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AADManagedIdentitySignInLogs",
+            "excytin-schema-v1:AADNonInteractiveUserSignInLogs",
+            "excytin-schema-v1:AADProvisioningLogs",
+            "excytin-schema-v1:AADRiskyUsers",
+            "excytin-schema-v1:AADServicePrincipalSignInLogs",
+            "excytin-schema-v1:AADUserRiskEvents",
+            "excytin-schema-v1:Anomalies",
+            "excytin-schema-v1:AuditLogs",
+            "excytin-schema-v1:CloudAppEvents",
+            "excytin-schema-v1:IdentityDirectoryEvents",
+            "excytin-schema-v1:IdentityLogonEvents",
+            "excytin-schema-v1:IdentityQueryEvents",
+            "excytin-schema-v1:IntuneAuditLogs",
+            "excytin-schema-v1:IntuneDeviceComplianceOrg",
+            "excytin-schema-v1:IntuneDevices",
+            "excytin-schema-v1:IntuneOperationalLogs",
+            "excytin-schema-v1:MicrosoftGraphActivityLogs",
+            "excytin-schema-v1:SigninLogs"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:account_object_id",
+            "excytin-schema-v1:join-key:account_upn",
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:ip_address"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:025ba584d1e4d845286c:attempt:03",
+            "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9:attempt:03",
+            "excytin-episodes-v1:episode:0b22dbd5b4457c6b4ba8:attempt:08",
+            "excytin-episodes-v1:episode:11775209617027be8cd4:attempt:14",
+            "excytin-episodes-v1:episode:159e4608e24ab167b19d:attempt:05"
+          ],
+          "success_condition": "The identity correlation uses multiple scoped attributes.",
+          "retrieval_text": "Identity and Sign-in Investigation | Correlate identity context | Compare account, IP, device, application, tenant, and time before attributing activity. | identity_signin cloud_application | ACCOUNT_ID IP_ADDRESS DEVICE_ID APPLICATION_ID TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:validate-identity-chain",
+          "sequence_no": 5,
+          "name": "Validate the identity chain",
+          "goal": "Reconnect the attributed account activity to the initial alert and incident window.",
+          "required_log_types": [
+            "incident_alert",
+            "identity_signin"
+          ],
+          "required_semantic_types": [
+            "ALERT_ID",
+            "ACCOUNT_ID",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AADManagedIdentitySignInLogs",
+            "excytin-schema-v1:AADNonInteractiveUserSignInLogs",
+            "excytin-schema-v1:AADProvisioningLogs",
+            "excytin-schema-v1:AADRiskyUsers",
+            "excytin-schema-v1:AADServicePrincipalSignInLogs",
+            "excytin-schema-v1:AADUserRiskEvents",
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:Anomalies",
+            "excytin-schema-v1:IdentityDirectoryEvents",
+            "excytin-schema-v1:IdentityLogonEvents",
+            "excytin-schema-v1:IdentityQueryEvents",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident",
+            "excytin-schema-v1:SigninLogs"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:account_object_id",
+            "excytin-schema-v1:join-key:account_sid",
+            "excytin-schema-v1:join-key:account_upn",
+            "excytin-schema-v1:join-key:alert_id"
+          ],
+          "exemplar_attempt_ids": [],
+          "success_condition": "The conclusion does not rely on an unscoped display name or shared IP.",
+          "retrieval_text": "Identity and Sign-in Investigation | Validate the identity chain | Reconnect the attributed account activity to the initial alert and incident window. | incident_alert identity_signin | ALERT_ID ACCOUNT_ID TIMESTAMP"
+        }
+      ],
+      "transitions": [
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:establish-account-scope",
+          "to_phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:inspect-signins"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:inspect-signins",
+          "to_phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:inspect-risk-and-actions"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:inspect-risk-and-actions",
+          "to_phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:correlate-identity-context"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:correlate-identity-context",
+          "to_phase_id": "excytin-procedures-v1:procedure:identity-signin-investigation:phase:validate-identity-chain"
+        }
+      ]
+    },
+    {
+      "procedure_id": "excytin-procedures-v1:procedure:network-activity-investigation",
+      "skill_id": "network-activity-investigation",
+      "skill_path": "skills/network-activity-investigation/SKILL.md",
+      "name": "Network Activity Investigation",
+      "category": "domain_workflow",
+      "goal": "Trace a network indicator through direction, device, process, firewall, and threat-intelligence evidence.",
+      "description": "Use when evidence contains an IP, URL, domain, port, protocol, or network connection.",
+      "entry_entity_types": [
+        "IP_ADDRESS",
+        "URL",
+        "DOMAIN",
+        "PORT",
+        "PROTOCOL"
+      ],
+      "applicable_log_types": [
+        "endpoint_network",
+        "firewall_network"
+      ],
+      "semantic_table_ids": [
+        "excytin-schema-v1:AZFWApplicationRule",
+        "excytin-schema-v1:AZFWApplicationRuleAggregation",
+        "excytin-schema-v1:AZFWDnsQuery",
+        "excytin-schema-v1:AZFWFlowTrace",
+        "excytin-schema-v1:AZFWIdpsSignature",
+        "excytin-schema-v1:AZFWNatRule",
+        "excytin-schema-v1:AZFWNatRuleAggregation",
+        "excytin-schema-v1:AZFWNetworkRule",
+        "excytin-schema-v1:AZFWNetworkRuleAggregation",
+        "excytin-schema-v1:AZFWThreatIntel",
+        "excytin-schema-v1:DeviceInfo",
+        "excytin-schema-v1:DeviceLogonEvents",
+        "excytin-schema-v1:DeviceNetworkEvents",
+        "excytin-schema-v1:DeviceNetworkInfo",
+        "excytin-schema-v1:MicrosoftAzureBastionAuditLogs",
+        "excytin-schema-v1:ThreatIntelligenceIndicator"
+      ],
+      "semantic_join_key_ids": [
+        "excytin-schema-v1:join-key:alert_id",
+        "excytin-schema-v1:join-key:device_id",
+        "excytin-schema-v1:join-key:device_name",
+        "excytin-schema-v1:join-key:ip_address",
+        "excytin-schema-v1:join-key:process_id"
+      ],
+      "extends_procedure_id": "excytin-procedures-v1:procedure:alert-centered-investigation",
+      "source_insight_indexes": [
+        0,
+        23,
+        44,
+        68,
+        134
+      ],
+      "support_episode_ids": [
+        "excytin-episodes-v1:episode:11775209617027be8cd4",
+        "excytin-episodes-v1:episode:1881c38c953cb065d4ad",
+        "excytin-episodes-v1:episode:1dbf6f83e836fbe224d5",
+        "excytin-episodes-v1:episode:29a75e13bad02293b549",
+        "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535",
+        "excytin-episodes-v1:episode:2fbfcf929522a3845bb8",
+        "excytin-episodes-v1:episode:3021311acfe4c1a41b27",
+        "excytin-episodes-v1:episode:302b2adcbacdeef42aa0",
+        "excytin-episodes-v1:episode:3fdcd8a2f3369e6ed4b8",
+        "excytin-episodes-v1:episode:4558e269bc4e6cb3fa20",
+        "excytin-episodes-v1:episode:5e2978cdf960998fe6c7",
+        "excytin-episodes-v1:episode:664b7305b729b9ba961a",
+        "excytin-episodes-v1:episode:75a72adf671ba22045dc",
+        "excytin-episodes-v1:episode:77e863dbe8b0743a040d",
+        "excytin-episodes-v1:episode:78142d0d6457745d12f0",
+        "excytin-episodes-v1:episode:7a2d378481199146737c",
+        "excytin-episodes-v1:episode:805aef9b21c9d7d1f424",
+        "excytin-episodes-v1:episode:90d5e9f8e54b1be5ec6d",
+        "excytin-episodes-v1:episode:9e5b6d176eb032d0033c",
+        "excytin-episodes-v1:episode:a232f04865c85d3745ed",
+        "excytin-episodes-v1:episode:a6718114a75cf78e1e62",
+        "excytin-episodes-v1:episode:a894faab3f9538667073",
+        "excytin-episodes-v1:episode:ad7ea314bc3ba9fc3fe0",
+        "excytin-episodes-v1:episode:be4f2cb1a97a0ebd2aba",
+        "excytin-episodes-v1:episode:beb10c80b5bb52ff9f70",
+        "excytin-episodes-v1:episode:c7c4d7dbb22a62964cc3",
+        "excytin-episodes-v1:episode:e5fff277056d1db3b709",
+        "excytin-episodes-v1:episode:e60edbc32510ee17d4bc"
+      ],
+      "support_episode_count": 28,
+      "support_attempt_count": 75,
+      "support_incidents": [
+        "incident_134",
+        "incident_322",
+        "incident_34",
+        "incident_39",
+        "incident_5",
+        "incident_55"
+      ],
+      "reference_solution_count": 28,
+      "reference_path_count": 28,
+      "status": "active",
+      "retrieval_eligible": true,
+      "retrieval_text": "Network Activity Investigation | Trace a network indicator through direction, device, process, firewall, and threat-intelligence evidence. | entities: IP_ADDRESS URL DOMAIN PORT PROTOCOL | logs: endpoint_network firewall_network",
+      "phases": [
+        {
+          "phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:establish-network-scope",
+          "sequence_no": 1,
+          "name": "Establish indicator and direction",
+          "goal": "Resolve the network indicator, local/remote direction, protocol, port, and incident window.",
+          "required_log_types": [
+            "incident_alert",
+            "endpoint_network",
+            "firewall_network"
+          ],
+          "required_semantic_types": [
+            "IP_ADDRESS",
+            "URL",
+            "DOMAIN",
+            "PORT",
+            "PROTOCOL",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AZFWApplicationRule",
+            "excytin-schema-v1:AZFWApplicationRuleAggregation",
+            "excytin-schema-v1:AZFWDnsQuery",
+            "excytin-schema-v1:AZFWFlowTrace",
+            "excytin-schema-v1:AZFWIdpsSignature",
+            "excytin-schema-v1:AZFWNatRule",
+            "excytin-schema-v1:AZFWNatRuleAggregation",
+            "excytin-schema-v1:AZFWNetworkRule",
+            "excytin-schema-v1:AZFWNetworkRuleAggregation",
+            "excytin-schema-v1:AZFWThreatIntel",
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:DeviceInfo",
+            "excytin-schema-v1:DeviceLogonEvents",
+            "excytin-schema-v1:DeviceNetworkEvents",
+            "excytin-schema-v1:DeviceNetworkInfo",
+            "excytin-schema-v1:MicrosoftAzureBastionAuditLogs",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident",
+            "excytin-schema-v1:ThreatIntelligenceIndicator"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:ip_address"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:1881c38c953cb065d4ad:attempt:08",
+            "excytin-episodes-v1:episode:29a75e13bad02293b549:attempt:06",
+            "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535:attempt:05",
+            "excytin-episodes-v1:episode:2fbfcf929522a3845bb8:attempt:11",
+            "excytin-episodes-v1:episode:302b2adcbacdeef42aa0:attempt:07"
+          ],
+          "success_condition": "The indicator meaning and traffic direction are explicit.",
+          "retrieval_text": "Network Activity Investigation | Establish indicator and direction | Resolve the network indicator, local/remote direction, protocol, port, and incident window. | incident_alert endpoint_network firewall_network | IP_ADDRESS URL DOMAIN PORT PROTOCOL TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:identify-device-process",
+          "sequence_no": 2,
+          "name": "Identify device and process context",
+          "goal": "Find the device and initiating process responsible for the connection when endpoint evidence exists.",
+          "required_log_types": [
+            "endpoint_network",
+            "endpoint_process"
+          ],
+          "required_semantic_types": [
+            "DEVICE_ID",
+            "DEVICE_NAME",
+            "PROCESS_ID",
+            "COMMAND_LINE"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:DeviceEvents",
+            "excytin-schema-v1:DeviceImageLoadEvents",
+            "excytin-schema-v1:DeviceInfo",
+            "excytin-schema-v1:DeviceLogonEvents",
+            "excytin-schema-v1:DeviceNetworkEvents",
+            "excytin-schema-v1:DeviceNetworkInfo",
+            "excytin-schema-v1:DeviceProcessEvents"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:device_name",
+            "excytin-schema-v1:join-key:process_id"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:1dbf6f83e836fbe224d5:attempt:03",
+            "excytin-episodes-v1:episode:29a75e13bad02293b549:attempt:05",
+            "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535:attempt:07",
+            "excytin-episodes-v1:episode:2fbfcf929522a3845bb8:attempt:09",
+            "excytin-episodes-v1:episode:3021311acfe4c1a41b27:attempt:04"
+          ],
+          "success_condition": "The connection is tied to a scoped device and execution context.",
+          "retrieval_text": "Network Activity Investigation | Identify device and process context | Find the device and initiating process responsible for the connection when endpoint evidence exists. | endpoint_network endpoint_process | DEVICE_ID DEVICE_NAME PROCESS_ID COMMAND_LINE"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:inspect-network-controls",
+          "sequence_no": 3,
+          "name": "Inspect network controls",
+          "goal": "Correlate endpoint connections with firewall, DNS, bastion, or threat-intelligence activity.",
+          "required_log_types": [
+            "endpoint_network",
+            "firewall_network"
+          ],
+          "required_semantic_types": [
+            "IP_ADDRESS",
+            "URL",
+            "DOMAIN",
+            "ACTION",
+            "STATUS",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AZFWApplicationRule",
+            "excytin-schema-v1:AZFWApplicationRuleAggregation",
+            "excytin-schema-v1:AZFWDnsQuery",
+            "excytin-schema-v1:AZFWFlowTrace",
+            "excytin-schema-v1:AZFWIdpsSignature",
+            "excytin-schema-v1:AZFWNatRule",
+            "excytin-schema-v1:AZFWNatRuleAggregation",
+            "excytin-schema-v1:AZFWNetworkRule",
+            "excytin-schema-v1:AZFWNetworkRuleAggregation",
+            "excytin-schema-v1:AZFWThreatIntel",
+            "excytin-schema-v1:DeviceInfo",
+            "excytin-schema-v1:DeviceLogonEvents",
+            "excytin-schema-v1:DeviceNetworkEvents",
+            "excytin-schema-v1:DeviceNetworkInfo",
+            "excytin-schema-v1:MicrosoftAzureBastionAuditLogs",
+            "excytin-schema-v1:ThreatIntelligenceIndicator"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:ip_address"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:29a75e13bad02293b549:attempt:06",
+            "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535:attempt:05",
+            "excytin-episodes-v1:episode:2fbfcf929522a3845bb8:attempt:11",
+            "excytin-episodes-v1:episode:75a72adf671ba22045dc:attempt:05",
+            "excytin-episodes-v1:episode:78142d0d6457745d12f0:attempt:05"
+          ],
+          "success_condition": "Network-control evidence refers to the same indicator and time window.",
+          "retrieval_text": "Network Activity Investigation | Inspect network controls | Correlate endpoint connections with firewall, DNS, bastion, or threat-intelligence activity. | endpoint_network firewall_network | IP_ADDRESS URL DOMAIN ACTION STATUS TIMESTAMP"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:build-network-timeline",
+          "sequence_no": 4,
+          "name": "Build the network timeline",
+          "goal": "Order alert, endpoint, and network-control observations around the suspicious connection.",
+          "required_log_types": [
+            "endpoint_network",
+            "firewall_network"
+          ],
+          "required_semantic_types": [
+            "TIMESTAMP",
+            "IP_ADDRESS",
+            "DEVICE_ID"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AZFWApplicationRule",
+            "excytin-schema-v1:AZFWApplicationRuleAggregation",
+            "excytin-schema-v1:AZFWDnsQuery",
+            "excytin-schema-v1:AZFWFlowTrace",
+            "excytin-schema-v1:AZFWIdpsSignature",
+            "excytin-schema-v1:AZFWNatRule",
+            "excytin-schema-v1:AZFWNatRuleAggregation",
+            "excytin-schema-v1:AZFWNetworkRule",
+            "excytin-schema-v1:AZFWNetworkRuleAggregation",
+            "excytin-schema-v1:AZFWThreatIntel",
+            "excytin-schema-v1:DeviceInfo",
+            "excytin-schema-v1:DeviceLogonEvents",
+            "excytin-schema-v1:DeviceNetworkEvents",
+            "excytin-schema-v1:DeviceNetworkInfo",
+            "excytin-schema-v1:MicrosoftAzureBastionAuditLogs",
+            "excytin-schema-v1:ThreatIntelligenceIndicator"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:ip_address"
+          ],
+          "exemplar_attempt_ids": [
+            "excytin-episodes-v1:episode:1dbf6f83e836fbe224d5:attempt:03",
+            "excytin-episodes-v1:episode:29a75e13bad02293b549:attempt:06",
+            "excytin-episodes-v1:episode:2a4a8247ac6aaf7e7535:attempt:05",
+            "excytin-episodes-v1:episode:2fbfcf929522a3845bb8:attempt:11",
+            "excytin-episodes-v1:episode:3021311acfe4c1a41b27:attempt:04"
+          ],
+          "success_condition": "The network activity is temporally coherent across sources.",
+          "retrieval_text": "Network Activity Investigation | Build the network timeline | Order alert, endpoint, and network-control observations around the suspicious connection. | endpoint_network firewall_network | TIMESTAMP IP_ADDRESS DEVICE_ID"
+        },
+        {
+          "phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:validate-network-chain",
+          "sequence_no": 5,
+          "name": "Validate the network chain",
+          "goal": "Reconnect the indicator, direction, device, process, and timeline to the initial alert.",
+          "required_log_types": [
+            "incident_alert",
+            "endpoint_network",
+            "firewall_network"
+          ],
+          "required_semantic_types": [
+            "ALERT_ID",
+            "IP_ADDRESS",
+            "DEVICE_ID",
+            "TIMESTAMP"
+          ],
+          "semantic_table_ids": [
+            "excytin-schema-v1:AZFWApplicationRule",
+            "excytin-schema-v1:AZFWApplicationRuleAggregation",
+            "excytin-schema-v1:AZFWDnsQuery",
+            "excytin-schema-v1:AZFWFlowTrace",
+            "excytin-schema-v1:AZFWIdpsSignature",
+            "excytin-schema-v1:AZFWNatRule",
+            "excytin-schema-v1:AZFWNatRuleAggregation",
+            "excytin-schema-v1:AZFWNetworkRule",
+            "excytin-schema-v1:AZFWNetworkRuleAggregation",
+            "excytin-schema-v1:AZFWThreatIntel",
+            "excytin-schema-v1:Alert",
+            "excytin-schema-v1:AlertEvidence",
+            "excytin-schema-v1:AlertInfo",
+            "excytin-schema-v1:DeviceInfo",
+            "excytin-schema-v1:DeviceLogonEvents",
+            "excytin-schema-v1:DeviceNetworkEvents",
+            "excytin-schema-v1:DeviceNetworkInfo",
+            "excytin-schema-v1:MicrosoftAzureBastionAuditLogs",
+            "excytin-schema-v1:SecurityAlert",
+            "excytin-schema-v1:SecurityIncident",
+            "excytin-schema-v1:ThreatIntelligenceIndicator"
+          ],
+          "semantic_join_key_ids": [
+            "excytin-schema-v1:join-key:alert_id",
+            "excytin-schema-v1:join-key:device_id",
+            "excytin-schema-v1:join-key:ip_address"
+          ],
+          "exemplar_attempt_ids": [],
+          "success_condition": "No conclusion relies on a shared IP without device, direction, and time context.",
+          "retrieval_text": "Network Activity Investigation | Validate the network chain | Reconnect the indicator, direction, device, process, and timeline to the initial alert. | incident_alert endpoint_network firewall_network | ALERT_ID IP_ADDRESS DEVICE_ID TIMESTAMP"
+        }
+      ],
+      "transitions": [
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:establish-network-scope",
+          "to_phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:identify-device-process"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:identify-device-process",
+          "to_phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:inspect-network-controls"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:inspect-network-controls",
+          "to_phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:build-network-timeline"
+        },
+        {
+          "from_phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:build-network-timeline",
+          "to_phase_id": "excytin-procedures-v1:procedure:network-activity-investigation:phase:validate-network-chain"
+        }
+      ]
+    }
+  ]
+}

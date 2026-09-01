@@ -498,7 +498,7 @@ def count_messages(event_id: str) -> int:
 
 
 def resolve_db_path() -> Path:
-    return Path(os.environ.get("SOCAGENT_DB_PATH", "data/socagent.db"))
+    return Path(os.environ.get("SOCAGENT_DB_PATH", "runtime/socagent.db"))
 
 
 def initialize_local_state() -> None:

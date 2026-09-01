@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://socagent.local/schemas/excytin-semantic-memory-v1.json",
+  "title": "ExCyTIn-Bench Semantic Memory",
+  "type": "object",
+  "required": ["format_version", "generation_policy", "environment", "catalog", "tables", "join_keys"],
+  "properties": {
+    "format_version": {"const": "1.0"},
+    "generated_at": {"type": "string"},
+    "generation_policy": {
+      "type": "object",
+      "required": ["scenario_independent", "contains_log_values", "contains_incident_labels"],
+      "properties": {
+        "scenario_independent": {"const": true},
+        "contains_log_values": {"const": false},
+        "contains_incident_labels": {"const": false}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["environment_id", "name", "platform", "database_type", "query_language"]
+    },
+    "catalog": {
+      "type": "object",
+      "required": ["catalog_id", "name", "version", "table_count", "field_count", "join_key_count", "schema_hash"]
+    },
+    "tables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["table_id", "name", "log_type", "log_layer", "field_count", "schema_hash", "fields"],
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["field_id", "name", "data_type", "semantic_type", "is_identifier", "is_time_field", "is_dynamic", "is_technical"]
+            }
+          }
+        }
+      }
+    },
+    "join_keys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["join_key_id", "name", "match_method", "join_scope", "confidence", "field_count", "field_ids"]
+      }
+    }
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://socagent.local/schemas/excytin-episodic-memory-v1.json",
+  "title": "ExCyTIn-Bench Episodic Memory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format_version",
+    "generated_at",
+    "generation_policy",
+    "environment_id",
+    "semantic_catalog",
+    "catalog",
+    "error_types",
+    "episodes"
+  ],
+  "properties": {
+    "format_version": {"const": "1.0"},
+    "generated_at": {"type": "string"},
+    "generation_policy": {
+      "type": "object",
+      "required": [
+        "source_split",
+        "retrieval_eligible_only",
+        "sanitized",
+        "contains_raw_observations",
+        "contains_agent_thoughts",
+        "contains_answers",
+        "contains_test_data",
+        "contains_vector_embeddings"
+      ],
+      "properties": {
+        "source_split": {"const": "train"},
+        "retrieval_eligible_only": {"const": true},
+        "sanitized": {"const": true},
+        "contains_raw_observations": {"const": false},
+        "contains_agent_thoughts": {"const": false},
+        "contains_answers": {"const": false},
+        "contains_test_data": {"const": false},
+        "contains_vector_embeddings": {"const": false}
+      }
+    },
+    "environment_id": {"type": "string", "minLength": 1},
+    "semantic_catalog": {
+      "type": "object",
+      "required": ["catalog_id", "schema_hash"],
+      "properties": {
+        "catalog_id": {"type": "string", "minLength": 1},
+        "schema_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "catalog": {
+      "type": "object",
+      "required": [
+        "episodic_catalog_id",
+        "name",
+        "version",
+        "source",
+        "source_sha256",
+        "questions_source",
+        "questions_manifest_hash",
+        "episode_count",
+        "attempt_count",
+        "error_attempt_count",
+        "outcome_counts",
+        "result_counts",
+        "source_match_counts"
+      ]
+    },
+    "error_types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["error_type_id", "name", "description", "attempt_count"]
+      }
+    },
+    "episodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "episode_id",
+          "source_dataset",
+          "source_split",
+          "source_incident",
+          "source_question_file",
+          "source_question_index",
+          "source_match_method",
+          "task_template",
+          "reward",
+          "outcome",
+          "retrieval_eligible",
+          "retrieval_text",
+          "attempts",
+          "transitions"
+        ],
+        "properties": {
+          "source_split": {"const": "train"},
+          "outcome": {"enum": ["success", "partial"]},
+          "retrieval_eligible": {"const": true},
+          "attempts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "attempt_id",
+                "sequence_no",
+                "query_kind",
+                "sql_template",
+                "parameter_types",
+                "execution_status",
+                "result_status",
+                "table_refs",
+                "field_refs",
+                "join_key_ids",
+                "unresolved_field_names",
+                "retrieval_text"
+              ],
+              "properties": {
+                "query_kind": {"enum": ["schema_discovery", "evidence_query"]},
+                "execution_status": {"enum": ["executed", "sql_error"]},
+                "result_status": {
+                  "enum": ["schema_result", "rows_returned", "empty_result", "error"]
+                },
+                "table_refs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["table_id", "roles"]
+                  }
+                },
+                "field_refs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["field_id", "roles"]
+                  }
+                }
+              }
+            }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["from_attempt_id", "to_attempt_id", "relation_type"],
+              "properties": {
+                "relation_type": {"enum": ["NEXT", "REPAIRED_BY"]}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

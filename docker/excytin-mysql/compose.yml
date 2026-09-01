@@ -1,0 +1,120 @@
+name: socagent-excytin
+
+x-mysql-common: &mysql-common
+  image: ${EXCYTIN_MYSQL_IMAGE:-mysql:9.0}
+  restart: unless-stopped
+  environment: &mysql-environment
+    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    MYSQL_ROOT_HOST: "%"
+    MYSQL_DATABASE: ${EXCYTIN_DATABASE:-env_monitor_db}
+  command:
+    - --secure-file-priv=/var/lib/mysql-files
+  healthcheck:
+    test:
+      [
+        "CMD-SHELL",
+        "mysql --host=localhost --user=root --password=$$MYSQL_ROOT_PASSWORD --batch --skip-column-names --execute=\"SELECT status FROM socagent_control.import_status WHERE status='complete'\" 2>/dev/null | grep -qx complete",
+      ]
+    interval: 10s
+    timeout: 5s
+    retries: 60
+    start_period: 60s
+
+services:
+  incident_5:
+    <<: *mysql-common
+    container_name: incident_5
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - incident_5_data:/var/lib/mysql
+      - ../../data/excytin-bench/mysql/data_anonymized/incidents/incident_5:/var/lib/mysql-files:ro
+      - ./generated/incident_5.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+
+  incident_38:
+    <<: *mysql-common
+    container_name: incident_38
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - incident_38_data:/var/lib/mysql
+      - ../../data/excytin-bench/mysql/data_anonymized/incidents/incident_38:/var/lib/mysql-files:ro
+      - ./generated/incident_38.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+
+  incident_34:
+    <<: *mysql-common
+    container_name: incident_34
+    ports:
+      - "127.0.0.1:3308:3306"
+    volumes:
+      - incident_34_data:/var/lib/mysql
+      - ../../data/excytin-bench/mysql/data_anonymized/incidents/incident_34:/var/lib/mysql-files:ro
+      - ./generated/incident_34.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+
+  incident_39:
+    <<: *mysql-common
+    container_name: incident_39
+    ports:
+      - "127.0.0.1:3309:3306"
+    volumes:
+      - incident_39_data:/var/lib/mysql
+      - ../../data/excytin-bench/mysql/data_anonymized/incidents/incident_39:/var/lib/mysql-files:ro
+      - ./generated/incident_39.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+
+  incident_55:
+    <<: *mysql-common
+    container_name: incident_55
+    ports:
+      - "127.0.0.1:3310:3306"
+    volumes:
+      - incident_55_data:/var/lib/mysql
+      - ../../data/excytin-bench/mysql/data_anonymized/incidents/incident_55:/var/lib/mysql-files:ro
+      - ./generated/incident_55.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+
+  incident_134:
+    <<: *mysql-common
+    container_name: incident_134
+    ports:
+      - "127.0.0.1:3311:3306"
+    volumes:
+      - incident_134_data:/var/lib/mysql
+      - ../../data/excytin-bench/mysql/data_anonymized/incidents/incident_134:/var/lib/mysql-files:ro
+      - ./generated/incident_134.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+
+  incident_166:
+    <<: *mysql-common
+    container_name: incident_166
+    ports:
+      - "127.0.0.1:3312:3306"
+    volumes:
+      - incident_166_data:/var/lib/mysql
+      - ../../data/excytin-bench/mysql/data_anonymized/incidents/incident_166:/var/lib/mysql-files:ro
+      - ./generated/incident_166.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+
+  incident_322:
+    <<: *mysql-common
+    container_name: incident_322
+    ports:
+      - "127.0.0.1:3313:3306"
+    volumes:
+      - incident_322_data:/var/lib/mysql
+      - ../../data/excytin-bench/mysql/data_anonymized/incidents/incident_322:/var/lib/mysql-files:ro
+      - ./generated/incident_322.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+
+volumes:
+  incident_5_data:
+    name: socagent-excytin-incident-5-data
+  incident_38_data:
+    name: socagent-excytin-incident-38-data
+  incident_34_data:
+    name: socagent-excytin-incident-34-data
+  incident_39_data:
+    name: socagent-excytin-incident-39-data
+  incident_55_data:
+    name: socagent-excytin-incident-55-data
+  incident_134_data:
+    name: socagent-excytin-incident-134-data
+  incident_166_data:
+    name: socagent-excytin-incident-166-data
+  incident_322_data:
+    name: socagent-excytin-incident-322-data

@@ -107,7 +107,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--db-path",
         type=str,
-        default="tests/runtime/test_multi_agent_loop.db",
+        default="runtime/test_multi_agent_loop.db",
         help="测试专用 SQLite 路径。",
     )
     parser.add_argument(
