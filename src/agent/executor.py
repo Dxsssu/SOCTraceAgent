@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 import logging
 import time
+from dataclasses import dataclass
 from typing import Any
 
 from src.agent.llm import call_llm, parse_yaml_response
@@ -13,7 +13,7 @@ from src.schema import Event, EventStatus, Execution, ExecutionStatus, TTTNodeSt
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
 from src.tools import get_registered_tool, list_registered_tools
-
+from src.workflow.context import ExecutorContextProvider, NullExecutorContextProvider
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,13 @@ EXECUTOR_SYSTEM_PROMPT = """
 - 你不负责最终总结，不代替 Reviewer。
 - 你只能围绕当前叶子节点执行，不得自行扩展任务范围。
 - 如果不存在合适工具，必须明确返回无法执行的原因，不能编造工具结果。
+
+长期记忆边界：
+- Workflow 只会向你提供与当前 L3 相关的 Semantic Memory 和 Episodic Memory。
+- Semantic Memory 是表、字段和连接键的硬约束，不得使用其中不存在的 Schema 对象。
+- Episodic Memory 只提供脱敏的历史查询结构、结果状态和错误修复参考。
+- Episodic Memory 中的历史任务和查询模板不是当前事件证据，不得把占位符或历史值当作答案。
+- 你不查询 Procedural Memory；调查方向由 Planner 通过 TTT 传递。
 
 你的输出必须严格使用 YAML，且只能输出以下两种 response_type：
 - ROGER
@@ -90,12 +97,14 @@ class ExecutorRuntime:
         storage: SQLiteStorage | None = None,
         ttt_store: TTTStore | None = None,
         bus: SQLiteMessageBus | None = None,
+        context_provider: ExecutorContextProvider | None = None,
         poll_interval: float = 5.0,
     ) -> None:
         self.agent = ExecutorAgent()
         self.storage = storage or SQLiteStorage()
         self.ttt_store = ttt_store or TTTStore()
         self.bus = bus or SQLiteMessageBus()
+        self.context_provider = context_provider or NullExecutorContextProvider()
         self.poll_interval = poll_interval
         self.running = False
 
@@ -178,7 +187,15 @@ class ExecutorRuntime:
             payload={"node_id": claimed.node_id, "node_title": claimed.title},
         )
 
-        tool_selection = self._select_tool(claimed, event)
+        prior_executions = self.storage.list_executions(event.event_id)
+        workflow_context = self.context_provider.build(
+            event,
+            node=claimed,
+            executions=prior_executions,
+        )
+        tool_selection = self._select_tool(
+            claimed, event, workflow_context=workflow_context
+        )
         tool_name = tool_selection["tool_name"]
         self._publish(
             event_id=event.event_id,
@@ -203,6 +220,7 @@ class ExecutorRuntime:
             claimed,
             tool_name,
             tool_selection=tool_selection,
+            workflow_context=workflow_context,
         )
         execution = Execution(
             event_id=event.event_id,
@@ -212,7 +230,9 @@ class ExecutorRuntime:
             tool_name=tool_name,
             tool_input=tool_input,
             result=result,
-            execution_status=ExecutionStatus.COMPLETED if success else ExecutionStatus.FAILED,
+            execution_status=ExecutionStatus.COMPLETED
+            if success
+            else ExecutionStatus.FAILED,
             error_message=error_message,
             created_at=utc_now(),
             updated_at=utc_now(),
@@ -230,16 +250,47 @@ class ExecutorRuntime:
                 "last_execution_status": execution.execution_status.value,
             },
         )
+        reviewing_event = Event(
+            event_id=event.event_id,
+            event_name=event.event_name,
+            message=event.message,
+            context=event.context,
+            source=event.source,
+            severity=event.severity,
+            event_status=EventStatus.REVIEWING,
+            current_round=event.current_round,
+            created_at=event.created_at,
+            updated_at=utc_now(),
+        )
+        self.storage.save_event(reviewing_event)
         self._publish(
             event_id=event.event_id,
             round_id=event.current_round,
-            message_type=MessageType.EXECUTION_COMPLETED if success else MessageType.EXECUTION_FAILED,
+            message_type=MessageType.EXECUTION_COMPLETED
+            if success
+            else MessageType.EXECUTION_FAILED,
             payload=execution.to_dict(),
-            to_role=RoleName.REVIEWER if not self.ttt_store.has_open_work(event.event_id, event.current_round) else None,
+            to_role=RoleName.REVIEWER,
+        )
+        self._publish(
+            event_id=event.event_id,
+            round_id=event.current_round,
+            message_type=MessageType.HANDOFF_TO_REVIEWER,
+            payload={
+                "text": "single_leaf_ready_for_review",
+                "node_id": claimed.node_id,
+            },
+            to_role=RoleName.REVIEWER,
         )
         return True
 
-    def _select_tool(self, node: Any, event: Event) -> dict[str, str]:
+    def _select_tool(
+        self,
+        node: Any,
+        event: Event,
+        *,
+        workflow_context: dict[str, Any] | None = None,
+    ) -> dict[str, str]:
         tools = self._list_available_tools()
         if not tools:
             return {
@@ -259,6 +310,7 @@ class ExecutorRuntime:
                 f"event: {json.dumps(event.to_dict(), ensure_ascii=False, indent=2)}",
                 f"node: {json.dumps({'node_id': getattr(node, 'node_id', ''), 'title': intent}, ensure_ascii=False, indent=2)}",
                 f"context: {json.dumps(event.context or {}, ensure_ascii=False, indent=2)}",
+                f"workflow_memory_context: {json.dumps(workflow_context or {}, ensure_ascii=False, indent=2)}",
                 f"tools: {json.dumps(tools, ensure_ascii=False, indent=2)}",
             ]
         )
@@ -282,7 +334,9 @@ class ExecutorRuntime:
             confidence = "low"
         else:
             reason = str((parsed or {}).get("reason") or "").strip()
-            confidence = str((parsed or {}).get("confidence") or "medium").strip().lower()
+            confidence = (
+                str((parsed or {}).get("confidence") or "medium").strip().lower()
+            )
         if confidence not in {"high", "medium", "low"}:
             confidence = "medium"
         return {
@@ -298,6 +352,7 @@ class ExecutorRuntime:
         tool_name: str,
         *,
         tool_selection: dict[str, str],
+        workflow_context: dict[str, Any] | None = None,
     ) -> tuple[bool, dict[str, Any], str, dict[str, Any]]:
         tool = get_registered_tool(tool_name)
         if tool is None:
@@ -318,7 +373,9 @@ class ExecutorRuntime:
             )
 
         tool_response = tool.execute(
-            intent=self._build_tool_intent(event, node),
+            intent=self._build_tool_intent(
+                event, node, workflow_context=workflow_context
+            ),
         )
         tool_input = {
             "node_title": getattr(node, "title", ""),
@@ -335,12 +392,16 @@ class ExecutorRuntime:
     @staticmethod
     def _list_available_tools() -> list[dict[str, Any]]:
         return [
-            tool.to_dict()
-            for tool in list_registered_tools(include_non_routable=False)
+            tool.to_dict() for tool in list_registered_tools(include_non_routable=False)
         ]
 
     @staticmethod
-    def _build_tool_intent(event: Event, node: Any) -> str:
+    def _build_tool_intent(
+        event: Event,
+        node: Any,
+        *,
+        workflow_context: dict[str, Any] | None = None,
+    ) -> str:
         node_title = str(getattr(node, "title", "") or "").strip()
         node_id = str(getattr(node, "node_id", "") or "").strip()
         context_text = json.dumps(event.context or {}, ensure_ascii=False, indent=2)
@@ -355,6 +416,8 @@ class ExecutorRuntime:
                 f"TTT 叶子节点任务: {node_title}",
                 "事件上下文:",
                 context_text,
+                "Workflow 提供的角色受限长期记忆上下文:",
+                json.dumps(workflow_context or {}, ensure_ascii=False, indent=2),
             ]
         )
 

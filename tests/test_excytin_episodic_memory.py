@@ -14,8 +14,13 @@ from src.memory.longterm_memory.episodic_memory.excytin_bench.build_knowledge im
     DEFAULT_SEMANTIC_KNOWLEDGE,
     DEFAULT_TRAJECTORIES,
     build_knowledge,
+    load_jsonl,
+    load_train_questions,
+    map_trajectories_to_train,
+    trajectory_task_prompt,
 )
 from src.memory.longterm_memory.episodic_memory.excytin_bench.import_neo4j import (
+    catalog_properties,
     graph_rows,
     load_knowledge,
 )
@@ -57,12 +62,37 @@ def test_snapshot_matches_the_curated_train_trajectory_corpus() -> None:
         "schema_result": 694,
     }
     assert catalog["source_match_counts"] == {
-        "question_context_exact": 236,
-        "question_only_unique": 1,
+        "trajectory_user_prompt_question_exact": 237,
+    }
+    assert catalog["trajectory_alignment"] == {
+        "authoritative_source": "value.messages.first_user_prompt",
+        "matched_count": 237,
+        "source_key_match_count": 1,
+        "source_key_mismatch_count": 236,
+        "fail_on_unmatched_or_ambiguous": True,
     }
     assert sum(not episode["attempts"] for episode in knowledge["episodes"]) == 1
     assert {episode["source_split"] for episode in knowledge["episodes"]} == {"train"}
     assert all(episode["retrieval_eligible"] for episode in knowledge["episodes"])
+
+
+@pytest.mark.skipif(
+    not (DEFAULT_TRAJECTORIES.exists() and DEFAULT_QUESTIONS_DIR.exists()),
+    reason="The ignored ExCyTIn-Bench source data is not installed",
+)
+def test_trajectories_are_aligned_from_the_real_user_task_not_the_broken_key() -> None:
+    trajectories = load_jsonl(DEFAULT_TRAJECTORIES)
+    questions = load_train_questions(DEFAULT_QUESTIONS_DIR)
+    mapped = map_trajectories_to_train(trajectories, questions)
+
+    assert len(mapped) == 237
+    assert len(
+        {(source["source_file"], source["question_index"]) for _, source, _ in mapped}
+    ) == 237
+    assert all(
+        source["payload"]["question"] in trajectory_task_prompt(trajectory)
+        for trajectory, source, _ in mapped
+    )
 
 
 def test_snapshot_is_schema_valid_and_internally_consistent() -> None:
@@ -199,6 +229,15 @@ def test_graph_rows_have_the_expected_import_cardinality() -> None:
     assert len(rows["error_refs"]) == 81
     assert sum(row["relation_type"] == "NEXT" for row in rows["transitions"]) == 1369
     assert sum(row["relation_type"] == "REPAIRED_BY" for row in rows["transitions"]) == 79
+
+
+def test_catalog_alignment_metadata_is_flattened_for_neo4j() -> None:
+    properties = catalog_properties(load_snapshot()["catalog"])
+
+    assert "trajectory_alignment" not in properties
+    assert properties["trajectory_alignment_matched_count"] == 237
+    assert properties["trajectory_alignment_source_key_mismatch_count"] == 236
+    assert all(not isinstance(value, dict) for value in properties.values())
 
 
 @pytest.mark.skipif(

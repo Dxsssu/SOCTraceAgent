@@ -24,6 +24,8 @@ class LLMConfig:
     model: str
     reasoning_effort: str = "high"
     thinking_enabled: bool = True
+    request_timeout_seconds: float = 120.0
+    max_retries: int = 0
 
     @classmethod
     def from_env(cls) -> "LLMConfig":
@@ -38,6 +40,10 @@ class LLMConfig:
             reasoning_effort=os.environ.get("DEEPSEEK_REASONING_EFFORT", "high").strip(),
             thinking_enabled=os.environ.get("DEEPSEEK_THINKING_ENABLED", "true").strip().lower()
             in {"1", "true", "yes", "on"},
+            request_timeout_seconds=float(
+                os.environ.get("DEEPSEEK_REQUEST_TIMEOUT_SECONDS", "120")
+            ),
+            max_retries=max(0, int(os.environ.get("DEEPSEEK_MAX_RETRIES", "0"))),
         )
 
 
@@ -49,6 +55,8 @@ class LLMClient:
         self.client = OpenAI(
             api_key=self.config.api_key,
             base_url=self.config.base_url,
+            timeout=self.config.request_timeout_seconds,
+            max_retries=self.config.max_retries,
         )
 
     def chat(

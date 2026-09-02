@@ -106,33 +106,48 @@ def load_train_questions(path: Path) -> list[dict[str, Any]]:
     return questions
 
 
-def identity_key(question: str, context: Any) -> str:
-    return stable_hash({"question": question, "context": context})
+def trajectory_task_prompt(trajectory: dict[str, Any]) -> str:
+    """Return the real task prompt from a trajectory conversation.
+
+    The released ``corrects.jsonl`` has a known alignment defect: for most
+    rows, the top-level ``key`` belongs to a different row than
+    ``value.messages``.  The first user message in ``value.messages`` is the
+    authoritative task that produced the SQL trajectory; later user messages
+    are database observations.
+    """
+
+    messages = trajectory.get("value", {}).get("messages", [])
+    for message in messages:
+        if message.get("role") == "user":
+            prompt = str(message.get("content") or "").strip()
+            if not prompt:
+                break
+            return prompt
+    raise ValueError("Trajectory is missing its initial user task prompt")
+
+
+def source_key_matches_task_prompt(trajectory: dict[str, Any]) -> bool:
+    key_question = str(trajectory.get("key", {}).get("question") or "").strip()
+    return bool(key_question) and key_question in trajectory_task_prompt(trajectory)
 
 
 def map_trajectories_to_train(
     trajectories: list[dict[str, Any]], questions: list[dict[str, Any]]
 ) -> list[tuple[dict[str, Any], dict[str, Any], str]]:
-    exact: dict[str, list[dict[str, Any]]] = {}
-    by_question: dict[str, list[dict[str, Any]]] = {}
-    for item in questions:
-        payload = item["payload"]
-        exact.setdefault(identity_key(payload["question"], payload["context"]), []).append(item)
-        by_question.setdefault(payload["question"], []).append(item)
-
     mapped: list[tuple[dict[str, Any], dict[str, Any], str]] = []
     used_sources: set[tuple[str, int]] = set()
     for trajectory in trajectories:
-        key = trajectory["key"]
-        candidates = exact.get(identity_key(key["question"], key["context"]), [])
-        match_method = "question_context_exact"
-        if not candidates:
-            candidates = by_question.get(key["question"], [])
-            match_method = "question_only_unique"
+        task_prompt = trajectory_task_prompt(trajectory)
+        candidates = [
+            item
+            for item in questions
+            if str(item["payload"]["question"]).strip() in task_prompt
+        ]
+        match_method = "trajectory_user_prompt_question_exact"
         if len(candidates) != 1:
             raise ValueError(
                 f"Trajectory must map to exactly one train question; found {len(candidates)} "
-                f"for {key['question']!r}"
+                f"for initial user prompt {task_prompt[:300]!r}"
             )
         source = candidates[0]
         source_key = (source["source_file"], source["question_index"])
@@ -315,6 +330,8 @@ def build_knowledge(
     semantic_knowledge = json.loads(semantic_path.read_text(encoding="utf-8"))
     semantic = SemanticIndex.from_knowledge(semantic_knowledge)
     mapped = map_trajectories_to_train(trajectories, questions)
+    source_key_match_count = sum(source_key_matches_task_prompt(item) for item in trajectories)
+    source_key_mismatch_count = len(trajectories) - source_key_match_count
     episodes = [
         build_episode(trajectory, source, match_method, semantic)
         for trajectory, source, match_method in mapped
@@ -382,6 +399,13 @@ def build_knowledge(
             "outcome_counts": dict(sorted(outcome_counts.items())),
             "result_counts": dict(sorted(result_counts.items())),
             "source_match_counts": dict(sorted(match_counts.items())),
+            "trajectory_alignment": {
+                "authoritative_source": "value.messages.first_user_prompt",
+                "matched_count": len(mapped),
+                "source_key_match_count": source_key_match_count,
+                "source_key_mismatch_count": source_key_mismatch_count,
+                "fail_on_unmatched_or_ambiguous": True,
+            },
         },
         "error_types": error_types,
         "episodes": episodes,

@@ -56,3 +56,16 @@ def test_representative_schemas_come_from_meta_union() -> None:
     assert next(
         field for field in table_by_name["DeviceProcessEvents"]["fields"] if field["name"] == "rn"
     )["is_technical"] is True
+
+
+def test_security_alert_semantics_explain_investigation_metadata() -> None:
+    knowledge = load_knowledge()
+    security_alert = next(
+        table for table in knowledge["tables"] if table["name"] == "SecurityAlert"
+    )
+    fields = {field["name"]: field for field in security_alert["fields"]}
+
+    assert "automated investigation" in security_alert["description_en"]
+    assert "manually started" in security_alert["retrieval_hints"]
+    assert "hostname" in fields["CompromisedEntity"]["description_en"]
+    assert "assignment" in fields["ExtendedProperties"]["description_en"]

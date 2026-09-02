@@ -1,18 +1,25 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 import logging
 import time
+from dataclasses import dataclass
 from typing import Any
 
 from src.agent.llm import call_llm, parse_yaml_response
 from src.memory.working_memory import TTTStore
 from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageBus
-from src.schema import Event, EventStatus, RoundReview, TTTNode, TTTNodeStatus, TracebackTaskTree
+from src.schema import (
+    Event,
+    EventStatus,
+    RoundReview,
+    TracebackTaskTree,
+    TTTNode,
+    TTTNodeStatus,
+)
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
-
+from src.workflow.context import NullPlannerContextProvider, PlannerContextProvider
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +33,14 @@ PLANNER_SYSTEM_PROMPT = """
 2. 在每一轮结束后，根据 Reviewer 返回的总结更新 TTT。
 
 你不直接执行工具，不伪造日志，不编造企业中不存在的能力。
+
+长期记忆边界：
+- Workflow 只会向你提供 Procedural Memory 和 Semantic Memory。
+- Procedural Memory 用于选择整体调查流程、阶段和溯源方向。
+- Semantic Memory 用于确认当前环境中真实存在的日志表、字段、实体类型和连接能力。
+- 你不得访问或引用 Episodic Memory；历史查询案例、SQL 模板和错误修复属于 Executor 的职责。
+- 你不得生成 SQL、WHERE 条件、JOIN 表达式或具体工具参数。
+- 如果 Workflow 未提供长期记忆上下文，应基于现有事件谨慎规划，不得假设某张表或字段存在。
 
 你的输出必须严格使用 YAML，且只能输出以下三种 response_type：
 - ROGER
@@ -43,6 +58,10 @@ TTT 约束：
 - node_id 必须使用纯数字分层编号，如 `1`、`1-2`、`1-2-3`。
 - 更新 TTT 时必须优先做最小改动，避免无必要重写整棵树。
 - 已经完成的节点应视为冻结节点，除非有强证据，否则不要改写其语义。
+- L3 只描述原子证据搜集意图和成功条件，不描述具体查询实现。
+- TTT 必须尽量精简；每个节点只输出 node_id、title、status 和 children。
+- 不要输出 metadata、Memory 引用、候选表、优先级、成功条件或停止条件。
+- L3 的 title 应完整表达要收集的证据，但不要包含具体 SQL 实现。
 
 输出示例：
 ```yaml
@@ -78,9 +97,7 @@ class PlannerAgent:
 
     role_name: str = "_planner"
     display_name: str = "Planner"
-    description: str = (
-        "负责告警的初始分析、TTT 初始化，以及每一轮结束后的 TTT 更新。"
-    )
+    description: str = "负责告警的初始分析、TTT 初始化，以及每一轮结束后的 TTT 更新。"
     responsibilities: tuple[str, ...] = (
         "分析初始告警上下文并建立溯源目标。",
         "输出完整 TTT 快照，作为系统共享黑板。",
@@ -103,12 +120,14 @@ class PlannerRuntime:
         storage: SQLiteStorage | None = None,
         ttt_store: TTTStore | None = None,
         bus: SQLiteMessageBus | None = None,
+        context_provider: PlannerContextProvider | None = None,
         poll_interval: float = 5.0,
     ) -> None:
         self.agent = PlannerAgent()
         self.storage = storage or SQLiteStorage()
         self.ttt_store = ttt_store or TTTStore()
         self.bus = bus or SQLiteMessageBus()
+        self.context_provider = context_provider or NullPlannerContextProvider()
         self.poll_interval = poll_interval
         self.running = False
 
@@ -151,18 +170,25 @@ class PlannerRuntime:
             event_id=event.event_id,
             round_id=event.current_round,
             message_type=MessageType.SYSTEM_INFO,
-            payload={"text": "planner_start_initial_planning", "event_name": event.event_name},
+            payload={
+                "text": "planner_start_initial_planning",
+                "event_name": event.event_name,
+            },
         )
 
         try:
             candidate_tree = self._generate_initial_ttt(event)
         except Exception as exc:
             logger.exception("Planner initial TTT generation failed")
-            return self._fail_event(event, f"Planner initial TTT generation failed: {exc}")
+            return self._fail_event(
+                event, f"Planner initial TTT generation failed: {exc}"
+            )
         snapshot = self.ttt_store.save_snapshot(candidate_tree)
 
         next_status = (
-            EventStatus.PLANNED if self.ttt_store.has_open_work(event.event_id, snapshot.round_id) else EventStatus.COMPLETED
+            EventStatus.PLANNED
+            if self.ttt_store.has_open_work(event.event_id, snapshot.round_id)
+            else EventStatus.COMPLETED
         )
         updated_event = Event(
             event_id=event.event_id,
@@ -181,16 +207,28 @@ class PlannerRuntime:
             event_id=event.event_id,
             round_id=snapshot.round_id,
             message_type=MessageType.TTT_INITIALIZED,
-            payload={"ttt": snapshot.to_dict(), "event_status": updated_event.event_status.value},
+            payload={
+                "ttt": snapshot.to_dict(),
+                "event_status": updated_event.event_status.value,
+            },
         )
         return updated_event
 
     def process_replanning(self, event: Event) -> Event:
-        logger.info("Planner processing replanning for event=%s round=%s", event.event_id, event.current_round)
-        latest_review = self.storage.get_round_review(event.event_id, event.current_round)
+        logger.info(
+            "Planner processing replanning for event=%s round=%s",
+            event.event_id,
+            event.current_round,
+        )
+        latest_review = self.storage.get_round_review(
+            event.event_id, event.current_round
+        )
         latest_ttt = self.ttt_store.get_latest_ttt(event.event_id)
         if latest_review is None or latest_ttt is None:
-            logger.warning("Planner replanning skipped for event=%s due to missing review or ttt", event.event_id)
+            logger.warning(
+                "Planner replanning skipped for event=%s due to missing review or ttt",
+                event.event_id,
+            )
             return event
 
         next_round = event.current_round + 1
@@ -206,7 +244,9 @@ class PlannerRuntime:
             return self._fail_event(event, f"Planner TTT update failed: {exc}")
         snapshot = self.ttt_store.save_snapshot(candidate_tree)
         next_status = (
-            EventStatus.PLANNED if self.ttt_store.has_open_work(event.event_id, snapshot.round_id) else EventStatus.COMPLETED
+            EventStatus.PLANNED
+            if self.ttt_store.has_open_work(event.event_id, snapshot.round_id)
+            else EventStatus.COMPLETED
         )
         updated_event = Event(
             event_id=event.event_id,
@@ -225,14 +265,24 @@ class PlannerRuntime:
             event_id=event.event_id,
             round_id=snapshot.round_id,
             message_type=MessageType.TTT_UPDATED,
-            payload={"ttt": snapshot.to_dict(), "based_on_review": latest_review.to_dict()},
+            payload={
+                "ttt": snapshot.to_dict(),
+                "based_on_review": latest_review.to_dict(),
+            },
         )
         return updated_event
 
     def _generate_initial_ttt(self, event: Event) -> TracebackTaskTree:
+        memory_context = self.context_provider.build(event)
         user_prompt = "\n".join(
             [
                 "请根据以下安全告警初始化 TTT，并只返回 YAML。",
+                "以下 workflow_memory_context 已经过角色权限过滤；你只能使用其中提供的 Procedural Memory 和 Semantic Memory。",
+                json.dumps(
+                    {"workflow_memory_context": memory_context},
+                    ensure_ascii=False,
+                    indent=2,
+                ),
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
             ]
         )
@@ -261,9 +311,20 @@ class PlannerRuntime:
         latest_ttt: TracebackTaskTree,
         next_round: int,
     ) -> TracebackTaskTree:
+        memory_context = self.context_provider.build(
+            event,
+            review=latest_review,
+            ttt=latest_ttt,
+        )
         user_prompt = "\n".join(
             [
                 "请根据以下事件、上一轮 TTT 和 Reviewer 总结，更新下一轮 TTT，并只返回 YAML。",
+                "以下 workflow_memory_context 已经过角色权限过滤；你只能使用其中提供的 Procedural Memory 和 Semantic Memory。",
+                json.dumps(
+                    {"workflow_memory_context": memory_context},
+                    ensure_ascii=False,
+                    indent=2,
+                ),
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(latest_ttt.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(latest_review.to_dict(), ensure_ascii=False, indent=2),
@@ -319,7 +380,7 @@ class PlannerRuntime:
             title=str(node.get("title") or path),
             status=status,
             children=children,
-            metadata=dict(node.get("metadata") or {}),
+            metadata={},
         )
 
     def _fail_event(self, event: Event, reason: str) -> Event:

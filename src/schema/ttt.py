@@ -22,20 +22,22 @@ class TTTNode:
     node_id: str
     title: str
     status: TTTNodeStatus = TTTNodeStatus.TODO
-    children: tuple["TTTNode", ...] = field(default_factory=tuple)
+    children: tuple[TTTNode, ...] = field(default_factory=tuple)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "node_id": self.node_id,
             "title": self.title,
             "status": self.status.value,
             "children": [child.to_dict() for child in self.children],
-            "metadata": self.metadata,
         }
+        if self.metadata:
+            payload["metadata"] = self.metadata
+        return payload
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "TTTNode":
+    def from_dict(cls, data: dict[str, Any]) -> TTTNode:
         return cls(
             node_id=str(data["node_id"]),
             title=str(data.get("title") or ""),
@@ -65,7 +67,7 @@ class TracebackTaskTree:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "TracebackTaskTree":
+    def from_dict(cls, data: dict[str, Any]) -> TracebackTaskTree:
         return cls(
             event_id=str(data["event_id"]),
             round_id=int(data.get("round_id") or 1),

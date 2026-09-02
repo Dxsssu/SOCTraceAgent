@@ -80,7 +80,7 @@ pending -> planned -> executing -> reviewing -> replanning -> planned/completed
 - `pending`：新事件，等待 `Planner`
 - `planned`：已有待执行 `TTT`
 - `executing`：`Executor` 正在处理叶子节点
-- `reviewing`：本轮所有叶子节点都已到终态，等待 `Reviewer`
+- `reviewing`：本轮单个 L3 已执行完成，等待 `Reviewer`
 - `replanning`：`Reviewer` 已输出总结，等待 `Planner` 更新下一轮
 - `completed`：任务树无开放叶子节点，事件结束
 
@@ -115,6 +115,11 @@ SOCAgent/
 │  │  ├─ executor.py              # Executor 运行时
 │  │  ├─ reviewer.py              # Reviewer 运行时
 │  │  └─ llm.py                   # OpenAI 兼容 LLM 封装
+│  ├─ workflow/
+│  │  ├─ orchestrator.py          # 三角色、共享状态和 Memory View 装配
+│  │  └─ context.py               # 角色级长期记忆权限与检索上下文
+│  ├─ benchmarks/excytin_bench/   # ExCyTIn 外部动作 workflow 与 SecGym Agent 适配器
+│  ├─ memory/longterm_memory/     # Semantic / Episodic / Procedural Memory
 │  ├─ memory/working_memory/
 │  │  └─ ttt_store.py             # TTT 快照与节点状态维护
 │  ├─ messaging/
@@ -189,6 +194,8 @@ SOCAGENT_DB_PATH=runtime/socagent.db
 SOCAGENT_POLL_INTERVAL=5
 SOCAGENT_WEB_HOST=127.0.0.1
 SOCAGENT_WEB_PORT=5008
+SOCAGENT_MEMORY_PROFILE=
+SOCAGENT_LTM_BACKEND=auto
 SPLUNK_USERNAME=admin
 SPLUNK_PASSWORD=changeme
 SPLUNK_VERIFY_TLS=false
@@ -212,6 +219,13 @@ SPLUNK_BOTSV3_INDEX=botsv3
   - 角色运行时轮询数据库的时间间隔，单位秒
 - `SOCAGENT_WEB_HOST` / `SOCAGENT_WEB_PORT`
   - Web 首页和 war room 的监听地址
+- `SOCAGENT_MEMORY_PROFILE`
+  - 可选的默认长期记忆 Profile；当前支持 `excytin_bench`
+  - 事件中的 `context.memory_profile` 优先级更高
+- `SOCAGENT_LTM_BACKEND`
+  - `neo4j`：强制从已导入的 Neo4j 图加载三层 Memory
+  - `snapshot`：从仓库中的脱敏 JSON 快照加载
+  - `auto`：存在 `NEO4J_PASSWORD` 时优先 Neo4j，否则使用快照
 - `SPLUNK_*`
   - 由 `src/tools/splunk.py` 使用
   - 用于配置 Splunk Docker 的用户名、密码、数据集默认值与端口映射
@@ -330,6 +344,55 @@ python tests/test_multi_agent_loop.py --db-path runtime/test_multi_agent_loop.db
 ```
 
 ## 当前实现细节
+
+### Workflow 与长期记忆权限
+
+`src/workflow/orchestrator.py` 统一装配三个 Agent Runtime。长期记忆由
+`src/workflow/context.py` 检索并裁剪后注入角色，不向 Agent 暴露通用数据库或
+Cypher 执行接口：
+
+```text
+Event -> Workflow -> PM + SM -> Planner -> TTT
+TTT L3 -> Workflow -> SM + EM -> Executor -> Execution
+Execution -> Workflow -> SM -> Reviewer -> RoundReview
+RoundReview -> Workflow -> PM + SM -> Planner
+```
+
+每个 workflow 轮次只执行一个 L3。Executor 完成或失败后都会立即把事件切换到
+`reviewing`；Reviewer 针对该次执行生成反馈，再由 Planner 保留完整 TTT 并更新下一轮，
+从而让后续查询能够使用上一条查询返回的 observation。
+
+角色权限固定为：
+
+- Planner：Procedural Memory + Semantic Memory
+- Executor：首次查询只使用 Semantic Memory；SQL error 修复时再使用 Episodic Memory
+- Reviewer：Semantic Memory
+
+ExCyTIn-Bench 事件需要显式声明 Profile：
+
+```json
+{
+  "context": {
+    "memory_profile": "excytin_bench"
+  }
+}
+```
+
+未声明 Profile 时不注入 ExCyTIn-Bench 记忆，从而保持现有 Splunk/BOTS 工作流行为。
+若使用 Neo4j 后端，启动前需要将 `docker/neo4j/.env` 中的配置导出到当前进程，
+或在项目根目录 `.env` 中设置 `NEO4J_URI/USERNAME/PASSWORD/DATABASE`。
+
+### ExCyTIn-Bench 独立 Workflow
+
+`src/benchmarks/excytin_bench/workflow.py` 实现同步的 benchmark 状态机，和上面的
+后台轮询 workflow 相互独立。它不会在 Executor 内部连接 MySQL，而是将每条只读
+SQL 返回给 `ExcytinEnv.step()`；下一次收到环境 observation 后，才依次执行 Reviewer
+审查、Planner 重规划和下一个 L3 查询。这样官方环境仍然负责 SQL 执行、步数限制、
+结果截断和最终评分。
+
+`src/benchmarks/excytin_bench/agent.py` 提供 SecGym 所需的 `name`、`reset()`、
+`act(observation)` 和 `get_logging()` 接口。完整接入示例和角色记忆边界见
+`src/benchmarks/excytin_bench/README.md`。
 
 ### 数据存储
 

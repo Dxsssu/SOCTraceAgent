@@ -33,6 +33,13 @@ snapshot are failed or empty attempts inside those retained trajectories. One
 episode submits directly without executing SQL and therefore correctly has no
 `QueryAttempt` nodes.
 
+The released `corrects.jsonl` has misaligned top-level `key` and `value`
+objects. The builder therefore does not use `key.question` to attach SQL
+attempts to an episode. It extracts the first real user task from
+`value.messages`, matches that task to exactly one training question, and
+fails closed on a missing, ambiguous, or duplicate match. Alignment statistics
+are recorded under `catalog.trajectory_alignment`.
+
 ## Files
 
 - `episodic_memory.json`: generated, sanitized knowledge snapshot.

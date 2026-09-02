@@ -122,14 +122,30 @@ def load_knowledge(path: Path) -> dict[str, Any]:
 
 
 def catalog_properties(catalog: dict[str, Any]) -> dict[str, Any]:
+    grouped_properties = {
+        "outcome_counts",
+        "result_counts",
+        "source_match_counts",
+        "trajectory_alignment",
+    }
     result = {
         key: value
         for key, value in catalog.items()
-        if key not in {"outcome_counts", "result_counts", "source_match_counts"}
+        if key not in grouped_properties
     }
-    for group_name in ("outcome_counts", "result_counts", "source_match_counts"):
+    for group_name in sorted(grouped_properties):
         for name, count in catalog[group_name].items():
             result[f"{group_name}_{name}"] = count
+    unsupported = {
+        key: type(value).__name__
+        for key, value in result.items()
+        if isinstance(value, dict | list) and not (
+            isinstance(value, list)
+            and all(not isinstance(item, dict | list) for item in value)
+        )
+    }
+    if unsupported:
+        raise TypeError(f"Catalog contains unsupported Neo4j properties: {unsupported}")
     return result
 
 
@@ -215,6 +231,10 @@ def import_knowledge(
     semantic_catalog_id = knowledge["semantic_catalog"]["catalog_id"]
     expected_schema_hash = knowledge["semantic_catalog"]["schema_hash"]
     rows = graph_rows(knowledge)
+    # Validate/flatten every catalog property before the existing graph is
+    # replaced. This prevents a malformed snapshot from deleting a healthy
+    # catalog and then failing during CREATE.
+    catalog_row = catalog_properties(knowledge["catalog"])
     driver = GraphDatabase.driver(uri, auth=(username, password))
     try:
         driver.verify_connectivity()
@@ -260,7 +280,7 @@ def import_knowledge(
                 """,
                 environment_id=knowledge["environment_id"],
                 semantic_catalog_id=semantic_catalog_id,
-                catalog=catalog_properties(knowledge["catalog"]),
+                catalog=catalog_row,
             ).consume()
 
             error_rows = [
