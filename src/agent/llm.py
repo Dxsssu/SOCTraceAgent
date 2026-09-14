@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -139,22 +140,53 @@ def call_llm(
 
 
 def parse_yaml_response(response_text: str) -> dict[str, Any] | None:
-    """解析 LLM 返回的 YAML。"""
+    """解析 LLM 返回的 YAML，并容忍代码块或 YAML 前后的说明文本。"""
 
     text = (response_text or "").strip()
     if not text:
         return None
 
-    yaml_text = text
-    if "```yaml" in text:
-        parts = text.split("```yaml", 1)
-        yaml_text = parts[1].split("```", 1)[0].strip()
-    elif "```" in text:
-        parts = text.split("```", 1)
-        yaml_text = parts[1].split("```", 1)[0].strip()
+    candidates: list[str] = []
 
-    parsed = yaml.safe_load(yaml_text)
-    return parsed if isinstance(parsed, dict) else None
+    def add_candidate(value: str) -> None:
+        normalized = value.strip()
+        if normalized and normalized not in candidates:
+            candidates.append(normalized)
+
+    for match in re.finditer(
+        r"```(?:ya?ml)?\s*(.*?)```",
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    ):
+        add_candidate(match.group(1))
+    add_candidate(text)
+
+    # Models occasionally put a short explanation before the requested YAML.
+    # Only consider suffixes beginning with an unindented YAML mapping key so
+    # prose containing an incidental colon is not treated as structured output.
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_-]*\s*:", line):
+            add_candidate("\n".join(lines[index:]))
+
+    last_error: yaml.YAMLError | None = None
+    for candidate in candidates:
+        candidate_lines = candidate.splitlines()
+        # First try the complete candidate. If trailing prose breaks it, remove
+        # trailing lines until the largest valid YAML mapping remains.
+        for end in range(len(candidate_lines), 0, -1):
+            yaml_text = "\n".join(candidate_lines[:end]).strip()
+            try:
+                parsed = yaml.safe_load(yaml_text)
+            except yaml.YAMLError as exc:
+                last_error = exc
+                continue
+            if isinstance(parsed, dict):
+                return parsed
+
+    if last_error is not None:
+        raise last_error
+    return None
 
 
 __all__ = ["LLMClient", "LLMConfig", "call_llm", "parse_yaml_response"]

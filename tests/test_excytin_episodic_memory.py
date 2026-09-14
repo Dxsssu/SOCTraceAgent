@@ -138,7 +138,7 @@ def test_all_graph_links_target_existing_semantic_nodes() -> None:
     semantic = json.loads(SEMANTIC_PATH.read_text(encoding="utf-8"))
     table_ids = {table["table_id"] for table in semantic["tables"]}
     field_ids = {
-        field["field_id"] for table in semantic["tables"] for field in table["fields"]
+        field["field_id"] for table in semantic["tables"] for field in table["field"]
     }
     join_key_ids = {join_key["join_key_id"] for join_key in semantic["join_keys"]}
     attempts = nested_attempts(knowledge)

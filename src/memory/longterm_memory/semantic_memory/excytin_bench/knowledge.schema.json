@@ -1,40 +1,128 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://socagent.local/schemas/excytin-semantic-memory-v1.json",
+  "$id": "https://socagent.local/schemas/excytin-semantic-memory-v2.json",
   "title": "ExCyTIn-Bench Semantic Memory",
   "type": "object",
-  "required": ["format_version", "generation_policy", "environment", "catalog", "tables", "join_keys"],
+  "required": [
+    "format_version",
+    "generation_policy",
+    "environment",
+    "catalog",
+    "tables",
+    "join_keys"
+  ],
   "properties": {
-    "format_version": {"const": "1.0"},
-    "generated_at": {"type": "string"},
+    "format_version": {
+      "const": "2.0"
+    },
+    "generated_at": {
+      "type": "string"
+    },
     "generation_policy": {
       "type": "object",
-      "required": ["scenario_independent", "contains_log_values", "contains_incident_labels"],
+      "required": [
+        "scenario_independent",
+        "contains_log_values",
+        "contains_incident_labels"
+      ],
       "properties": {
-        "scenario_independent": {"const": true},
-        "contains_log_values": {"const": false},
-        "contains_incident_labels": {"const": false}
+        "scenario_independent": {
+          "const": true
+        },
+        "contains_log_values": {
+          "const": false
+        },
+        "contains_incident_labels": {
+          "const": false
+        }
       }
     },
     "environment": {
       "type": "object",
-      "required": ["environment_id", "name", "platform", "database_type", "query_language"]
+      "required": [
+        "environment_id",
+        "name",
+        "platform",
+        "database_type",
+        "query_language"
+      ]
     },
     "catalog": {
       "type": "object",
-      "required": ["catalog_id", "name", "version", "table_count", "field_count", "join_key_count", "schema_hash"]
+      "required": [
+        "catalog_id",
+        "name",
+        "version",
+        "table_count",
+        "field_count",
+        "join_key_count",
+        "schema_hash"
+      ]
     },
     "tables": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["table_id", "name", "log_type", "log_layer", "field_count", "schema_hash", "fields"],
+        "additionalProperties": false,
+        "required": [
+          "table_id",
+          "name",
+          "description",
+          "description_zh",
+          "field"
+        ],
         "properties": {
-          "fields": {
+          "table_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description_zh": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field": {
             "type": "array",
+            "minItems": 1,
             "items": {
               "type": "object",
-              "required": ["field_id", "name", "data_type", "semantic_type", "is_identifier", "is_time_field", "is_dynamic", "is_technical"]
+              "additionalProperties": false,
+              "required": [
+                "field_id",
+                "name",
+                "data_type",
+                "description",
+                "description_zh"
+              ],
+              "properties": {
+                "field_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "data_type": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description_zh": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
           }
         }
@@ -44,7 +132,15 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["join_key_id", "name", "match_method", "join_scope", "confidence", "field_count", "field_ids"]
+        "required": [
+          "join_key_id",
+          "name",
+          "match_method",
+          "join_scope",
+          "confidence",
+          "field_count",
+          "field_ids"
+        ]
       }
     }
   }

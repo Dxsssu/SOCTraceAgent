@@ -10,6 +10,7 @@ from src.benchmarks.excytin_bench.runner import (
     ExcytinBenchmarkRunner,
     build_parser,
     calculate_metrics,
+    deterministic_evaluation,
     load_test_cases,
     sample_test_cases,
 )
@@ -76,6 +77,13 @@ class FakeExecutor:
 
 def test_default_benchmark_action_budget_is_twenty_five() -> None:
     assert build_parser().parse_args([]).max_steps == 25
+
+
+def test_empty_submission_is_not_a_containment_match() -> None:
+    evaluation = deterministic_evaluation("expected-answer", "")
+
+    assert evaluation["exact_match"] is False
+    assert evaluation["containment_match"] is False
 
 
 def test_random_sample_is_reproducible_and_test_only() -> None:

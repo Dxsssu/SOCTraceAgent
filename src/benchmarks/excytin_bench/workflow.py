@@ -208,17 +208,21 @@ class ExcytinBenchWorkflow:
         self.yaml_response_attempts = max(1, yaml_response_attempts)
         self.max_observation_chars = max(1_000, max_observation_chars)
         self.state: WorkflowState | None = None
+        self._bootstrap_trace: list[dict[str, Any]] = []
+        self._bootstrap_status = "idle"
+        self._bootstrap_event_id = ""
+        self._bootstrap_initial_input = ""
 
     @staticmethod
     def _default_llm(system_prompt: str, user_prompt: str) -> str:
-        return call_llm(
-            system_prompt,
-            user_prompt,
-            extra_body={"thinking": {"type": "enabled"}},
-        )
+        return call_llm(system_prompt, user_prompt)
 
     def reset(self) -> None:
         self.state = None
+        self._bootstrap_trace.clear()
+        self._bootstrap_status = "idle"
+        self._bootstrap_event_id = ""
+        self._bootstrap_initial_input = ""
 
     def start(
         self,
@@ -245,9 +249,29 @@ class ExcytinBenchWorkflow:
                 **safe_runtime_info,
             },
         )
+        self._bootstrap_trace.clear()
+        self._bootstrap_status = "initializing"
+        self._bootstrap_event_id = event.event_id
+        self._bootstrap_initial_input = question
+        self._record_trace(
+            "workflow_starting",
+            {"event_id": event.event_id},
+        )
         planner_context = self._planner_memory.build(event)
-        ttt = self._plan_initial_ttt(event, planner_context)
+        try:
+            ttt = self._plan_initial_ttt(event, planner_context)
+        except Exception as exc:
+            self._bootstrap_status = "failed"
+            self._record_trace(
+                "workflow_start_failed",
+                {"error": f"{type(exc).__name__}: {exc}"},
+            )
+            raise
+        bootstrap_trace = list(self._bootstrap_trace)
         self.state = WorkflowState(event=event, ttt=ttt, initial_input=question)
+        self.state.trace.extend(bootstrap_trace)
+        self._bootstrap_trace.clear()
+        self._bootstrap_status = "idle"
         self.state.ttt_history.append(ttt.to_dict())
         self._record_trace(
             "workflow_started",
@@ -502,8 +526,11 @@ class ExcytinBenchWorkflow:
         if self.state is None:
             return {
                 "workflow": "excytin_bench",
-                "status": "idle",
+                "event_id": self._bootstrap_event_id,
+                "status": self._bootstrap_status,
                 "actions_issued": 0,
+                "initial_input": self._bootstrap_initial_input,
+                "trace": list(self._bootstrap_trace),
             }
         state = self.state
         return {
@@ -543,7 +570,16 @@ class ExcytinBenchWorkflow:
                 ),
             ]
         )
-        parsed = self._call_yaml_role("planner", PLANNER_SYSTEM_PROMPT, prompt)
+        parsed = self._call_yaml_role(
+            "planner",
+            PLANNER_SYSTEM_PROMPT,
+            prompt,
+            validator=lambda value: self._parse_ttt(
+                value,
+                event.event_id,
+                round_id=1,
+            ),
+        )
         return self._parse_ttt(parsed, event.event_id, round_id=1)
 
     def _replan(
@@ -566,11 +602,21 @@ class ExcytinBenchWorkflow:
                 json.dumps(review.to_dict(), ensure_ascii=False, indent=2),
             ]
         )
-        parsed = self._call_yaml_role("planner", PLANNER_SYSTEM_PROMPT, prompt)
+        next_round = current_ttt.round_id + 1
+        parsed = self._call_yaml_role(
+            "planner",
+            PLANNER_SYSTEM_PROMPT,
+            prompt,
+            validator=lambda value: self._parse_ttt(
+                value,
+                state.event.event_id,
+                round_id=next_round,
+            ),
+        )
         return self._parse_ttt(
             parsed,
             state.event.event_id,
-            round_id=current_ttt.round_id + 1,
+            round_id=next_round,
         )
 
     def _generate_sql(self, node: TTTNode, executor_context: Mapping[str, Any]) -> str:
@@ -640,14 +686,11 @@ class ExcytinBenchWorkflow:
         state = self._require_state()
         prompt = "\n".join(
             [
-                "请沿用原 Reviewer 输出结构。recommendations 必须是交给 Planner 的 TTT 修改建议，不要直接输出修改后的 TTT。",
-                "先对照 question 与全部真实 SQL observation 判断是否已能直接作答。若问题要求的实体、属性或关系已有明确且无冲突的案件证据，必须输出 decision: ready_to_submit，并在 answer_facts 中写出直接答案事实；不要为了完成其余 TTT 节点或补充与答案无关的取证细节而继续调查。",
-                "只有答案缺失、存在多个无法区分的候选值或证据冲突时才能输出 decision: continue。",
-                "Workflow 仅提供 Semantic Memory 解释字段；不得将 Schema 当作当前案件证据。",
+                "请根据原始问题和当前 L3 的真实执行结果判断应提交答案还是继续调查，只返回 YAML。",
+                "Semantic Memory 只用于解释表和字段，不能作为当前案件证据。",
                 json.dumps(
                     {"question": state.initial_input}, ensure_ascii=False, indent=2
                 ),
-                json.dumps(state.ttt.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(
                     {"current_execution": execution.to_dict()},
                     ensure_ascii=False,
@@ -664,11 +707,16 @@ class ExcytinBenchWorkflow:
         decision = str(parsed.get("decision") or "continue").strip().lower()
         if decision not in {"continue", "ready_to_submit", "cannot_continue"}:
             decision = "continue"
+        reasonings = str(parsed.get("reasonings") or "").strip()
+        findings = self._string_list(parsed.get("findings"))
+        if reasonings and not findings:
+            findings = [reasonings]
         return {
             "round_id": len(state.reviews) + 1,
             "step_no": execution.step_no,
             "decision": decision,
-            "findings": self._string_list(parsed.get("findings")),
+            "reasonings": reasonings,
+            "findings": findings,
             "gaps": self._string_list(parsed.get("gaps")),
             "recommendations": self._string_list(parsed.get("recommendations")),
             "answer_facts": self._string_list(parsed.get("answer_facts")),
@@ -738,15 +786,15 @@ class ExcytinBenchWorkflow:
         self._record_trace("memory_retrieved", item)
 
     def _record_trace(self, event_type: str, payload: Mapping[str, Any]) -> None:
+        item = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "event_type": event_type,
+            "payload": dict(payload),
+        }
         if self.state is None:
-            return
-        self.state.trace.append(
-            {
-                "timestamp": datetime.now(UTC).isoformat(),
-                "event_type": event_type,
-                "payload": dict(payload),
-            }
-        )
+            self._bootstrap_trace.append(item)
+        else:
+            self.state.trace.append(item)
 
     def _require_state(self) -> WorkflowState:
         if self.state is None:
@@ -758,6 +806,8 @@ class ExcytinBenchWorkflow:
         role: str,
         system_prompt: str,
         user_prompt: str,
+        *,
+        validator: Callable[[Mapping[str, Any]], object] | None = None,
     ) -> dict[str, Any]:
         last_error: Exception | None = None
         prompt = user_prompt
@@ -765,6 +815,8 @@ class ExcytinBenchWorkflow:
             response_text = self._llm(system_prompt, prompt)
             try:
                 parsed = self._parse_response(response_text)
+                if validator is not None:
+                    validator(parsed)
             except Exception as exc:  # noqa: BLE001 - retry malformed model output.
                 last_error = exc
                 self._record_trace(
@@ -893,6 +945,12 @@ class ExcytinBenchWorkflow:
         children_raw = value.get("children") or []
         if not isinstance(children_raw, list):
             raise TypeError(f"TTT node {path} children must be a list")
+        if depth == 2:
+            children_raw = [
+                leaf
+                for child in children_raw
+                for leaf in cls._terminal_ttt_payloads(child, path=path)
+            ]
         if depth >= 3 and children_raw:
             raise ValueError("TTT must contain exactly three levels")
         if depth < 3 and not children_raw:
@@ -916,6 +974,23 @@ class ExcytinBenchWorkflow:
             children=children,
             metadata={},
         )
+
+    @classmethod
+    def _terminal_ttt_payloads(cls, value: Any, *, path: str) -> list[Mapping[str, Any]]:
+        """Flatten an over-nested Planner branch into executable L3 leaves."""
+
+        if not isinstance(value, Mapping):
+            raise TypeError(f"TTT node below {path} is not an object")
+        children = value.get("children") or []
+        if not isinstance(children, list):
+            raise TypeError(f"TTT node below {path} children must be a list")
+        if not children:
+            return [value]
+        return [
+            leaf
+            for child in children
+            for leaf in cls._terminal_ttt_payloads(child, path=path)
+        ]
 
     @staticmethod
     def _next_todo_leaf(tree: TracebackTaskTree) -> TTTNode | None:

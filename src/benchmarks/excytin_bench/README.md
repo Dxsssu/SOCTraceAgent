@@ -56,7 +56,7 @@ for _ in range(env.max_steps):
 - Executor 针对同一个 L3 的内部查询循环最多执行 3 条 SQL。首次查询不使用 EM；出现 SQL error 或空结果后才使用 EM 修复。无论失败类型如何交替，达到 3 次都会交回 Reviewer/Planner。
 - SQL error 和空结果各自最多允许两次 EM 辅助修复，但同时受上述每个 L3 总计 3 次的硬上限约束。
 - 单次 LLM 请求默认 120 秒超时且不自动重试，可通过
-  `DEEPSEEK_REQUEST_TIMEOUT_SECONDS` 和 `DEEPSEEK_MAX_RETRIES` 调整；超时会作为该题失败记录，而不是无限停在 `running`。
+  `PARATERA_REQUEST_TIMEOUT_SECONDS` 和 `PARATERA_MAX_RETRIES` 调整；超时会作为该题失败记录，而不是无限停在 `running`。
 
 ## 随机抽取 10 道测试题
 

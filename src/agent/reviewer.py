@@ -24,48 +24,22 @@ REVIEWER_SYSTEM_PROMPT = """
 你的职责只有一类：
 1. 总结当前轮单个 L3 的执行结果，并判断应直接提交答案还是继续调查。
 
-你的边界：
-- 你不直接执行工具。
-- 你不初始化或改写 TTT，只提出总结与建议。
-- 你必须严格基于实际执行结果给出判断，不能编造证据。
-- 若执行失败或能力缺失，应真实指出，而不是掩盖。
-- 你的完成标准由用户问题决定，而不是由 TTT 中尚未执行的节点数量决定。
-- 如果真实 SQL/工具结果已经直接支持问题要求的实体、属性或关系，且没有相互冲突的证据，必须立即选择 ready_to_submit；不得为了补全与问题无关的账户、进程、时间线或审计细节而继续调查。
-- 只有当问题要求的答案仍然缺失、存在多个无法区分的候选值、证据相互冲突，或当前结果仅是 Schema/历史记忆而非案件证据时，才能选择 continue。
-- 选择 ready_to_submit 时，answer_facts 必须只列出能够直接回答原问题的事实；gaps 只能保留会影响答案正确性的实质缺口。
-
+输出要求：
 你的输出必须严格使用 YAML，且只能输出以下两种 response_type：
 - ROGER
 - ROUND_REVIEW
 
-总结要求：
-- 首先逐项对照原始问题要求与当前案件证据，不要按“完整溯源报告”的标准过度调查。
-- 总结当前轮已经获取到的关键证据。
-- 指出哪些假设被支持，哪些假设仍未验证。
-- 指出失败执行、能力缺口或数据缺口。
-- 给 Planner 提供下一轮更新 TTT 的明确修改建议，例如完成、保留、替换或新增哪些 L3 证据目标；不要直接改写 TTT。
-
-decision 取值：
-- ready_to_submit：当前真实证据已经直接回答原始问题，Workflow 应立即退出调查循环并提交答案。
-- continue：答案仍缺失、歧义或冲突，需要 Planner 更新 TTT。
-- cannot_continue：答案尚未得到，但现有数据或工具无法继续验证。
+严格基于实际执行结果给出判断，不能编造证据。如果真实 SQL 或工具结果已经直接支持问题要求的实体、属性或关系，且没有相互冲突的证据，可以结束调查。decision 只能是 ready_to_submit 或 continue。
 
 输出示例：
 ```yaml
 type: llm_response
 from: _reviewer
-to:
-  - _planner
 event_id: "{ 来自输入 }"
 round_id: "{ 来自输入 }"
 response_type: ROUND_REVIEW
 decision: ready_to_submit
-findings:
-  - 当前案件证据已直接确认问题要求的目标主机。
-gaps: []
-recommendations: []
-answer_facts:
-  - "问题要求的目标实体及其证据值"
+reasonings: 详细总结当前 L3 的实际执行结果，说明结果与原始问题要求的实体、属性或关系是否对应，指出证据是否充分、是否存在缺失或冲突，并解释选择 ready_to_submit 或 continue 的依据。
 ```
 """.strip()
 
@@ -76,11 +50,9 @@ class ReviewerAgent:
 
     role_name: str = "_reviewer"
     display_name: str = "Reviewer"
-    description: str = "负责总结每一轮执行结果，并将结果反馈给 Planner。"
+    description: str = "负责总结当前 L3 的执行结果，并判断提交答案或继续调查。"
     responsibilities: tuple[str, ...] = (
-        "汇总本轮执行结果中的关键证据。",
-        "识别已验证结论、未验证假设和能力缺口。",
-        "向 Planner 返回结构化轮次总结和下一轮建议。",
+        "总结当前轮单个 L3 的执行结果，并判断应直接提交答案还是继续调查。",
     )
     allowed_response_types: tuple[str, ...] = (
         "ROGER",
@@ -228,7 +200,6 @@ class ReviewerRuntime:
         response_text = call_llm(
             self.agent.system_prompt,
             user_prompt,
-            extra_body={"thinking": {"type": "enabled"}},
         )
         parsed = parse_yaml_response(response_text)
         if not parsed:
@@ -238,8 +209,13 @@ class ReviewerRuntime:
         recommendations = tuple(
             str(item) for item in (parsed.get("recommendations") or [])
         )
+        reasonings = str(parsed.get("reasonings") or "").strip()
+        if reasonings and not (findings or gaps or recommendations):
+            findings = (reasonings,)
         if not (findings or gaps or recommendations):
-            raise ValueError("Reviewer response missing findings/gaps/recommendations")
+            raise ValueError(
+                "Reviewer response missing reasonings or legacy review fields"
+            )
         return RoundReview(
             event_id=event.event_id,
             round_id=event.current_round,

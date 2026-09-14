@@ -264,7 +264,6 @@ class SplunkSearchTool:
 如果意图里没有给出字段，可以留空，但不要编造不存在的 sourcetype。
 """.strip(),
             user_prompt,
-            extra_body={"thinking": {"type": "enabled"}},
         )
         parsed = parse_yaml_response(response_text)
         if not parsed:

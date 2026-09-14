@@ -30,6 +30,9 @@ class SemanticIndex:
 
     @classmethod
     def from_knowledge(cls, knowledge: dict[str, Any]) -> SemanticIndex:
+        from src.memory.longterm_memory.semantic_memory.excytin_bench.runtime_view import retrieval_view
+
+        knowledge = retrieval_view(knowledge)
         tables = {table["name"].lower(): table for table in knowledge["tables"]}
         fields = {
             table["name"]: {field["name"].lower(): field for field in table["fields"]}

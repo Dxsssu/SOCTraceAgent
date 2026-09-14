@@ -22,6 +22,7 @@ from src.memory.longterm_memory.procedural_memory.excytin_bench import (
 from src.memory.longterm_memory.semantic_memory.excytin_bench import (
     DEFAULT_KNOWLEDGE_PATH as EXCYTIN_SEMANTIC_PATH,
 )
+from src.memory.longterm_memory.semantic_memory.excytin_bench.runtime_view import retrieval_view
 from src.messaging import RoleName
 from src.schema import Event, RoundReview, TracebackTaskTree
 
@@ -213,6 +214,11 @@ def _contains_hint(text: str, hint: str) -> bool:
     return hint.lower() in text.lower()
 
 
+def _contains_identifier(text: str, identifier: str) -> bool:
+    """Match a schema identifier, not e.g. Id inside Identify or OS inside host."""
+    return bool(re.search(r"(?<![\w])" + re.escape(identifier) + r"(?![\w])", text, re.IGNORECASE))
+
+
 def _infer_semantic_types(text: str) -> set[str]:
     return {
         semantic_type
@@ -270,6 +276,7 @@ class _ExcytinBenchRepositoryBase:
         self._initialize_indexes()
 
     def _initialize_indexes(self) -> None:
+        self.semantic = retrieval_view(self.semantic)
         self._tables_by_id = {
             table["table_id"]: table for table in self.semantic["tables"]
         }
@@ -349,6 +356,9 @@ class _ExcytinBenchRepositoryBase:
         scored_tables: list[tuple[float, dict[str, Any]]] = []
         for table in self.semantic["tables"]:
             score = 0.0
+            table_name = str(table.get("name") or "")
+            if table_name and _contains_identifier(text, table_name):
+                score += 30.0
             if table["table_id"] in hinted_ids:
                 score += 30.0
             if table["table_id"] in referenced_table_ids:
@@ -362,6 +372,14 @@ class _ExcytinBenchRepositoryBase:
                 field.get("semantic_type") for field in table.get("fields", [])
             }
             score += 1.5 * len(semantic_types.intersection(field_types))
+            # A question often names the desired field (for example,
+            # AadDeviceId) without naming its table. Promote the table that
+            # actually owns that field before applying the result limit.
+            score += 40.0 * sum(
+                bool(field.get("name"))
+                and _contains_identifier(text, str(field["name"]))
+                for field in table.get("fields", [])
+            )
             score += 12.0 * sum(
                 _contains_hint(text, hint)
                 for hint in table.get("retrieval_hints", [])
@@ -377,6 +395,8 @@ class _ExcytinBenchRepositoryBase:
             scored_fields: list[tuple[float, dict[str, Any]]] = []
             for field in table.get("fields", []):
                 score = 0.0
+                if _contains_identifier(text, field["name"]):
+                    score += 24.0
                 if field.get("semantic_type") in semantic_types:
                     score += 8.0
                 if field.get("is_identifier"):
@@ -400,18 +420,15 @@ class _ExcytinBenchRepositoryBase:
                 {
                     "table_id": table["table_id"],
                     "name": table["name"],
-                    "log_type": table.get("log_type"),
-                    "description": table.get("description_en")
-                    or table.get("description_zh"),
-                    "default_time_field": table.get("default_time_field"),
-                    "fields": [
+                    "description": table.get("description", ""),
+                    "description_zh": table.get("description_zh", ""),
+                    "field": [
                         {
                             "field_id": field["field_id"],
                             "name": field["name"],
                             "data_type": field.get("data_type"),
-                            "semantic_type": field.get("semantic_type"),
-                            "join_key": field.get("join_key"),
-                            "is_time_field": field.get("is_time_field", False),
+                            "description": field.get("description", ""),
+                            "description_zh": field.get("description_zh", ""),
                         }
                         for field in fields
                     ],

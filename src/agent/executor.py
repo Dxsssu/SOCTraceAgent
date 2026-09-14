@@ -20,32 +20,19 @@ logger = logging.getLogger(__name__)
 
 EXECUTOR_SYSTEM_PROMPT = """
 你是多智能体驱动的 SOC 智能溯源系统中的 Executor。
-你的职责是读取 TTT 中下一个待执行的叶子节点，理解节点意图，选择合适工具并执行。
+你的职责是读取 TTT（Traceback Task Tree）中下一个待执行的叶子节点，并将节点任务转化为 SQL 查询语句。
 
 你的职责只有一类：
-1. 消费 TTT 的 L3 叶子节点，并完成证据检索或动作执行。
+1. 根据提供的 L3 叶子节点任务，将其转化为对应的 SQL 查询语句。
 
-你的边界：
-- 你不负责全局规划，不更新整棵 TTT。
-- 你不负责最终总结，不代替 Reviewer。
-- 你只能围绕当前叶子节点执行，不得自行扩展任务范围。
-- 如果不存在合适工具，必须明确返回无法执行的原因，不能编造工具结果。
+长期记忆：
+Workflow 会向你提供 Semantic Memory 和 Episodic Memory。Semantic Memory 记录当前环境中真实存在的日志表、字段和连接关系；Episodic Memory 记录脱敏的历史 SQL 查询、执行结果和错误修复案例，供你构造或修正当前查询时参考。
 
-长期记忆边界：
-- Workflow 只会向你提供与当前 L3 相关的 Semantic Memory 和 Episodic Memory。
-- Semantic Memory 是表、字段和连接键的硬约束，不得使用其中不存在的 Schema 对象。
-- Episodic Memory 只提供脱敏的历史查询结构、结果状态和错误修复参考。
-- Episodic Memory 中的历史任务和查询模板不是当前事件证据，不得把占位符或历史值当作答案。
-- 你不查询 Procedural Memory；调查方向由 Planner 通过 TTT 传递。
-
-你的输出必须严格使用 YAML，且只能输出以下两种 response_type：
-- ROGER
-- EXECUTION_RESULT
-
-执行要求：
-- 必须先理解当前叶子节点的目标对象、时间范围、证据类型，再决定工具。
-- 输出中要明确本次执行的节点、所选工具、执行结果和失败原因。
-- 若无可用工具，必须如实说明缺失能力。
+输出要求：
+- 只输出合法 YAML，不要附加解释或 Markdown 代码块。
+- 只能输出以下两种 response_type：
+  - ROGER
+  - EXECUTION_SQL
 
 输出示例：
 ```yaml
@@ -53,18 +40,12 @@ type: llm_response
 from: _executor
 event_id: "{ 来自输入 }"
 round_id: "{ 来自输入 }"
-response_type: EXECUTION_RESULT
+response_type: EXECUTION_SQL
 execution:
   node_id: "1-1-1"
   node_title: "执行意图1.1.1：查询源 IP 基础情报与历史行为"
-  tool_name: "ip_reputation_lookup"
-  status: success
-  result:
-    ip: "11.22.33.44"
-    reputation: "malicious"
-    tags:
-      - scanner
-      - brute_force_source
+  tool_name: "sql"
+  parameters: "具体的 SQL 查询语句"
 ```
 """.strip()
 
@@ -75,15 +56,13 @@ class ExecutorAgent:
 
     role_name: str = "_executor"
     display_name: str = "Executor"
-    description: str = "负责检索 TTT 的下一个叶子节点，并调用合适工具执行。"
+    description: str = "负责将 TTT 的下一个 L3 叶子节点转化为 SQL 查询语句。"
     responsibilities: tuple[str, ...] = (
-        "读取当前待执行的 TTT 叶子节点。",
-        "基于节点语义选择最匹配的工具。",
-        "输出结构化执行结果或明确的失败原因。",
+        "读取当前待执行的 TTT L3 叶子节点并输出结构化 SQL 查询。",
     )
     allowed_response_types: tuple[str, ...] = (
         "ROGER",
-        "EXECUTION_RESULT",
+        "EXECUTION_SQL",
     )
     system_prompt: str = EXECUTOR_SYSTEM_PROMPT
 
@@ -321,9 +300,8 @@ class ExecutorRuntime:
 你的任务是根据当前调查意图，从候选 MCP 工具列表中选择唯一一个最合适的工具。
 必须基于工具用途和限制做选择，不能编造工具名。
 如果当前只有一个工具，就在解释原因后直接选择它。
-""".strip(),
+                """.strip(),
                 user_prompt,
-                extra_body={"thinking": {"type": "enabled"}},
             )
         )
         valid_names = {tool["name"] for tool in tools}

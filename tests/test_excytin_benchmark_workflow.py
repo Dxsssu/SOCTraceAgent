@@ -65,10 +65,7 @@ sql: SELECT AlertId FROM AlertEvidence LIMIT 5
         return """
 response_type: ROUND_REVIEW
 decision: ready_to_submit
-findings: [The queried alert identifier is present.]
-gaps: []
-recommendations: [Submit the observed identifier.]
-answer_facts: [alert-1]
+reasonings: The queried alert identifier directly answers the question.
 """
     if "最终答案整理器" in system_prompt:
         return """
@@ -91,6 +88,73 @@ def test_default_workflow_and_agent_limits() -> None:
     assert workflow.max_steps == 25
     assert workflow.max_executor_attempts_per_l3 == 3
     assert agent.max_steps == 25
+
+
+def test_planner_yaml_with_explanatory_wrapper_is_recovered() -> None:
+    def wrapped_llm(system_prompt: str, user_prompt: str) -> str:
+        if system_prompt.startswith("你是多智能体驱动的 SOC 智能溯源系统中的 Planner"):
+            return f"Here is the requested YAML:\n{INITIAL_TTT}\nNo other changes."
+        return role_llm(system_prompt, user_prompt)
+
+    workflow = ExcytinBenchWorkflow(max_steps=5, llm=wrapped_llm)
+    ttt = workflow.start("Investigate the alert")
+
+    assert ttt.root_nodes[0].title == "Investigate the alert"
+
+
+def test_initial_planner_failure_preserves_raw_responses_in_trace() -> None:
+    responses = iter(
+        [
+            'I should not include "response": root? No.',
+            'Still not YAML: because I am explaining.',
+        ]
+    )
+
+    workflow = ExcytinBenchWorkflow(
+        max_steps=5,
+        llm=lambda _system, _user: next(responses),
+        yaml_response_attempts=2,
+    )
+
+    with pytest.raises(TypeError):
+        workflow.start("Investigate the alert")
+
+    logging = workflow.get_logging()
+    assert logging["status"] == "failed"
+    invalid = [
+        item for item in logging["trace"] if item["event_type"] == "role_yaml_invalid"
+    ]
+    assert len(invalid) == 2
+    assert invalid[0]["payload"]["raw_response"].startswith("I should not include")
+    assert logging["trace"][-1]["event_type"] == "workflow_start_failed"
+
+
+def test_over_nested_planner_branch_is_flattened_to_three_levels() -> None:
+    over_nested = """
+response_type: TTT_PLAN
+ttt:
+  root_nodes:
+    - title: Investigate
+      children:
+        - title: Resolve device identity
+          children:
+            - title: Correlate endpoint data
+              children:
+                - title: Query DeviceInfo for AadDeviceId
+                  children: []
+                - title: Cross-check the device name
+                  children: []
+"""
+    workflow = ExcytinBenchWorkflow(max_steps=5, llm=lambda _system, _user: over_nested)
+
+    ttt = workflow.start("Identify the AadDeviceId")
+    leaves = ttt.root_nodes[0].children[0].children
+
+    assert [leaf.node_id for leaf in leaves] == ["1-1-1", "1-1-2"]
+    assert [leaf.title for leaf in leaves] == [
+        "Query DeviceInfo for AadDeviceId",
+        "Cross-check the device name",
+    ]
 
 
 def test_external_action_workflow_waits_for_environment_observation() -> None:
@@ -332,7 +396,7 @@ def test_query_budget_exhaustion_skips_replanning_and_submits() -> None:
             return "response_type: EXECUTE_SQL\nsql: SELECT CompromisedEntity FROM SecurityAlert"
         if system_prompt.startswith("你是多智能体驱动的 SOC 智能溯源系统中的 Reviewer"):
             calls["reviewer"] += 1
-            assert "必须输出 decision: ready_to_submit" in user_prompt
+            assert "判断应提交答案还是继续调查" in user_prompt
             return """
 response_type: ROUND_REVIEW
 decision: continue

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
+from jsonschema import Draft202012Validator
 from neo4j import GraphDatabase
 
 from . import DEFAULT_KNOWLEDGE_PATH
@@ -28,12 +29,10 @@ CONSTRAINTS_AND_INDEXES = (
     "FOR (node:LogTable) ON (node.catalog_id, node.name)",
     "CREATE INDEX semantic_field_name IF NOT EXISTS "
     "FOR (node:Field) ON (node.catalog_id, node.name)",
-    "CREATE INDEX semantic_field_type IF NOT EXISTS "
-    "FOR (node:Field) ON (node.catalog_id, node.semantic_type)",
-    "CREATE FULLTEXT INDEX semantic_table_text IF NOT EXISTS "
-    "FOR (node:LogTable) ON EACH [node.name, node.description_zh, node.description_en, node.semantic_text]",
-    "CREATE FULLTEXT INDEX semantic_field_text IF NOT EXISTS "
-    "FOR (node:Field) ON EACH [node.name, node.description_zh, node.description_en, node.semantic_text]",
+    "CREATE FULLTEXT INDEX semantic_table_text_v2 IF NOT EXISTS "
+    "FOR (node:LogTable) ON EACH [node.name, node.description, node.description_zh]",
+    "CREATE FULLTEXT INDEX semantic_field_text_v2 IF NOT EXISTS "
+    "FOR (node:Field) ON EACH [node.name, node.description, node.description_zh]",
 )
 
 
@@ -44,6 +43,8 @@ def chunked(rows: list[dict[str, Any]], size: int = 500) -> Iterable[list[dict[s
 
 def load_knowledge(path: Path) -> dict[str, Any]:
     knowledge = json.loads(path.read_text(encoding="utf-8"))
+    schema_path = Path(__file__).with_name("knowledge.schema.json")
+    Draft202012Validator(json.loads(schema_path.read_text(encoding="utf-8"))).validate(knowledge)
     required = {"format_version", "environment", "catalog", "tables", "join_keys"}
     missing = required.difference(knowledge)
     if missing:
@@ -52,7 +53,7 @@ def load_knowledge(path: Path) -> dict[str, Any]:
     catalog = knowledge["catalog"]
     if catalog["table_count"] != len(knowledge["tables"]):
         raise ValueError("catalog.table_count does not match tables")
-    if catalog["field_count"] != sum(len(table["fields"]) for table in knowledge["tables"]):
+    if catalog["field_count"] != sum(len(table["field"]) for table in knowledge["tables"]):
         raise ValueError("catalog.field_count does not match nested fields")
     if catalog["join_key_count"] != len(knowledge["join_keys"]):
         raise ValueError("catalog.join_key_count does not match join_keys")
@@ -100,10 +101,10 @@ def import_knowledge(
         table_rows: list[dict[str, Any]] = []
         field_rows: list[dict[str, Any]] = []
         for table in knowledge["tables"]:
-            table_properties = {key: value for key, value in table.items() if key != "fields"}
+            table_properties = {key: value for key, value in table.items() if key != "field"}
             table_properties["catalog_id"] = catalog_id
             table_rows.append(table_properties)
-            for field in table["fields"]:
+            for field in table["field"]:
                 field_properties = dict(field)
                 field_properties["catalog_id"] = catalog_id
                 field_properties["table_id"] = table["table_id"]

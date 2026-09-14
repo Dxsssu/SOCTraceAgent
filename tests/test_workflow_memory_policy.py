@@ -89,6 +89,19 @@ def test_manual_investigation_semantics_retrieve_security_alert() -> None:
     assert semantic["tables"][0]["name"] == "SecurityAlert"
 
 
+def test_exact_field_name_promotes_owning_semantic_table() -> None:
+    repository = ExcytinBenchSnapshotRepository()
+    semantic = repository.retrieve_semantic(
+        "Can you identify the AadDeviceId related to this alert?",
+        table_limit=8,
+    )
+
+    assert semantic["tables"][0]["name"] == "DeviceInfo"
+    assert "AadDeviceId" in {
+        field["name"] for field in semantic["tables"][0]["field"]
+    }
+
+
 def test_no_profile_preserves_existing_non_ltm_workflow() -> None:
     event = Event(event_name="Splunk event", message="Investigate botsv1 DNS logs")
     service = MemoryContextService()

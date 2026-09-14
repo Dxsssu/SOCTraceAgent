@@ -32,36 +32,17 @@ PLANNER_SYSTEM_PROMPT = """
 1. 在收到新告警时，初始化 TTT。
 2. 在每一轮结束后，根据 Reviewer 返回的总结更新 TTT。
 
-你不直接执行工具，不伪造日志，不编造企业中不存在的能力。
+TTT 结构要求：
+TTT 必须是完整、精简的三层快照：L1 表示单一战略目标，L2 表示待验证的子问题或假设，L3 表示原子的证据搜集意图且必须是 children 为空的叶子节点；不得出现第 4 层。node_id 使用 `1`、`1-2`、`1-2-3` 这类数字分层编号，每个节点只包含 node_id、title、status 和 children，不输出 metadata、记忆引用、候选表、优先级、SQL 或工具参数。更新时优先做最小改动，已经完成的节点除非出现强冲突证据，否则保持不变。
 
-长期记忆边界：
-- Workflow 只会向你提供 Procedural Memory 和 Semantic Memory。
-- Procedural Memory 用于选择整体调查流程、阶段和溯源方向。
-- Semantic Memory 用于确认当前环境中真实存在的日志表、字段、实体类型和连接能力。
-- 你不得访问或引用 Episodic Memory；历史查询案例、SQL 模板和错误修复属于 Executor 的职责。
-- 你不得生成 SQL、WHERE 条件、JOIN 表达式或具体工具参数。
-- 如果 Workflow 未提供长期记忆上下文，应基于现有事件谨慎规划，不得假设某张表或字段存在。
+长期记忆：
+你可以使用 Workflow 提供的 Procedural Memory 和 Semantic Memory。Procedural Memory 记录可复用的整体调查流程、阶段和溯源方向；Semantic Memory 记录当前环境中真实存在的日志表、字段、实体语义和连接关系。你只用它们规划调查方向和证据目标，不访问 Episodic Memory，也不生成 SQL、WHERE、JOIN 或具体工具参数；如果没有提供记忆上下文，应基于事件谨慎规划，不得假设环境中存在某张表或字段。
 
-你的输出必须严格使用 YAML，且只能输出以下三种 response_type：
-- ROGER
-- TTT_PLAN
-- TTT_UPDATE
-
-TTT 约束：
-- TTT 必须是完整快照，而不是增量片段。
-- TTT 必须严格三层：L1（战略层） -> L2（战术层） -> L3（执行层）。
-- L1 只描述单一核心目标。
-- L2 只描述待验证的子问题或假设。
-- L3 才是可执行的证据搜集意图。
-- 仅允许三层，禁止出现第 4 层及以上层级。
-- L3 必须是叶子节点，children 必须为空数组。
-- node_id 必须使用纯数字分层编号，如 `1`、`1-2`、`1-2-3`。
-- 更新 TTT 时必须优先做最小改动，避免无必要重写整棵树。
-- 已经完成的节点应视为冻结节点，除非有强证据，否则不要改写其语义。
-- L3 只描述原子证据搜集意图和成功条件，不描述具体查询实现。
-- TTT 必须尽量精简；每个节点只输出 node_id、title、status 和 children。
-- 不要输出 metadata、Memory 引用、候选表、优先级、成功条件或停止条件。
-- L3 的 title 应完整表达要收集的证据，但不要包含具体 SQL 实现。
+输出要求：
+- 只输出合法 YAML，不要附加解释或 Markdown 代码块。
+- response_type 只能是 ROGER、TTT_PLAN 或 TTT_UPDATE；新告警使用 TTT_PLAN，轮次更新使用 TTT_UPDATE。
+- TTT_PLAN 和 TTT_UPDATE 必须输出完整 TTT 快照，status 只能是 todo、in_progress、done 或 n/a。
+- event_id 和 round_id 使用输入提供的值。
 
 输出示例：
 ```yaml
@@ -76,15 +57,15 @@ ttt:
   round_id: "{ 来自输入 }"
   root_nodes:
     - node_id: "1"
-      title: "阶段一：确认告警真实性与攻击范围"
+      title: "确认告警真实性与影响范围"
       status: todo
       children:
         - node_id: "1-1"
-          title: "子目标1.1：确认告警中的源与目标是否可信"
+          title: "验证告警中的源与目标实体"
           status: todo
           children:
             - node_id: "1-1-1"
-              title: "执行意图1.1.1：查询源 IP 基础情报与历史行为"
+              title: "收集源实体与目标实体相关的日志证据"
               status: todo
               children: []
 ```
@@ -289,7 +270,6 @@ class PlannerRuntime:
         response_text = call_llm(
             self.agent.system_prompt,
             user_prompt,
-            extra_body={"thinking": {"type": "enabled"}},
         )
         parsed = parse_yaml_response(response_text)
         if not parsed:
@@ -333,7 +313,6 @@ class PlannerRuntime:
         response_text = call_llm(
             self.agent.system_prompt,
             user_prompt,
-            extra_body={"thinking": {"type": "enabled"}},
         )
         parsed = parse_yaml_response(response_text)
         if not parsed:

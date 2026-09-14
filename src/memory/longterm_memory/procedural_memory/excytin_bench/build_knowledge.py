@@ -10,6 +10,8 @@ from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
+from src.memory.longterm_memory.semantic_memory.excytin_bench.runtime_view import retrieval_view
+
 from . import DEFAULT_KNOWLEDGE_PATH
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
@@ -446,6 +448,7 @@ def stable_procedure_id(slug: str) -> str:
 
 
 def build_indexes(semantic: dict[str, Any]) -> dict[str, Any]:
+    semantic = retrieval_view(semantic)
     tables = {table["table_id"]: table for table in semantic["tables"]}
     fields = {
         field["field_id"]: field
@@ -534,7 +537,7 @@ def build_knowledge(
     insights_path: Path,
     questions_dir: Path,
 ) -> dict[str, Any]:
-    semantic = load_json(semantic_path)
+    semantic = retrieval_view(load_json(semantic_path))
     episodic = load_json(episodic_path)
     insights = load_json(insights_path)
     if not isinstance(insights, list) or not all(isinstance(item, str) for item in insights):

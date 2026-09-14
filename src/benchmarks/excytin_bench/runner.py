@@ -163,7 +163,7 @@ def deterministic_evaluation(expected: Any, submitted: str) -> dict[str, Any]:
     expected_text = normalize_answer(expected)
     submitted_text = normalize_answer(submitted)
     exact = bool(expected_text) and expected_text == submitted_text
-    contains = bool(expected_text) and (
+    contains = bool(expected_text) and bool(submitted_text) and (
         expected_text in submitted_text or submitted_text in expected_text
     )
     return {
