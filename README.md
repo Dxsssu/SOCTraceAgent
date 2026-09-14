@@ -185,11 +185,12 @@ pip install flask flask-socketio openai python-dotenv pyyaml
 项目通过 `.env` 加载配置。当前代码读取的变量如下：
 
 ```env
-DEEPSEEK_API_KEY=your_api_key
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-v4-flash
-DEEPSEEK_REASONING_EFFORT=high
-DEEPSEEK_THINKING_ENABLED=true
+PARATERA_API_KEY=your_api_key
+PARATERA_BASE_URL=https://ai.paratera.com/v1/
+PARATERA_MODEL=DeepSeek-V4.1-Flash
+PARATERA_EMBEDDING_MODEL=GLM-Embedding-3
+PARATERA_REQUEST_TIMEOUT_SECONDS=120
+PARATERA_MAX_RETRIES=0
 SOCAGENT_DB_PATH=runtime/socagent.db
 SOCAGENT_POLL_INTERVAL=5
 SOCAGENT_WEB_HOST=127.0.0.1
@@ -210,9 +211,9 @@ SPLUNK_BOTSV3_INDEX=botsv3
 
 说明：
 
-- `DEEPSEEK_*`
+- `PARATERA_*`
   - 由 `src/agent/llm.py` 使用
-  - 采用 OpenAI 兼容接口调用模型
+  - 通过 OpenAI Python SDK 调用 ParaTera 兼容接口
 - `SOCAGENT_DB_PATH`
   - 所有角色共享的 SQLite 文件路径
 - `SOCAGENT_POLL_INTERVAL`
@@ -235,7 +236,7 @@ SPLUNK_BOTSV3_INDEX=botsv3
 
 - 仓库中的 `.env` 不应该保存真实密钥，建议改为占位值并使用你自己的 API Key
 - 如果真实密钥已经入库，应该立即轮换
-- `Planner` 和 `Reviewer` 现在要求真实 LLM 可用；如果 `DEEPSEEK_API_KEY` 缺失或模型返回非法 YAML，事件会直接进入 `failed`，不会再自动生成模拟结果
+- `Planner` 和 `Reviewer` 现在要求真实 LLM 可用；如果 `PARATERA_API_KEY` 缺失或模型返回非法 YAML，事件会直接进入 `failed`，不会再自动生成模拟结果
 
 ## 初始化与启动
 
@@ -428,10 +429,23 @@ SQL 返回给 `ExcytinEnv.step()`；下一次收到环境 observation 后，才�
 
 ### LLM 调用
 
-`src/agent/llm.py` 当前通过 `OpenAI` Python SDK 调用 OpenAI 兼容接口，但环境变量命名采用 `DEEPSEEK_*`。这意味着：
+`src/agent/llm.py` 当前通过 `OpenAI` Python SDK 调用 ParaTera 的 OpenAI 兼容接口：
 
-- 目前默认是给 DeepSeek 兼容接口准备的
-- 如果你切换到其他 OpenAI 兼容服务，只需要替换 `base_url / model / api_key`
+- 默认地址为 `https://ai.paratera.com/v1/`
+- 默认模型为 `DeepSeek-V4.1-Flash`
+- API Key 通过本地 `PARATERA_API_KEY` 提供，不写入代码或仓库
+
+嵌入模型通过 `PARATERA_EMBEDDING_MODEL` 配置，默认 `GLM-Embedding-3`，
+复用相同的 API Key、接口地址、超时和重试配置。调用示例：
+
+```python
+from src.agent.llm import LLMClient
+
+vectors = LLMClient().embed(["需要转 embedding 的内容", "另一条调查证据"])
+```
+
+返回值为按输入顺序排列的向量列表。当前仅提供配置与调用入口，
+长期记忆检索尚未使用嵌入模型，也不会自动生成向量或建立向量索引。
 
 ### 工具执行现状
 

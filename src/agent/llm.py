@@ -4,10 +4,9 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
+import yaml
 from dotenv import load_dotenv
 from openai import OpenAI
-import yaml
-
 
 load_dotenv()
 
@@ -16,34 +15,46 @@ load_dotenv()
 class LLMConfig:
     """LLM 配置。
 
-    当前按 DeepSeek 的 OpenAI 兼容接口封装，后续可继续扩展。
+    当前通过 OpenAI Python SDK 调用 ParaTera 的兼容接口。
     """
 
     api_key: str
     base_url: str
     model: str
-    reasoning_effort: str = "high"
-    thinking_enabled: bool = True
+    reasoning_effort: str = "low"
+    thinking_enabled: bool = False
     request_timeout_seconds: float = 120.0
     max_retries: int = 0
+    embedding_model: str = "GLM-Embedding-3"
 
     @classmethod
-    def from_env(cls) -> "LLMConfig":
-        api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    def from_env(cls) -> LLMConfig:
+        api_key = os.environ.get("PARATERA_API_KEY", "").strip()
         if not api_key:
-            raise ValueError("缺少环境变量 DEEPSEEK_API_KEY")
+            raise ValueError("缺少环境变量 PARATERA_API_KEY")
 
         return cls(
             api_key=api_key,
-            base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip(),
-            model=os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash").strip(),
-            reasoning_effort=os.environ.get("DEEPSEEK_REASONING_EFFORT", "high").strip(),
-            thinking_enabled=os.environ.get("DEEPSEEK_THINKING_ENABLED", "true").strip().lower()
+            base_url=os.environ.get(
+                "PARATERA_BASE_URL", "https://ai.paratera.com/v1/"
+            ).strip(),
+            model=os.environ.get(
+                "PARATERA_MODEL", "DeepSeek-V4.1-Flash"
+            ).strip(),
+            reasoning_effort=os.environ.get(
+                "PARATERA_REASONING_EFFORT", "low"
+            ).strip(),
+            thinking_enabled=os.environ.get(
+                "PARATERA_THINKING_ENABLED", "false"
+            ).strip().lower()
             in {"1", "true", "yes", "on"},
             request_timeout_seconds=float(
-                os.environ.get("DEEPSEEK_REQUEST_TIMEOUT_SECONDS", "120")
+                os.environ.get("PARATERA_REQUEST_TIMEOUT_SECONDS", "120")
             ),
-            max_retries=max(0, int(os.environ.get("DEEPSEEK_MAX_RETRIES", "0"))),
+            max_retries=max(0, int(os.environ.get("PARATERA_MAX_RETRIES", "0"))),
+            embedding_model=os.environ.get(
+                "PARATERA_EMBEDDING_MODEL", "GLM-Embedding-3"
+            ).strip(),
         )
 
 
@@ -58,6 +69,16 @@ class LLMClient:
             timeout=self.config.request_timeout_seconds,
             max_retries=self.config.max_retries,
         )
+
+    def embed(self, texts: list[str], *, model: str | None = None) -> list[list[float]]:
+        """使用共享接口和凭据生成向量，按输入顺序返回；空批次不发送请求。"""
+        if not texts:
+            return []
+        response = self.client.embeddings.create(
+            model=model or self.config.embedding_model,
+            input=texts,
+        )
+        return [item.embedding for item in sorted(response.data, key=lambda item: item.index)]
 
     def chat(
         self,
@@ -77,16 +98,20 @@ class LLMClient:
             messages.extend(additional_messages)
         messages.append({"role": "user", "content": user_prompt})
 
+        request: dict[str, Any] = {
+            "model": model or self.config.model,
+            "messages": messages,
+            "stream": stream,
+            "reasoning_effort": reasoning_effort or self.config.reasoning_effort,
+        }
         payload_extra_body = dict(extra_body or {})
-        if self.config.thinking_enabled and "thinking" not in payload_extra_body:
-            payload_extra_body["thinking"] = {"type": "enabled"}
-
+        payload_extra_body.setdefault(
+            "thinking",
+            {"type": "enabled" if self.config.thinking_enabled else "disabled"},
+        )
+        request["extra_body"] = payload_extra_body
         response = self.client.chat.completions.create(
-            model=model or self.config.model,
-            messages=messages,
-            stream=stream,
-            reasoning_effort=reasoning_effort or self.config.reasoning_effort,
-            extra_body=payload_extra_body,
+            **request,
         )
         return response.choices[0].message.content or ""
 
