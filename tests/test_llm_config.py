@@ -78,6 +78,7 @@ def test_chat_uses_paratera_compatible_request_shape() -> None:
         openai.return_value.chat.completions.create.return_value.choices[
             0
         ].message.content = "Hello World"
+        openai.return_value.chat.completions.create.return_value.usage.total_tokens = 15
         client = LLMClient(config)
         result = client.chat(system_prompt="system", user_prompt="Hello World")
 

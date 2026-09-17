@@ -18,6 +18,7 @@ from src.schema import (
     TTTNodeStatus,
 )
 from src.schema.event import utc_now
+from src.schema.ttt_updates import apply_updates, parse_initial, next_task, resolved
 from src.storage import SQLiteStorage
 from src.workflow.context import NullPlannerContextProvider, PlannerContextProvider
 
@@ -26,51 +27,88 @@ logger = logging.getLogger(__name__)
 
 PLANNER_SYSTEM_PROMPT = """
 你是多智能体驱动的 SOC 智能溯源系统中的 Planner。
-你是整个溯源流程的总规划者，负责接收告警、进行初始研判，并维护共享黑板 TTT（Traceback Task Tree）。
 
-你的职责只有两类：
-1. 在收到新告警时，初始化 TTT。
-2. 在每一轮结束后，根据 Reviewer 返回的总结更新 TTT。
+## 角色定位
+维护随证据逐步展开的 TTT：初始化调查目标，根据 Reviewer 总结更新任务，并选择下一项 L3。
 
-TTT 结构要求：
-TTT 必须是完整、精简的三层快照：L1 表示单一战略目标，L2 表示待验证的子问题或假设，L3 表示原子的证据搜集意图且必须是 children 为空的叶子节点；不得出现第 4 层。node_id 使用 `1`、`1-2`、`1-2-3` 这类数字分层编号，每个节点只包含 node_id、title、status 和 children，不输出 metadata、记忆引用、候选表、优先级、SQL 或工具参数。更新时优先做最小改动，已经完成的节点除非出现强冲突证据，否则保持不变。
+## 输入信息
+- 原始事件的 context 和 question，以及输入中提供的 event_id、round_id。
+- 更新阶段提供的当前 TTT（含 version）、Reviewer 总结和真实执行记录。
+- Workflow 按角色权限提供的 Procedural Memory 与 Semantic Memory。
 
-长期记忆：
-你可以使用 Workflow 提供的 Procedural Memory 和 Semantic Memory。Procedural Memory 记录可复用的整体调查流程、阶段和溯源方向；Semantic Memory 记录当前环境中真实存在的日志表、字段、实体语义和连接关系。你只用它们规划调查方向和证据目标，不访问 Episodic Memory，也不生成 SQL、WHERE、JOIN 或具体工具参数；如果没有提供记忆上下文，应基于事件谨慎规划，不得假设环境中存在某张表或字段。
+## 工作流程
+1. 初始化时建立一个固定 L1 目标、1–2 个 L2 问题，通常只展开一个必要的 L3。未展开的 L2 可 children: []。
+2. 更新时区分已确认事实、信息缺口与冲突，只在新线索或缺口需要时追加节点。
+3. 用 next_task_id 选择当前可执行的 todo L3，用 selection_reason 说明理由。
+4. 证据充分时明确解决 L1；无可行方向时标记 blocked 并说明缺口。无任务不等于成功。
 
-输出要求：
-- 只输出合法 YAML，不要附加解释或 Markdown 代码块。
-- response_type 只能是 ROGER、TTT_PLAN 或 TTT_UPDATE；新告警使用 TTT_PLAN，轮次更新使用 TTT_UPDATE。
-- TTT_PLAN 和 TTT_UPDATE 必须输出完整 TTT 快照，status 只能是 todo、in_progress、done 或 n/a。
-- event_id 和 round_id 使用输入提供的值。
+## 约束条件
+- 只规划调查方向和证据目标，不生成 SQL、工具参数或最终答案，不访问 Episodic Memory。
+- Semantic Memory 用于理解真实表字段，Procedural Memory 用于参考调查流程，二者都不是案件证据。
+- TTT 最多三层：L1 为固定目标，L2 为问题/假设，L3 为原子证据搜集任务。
+- root_nodes 只包含唯一 L1 对象；children 必须嵌套完整节点对象，不能使用 ID 字符串列表，也不能平铺 L2/L3。
+- node_id 稳定且全树唯一；level 为整数 1/2/3。不得删除节点、改 ID、改目标或重新编号。
+- L1/L2 状态为 open/resolved/blocked/n/a；L3 状态为 todo/in_progress/done/blocked/n/a。
+- L3 done 仅表示尝试结束，不自动解决父问题；空结果不能直接否定假设。
+- evidence_refs 仅引用输入中真实 execution_id，初始为空；保留已有引用。resolved 必须有 result_summary 和证据引用。
+- 重开已结束节点必须提供 reason。目标仍 open 时必须选定可执行 L3；仅 L1 resolved/blocked 时 next_task_id 可为 null。
 
-输出示例：
-```yaml
-type: llm_response
-from: _planner
-event_id: "{ 来自输入 }"
-round_id: "{ 来自输入 }"
+## 输出格式
+只输出一个合法 YAML 对象，不使用 Markdown 代码围栏或额外说明；解释写入指定字段。
+初始化：response_type 为 TTT_PLAN，ttt 包含 root_nodes、next_task_id、selection_reason。
+节点字段：node_id、level、title、status、children、result_summary、evidence_refs。
+更新：response_type 为 TTT_UPDATE，输出 event_id、base_version、updates、next_task_id、selection_reason；不重写全树。
+base_version 必须等于输入版本。updates 仅支持：
+- add_node：operation、parent_id、node（完整新节点）。
+- update_node：operation、node_id、changes（仅 status/result_summary/evidence_refs），重开时额外提供 reason。
+event_id、round_id 沿用输入，不编造事件或证据标识；新增节点使用新的唯一 node_id。示例标题和版本必须替换为当前调查的值。
+
+## 输出示例
+初始化示例：
 response_type: TTT_PLAN
-response_text: 对告警的初始分析。
 ttt:
-  event_id: "{ 来自输入 }"
-  round_id: "{ 来自输入 }"
+  next_task_id: T1
+  selection_reason: 先获取告警实体，再判断是否需要追加查询
   root_nodes:
-    - node_id: "1"
-      title: "确认告警真实性与影响范围"
-      status: todo
+    - node_id: G1
+      level: 1
+      title: 回答原始调查问题
+      status: open
+      result_summary: ""
+      evidence_refs: []
       children:
-        - node_id: "1-1"
-          title: "验证告警中的源与目标实体"
-          status: todo
+        - node_id: Q1
+          level: 2
+          title: 定位相关实体
+          status: open
+          result_summary: ""
+          evidence_refs: []
           children:
-            - node_id: "1-1-1"
-              title: "收集源实体与目标实体相关的日志证据"
+            - node_id: T1
+              level: 3
+              title: 获取告警中的实体证据
               status: todo
+              result_summary: ""
+              evidence_refs: []
               children: []
-```
+更新示例（假设输入包含 Q1、E1，当前 version 为 5）：
+response_type: TTT_UPDATE
+event_id: 来自输入的事件标识
+base_version: 5
+updates:
+  - operation: add_node
+    parent_id: Q1
+    node:
+      node_id: T2
+      level: 3
+      title: 核实已定位实体缺失的创建时间
+      status: todo
+      result_summary: ""
+      evidence_refs: []
+      children: []
+next_task_id: T2
+selection_reason: E1 已定位实体，但尚缺创建时间
 """.strip()
-
 
 @dataclass(frozen=True, slots=True)
 class PlannerAgent:
@@ -81,7 +119,7 @@ class PlannerAgent:
     description: str = "负责告警的初始分析、TTT 初始化，以及每一轮结束后的 TTT 更新。"
     responsibilities: tuple[str, ...] = (
         "分析初始告警上下文并建立溯源目标。",
-        "输出完整 TTT 快照，作为系统共享黑板。",
+        "初始化最小 TTT，后续输出经 Workflow 校验的局部更新。",
         "根据 Reviewer 的轮次总结更新节点状态、结构和下一步重点。",
     )
     allowed_response_types: tuple[str, ...] = (
@@ -164,12 +202,12 @@ class PlannerRuntime:
             return self._fail_event(
                 event, f"Planner initial TTT generation failed: {exc}"
             )
-        snapshot = self.ttt_store.save_snapshot(candidate_tree)
+        snapshot = self.ttt_store.save_snapshot(candidate_tree, expected_version=0)
 
         next_status = (
             EventStatus.PLANNED
             if self.ttt_store.has_open_work(event.event_id, snapshot.round_id)
-            else EventStatus.COMPLETED
+            else (EventStatus.COMPLETED if resolved(snapshot) else EventStatus.FAILED)
         )
         updated_event = Event(
             event_id=event.event_id,
@@ -223,11 +261,11 @@ class PlannerRuntime:
         except Exception as exc:
             logger.exception("Planner TTT update failed")
             return self._fail_event(event, f"Planner TTT update failed: {exc}")
-        snapshot = self.ttt_store.save_snapshot(candidate_tree)
+        snapshot = self.ttt_store.save_snapshot(candidate_tree, expected_version=latest_ttt.version)
         next_status = (
             EventStatus.PLANNED
             if self.ttt_store.has_open_work(event.event_id, snapshot.round_id)
-            else EventStatus.COMPLETED
+            else (EventStatus.COMPLETED if resolved(snapshot) else EventStatus.FAILED)
         )
         updated_event = Event(
             event_id=event.event_id,
@@ -308,6 +346,7 @@ class PlannerRuntime:
                 json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(latest_ttt.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(latest_review.to_dict(), ensure_ascii=False, indent=2),
+                json.dumps({"executions": [e.to_dict() for e in self.storage.list_executions(event.event_id)]}, ensure_ascii=False),
             ]
         )
         response_text = call_llm(
@@ -317,50 +356,16 @@ class PlannerRuntime:
         parsed = parse_yaml_response(response_text)
         if not parsed:
             raise ValueError("Planner returned empty or non-YAML content")
-        ttt_payload = parsed.get("ttt") or parsed.get("tree")
-        if not isinstance(ttt_payload, dict):
-            raise ValueError("Planner response missing `ttt`/`tree` object")
-        return self._normalize_ttt_payload(
-            event_id=event.event_id,
-            round_id=next_round,
-            ttt_payload=ttt_payload,
+        return apply_updates(
+            latest_ttt, parsed, round_id=next_round,
+            known_evidence=[e.execution_id for e in self.storage.list_executions(event.event_id)],
         )
 
-    def _normalize_ttt_payload(
-        self,
-        *,
-        event_id: str,
-        round_id: int,
-        ttt_payload: dict[str, Any],
-    ) -> TracebackTaskTree:
-        roots = ttt_payload.get("root_nodes") or ttt_payload.get("nodes") or []
-        normalized_roots = tuple(
-            self._normalize_node(node, path=str(index))
-            for index, node in enumerate(roots, start=1)
-        )
-        return TracebackTaskTree(
-            event_id=event_id,
-            round_id=round_id,
-            root_nodes=normalized_roots,
-        )
-
-    def _normalize_node(self, node: dict[str, Any], *, path: str) -> TTTNode:
-        status = TTTNodeStatus(str(node.get("status") or TTTNodeStatus.TODO.value))
-        children_raw = node.get("children") or []
-        children = tuple(
-            self._normalize_node(
-                child,
-                path=f"{path}-{child_index}",
-            )
-            for child_index, child in enumerate(children_raw, start=1)
-        )
-        return TTTNode(
-            node_id=path,
-            title=str(node.get("title") or path),
-            status=status,
-            children=children,
-            metadata={},
-        )
+    def _normalize_ttt_payload(self, *, event_id: str, round_id: int, ttt_payload: dict[str, Any]) -> TracebackTaskTree:
+        tree = parse_initial(ttt_payload, event_id, round_id)
+        if next_task(tree) is None:
+            raise ValueError("Initial TTT needs an actionable L3 task")
+        return tree
 
     def _fail_event(self, event: Event, reason: str) -> Event:
         failed_event = Event(

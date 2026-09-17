@@ -128,10 +128,22 @@ def test_agent_context_exposes_descriptions_and_only_five_keys() -> None:
     from src.workflow.context import ExcytinBenchSnapshotRepository
 
     view = ExcytinBenchSnapshotRepository().retrieve_semantic(
-        'DeviceProcessEvents ProcessCommandLine', table_limit=1, field_limit=5,
+        'DeviceProcessEvents ProcessCommandLine', table_limit=1,
     )
     table = view['tables'][0]
     assert table['name'] == 'DeviceProcessEvents'
     assert set(table) == TABLE_KEYS
     assert all(set(field) == FIELD_KEYS for field in table['field'])
     assert 'ProcessCommandLine' in {field['name'] for field in table['field']}
+
+
+def test_semantic_retrieval_returns_all_fields_of_selected_table() -> None:
+    from src.workflow.context import ExcytinBenchSnapshotRepository
+
+    repository = ExcytinBenchSnapshotRepository()
+    view = repository.retrieve_semantic('DeviceProcessEvents ProcessId Timestamp', table_limit=1)
+    table = view['tables'][0]
+    source = next(item for item in repository.semantic['tables'] if item['name'] == 'DeviceProcessEvents')
+    assert {field['field_id'] for field in table['field']} == {field['field_id'] for field in source['fields']}
+    assert len(table['field']) > 12
+    assert {'Timestamp', 'ProcessCreationTime', 'InitiatingProcessCreationTime'} <= {field['name'] for field in table['field']}

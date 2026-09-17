@@ -9,6 +9,7 @@ import statistics
 import time
 import unicodedata
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -89,6 +90,8 @@ class MySQLQueryExecutor:
         self.max_entry_return = max_entry_return
         self.max_str_len = max_str_len
         self.connection = mysql.connector.connect(
+            # Avoid concurrent native connector initialization crashes on macOS.
+            use_pure=True,
             host="127.0.0.1",
             port=port,
             user="root",
@@ -191,7 +194,9 @@ solution_steps:
 """.strip()
 
 
-def llm_judge_evaluation(question: Mapping[str, Any], submitted: str) -> dict[str, Any]:
+def llm_judge_evaluation(
+    question: Mapping[str, Any], submitted: str, *, llm: Callable[[str, str], str] | None = None
+) -> dict[str, Any]:
     solutions = question.get("solution") or []
     if not isinstance(solutions, list):
         solutions = [solutions]
@@ -206,7 +211,7 @@ def llm_judge_evaluation(question: Mapping[str, Any], submitted: str) -> dict[st
         ensure_ascii=False,
         indent=2,
     )
-    parsed = parse_yaml_response(call_llm(_JUDGE_PROMPT, prompt)) or {}
+    parsed = parse_yaml_response((llm or call_llm)(_JUDGE_PROMPT, prompt)) or {}
     answer_correct = _as_bool(parsed.get("answer_correct"))
     judged_steps = parsed.get("solution_steps") or []
     step_correct = [False] * len(solutions)
@@ -255,11 +260,15 @@ class ExcytinBenchmarkRunner:
         self,
         *,
         max_steps: int = 25,
+        workers: int = 3,
         output_dir: Path = DEFAULT_OUTPUT_DIR,
         llm_eval: bool = False,
         workflow_factory: WorkflowFactory | None = None,
         executor_factory: ExecutorFactory | None = None,
     ) -> None:
+        if workers < 1:
+            raise ValueError("workers must be positive")
+        self.workers = workers
         self.max_steps = max_steps
         self.output_dir = output_dir
         self.llm_eval = llm_eval
@@ -297,28 +306,33 @@ class ExcytinBenchmarkRunner:
             "seed": seed,
             "sample_size": len(cases),
             "max_steps": self.max_steps,
+            "workers": self.workers,
+            "rate_limits": {"rpm": int(os.getenv("PARATERA_RPM_LIMIT", "2500")), "tpm": int(os.getenv("PARATERA_TPM_LIMIT", "5000000")), "utilization": float(os.getenv("PARATERA_RATE_UTILIZATION", "0.8"))},
             "llm_eval": self.llm_eval,
             "selected_cases": [case.manifest_view() for case in cases],
         }
         _write_json(run_dir / "manifest.json", manifest)
 
         results: list[dict[str, Any]] = []
-        for index, case in enumerate(cases, start=1):
-            print(f"[{index}/{len(cases)}] {case.case_id}: running", flush=True)
-            result = self.run_case(case, case_dir=case_dir)
-            results.append(result)
-            _append_jsonl(run_dir / "results.jsonl", result)
-            metrics = calculate_metrics(results, expected_total=len(cases))
-            _write_json(run_dir / "summary.json", metrics)
-            (run_dir / "summary.md").write_text(
-                render_summary_markdown(metrics, results), encoding="utf-8"
-            )
-            print(
-                f"[{index}/{len(cases)}] {case.case_id}: "
-                f"{result['status']}, exact={result['evaluation']['exact_match']}, "
-                f"steps={result['actions_issued']}",
-                flush=True,
-            )
+        if len({case.case_id for case in cases}) != len(cases):
+            raise ValueError("Duplicate case IDs would overwrite result artifacts")
+        with ThreadPoolExecutor(max_workers=self.workers) as pool:
+            futures = {pool.submit(self.run_case, case, case_dir=case_dir): case for case in cases}
+            for index, future in enumerate(as_completed(futures), start=1):
+                result = future.result()
+                results.append(result)
+                _append_jsonl(run_dir / "results.jsonl", result)
+                metrics = calculate_metrics(results, expected_total=len(cases))
+                _write_json(run_dir / "summary.json", metrics)
+                (run_dir / "summary.md").write_text(
+                    render_summary_markdown(metrics, results), encoding="utf-8"
+                )
+                print(
+                    f"[{index}/{len(cases)}] {result['case_id']}: "
+                    f"{result['status']}, exact={result['evaluation']['exact_match']}, "
+                    f"steps={result['actions_issued']}",
+                    flush=True,
+                )
         return run_dir, calculate_metrics(results, expected_total=len(cases))
 
     def run_case(self, case: BenchmarkCase, *, case_dir: Path) -> dict[str, Any]:
@@ -615,6 +629,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--sample-size", type=int, default=10)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max-steps", type=int, default=25)
+    parser.add_argument("--workers", type=int, default=int(os.getenv("SOCAGENT_BENCHMARK_WORKERS", "3")), help="Concurrent questions; shared LLM rate limits apply within this process")
     parser.add_argument("--question-dir", type=Path, default=DEFAULT_QUESTION_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
@@ -641,6 +656,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     selected = sample_test_cases(cases, sample_size=args.sample_size, seed=args.seed)
     runner = ExcytinBenchmarkRunner(
         max_steps=args.max_steps,
+        workers=args.workers,
         output_dir=args.output_dir,
         llm_eval=args.llm_eval,
     )

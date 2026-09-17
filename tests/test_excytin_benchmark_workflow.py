@@ -72,7 +72,7 @@ reasonings: The queried alert identifier directly answers the question.
 response_type: FINAL_ANSWER
 answer: alert-1
 """
-    if "上一轮" in user_prompt or "Review" in user_prompt:
+    if "根据真实 SQL 结果的 Review 输出带 base_version" in user_prompt:
         assert "procedural_memory" in user_prompt
         assert "episodic_memory" not in user_prompt
         return UPDATED_TTT
@@ -129,7 +129,7 @@ def test_initial_planner_failure_preserves_raw_responses_in_trace() -> None:
     assert logging["trace"][-1]["event_type"] == "workflow_start_failed"
 
 
-def test_over_nested_planner_branch_is_flattened_to_three_levels() -> None:
+def test_over_nested_planner_branch_is_rejected_without_renumbering() -> None:
     over_nested = """
 response_type: TTT_PLAN
 ttt:
@@ -147,14 +147,8 @@ ttt:
 """
     workflow = ExcytinBenchWorkflow(max_steps=5, llm=lambda _system, _user: over_nested)
 
-    ttt = workflow.start("Identify the AadDeviceId")
-    leaves = ttt.root_nodes[0].children[0].children
-
-    assert [leaf.node_id for leaf in leaves] == ["1-1-1", "1-1-2"]
-    assert [leaf.title for leaf in leaves] == [
-        "Query DeviceInfo for AadDeviceId",
-        "Cross-check the device name",
-    ]
+    with pytest.raises(ValueError, match="level"):
+        workflow.start("Identify the AadDeviceId")
 
 
 def test_external_action_workflow_waits_for_environment_observation() -> None:
@@ -175,7 +169,8 @@ def test_external_action_workflow_waits_for_environment_observation() -> None:
     assert logging["actions_issued"] == 2
     assert logging["executions"][0]["observation"] == "[('alert-1',)]"
     assert logging["reviews"][0]["decision"] == "ready_to_submit"
-    assert len(logging["ttt_history"]) == 1
+    assert len(logging["ttt_history"]) == 2
+    assert logging["ttt_history"][-1]["root_nodes"][0]["status"] == "resolved"
     assert any(
         item["event_type"] == "investigation_loop_exit_scheduled"
         and item["payload"]["reason"] == "ready_to_submit"
@@ -268,7 +263,7 @@ answer_facts: []
 """
         if "最终答案整理器" in system_prompt:
             return "response_type: FINAL_ANSWER\nanswer: unknown"
-        if "上一轮" in user_prompt or "Review" in user_prompt:
+        if "根据真实 SQL 结果的 Review 输出带 base_version" in user_prompt:
             return INITIAL_TTT
         return INITIAL_TTT
 
@@ -309,7 +304,7 @@ answer_facts: [host-1]
 """
         if "最终答案整理器" in system_prompt:
             return "response_type: FINAL_ANSWER\nanswer: host-1"
-        if "上一轮" in user_prompt or "Review" in user_prompt:
+        if "根据真实 SQL 结果的 Review 输出带 base_version" in user_prompt:
             return UPDATED_TTT
         return INITIAL_TTT
 
@@ -424,3 +419,20 @@ answer_facts: [host-1]
         and item["payload"]["reason"] == "query_budget_exhausted"
         for item in workflow.get_logging()["trace"]
     )
+
+
+@pytest.mark.parametrize('value', ["bcdedit /set recoveryenabled no", "vssblatemp.exe delete shadows /all", "DROP TABLE evidence"])
+def test_sql_validator_allows_command_line_evidence_literals(value: str) -> None:
+    sql = f"SELECT ProcessId FROM DeviceProcessEvents WHERE ProcessCommandLine = '{value}'"
+    assert ReadOnlySQLValidator.validate(sql) == sql + ';'
+
+
+@pytest.mark.parametrize('sql', [
+    "SELECT 'safe', SLEEP(1)",
+    "SELECT 'safe' INTO OUTFILE '/tmp/out'",
+    "WITH sample AS (SELECT 'safe') DELETE FROM DeviceProcessEvents",
+    "SELECT 'safe'; DROP TABLE DeviceProcessEvents",
+])
+def test_literal_handling_does_not_allow_real_side_effects(sql: str) -> None:
+    with pytest.raises(ValueError):
+        ReadOnlySQLValidator.validate(sql)

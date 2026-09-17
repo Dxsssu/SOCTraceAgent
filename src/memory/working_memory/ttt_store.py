@@ -4,13 +4,15 @@ import json
 import os
 import sqlite3
 from pathlib import Path
-from threading import Lock
+from threading import RLock as Lock
+from dataclasses import replace
 from typing import Any
 
 from dotenv import load_dotenv
 
 from src.schema import TTTNode, TTTNodeStatus, TracebackTaskTree
 from src.schema.event import utc_now
+from src.schema.ttt_updates import next_task, walk
 
 
 load_dotenv()
@@ -59,17 +61,17 @@ class TTTStore:
         connection.row_factory = sqlite3.Row
         return connection
 
-    def save_snapshot(self, tree: TracebackTaskTree, *, updated_by: str = "_planner") -> TracebackTaskTree:
-        next_version = self._get_next_version(tree.event_id)
-        snapshot = TracebackTaskTree(
-            event_id=tree.event_id,
-            round_id=tree.round_id,
-            root_nodes=tree.root_nodes,
-            created_at=tree.created_at,
-            updated_at=utc_now(),
-        )
+    def save_snapshot(self, tree: TracebackTaskTree, *, updated_by: str = "_planner", expected_version: int | None = None) -> TracebackTaskTree:
         with self._lock:
             with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                row = conn.execute("SELECT COALESCE(MAX(ttt_version), 0) FROM ttt_snapshots WHERE event_id = ?", (tree.event_id,)).fetchone()
+                if expected_version is not None and int(row[0]) != expected_version:
+                    raise ValueError("Concurrent TTT update: version changed")
+                next_version = int(row[0]) + 1
+                if tree.version < next_version - 1:
+                    raise ValueError("Cannot save stale TTT snapshot")
+                snapshot = replace(tree, version=next_version, updated_at=utc_now())
                 conn.execute(
                     """
                     INSERT INTO ttt_snapshots (
@@ -81,7 +83,7 @@ class TTTStore:
                         snapshot.event_id,
                         snapshot.round_id,
                         next_version,
-                        "1.0",
+                        "2.0",
                         updated_by,
                         json.dumps(snapshot.to_dict(), ensure_ascii=False, sort_keys=True),
                         snapshot.created_at.isoformat(),
@@ -96,7 +98,7 @@ class TTTStore:
             with self.connect() as conn:
                 row = conn.execute(
                     """
-                    SELECT tree_json FROM ttt_snapshots
+                    SELECT tree_json, ttt_version FROM ttt_snapshots
                     WHERE event_id = ?
                     ORDER BY ttt_version DESC
                     LIMIT 1
@@ -105,21 +107,16 @@ class TTTStore:
                 ).fetchone()
         if not row:
             return None
-        return TracebackTaskTree.from_dict(json.loads(row["tree_json"]))
+        payload = json.loads(row["tree_json"])
+        payload["version"] = row["ttt_version"]
+        tree = TracebackTaskTree.from_dict(payload)
+        if "next_task_id" not in payload:  # Read old on-disk snapshots without rewriting them.
+            first = next((n for n, d in walk(tree) if d == 3 and n.status == TTTNodeStatus.TODO), None)
+            tree = replace(tree, next_task_id=first.node_id if first else None)
+        return tree
 
     def list_leaf_nodes(self, tree: TracebackTaskTree) -> list[TTTNode]:
-        leaves: list[TTTNode] = []
-
-        def walk(node: TTTNode) -> None:
-            if not node.children:
-                leaves.append(node)
-                return
-            for child in node.children:
-                walk(child)
-
-        for root in tree.root_nodes:
-            walk(root)
-        return leaves
+        return [node for node, depth in walk(tree) if depth == 3]
 
     def list_todo_leaf_nodes(self, event_id: str, round_id: int | None = None) -> list[TTTNode]:
         tree = self.get_latest_ttt(event_id)
@@ -136,10 +133,7 @@ class TTTStore:
             return False
         if round_id is not None and tree.round_id != round_id:
             return False
-        for leaf in self.list_leaf_nodes(tree):
-            if leaf.status in {TTTNodeStatus.TODO, TTTNodeStatus.IN_PROGRESS}:
-                return True
-        return False
+        return next_task(tree) is not None
 
     def all_leaves_terminal(self, event_id: str, round_id: int | None = None) -> bool:
         tree = self.get_latest_ttt(event_id)
@@ -162,11 +156,7 @@ class TTTStore:
         tree = self.get_latest_ttt(event_id)
         if tree is None or tree.round_id != round_id:
             return None
-        todo_leaves = sorted(
-            self.list_leaf_nodes(tree),
-            key=lambda item: (item.node_id, item.title),
-        )
-        target = next((leaf for leaf in todo_leaves if leaf.status == TTTNodeStatus.TODO), None)
+        target = next_task(tree)
         if target is None:
             return None
         self.update_node_status(
@@ -213,7 +203,7 @@ class TTTStore:
                 "updated_at": utc_now().isoformat(),
             }
         )
-        return self.save_snapshot(new_tree, updated_by=updated_by)
+        return self.save_snapshot(new_tree, updated_by=updated_by, expected_version=tree.version)
 
     def find_node_by_id(self, tree: TracebackTaskTree, node_id: str) -> TTTNode | None:
         def walk(node: TTTNode) -> TTTNode | None:
@@ -245,6 +235,9 @@ class TTTStore:
                 metadata = dict(node.get("metadata") or {})
                 metadata.update(metadata_updates)
                 node["metadata"] = metadata
+                if metadata_updates.get("last_execution_id"):
+                    node["evidence_refs"] = list(dict.fromkeys([*node.get("evidence_refs", []), metadata_updates["last_execution_id"]]))
+                    node["result_summary"] = metadata_updates.get("result_summary", metadata_updates.get("last_execution_status", ""))
                 return True
             children = node.get("children") or []
             if TTTStore._update_node_in_dict(

@@ -331,7 +331,6 @@ class _ExcytinBenchRepositoryBase:
         procedures: Sequence[Mapping[str, Any]] = (),
         table_hints: Sequence[str] = (),
         table_limit: int = 12,
-        field_limit: int = 12,
     ) -> dict[str, Any]:
         semantic_types = _infer_semantic_types(text)
         query_tokens = _tokens(text)
@@ -414,7 +413,7 @@ class _ExcytinBenchRepositoryBase:
                 )
                 scored_fields.append((score, field))
             scored_fields.sort(key=lambda item: (-item[0], item[1]["name"]))
-            fields = [item[1] for item in scored_fields[:field_limit]]
+            fields = [item[1] for item in scored_fields]
             selected_field_ids.update(field["field_id"] for field in fields)
             table_views.append(
                 {

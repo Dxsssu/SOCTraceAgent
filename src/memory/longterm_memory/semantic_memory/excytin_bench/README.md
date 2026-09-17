@@ -60,7 +60,9 @@ a generic description. No embedding or vector index is generated.
 ## Retrieval and other memories
 
 Agent-facing semantic table/field objects use the same five-key shape and
-include both descriptions. `runtime_view.py` derives the internal semantic
+include both descriptions. Retrieval ranks and selects tables, then returns every
+field of each selected table; field ranking affects order only and does not
+truncate the field list. `runtime_view.py` derives the internal semantic
 categories, text for lexical matching and join membership needed by existing
 retrieval and episodic/procedural algorithms. These internal properties are
 not stored on v2 JSON table/field objects. Exact schema-name matching uses

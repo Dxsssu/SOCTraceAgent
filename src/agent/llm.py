@@ -9,6 +9,8 @@ import yaml
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from src.agent.rate_limit import get_rate_limiter
+
 load_dotenv()
 
 
@@ -111,10 +113,21 @@ class LLMClient:
             {"type": "enabled" if self.config.thinking_enabled else "disabled"},
         )
         request["extra_body"] = payload_extra_body
-        response = self.client.chat.completions.create(
-            **request,
-        )
-        return response.choices[0].message.content or ""
+        limiter = get_rate_limiter()
+        output_reserve = int(os.environ.get("PARATERA_OUTPUT_TOKEN_RESERVE", "16384"))
+        if output_reserve <= 0:
+            raise ValueError("PARATERA_OUTPUT_TOKEN_RESERVE must be positive")
+        estimate = sum(len(message["content"].encode("utf-8")) + 16 for message in messages) + output_reserve
+        reservation = limiter.acquire(estimate)
+        actual_tokens = None
+        try:
+            response = self.client.chat.completions.create(**request)
+            if response.usage is not None:
+                actual_tokens = response.usage.total_tokens
+            return response.choices[0].message.content or ""
+        finally:
+            # Failed calls conservatively retain their estimated reservation.
+            limiter.finish(reservation, actual_tokens)
 
 
 def call_llm(

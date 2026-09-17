@@ -7,11 +7,11 @@ Reviewer 审查和 Planner 重规划。
 
 ```text
 initial observation
-  -> PM retrieval -> SM retrieval -> Planner full TTT
+  -> PM retrieval -> SM retrieval -> Planner minimal TTT + next_task_id
   -> L3 -> SM + EM retrieval -> Executor one read-only SQL
   -> ExcytinEnv.step(SQL)
   -> observation -> Reviewer (SM only)
-  -> Review + PM + SM -> Planner updated full TTT
+  -> Review + PM + SM -> Planner versioned patches -> validated TTT snapshot
   -> next L3 / final answer -> ExcytinEnv.step(submit=True)
 ```
 
@@ -58,6 +58,20 @@ for _ in range(env.max_steps):
 - 单次 LLM 请求默认 120 秒超时且不自动重试，可通过
   `PARATERA_REQUEST_TIMEOUT_SECONDS` 和 `PARATERA_MAX_RETRIES` 调整；超时会作为该题失败记录，而不是无限停在 `running`。
 
+## 并行与速率限制
+
+默认 `--workers 3`，并行运行 3 道题，每题内部仍依序调用角色和数据库。
+结果文件由主线程汇总，单题使用独立 Workflow 与数据库连接。
+`SOCAGENT_BENCHMARK_WORKERS` 可修改 CLI 默认值。
+
+统一 `src.agent.llm` 入口共享进程内限流：`PARATERA_RPM_LIMIT=2500`、
+`PARATERA_TPM_LIMIT=5000000`，`PARATERA_RATE_UTILIZATION=0.8`，有效预算
+为 2000 RPM / 400 万 TPM。请求前按 UTF-8 字节数保守估算输入，并预留
+`PARATERA_OUTPUT_TOKEN_RESERVE=16384` 输出 tokens，完成后按 API usage 修正。
+输出预留不是输出长度上限，估算与服务商计数规则也可能不同，不能保证绝不触发 429。
+失败请求仍保留估算额度。不要同时启动多个评测进程来绕过共享额度；直接使用
+OpenAI SDK 的临时比较脚本也不经过此限流器。多进程或其他程序共用账号时需额外协调。
+
 ## 随机抽取 10 道测试题
 
 先加载本地 Neo4j 和 MySQL Docker 的密码，再运行固定随机种子的 10 题评测：
@@ -91,3 +105,10 @@ cases/*.json        # 每道题逐步 action/observation、TTT、Review 和记�
 紧邻修复率、平均动作数、平均查询数、PM/EM 命中率和用时。`--llm-eval` 会额外
 计算模仿论文奖励形态的模糊答案与部分步骤分数；它只有在使用论文相同 evaluator
 模型和配置时才能视为官方可比成绩。
+
+### 外部原生 CLI 基线
+
+新增 OpenCode、Qwen Code、Cline 的统一 MCP 测评入口：
+`python -m src.benchmarks.external_agents.runner`。
+源码安装、模型代理、独立会话、预算和运行示例见
+[`external_agents/README.md`](../../../external_agents/README.md)。

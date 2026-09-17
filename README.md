@@ -1,537 +1,309 @@
-# SOCAgent
+# SOCTraceAgent
 
-SOCAgent 是一个面向安全告警溯源场景的三角色多智能体原型。当前版本以本地 `SQLite` 作为共享状态中心，通过 `Planner`、`Executor`、`Reviewer` 三个角色围绕同一事件进行多轮协作，逐步形成 `TTT`（Traceback Task Tree，溯源任务树）、执行记录和轮次复盘结果。
+SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Planner、Executor、Reviewer** 围绕渐进式 TTT（Traceback Task Tree，溯源任务树）协作调查。项目包含本地 Splunk/BOTS 调查、ExCyTIn-Bench 测评、三类长期记忆，以及外部 Agent 对比实验。Python 包名和部分运行时标识沿用 `socagent` / `SOCAgent`。
 
-项目目前更接近“可运行的架构骨架”而不是完整产品：
+当前主要能力：
 
-- 有清晰的多角色状态流转
-- 有持久化的共享黑板和消息留痕
-- 有可用的 Web 首页和 war room 界面
-- 有基于 Socket.IO 的事件实时推送
-- 有 LLM 接口封装
-- 有独立的多轮链路烟雾测试
-- 还没有接入真实外部安全工具
+- **告警调查**：LLM 规划任务、选择 MCP 工具，通过 Splunk REST API 查询真实日志，逐步复盘和重规划。
+- **共享工作记忆**：SQLite 持久化事件、版本化 TTT、执行证据、轮次复盘和审计消息。
+- **长期记忆**：按角色注入 Semantic / Episodic / Procedural Memory，支持仓库 JSON 快照和 Neo4j 后端。
+- **Web 作战室**：创建和查看事件，展示任务树、执行记录与复盘，通过 Socket.IO 推送更新。
+- **测评与基线**：ExCyTIn SQL 调查流程、并行测评、结果落盘，以及 OpenCode、Qwen Code、Cline 和论文 BaselineAgent 的配对实验入口。
 
-## 项目目标
+## 快速开始
 
-这个仓库当前验证的是一条最小闭环：
-
-1. `Planner` 接收告警并初始化 `TTT`
-2. `Executor` 领取 `TTT` 中的 L3 叶子节点并执行
-3. `Reviewer` 汇总本轮执行结果并生成 `RoundReview`
-4. `Planner` 根据 `RoundReview` 更新下一轮 `TTT`
-5. 如果还有未完成叶子节点，则继续下一轮；否则事件结束
-
-对应的核心业务链路是：
-
-```text
-Event -> TTT -> Execution -> RoundReview -> TTT
-```
-
-这里的结构化消息只是审计、调试和未来前端展示用的观测层，不是业务事实来源。业务事实来源始终是 SQLite 中的持久化状态。
-
-## 当前架构
-
-### 角色职责
-
-- `Planner`
-  - 读取新告警
-  - 初始化第一版 `TTT`
-  - 在每轮结束后基于 `RoundReview` 更新下一轮 `TTT`
-
-- `Executor`
-  - 从当前 `TTT` 中领取一个待执行的 L3 叶子节点
-  - 选择工具并生成 `Execution`
-  - 将叶子节点状态推进为 `done` 或 `n/a`
-
-- `Reviewer`
-  - 汇总当前轮的 `Execution`
-  - 识别已验证结论、证据缺口、能力缺口
-  - 写入 `RoundReview` 并把事件状态切回 `replanning`
-
-### 共享状态对象
-
-- `Event`
-  - 事件主对象，维护当前轮次和总体状态
-
-- `TracebackTaskTree`
-  - 按版本保存的任务树快照
-  - 严格限制为三层：`L1 -> L2 -> L3`
-
-- `Execution`
-  - `Executor` 针对某个 L3 叶子节点的一次执行记录
-
-- `RoundReview`
-  - `Reviewer` 在每轮结束后的总结
-
-- `MessageEnvelope`
-  - 用于审计和调试的结构化消息
-
-### 状态流转
-
-`EventStatus` 当前定义如下：
-
-```text
-pending -> planned -> executing -> reviewing -> replanning -> planned/completed
-```
-
-其中：
-
-- `pending`：新事件，等待 `Planner`
-- `planned`：已有待执行 `TTT`
-- `executing`：`Executor` 正在处理叶子节点
-- `reviewing`：本轮单个 L3 已执行完成，等待 `Reviewer`
-- `replanning`：`Reviewer` 已输出总结，等待 `Planner` 更新下一轮
-- `completed`：任务树无开放叶子节点，事件结束
-
-## TTT 约束
-
-当前实现里，`Planner` 输出的 `TTT` 必须满足这些规则：
-
-- 必须是完整快照，不是增量 patch
-- 严格只有三层
-- `L1` 表示阶段性目标
-- `L2` 表示待验证的子问题或假设
-- `L3` 表示可执行意图
-- `node_id` 使用纯数字分层编号，例如 `1`、`1-2`、`1-2-3`
-- `Executor` 只消费 `L3` 叶子节点
-
-节点状态使用：
-
-- `todo`
-- `in_progress`
-- `done`
-- `n/a`
-
-## 目录结构
-
-```text
-SOCAgent/
-├─ main.py                         # 入口：初始化数据库 / 启动角色 / 启动 Web
-├─ pyproject.toml                 # 项目元数据
-├─ src/
-│  ├─ agent/
-│  │  ├─ planner.py               # Planner 运行时
-│  │  ├─ executor.py              # Executor 运行时
-│  │  ├─ reviewer.py              # Reviewer 运行时
-│  │  └─ llm.py                   # OpenAI 兼容 LLM 封装
-│  ├─ workflow/
-│  │  ├─ orchestrator.py          # 三角色、共享状态和 Memory View 装配
-│  │  └─ context.py               # 角色级长期记忆权限与检索上下文
-│  ├─ benchmarks/excytin_bench/   # ExCyTIn 外部动作 workflow 与 SecGym Agent 适配器
-│  ├─ memory/longterm_memory/     # Semantic / Episodic / Procedural Memory
-│  ├─ memory/working_memory/
-│  │  └─ ttt_store.py             # TTT 快照与节点状态维护
-│  ├─ messaging/
-│  │  ├─ bus.py                   # SQLite / 内存消息总线
-│  │  ├─ models.py                # MessageEnvelope / MessageQuery
-│  │  ├─ message_types.py         # 消息类型与角色名
-│  │  └─ README.md                # 通信设计说明
-│  ├─ schema/
-│  │  ├─ event.py                 # Event / EventStatus / SeverityLevel
-│  │  ├─ execution.py             # Execution
-│  │  ├─ round_review.py          # RoundReview
-│  │  └─ ttt.py                   # TTT / TTTNode
-│  └─ storage/
-│     └─ sqlite.py                # Event / Execution / RoundReview 持久化
-│  └─ webapp/
-│     ├─ server.py                # Flask + Socket.IO Web 层
-│     ├─ templates/
-│     │  ├─ index.html            # 首页：创建事件 + 事件列表
-│     │  └─ warroom.html          # 作战室：消息流 + 状态 + 执行记录
-│     └─ static/
-│        ├─ css/
-│        └─ js/
-├─ tests/
-│  └─ test_multi_agent_loop.py    # 多轮闭环烟雾测试脚本
-├─ runtime/                       # 本地运行数据（不提交到 Git）
-│  └─ socagent.db                 # 默认 SQLite 数据库（运行时自动创建）
-└─ data/
-   └─ splunk-bots-docker/         # 预置的 BOTS/Splunk 相关数据
-```
-
-## 运行环境
-
-### Python
-
-`pyproject.toml` 当前要求：
-
-- Python `>= 3.13`
-
-### 依赖
-
-当前项目依赖很少：
-
-- `flask`
-- `flask-socketio`
-- `openai`
-- `python-dotenv`
-- `pyyaml`
-
-推荐使用 `uv` 安装：
+需要 Python **3.13+** 和 [uv](https://docs.astral.sh/uv/)。在仓库根目录执行：
 
 ```bash
 uv sync
+# 仅首次配置时复制；已有 .env 时直接编辑
+cp .env.example .env
 ```
 
-如果你不用 `uv`，也可以手动安装：
+编辑 `.env`，至少配置：
 
-```bash
-pip install flask flask-socketio openai python-dotenv pyyaml
-```
-
-## 环境变量
-
-项目通过 `.env` 加载配置。当前代码读取的变量如下：
-
-```env
+```dotenv
 PARATERA_API_KEY=your_api_key
-PARATERA_BASE_URL=https://ai.paratera.com/v1/
-PARATERA_MODEL=DeepSeek-V4.1-Flash
-PARATERA_EMBEDDING_MODEL=GLM-Embedding-3
-PARATERA_REQUEST_TIMEOUT_SECONDS=120
-PARATERA_MAX_RETRIES=0
-SOCAGENT_DB_PATH=runtime/socagent.db
-SOCAGENT_POLL_INTERVAL=5
-SOCAGENT_WEB_HOST=127.0.0.1
-SOCAGENT_WEB_PORT=5008
-SOCAGENT_MEMORY_PROFILE=
-SOCAGENT_LTM_BACKEND=auto
-SPLUNK_USERNAME=admin
-SPLUNK_PASSWORD=changeme
-SPLUNK_VERIFY_TLS=false
+# 首次运行使用仓库快照，无需启动 Neo4j
+SOCAGENT_LTM_BACKEND=snapshot
+```
+
+然后启动：
+
+```bash
+uv run python main.py
+```
+
+默认打开 <http://127.0.0.1:5008>。无参数启动会自动初始化 SQLite，在同一进程内启动三个角色的后台线程和 Web 服务。在首页创建事件后，可进入对应 war room 查看调查进展。
+
+启动页面无需准备所有测评服务；**完成 Splunk 调查需要可用的 LLM、Splunk 服务和已导入的日志数据**。Planner / Reviewer 调用失败或输出不合法会显式记录失败，不会自动替换为模拟结果。
+
+也可以分别运行以下入口。分进程模式下，在四个终端分别启动 Web 和三个角色，并使用相同的 `SOCAGENT_DB_PATH`：
+
+```bash
+uv run python main.py -init-db        # 仅初始化数据库
+uv run python main.py -web            # 仅启动 Web
+uv run python main.py -role planner
+uv run python main.py -role executor
+uv run python main.py -role reviewer
+```
+
+角色名也兼容 `_planner`、`_executor`、`_reviewer`。
+
+## 调查架构
+
+```text
+告警 Event
+  -> Planner：建立最小 TTT，选择 next_task_id
+  -> Executor：执行一个 L3，记录 Execution 与证据
+  -> Reviewer：生成 RoundReview
+  -> Planner：提交版本化增量更新
+  -> 下一个 L3 / 目标解决 / 调查失败
+```
+
+| 角色 | 职责 | 长期记忆权限 |
+| --- | --- | --- |
+| Planner | 建立目标与问题、展开任务、选择下一步、更新 TTT | PM + SM |
+| Executor | 生成和执行查询、记录真实 observation | 首次仅 SM；ExCyTIn 查询错误或空结果修复时使用 EM |
+| Reviewer | 检查证据、结论与缺口，反馈后续调查方向 | SM |
+
+本地调查每轮执行一个 L3，再进入复盘与重规划。业务事实以 SQLite 持久化状态为准，`MessageEnvelope` 是审计与展示层。默认数据库为 `runtime/socagent.db`，包含 `events`、`ttt_snapshots`、`executions`、`round_reviews`、`messages`。
+
+```text
+pending -> planned -> executing -> reviewing -> replanning
+              ^                                    |
+              +------------------------------------+
+                                                   -> completed / failed
+```
+
+`completed` 要求 L1 目标明确为 `resolved`；没有待执行任务不代表成功。角色处理异常也可能将事件置为 `failed`。
+
+## TTT 约束
+
+TTT 随调查逐步展开，普通 SQLite 调查与 ExCyTIn 使用同一套校验逻辑。
+
+- 初始只建立一个固定 L1 目标、少量 L2 问题，通常展开一个 L3。L2 可以暂时没有子任务。
+- L1/L2 状态：`open / resolved / blocked / n/a`；L3 状态：`todo / in_progress / done / blocked / n/a`。
+- L3 执行结束不会自动解决父问题。空结果不直接否定假设；ExCyTIn 的查询修复保留在原 L3 内。
+- 节点保留稳定 `node_id`、显式 `level`、`result_summary`、`evidence_refs`；不使用 `answer_requirements`。
+- `evidence_refs` 指向真实执行记录：普通调查使用 Execution UUID，ExCyTIn 使用单次调查内唯一的 `E{step_no}`。引用需结合 event_id 查找，SM 描述不是案件证据。
+- Planner 用 `next_task_id` 指定下一项可执行 L3，用 `selection_reason` 说明理由；不再依照编号排序。
+- 初始化输出完整树，后续只输出 `base_version + updates + next_task_id`。支持 `add_node` 和 `update_node`，不允许删除节点、改 ID 或改目标；重开节点必须说明原因。
+- Workflow 校验版本、层级、引用和任务选择后生成完整快照。SQLite 保存 schema 2.0 快照，写入前检查期望版本，旧快照仍可读取。
+- 目标仍 open 且没有可执行任务时必须继续展开或明确 blocked。普通调查将阻塞/非法计划标记为 failed；ExCyTIn 允许明确阻塞或预算耗尽时提交已有信息，这不表示目标已经解决。
+
+例如，首次查告警取得进程 ID 后，再在“创建时间是什么”问题下追加任务：
+
+```yaml
+response_type: TTT_UPDATE
+base_version: 5  # 必须与输入快照一致
+updates:
+  - operation: add_node
+    parent_id: Q2
+    node:
+      node_id: T2
+      level: 3
+      title: 读取已定位进程的创建记录
+      status: todo
+      result_summary: ""
+      evidence_refs: []
+      children: []
+next_task_id: T2
+selection_reason: E1 已提供进程 ID，当前仍缺少创建时间
+```
+
+## Splunk / BOTS 调查
+
+本地 Executor 从注册的 MCP 工具描述中通过 LLM 选择工具。当前日志查询工具为 `log_search`，由 [src/tools/splunk.py](src/tools/splunk.py) 将自然语言意图转换为查询规格与 SPL，再调用 Splunk REST API，返回摘要和样本事件。
+
+BOTS Docker 配置见 [data/splunk-bots-docker](data/splunk-bots-docker/README.md)。准备好对应应用包和数据后，可先启动 bots1：
+
+```bash
+docker compose -f data/splunk-bots-docker/docker-compose.yml up -d bots1
+```
+
+首次启动需要下载、导入数据，容器启动不代表索引已就绪。根目录 `.env` 中的用户名、密码需与实际部署一致；bots1 推荐使用管理 API 地址：
+
+```dotenv
 SPLUNK_DEFAULT_DATASET=botsv1
-SPLUNK_BOTSV1_BASE_URL=http://127.0.0.1:8000
+SPLUNK_BOTSV1_BASE_URL=https://127.0.0.1:8089
 SPLUNK_BOTSV1_INDEX=botsv1
-SPLUNK_BOTSV2_BASE_URL=http://127.0.0.1:8020
-SPLUNK_BOTSV2_INDEX=botsv2
-SPLUNK_BOTSV3_BASE_URL=http://127.0.0.1:8030
-SPLUNK_BOTSV3_INDEX=botsv3
 ```
 
-说明：
+`8000` 是 bots1 的 Web 端口，`8089` 是管理 API 端口。现有 bots2 / bots3 配置使用 Web 端口 `8020` / `8030`，工具包含 Web 代理路径回退；若部署不支持这些代理路径，需要映射其管理 API 并修改对应 `BASE_URL`。
 
-- `PARATERA_*`
-  - 由 `src/agent/llm.py` 使用
-  - 通过 OpenAI Python SDK 调用 ParaTera 兼容接口
-- `SOCAGENT_DB_PATH`
-  - 所有角色共享的 SQLite 文件路径
-- `SOCAGENT_POLL_INTERVAL`
-  - 角色运行时轮询数据库的时间间隔，单位秒
-- `SOCAGENT_WEB_HOST` / `SOCAGENT_WEB_PORT`
-  - Web 首页和 war room 的监听地址
-- `SOCAGENT_MEMORY_PROFILE`
-  - 可选的默认长期记忆 Profile；当前支持 `excytin_bench`
-  - 事件中的 `context.memory_profile` 优先级更高
-- `SOCAGENT_LTM_BACKEND`
-  - `neo4j`：强制从已导入的 Neo4j 图加载三层 Memory
-  - `snapshot`：从仓库中的脱敏 JSON 快照加载
-  - `auto`：存在 `NEO4J_PASSWORD` 时优先 Neo4j，否则使用快照
-- `SPLUNK_*`
-  - 由 `src/tools/splunk.py` 使用
-  - 用于配置 Splunk Docker 的用户名、密码、数据集默认值与端口映射
-  - 默认按 `botsv1 -> 8000`、`botsv2 -> 8020`、`botsv3 -> 8030` 连接
-
-注意：
-
-- 仓库中的 `.env` 不应该保存真实密钥，建议改为占位值并使用你自己的 API Key
-- 如果真实密钥已经入库，应该立即轮换
-- `Planner` 和 `Reviewer` 现在要求真实 LLM 可用；如果 `PARATERA_API_KEY` 缺失或模型返回非法 YAML，事件会直接进入 `failed`，不会再自动生成模拟结果
-
-## 初始化与启动
-
-### 1. 初始化本地状态
+通过首页或 API 创建事件，例如：
 
 ```bash
-python main.py -init-db
+curl -X POST http://127.0.0.1:5008/api/event/create \
+  -H 'Content-Type: application/json' \
+  -d '{"event_name":"DNS 日志调查","message":"查询 botsv1 的 DNS 请求日志，分析源 IP、目的 IP 与域名。","context":{"splunk_dataset":"botsv1"},"severity":"medium"}'
 ```
 
-这一步会初始化：
+Web 提供事件列表、详情、执行记录、复盘与层级查询；具体路由见 [src/webapp/server.py](src/webapp/server.py)。实时消息来自本地 SQLite watcher。
 
-- `events`
-- `executions`
-- `round_reviews`
-- `ttt_snapshots`
-- `messages`
+## 长期记忆
 
-### 2. 启动 Web 界面
+长期记忆由 [MemoryContextService](src/workflow/context.py) 检索和裁剪后注入角色，不向 Agent 暴露通用 Cypher 或数据库访问接口。
 
-```bash
-python main.py -web
-```
+| 类型 | 内容与来源 | 详细说明 |
+| --- | --- | --- |
+| Semantic Memory（SM） | 从实际 schema 汇总表、字段、类型和关联键，提供中英文描述 | [构建与导入](src/memory/longterm_memory/semantic_memory/excytin_bench/README.md) |
+| Episodic Memory（EM） | 来自训练轨迹的脱敏 SQL 尝试、错误和修复关系 | [构建与导入](src/memory/longterm_memory/episodic_memory/excytin_bench/README.md) |
+| Procedural Memory（PM） | 调查阶段、流程和适用条件，连接 schema 与训练经验 | [构建与导入](src/memory/longterm_memory/procedural_memory/excytin_bench/README.md) |
 
-默认会启动在：
+普通事件通过 `context.memory_profile` 指定 `excytin_bench`，或设置默认 `SOCAGENT_MEMORY_PROFILE=excytin_bench`，才注入该 Profile 的记忆；事件配置优先。不设置时，普通 Splunk 调查不会注入 ExCyTIn 记忆。指定 Profile 不会把本地 Splunk Executor 切换为 MySQL 测评流程。
+
+后端通过 `SOCAGENT_LTM_BACKEND` 选择：
+
+- `snapshot`：读取仓库内的 JSON 快照，无需 Neo4j。
+- `neo4j`：从已导入的 Neo4j 图加载，连接失败会报错。
+- `auto`：存在非空 `NEO4J_PASSWORD` 时尝试 Neo4j，连接失败回退到快照；否则直接读取快照。
+
+`.env.example` 含 Neo4j 占位密码，首次运行建议显式使用 `snapshot`。使用图后端时，按 [Neo4j 部署说明](docker/neo4j/README.md) 启动服务，将连接配置导出到进程或写入根目录 `.env`，再依次导入 **SM → EM → PM**。重建 JSON 不会自动更新 Neo4j。
+
+当前检索使用 schema、文本匹配和关联关系；虽然 `LLMClient.embed()` 已提供 embedding 调用入口，长期记忆检索尚未使用向量检索。
+
+## ExCyTIn-Bench 测评
+
+测评使用独立的同步 workflow，不通过 Web 或后台 SQLite 轮询运行：
 
 ```text
-http://127.0.0.1:5008
+context + question -> Planner / TTT -> Executor 生成只读 SQL
+    -> 环境执行 -> observation -> Reviewer -> Planner 更新 / 提交答案
 ```
 
-首页能力：
+[src/benchmarks/excytin_bench/agent.py](src/benchmarks/excytin_bench/agent.py) 提供 SecGym 的 `reset()`、`act()`、`get_logging()` 接口，可由官方 `ExcytinEnv.step()` 执行 SQL。仓库自己的 runner 使用兼容的 MySQL 执行边界，负责抽题、并行运行和落盘；应区分自有 runner 与官方环境的成绩。
 
-- 创建事件
-- 查看事件列表
-- 进入单事件 war room
+运行前需准备：
 
-war room 能看到：
+1. 测试题目：默认目录 `data/excytin-bench/huggingface/questions/test/`。数据目录不纳入 Git，需要单独准备上游数据；当前加载器要求八个 incident 的题目文件齐全。
+2. MySQL 数据：按 [MySQL 部署说明](docker/excytin-mysql/README.md) 准备数据、生成导入文件并启动所需 incident 容器。
+3. LLM 配置，以及 JSON 快照或已导入的 Neo4j 记忆。
 
-- 事件基本信息
-- 实时消息流
-- 当前轮次
-- 执行记录
-- RoundReview 结果
-- TTT / Execution / Review 层级概览
-
-### 3. 分别启动三个角色
-
-项目当前不是单进程调度器，而是通过三个独立进程轮询同一个 SQLite 文件。
-
-分别打开三个终端执行：
+使用快照后端随机抽取 10 题：
 
 ```bash
-python main.py -role planner
-python main.py -role executor
-python main.py -role reviewer
+set -a
+source docker/excytin-mysql/.env
+set +a
+
+SOCAGENT_LTM_BACKEND=snapshot uv run python -m src.benchmarks.excytin_bench.runner \
+  --sample-size 10 --seed 42 --max-steps 25 --workers 3 --no-llm-eval
 ```
 
-角色名也兼容：
+可用 `--incident incident_5` 限定抽题范围，`--question-dir` 和 `--output-dir` 覆盖输入、输出目录。runner **默认开启 LLM 裁判**；上例显式关闭，仅计算匹配和查询指标。需要模糊答案与部分步骤评分时改为 `--llm-eval`，会额外调用模型。
 
-- `_planner`
-- `_executor`
-- `_reviewer`
+默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 3 条 SQL；首次仅使用 SM，SQL error 或空结果后才检索 EM 辅助修复。Reviewer 判断答案证据充分时可直接提交；预算耗尽或明确阻塞时也可提交已有信息，这不代表目标已解决。
 
-### 4. 写入事件
-
-当前版本已经有 Web/API，两种方式都可以：
-
-- 通过首页表单创建事件
-- 通过测试脚本创建测试事件
-- 或在你自己的脚本中调用 `SQLiteStorage.save_event(...)`
-
-### 5. 推荐的联调启动顺序
-
-建议开四个终端：
-
-```bash
-python main.py -web
-python main.py -role planner
-python main.py -role executor
-python main.py -role reviewer
-```
-
-然后在浏览器打开首页创建事件，进入 war room 观察闭环推进。
-
-## 推荐的本地验证方式
-
-最直接的验证入口是烟雾测试脚本：
-
-```bash
-python tests/test_multi_agent_loop.py
-```
-
-这个脚本会：
-
-1. 创建测试专用 SQLite 文件
-2. 启动 `Planner / Executor / Reviewer`
-3. 直接写入一条测试事件
-4. 持续轮询 `Event / TTT / Execution / RoundReview / Message`
-5. 判断多轮链路是否形成闭环
-
-常用参数示例：
-
-```bash
-python tests/test_multi_agent_loop.py --timeout 240 --target-rounds 2
-python tests/test_multi_agent_loop.py --show-process-logs
-python tests/test_multi_agent_loop.py --db-path runtime/test_multi_agent_loop.db
-```
-
-## 当前实现细节
-
-### Workflow 与长期记忆权限
-
-`src/workflow/orchestrator.py` 统一装配三个 Agent Runtime。长期记忆由
-`src/workflow/context.py` 检索并裁剪后注入角色，不向 Agent 暴露通用数据库或
-Cypher 执行接口：
+每次运行输出到 `runtime/excytin_bench/runs/<run-id>/`：
 
 ```text
-Event -> Workflow -> PM + SM -> Planner -> TTT
-TTT L3 -> Workflow -> SM + EM -> Executor -> Execution
-Execution -> Workflow -> SM -> Reviewer -> RoundReview
-RoundReview -> Workflow -> PM + SM -> Planner
+manifest.json       # 抽题、种子与运行配置
+results.jsonl       # 逐题结果
+summary.json        # 汇总指标
+summary.md          # 可读结果表
+cases/*.json        # action / observation、TTT、Review、记忆命中
 ```
 
-每个 workflow 轮次只执行一个 L3。Executor 完成或失败后都会立即把事件切换到
-`reviewing`；Reviewer 针对该次执行生成反馈，再由 Planner 保留完整 TTT 并更新下一轮，
-从而让后续查询能够使用上一条查询返回的 observation。
+指标包括 Exact / Containment Match、SQL 成功率、schema 错误率、空结果率、修复率、动作数、记忆命中和用时。包含匹配不能直接当作正确率；LLM 评分只有在环境、裁判模型与配置一致时才适合与论文成绩比较。完整协议见 [ExCyTIn Workflow 文档](src/benchmarks/excytin_bench/README.md)。
 
-角色权限固定为：
+## 外部 Agent 基线
 
-- Planner：Procedural Memory + Semantic Memory
-- Executor：首次查询只使用 Semantic Memory；SQL error 修复时再使用 Episodic Memory
-- Reviewer：Semantic Memory
+[external_agents](external_agents/README.md) 管理 OpenCode、Qwen Code、Cline 的原生 CLI 安装、版本和实验结果。它们通过统一 MCP 接口执行只读 SQL、提交答案，不注入本项目的 SM / PM / EM。
 
-ExCyTIn-Bench 事件需要显式声明 Profile：
+除 Python 环境外，需要 Node.js **22+**、npm、Git，以及对应题目和 MySQL 数据：
 
-```json
-{
-  "context": {
-    "memory_profile": "excytin_bench"
-  }
-}
+```bash
+uv run python external_agents/bootstrap.py
+uv run python -m src.benchmarks.external_agents.runner \
+  --agents opencode qwen-code cline --incident incident_5 --qid 39 \
+  --workers 3 --max-steps 25 --llm-eval
 ```
 
-未声明 Profile 时不注入 ExCyTIn-Bench 记忆，从而保持现有 Splunk/BOTS 工作流行为。
-若使用 Neo4j 后端，启动前需要将 `docker/neo4j/.env` 中的配置导出到当前进程，
-或在项目根目录 `.env` 中设置 `NEO4J_URI/USERNAME/PASSWORD/DATABASE`。
+外部 CLI runner 不传 `--llm-eval` 时默认不调用裁判。每题使用独立会话和临时配置，模型请求通过本地兼容代理。批量入口 `src.benchmarks.external_agents.batch` 支持三个 CLI、论文 `BaselineAgent` 和 SOCTraceAgent 的五框架配对实验，`src.benchmarks.external_agents.analyze` 汇总结果与成本。版本条件、论文额外依赖和断点复用规则见[基线文档](external_agents/README.md)。
 
-### ExCyTIn-Bench 独立 Workflow
+## 配置参考
 
-`src/benchmarks/excytin_bench/workflow.py` 实现同步的 benchmark 状态机，和上面的
-后台轮询 workflow 相互独立。它不会在 Executor 内部连接 MySQL，而是将每条只读
-SQL 返回给 `ExcytinEnv.step()`；下一次收到环境 observation 后，才依次执行 Reviewer
-审查、Planner 重规划和下一个 L3 查询。这样官方环境仍然负责 SQL 执行、步数限制、
-结果截断和最终评分。
+配置从根目录 `.env` 加载，完整示例见 [.env.example](.env.example)，依赖以 [pyproject.toml](pyproject.toml) 和 `uv.lock` 为准。
 
-`src/benchmarks/excytin_bench/agent.py` 提供 SecGym 所需的 `name`、`reset()`、
-`act(observation)` 和 `get_logging()` 接口。完整接入示例和角色记忆边界见
-`src/benchmarks/excytin_bench/README.md`。
+| 配置 | 默认值 / 用途 |
+| --- | --- |
+| `PARATERA_API_KEY` | LLM API 密钥，实际模型调用必需 |
+| `PARATERA_BASE_URL` / `PARATERA_MODEL` | `https://ai.paratera.com/v1/` / `DeepSeek-V4.1-Flash` |
+| `PARATERA_REASONING_EFFORT` / `PARATERA_THINKING_ENABLED` | `low` / `false` |
+| `PARATERA_REQUEST_TIMEOUT_SECONDS` / `PARATERA_MAX_RETRIES` | `120` 秒 / `0` 次自动重试 |
+| `PARATERA_EMBEDDING_MODEL` | `GLM-Embedding-3` |
+| `SOCAGENT_DB_PATH` / `SOCAGENT_POLL_INTERVAL` | `runtime/socagent.db` / `5` 秒 |
+| `SOCAGENT_WEB_HOST` / `SOCAGENT_WEB_PORT` | `127.0.0.1` / `5008` |
+| `SOCAGENT_MEMORY_PROFILE` | 默认空；当前支持 `excytin_bench` |
+| `SOCAGENT_LTM_BACKEND` | 默认 `auto`；快速开始推荐 `snapshot` |
+| `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` / `NEO4J_DATABASE` | 图记忆连接配置 |
+| `SPLUNK_USERNAME` / `SPLUNK_PASSWORD` / `SPLUNK_VERIFY_TLS` | Splunk 身份验证与 TLS 设置 |
+| `SPLUNK_BOTSV{1,2,3}_BASE_URL` / `SPLUNK_BOTSV{1,2,3}_INDEX` | 各数据集端点与索引 |
+| `SOCAGENT_BENCHMARK_WORKERS` | 自有测评 CLI 默认并行数 `3` |
+| `PARATERA_RPM_LIMIT` / `PARATERA_TPM_LIMIT` | `2500` / `5000000` |
+| `PARATERA_RATE_UTILIZATION` | `0.8`，限流预算使用比例 |
+| `PARATERA_OUTPUT_TOKEN_RESERVE` | `16384`，请求前预留的输出 token 估算 |
 
-### 数据存储
+统一聊天入口共享**进程内**限流器，完成后按 API usage 修正预算。token 预留不是输出长度上限，也不能保证绝不触发 429。分别启动的进程不共享额度；embedding 调用不经过该聊天限流器。
 
-当前状态全部保存在同一个 SQLite 文件中：
+## 测试与验证
 
-- `events`
-- `executions`
-- `round_reviews`
-- `ttt_snapshots`
-- `messages`
+项目已有 pytest / unittest 用例，覆盖 TTT 增量更新、角色记忆权限、三类记忆、测评 workflow / runner、LLM 配置与限流、外部 Agent 适配。
 
-其中：
+运行离线测试，排除需要真实 LLM 和 Splunk 的集成用例：
 
-- `src/storage/sqlite.py` 负责 `Event / Execution / RoundReview`
-- `src/memory/working_memory/ttt_store.py` 负责 `TTT`
-- `src/messaging/bus.py` 负责结构化消息留痕
-
-### Web 交互层
-
-`src/webapp/server.py` 当前提供了一个最小 Web 层，整体交互方式参考 `deepsoc`：
-
-- 首页通过 HTTP API 创建事件、拉取事件列表
-- war room 首屏通过 HTTP 拉取：
-  - 事件详情
-  - 消息流
-  - 执行记录
-  - RoundReview
-  - 轮次层级结构
-- 页面通过 Socket.IO `join(event_id)` 进入事件房间
-- 后端通过 SQLite watcher 检测数据库变化，并把新消息和状态变化实时推送到 war room
-
-这意味着当前 Web 界面不是前端假数据模拟，而是直接消费本项目自己的真实 SQLite 状态。
-
-### LLM 调用
-
-`src/agent/llm.py` 当前通过 `OpenAI` Python SDK 调用 ParaTera 的 OpenAI 兼容接口：
-
-- 默认地址为 `https://ai.paratera.com/v1/`
-- 默认模型为 `DeepSeek-V4.1-Flash`
-- API Key 通过本地 `PARATERA_API_KEY` 提供，不写入代码或仓库
-
-嵌入模型通过 `PARATERA_EMBEDDING_MODEL` 配置，默认 `GLM-Embedding-3`，
-复用相同的 API Key、接口地址、超时和重试配置。调用示例：
-
-```python
-from src.agent.llm import LLMClient
-
-vectors = LLMClient().embed(["需要转 embedding 的内容", "另一条调查证据"])
+```bash
+uv run --with pytest python -m pytest tests -q \
+  --ignore=tests/test_splunk_ttt_integration.py
 ```
 
-返回值为按输入顺序排列的向量列表。当前仅提供配置与调用入口，
-长期记忆检索尚未使用嵌入模型，也不会自动生成向量或建立向量索引。
+`pytest` 尚未列入项目依赖，以上通过 `--with pytest` 临时提供。部分记忆重建测试需要本地上游数据，缺失时会跳过。
 
-### 工具执行现状
+准备好真实服务后，再运行以下联调。它们会发起真实 LLM / Splunk 请求：
 
-`Executor` 当前已经接入一套真实的 Splunk MCP 工具能力：
-
-- `log_search` 会根据 TTT 叶子节点的自然语言意图，先由 LLM 在内置路由阶段选择工具
-- 选中 `log_search` 后，再由 `src/tools/splunk.py` 把调查意图翻译成查询规格与 SPL
-- 最终通过 Splunk REST API 执行真实查询，并返回摘要与样本事件
-
-当前 `src/tools` 只保留一个 MCP server：`src/tools/splunk.py`。`Executor` 不再依赖标题关键词硬编码挑工具，而是读取当前可用 MCP tools 的描述、用途与限制，用 LLM 做一次内置工具选择，然后调用被选中的 tool。
-
-### Splunk 工具最小调用示例
-
-结构化查询：
-
-```python
-from src.tools import SplunkSearchTool
-
-tool = SplunkSearchTool()
-result = tool.search(
-    spec={
-        "dataset": "botsv1",
-        "sourcetype": "WinEventLog:Security",
-        "keywords": ["failed login"],
-        "ip": "11.22.33.44",
-        "limit": 5,
-        "fields": ["_time", "host", "user", "src"],
-    }
-)
+```bash
+uv run python tests/test_splunk_ttt_integration.py
+uv run python tests/test_multi_agent_loop.py --timeout 240 --target-rounds 2
 ```
 
-自然语言调查意图：
+多轮烟雾脚本会创建测试数据库、启动角色进程并轮询闭环状态；可用 `--show-process-logs` 查看角色日志。
 
-```python
-from src.tools import SplunkSearchTool
+## 目录导航
 
-tool = SplunkSearchTool()
-spec = tool.interpret_intent(
-    "查询 botsv1 中和 11.22.33.44 相关的失败登录日志",
-    dataset="botsv1",
-)
-query = tool.build_query(spec)
-result = tool.search(spec=spec)
+```text
+SOCTraceAgent/
+├── main.py                         # 一体启动 / 单角色 / Web / 初始化入口
+├── src/
+│   ├── agent/                      # Planner、Executor、Reviewer、LLM 与限流
+│   ├── workflow/                   # 本地流程装配、角色记忆视图
+│   ├── schema/                     # Event、TTT、版本化 updates、Execution、Review
+│   ├── memory/
+│   │   ├── working_memory/         # SQLite TTT 快照
+│   │   └── longterm_memory/        # SM / EM / PM 快照、构建、Neo4j 导入
+│   ├── tools/                      # MCP 注册与 Splunk 查询
+│   ├── benchmarks/
+│   │   ├── excytin_bench/          # 同步 workflow、SecGym 适配、自有 runner
+│   │   └── external_agents/        # CLI 代理、MCP、批量评测与分析
+│   ├── storage/                    # SQLite 业务状态
+│   ├── messaging/                  # 结构化消息与消息总线
+│   └── webapp/                     # Flask + Socket.IO、模板与静态资源
+├── external_agents/                # 基线安装脚本、版本与本地运行目录
+├── docker/                         # ExCyTIn MySQL 与 Neo4j 部署
+├── data/                           # BOTS 配置与本地外部数据
+├── tests/                          # 离线用例、真实服务集成与烟雾脚本
+├── docs/                           # 研究记录和架构材料
+└── runtime/                        # 本地数据库、日志与测评产物（不提交）
 ```
 
-## 已实现能力
+通信协议见 [src/messaging/README.md](src/messaging/README.md)。
 
-- 三角色运行时拆分清晰
-- 基于 SQLite 的跨进程共享状态
-- Web 首页和 war room 界面
-- 基于 Socket.IO 的实时消息推送
-- TTT 版本化快照
-- 节点领取与状态推进
-- 执行结果持久化
-- 轮次复盘持久化
-- 结构化消息留痕
-- 独立的多轮闭环测试脚本
-- LLM 结果校验与失败显式落库
+## 当前边界
 
-## 当前局限
-
-- 没有真实外部工具接入
-- 没有统一的 supervisor 管理三个角色进程
-- SQLite 适合单机原型，不适合复杂并发和分布式部署
-- `Executor` 的工具选择仍是规则驱动占位实现
-- 测试脚本是终端脚本，不是标准 `pytest` 用例
-- 当前 Web 层没有用户认证、权限和持久会话管理
-- 当前实时推送基于本地 SQLite watcher，不是消息队列架构
-
-## 后续建议
-
-- 为 `Executor` 接入真实日志检索、资产查询、威胁情报工具
-- 为 `Planner` / `Reviewer` 增加更稳定的输出约束与校验
-- 为 war room 增加更细粒度的 TTT 可视化和节点 drill-down
-- 增加数据库快照查看和回放工具
-- 增加标准化测试覆盖，而不只依赖烟雾测试
-- 如果后续需要更稳定的实时推送，再把当前 watcher 扩展成消息队列或事件流架构
-
-## 相关文件
-
-- 入口：[main.py](/d:/Research/SOCAgent/main.py)
-- Web 服务：[src/webapp/server.py](/d:/Research/SOCAgent/src/webapp/server.py)
-- 首页模板：[src/webapp/templates/index.html](/d:/Research/SOCAgent/src/webapp/templates/index.html)
-- War Room 模板：[src/webapp/templates/warroom.html](/d:/Research/SOCAgent/src/webapp/templates/warroom.html)
-- 多轮测试：[tests/test_multi_agent_loop.py](/d:/Research/SOCAgent/tests/test_multi_agent_loop.py)
-- 通信设计：[src/messaging/README.md](/d:/Research/SOCAgent/src/messaging/README.md)
-- Planner：[src/agent/planner.py](/d:/Research/SOCAgent/src/agent/planner.py)
-- Executor：[src/agent/executor.py](/d:/Research/SOCAgent/src/agent/executor.py)
-- Reviewer：[src/agent/reviewer.py](/d:/Research/SOCAgent/src/agent/reviewer.py)
+- 本项目是单机研究原型；SQLite 共享状态与 watcher 尚不面向分布式调度。
+- 一体启动使用后台线程，分进程运行仍需自行管理进程生命周期。
+- Web 尚无用户认证与权限控制，默认用于本地调试。
+- 本地调查的真实工具集中于 Splunk；资产查询、威胁情报等能力尚未接入。
+- 外部数据、数据库服务和原生 CLI 需要单独准备；`uv sync` 只安装 Python 项目依赖。
+- 原生 CLI 基线使用统一代理、工具和预算约束，比较结果需同时报告这些条件以及各框架是否使用长期记忆。

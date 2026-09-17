@@ -168,3 +168,35 @@ def test_metrics_count_schema_errors_and_immediate_repairs() -> None:
     assert metrics["schema_error_count"] == 1
     assert metrics["immediate_repair_rate"] == 1.0
     assert metrics["containment_match_rate"] == 1.0
+
+
+def test_parallel_runner_limits_workers_and_preserves_all_results(tmp_path: Path) -> None:
+    from threading import Barrier, Lock
+
+    barrier = Barrier(3)
+    lock = Lock()
+    active = 0
+    peak = 0
+
+    class ConcurrentExecutor(FakeExecutor):
+        def execute(self, sql: str):
+            nonlocal active, peak
+            with lock:
+                active += 1
+                peak = max(peak, active)
+            try:
+                barrier.wait(timeout=5)
+                return super().execute(sql)
+            finally:
+                with lock:
+                    active -= 1
+
+    cases = [BenchmarkCase('incident_5', i, {'context': 'test', 'question': 'question', 'answer': 'answer-1'}) for i in range(6)]
+    runner = ExcytinBenchmarkRunner(output_dir=tmp_path, workers=3, llm_eval=False,
+        workflow_factory=FakeWorkflow, executor_factory=lambda _: ConcurrentExecutor())
+    run_dir, metrics = runner.run(cases, seed=1)
+    assert peak == 3
+    assert metrics['completed_count'] == 6
+    results = [json.loads(line) for line in (run_dir / 'results.jsonl').read_text().splitlines()]
+    assert {r['case_id'] for r in results} == {c.case_id for c in cases}
+    assert len(list((run_dir / 'cases').glob('*.json'))) == 6

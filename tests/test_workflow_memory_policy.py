@@ -202,6 +202,7 @@ def test_executor_hands_off_after_one_l3_per_round() -> None:
             TracebackTaskTree(
                 event_id=event.event_id,
                 round_id=event.current_round,
+                next_task_id="1-1-1",
                 root_nodes=(
                     TTTNode(
                         node_id="1",

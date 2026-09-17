@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import replace, dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, ClassVar
@@ -14,6 +14,7 @@ import sqlglot
 from src.agent.llm import call_llm, parse_yaml_response
 from src.agent.planner import PLANNER_SYSTEM_PROMPT
 from src.agent.reviewer import REVIEWER_SYSTEM_PROMPT
+from src.schema.ttt_updates import apply_updates, parse_initial, next_task, change_node, resolved
 from src.schema import Event, RoundReview, TracebackTaskTree, TTTNode, TTTNodeStatus
 from src.workflow.context import MemoryContextService
 
@@ -61,8 +62,13 @@ class BenchmarkExecution:
     observation_truncated: bool = False
     original_observation_chars: int = 0
 
+    @property
+    def execution_id(self) -> str:
+        return f"E{self.step_no}"
+
     def to_dict(self) -> dict[str, Any]:
         return {
+            "execution_id": self.execution_id,
             "step_no": self.step_no,
             "node_id": self.node_id,
             "node_title": self.node_title,
@@ -130,7 +136,15 @@ class ReadOnlySQLValidator:
             raise ValueError(
                 f"SQL statement type is not allowed: {prefix or 'unknown'}"
             )
-        if cls._FORBIDDEN.search(normalized):
+        # Inspect SQL tokens, not log values: command-line evidence may contain
+        # words such as SET or DELETE inside a quoted string literal.
+        tokens = sqlglot.Dialect.get_or_raise("mysql").tokenize(normalized)
+        literal_types = {"STRING", "NATIONAL_STRING", "RAW_STRING", "UNICODE_STRING", "HEX_STRING", "BIT_STRING", "BYTE_STRING"}
+        inspected = normalized
+        for token in reversed(tokens):
+            if token.token_type.name in literal_types:
+                inspected = inspected[:token.start] + " " + inspected[token.end + 1:]
+        if cls._FORBIDDEN.search(inspected):
             raise ValueError("SQL contains a forbidden operation")
         try:
             expressions = sqlglot.parse(normalized, read="mysql")
@@ -142,21 +156,36 @@ class ReadOnlySQLValidator:
 
 
 _EXECUTOR_PROMPT = """
-你是 ExCyTIn-Bench 调查流程中的 Executor。你一次只处理一个 TTT L3 节点，并生成一条交给外部环境执行的 MySQL 查询。
+你是 ExCyTIn-Bench 调查流程中的 Executor。
 
-边界：
-- 首次构造当前 L3 的 SQL 时，只使用 Workflow 提供的 Semantic Memory，不参考 Episodic Memory。
-- 当前 L3 的上一条 SQL 返回数据库 error 或空结果时，Workflow 才会提供按失败现象检索到的 Episodic Memory，用于修复 SQL。
-- Semantic Memory 是表名、字段名和连接关系的硬约束。
-- Schema 中存在字段不代表每条记录都会填充该字段；空结果后不得继续假设多个实体一定共处于同一行。
-- 告警名称和类别优先参考 AlertInfo；告警受影响实体、人工分配、自动调查和处置元数据优先参考 SecurityAlert 的 CompromisedEntity 与 ExtendedProperties；AlertEvidence 通过 AlertId 提供结构化证据实体。
-- Episodic Memory 只用于参考脱敏查询结构和错误修复，不是当前案件证据。
-- 不得使用 Procedural Memory，不得改变调查方向，不得生成最终答案。
-- 只能生成一条只读 SQL；查询结果尚未返回时不得臆测结果。
+## 角色定位
+将 Workflow 指定的一个 TTT L3 任务转化为一条交给外部环境执行的 MySQL 查询。
 
-只输出 YAML：
+## 输入信息
+- 原始问题、当前 L3 节点和已有执行记录。
+- Workflow 提供的 Semantic Memory。
+- 仅在当前 L3 上一条 SQL 返回数据库 error 或空结果时提供的 Episodic Memory。
+
+## 工作流程
+1. 理解当前 L3 所需证据，根据 Semantic Memory 选择表字段与合法连接键。
+2. 首次查询仅使用 Semantic Memory；修复时结合真实 error/空结果及已提供的 Episodic Memory。
+3. 输出一条只读 SQL，等待外部环境返回真实结果。
+
+## 约束条件
+- 不使用 Procedural Memory，不改变调查方向、不修改 TTT、不生成最终答案。
+- Semantic Memory 是表名、字段名和连接关系的硬约束；Episodic Memory 仅供参考查询结构和修复方式，不是案件证据。
+- 字段存在不代表每条记录都有值；空结果后不能继续假设多个实体一定共处于同一行。
+- 告警名称与类别优先参考 AlertInfo；受影响实体、人工分配、自动调查与处置元数据优先参考 SecurityAlert 的 CompromisedEntity 和 ExtendedProperties；AlertEvidence 通过 AlertId 提供结构化证据实体。
+- 只生成一条 MySQL 只读语句，不执行写入、多语句或副作用操作；结果返回前不臆测结果。
+
+## 输出格式
+只输出一个合法 YAML 对象，不使用 Markdown 代码围栏或额外说明。
+response_type 固定为 EXECUTE_SQL；sql 为包含一条 MySQL 只读语句的字符串。
+不要输出普通 Executor 的 execution/parameters 嵌套结构。
+
+## 输出示例
 response_type: EXECUTE_SQL
-sql: "一条 MySQL 只读语句"
+sql: "SELECT AlertId FROM AlertEvidence LIMIT 5;"
 """.strip()
 
 
@@ -339,6 +368,10 @@ class ExcytinBenchWorkflow:
             original_observation_chars=len(raw_observation),
         )
         state.executions.append(execution)
+        current = self._find_node(state.ttt, node.node_id)
+        state.ttt = change_node(state.ttt, node.node_id,
+            evidence_refs=(*current.evidence_refs, execution.execution_id),
+            result_summary=f"{result_status}; observation_truncated={observation_truncated}")
         self._record_trace(
             "observation_received",
             {"execution": execution.to_dict()},
@@ -417,11 +450,21 @@ class ExcytinBenchWorkflow:
         )
         self._log_retrieval("reviewer", reviewer_context)
         review = self._review(execution, reviewer_context)
+        state.ttt = change_node(state.ttt, node.node_id,
+            result_summary="; ".join(review["findings"] + review["gaps"]) or result_status)
         state.reviews.append(review)
         self._record_trace("review_completed", {"review": review})
         state.ready_to_submit = review["decision"] == "ready_to_submit"
         state.cannot_continue = review["decision"] == "cannot_continue"
 
+        if state.ready_to_submit or state.cannot_continue:
+            root = state.ttt.root_nodes[0]
+            state.ttt = change_node(state.ttt, root.node_id,
+                status=TTTNodeStatus.RESOLVED if state.ready_to_submit else TTTNodeStatus.BLOCKED,
+                result_summary="; ".join(review["answer_facts"] + review["findings"] + review["gaps"]) or review["decision"],
+                evidence_refs=tuple(e.execution_id for e in state.executions))
+            state.ttt = replace(state.ttt, next_task_id=None)
+        state.ttt_history.append(state.ttt.to_dict())
         budget_exhausted = state.actions_issued >= self.max_steps - 1
         if state.ready_to_submit or state.cannot_continue or budget_exhausted:
             reason = (
@@ -473,8 +516,23 @@ class ExcytinBenchWorkflow:
             or state.actions_issued >= self.max_steps - 1
         )
         node = self._next_todo_leaf(state.ttt)
-        if should_submit or node is None:
+        if should_submit:
             return self._issue_submit()
+        if node is None:
+            if state.ttt.root_nodes[0].status == TTTNodeStatus.BLOCKED:
+                state.cannot_continue = True
+                return self._issue_submit()
+            if resolved(state.ttt):
+                state.ready_to_submit = True
+                return self._issue_submit()
+            gap_review = RoundReview(event_id=state.event.event_id, round_id=state.ttt.round_id,
+                gaps=("目标未解决且没有可执行 L3，请展开下一步或明确阻塞原因。",))
+            context = self._planner_memory.build(state.event, review=gap_review, ttt=state.ttt)
+            self._log_retrieval("planner", context)
+            state.ttt = self._replan(state.ttt, gap_review, context)
+            state.ttt_history.append(state.ttt.to_dict())
+            self._record_trace("ttt_updated", {"ttt": state.ttt.to_dict()})
+            return self.propose_next_action()
 
         state.ttt = self._set_node_status(
             state.ttt, node.node_id, TTTNodeStatus.IN_PROGRESS
@@ -556,7 +614,7 @@ class ExcytinBenchWorkflow:
     ) -> TracebackTaskTree:
         prompt = "\n".join(
             [
-                "请为以下 ExCyTIn-Bench 调查问题生成完整三层 TTT，只返回 YAML。",
+                "请为以下 ExCyTIn-Bench 调查问题初始化最小 TTT，仅展开当前必要任务，只返回 YAML。",
                 "Planner 只能使用已过滤的 Procedural Memory 和 Semantic Memory；不要生成 SQL。",
                 json.dumps(
                     {"workflow_memory_context": planner_context},
@@ -591,7 +649,7 @@ class ExcytinBenchWorkflow:
         state = self._require_state()
         prompt = "\n".join(
             [
-                "根据真实 SQL 结果的 Review 更新完整三层 TTT，只返回 YAML。",
+                "根据真实 SQL 结果的 Review 输出带 base_version 的局部 updates 和 next_task_id，只返回 YAML。",
                 "保持已完成节点；只规划方向和 L3 证据目标，不生成 SQL。",
                 json.dumps(
                     {"workflow_memory_context": planner_context},
@@ -600,6 +658,7 @@ class ExcytinBenchWorkflow:
                 ),
                 json.dumps(current_ttt.to_dict(), ensure_ascii=False, indent=2),
                 json.dumps(review.to_dict(), ensure_ascii=False, indent=2),
+                json.dumps({"executions": [e.to_dict() for e in state.executions]}, ensure_ascii=False),
             ]
         )
         next_round = current_ttt.round_id + 1
@@ -607,17 +666,11 @@ class ExcytinBenchWorkflow:
             "planner",
             PLANNER_SYSTEM_PROMPT,
             prompt,
-            validator=lambda value: self._parse_ttt(
-                value,
-                state.event.event_id,
-                round_id=next_round,
-            ),
+            validator=lambda value: apply_updates(current_ttt, value, round_id=next_round,
+                known_evidence=[e.execution_id for e in state.executions]),
         )
-        return self._parse_ttt(
-            parsed,
-            state.event.event_id,
-            round_id=next_round,
-        )
+        return apply_updates(current_ttt, parsed, round_id=next_round,
+            known_evidence=[e.execution_id for e in state.executions])
 
     def _generate_sql(self, node: TTTNode, executor_context: Mapping[str, Any]) -> str:
         state = self._require_state()
@@ -687,7 +740,8 @@ class ExcytinBenchWorkflow:
         prompt = "\n".join(
             [
                 "请根据原始问题和当前 L3 的真实执行结果判断应提交答案还是继续调查，只返回 YAML。",
-                "Semantic Memory 只用于解释表和字段，不能作为当前案件证据。",
+                "Semantic Memory 只用于解释表和字段，不能作为当前案件证据。任务 done 不等于问题解决，空结果不能否定假设。明确 findings/gaps 和原始问题是否已有充分证据。",
+                json.dumps({"ttt": state.ttt.to_dict(), "executions": [e.to_dict() for e in state.executions]}, ensure_ascii=False),
                 json.dumps(
                     {"question": state.initial_input}, ensure_ascii=False, indent=2
                 ),
@@ -922,145 +976,19 @@ class ExcytinBenchWorkflow:
         payload = parsed.get("ttt") or parsed.get("tree")
         if not isinstance(payload, Mapping):
             raise TypeError("Planner response is missing ttt/tree")
-        roots = payload.get("root_nodes") or payload.get("nodes") or []
-        if not isinstance(roots, list) or not roots:
-            raise ValueError("Planner returned an empty TTT")
-        root_nodes = tuple(
-            cls._parse_node(item, path=str(index), depth=1)
-            for index, item in enumerate(roots, start=1)
-        )
-        tree = TracebackTaskTree(
-            event_id=event_id,
-            round_id=round_id,
-            root_nodes=root_nodes,
-        )
-        if cls._next_todo_leaf(tree) is None and not cls._all_leaves_terminal(tree):
-            raise ValueError("Planner TTT has no executable L3 node")
-        return tree
+        return parse_initial(payload, event_id, round_id)
 
-    @classmethod
-    def _parse_node(cls, value: Any, *, path: str, depth: int) -> TTTNode:
-        if not isinstance(value, Mapping):
-            raise TypeError(f"TTT node {path} is not an object")
-        children_raw = value.get("children") or []
-        if not isinstance(children_raw, list):
-            raise TypeError(f"TTT node {path} children must be a list")
-        if depth == 2:
-            children_raw = [
-                leaf
-                for child in children_raw
-                for leaf in cls._terminal_ttt_payloads(child, path=path)
-            ]
-        if depth >= 3 and children_raw:
-            raise ValueError("TTT must contain exactly three levels")
-        if depth < 3 and not children_raw:
-            raise ValueError(f"TTT node {path} ends before L3")
-        children = tuple(
-            cls._parse_node(
-                child,
-                path=f"{path}-{index}",
-                depth=depth + 1,
-            )
-            for index, child in enumerate(children_raw, start=1)
-        )
-        try:
-            status = TTTNodeStatus(str(value.get("status") or TTTNodeStatus.TODO.value))
-        except ValueError:
-            status = TTTNodeStatus.TODO
-        return TTTNode(
-            node_id=path,
-            title=str(value.get("title") or path),
-            status=status,
-            children=children,
-            metadata={},
-        )
-
-    @classmethod
-    def _terminal_ttt_payloads(cls, value: Any, *, path: str) -> list[Mapping[str, Any]]:
-        """Flatten an over-nested Planner branch into executable L3 leaves."""
-
-        if not isinstance(value, Mapping):
-            raise TypeError(f"TTT node below {path} is not an object")
-        children = value.get("children") or []
-        if not isinstance(children, list):
-            raise TypeError(f"TTT node below {path} children must be a list")
-        if not children:
-            return [value]
-        return [
-            leaf
-            for child in children
-            for leaf in cls._terminal_ttt_payloads(child, path=path)
-        ]
-
-    @staticmethod
-    def _next_todo_leaf(tree: TracebackTaskTree) -> TTTNode | None:
-        def walk(node: TTTNode) -> TTTNode | None:
-            if not node.children:
-                return node if node.status == TTTNodeStatus.TODO else None
-            for child in node.children:
-                found = walk(child)
-                if found is not None:
-                    return found
-            return None
-
-        for root in tree.root_nodes:
-            found = walk(root)
-            if found is not None:
-                return found
-        return None
-
-    @staticmethod
-    def _all_leaves_terminal(tree: TracebackTaskTree) -> bool:
-        def terminal(node: TTTNode) -> bool:
-            if not node.children:
-                return node.status in {TTTNodeStatus.DONE, TTTNodeStatus.NOT_APPLICABLE}
-            return all(terminal(child) for child in node.children)
-
-        return all(terminal(root) for root in tree.root_nodes)
+    _next_todo_leaf = staticmethod(next_task)
+    _all_leaves_terminal = staticmethod(resolved)
 
     @staticmethod
     def _find_node(tree: TracebackTaskTree, node_id: str) -> TTTNode | None:
-        def walk(node: TTTNode) -> TTTNode | None:
-            if node.node_id == node_id:
-                return node
-            for child in node.children:
-                found = walk(child)
-                if found is not None:
-                    return found
-            return None
-
-        for root in tree.root_nodes:
-            found = walk(root)
-            if found is not None:
-                return found
-        return None
+        from src.schema.ttt_updates import walk
+        return next((n for n, _ in walk(tree) if n.node_id == node_id), None)
 
     @staticmethod
-    def _set_node_status(
-        tree: TracebackTaskTree, node_id: str, status: TTTNodeStatus
-    ) -> TracebackTaskTree:
-        def update(node: TTTNode) -> TTTNode:
-            node_status = status if node.node_id == node_id else node.status
-            children = tuple(update(child) for child in node.children)
-            if children and all(
-                child.status in {TTTNodeStatus.DONE, TTTNodeStatus.NOT_APPLICABLE}
-                for child in children
-            ):
-                node_status = TTTNodeStatus.DONE
-            return TTTNode(
-                node_id=node.node_id,
-                title=node.title,
-                status=node_status,
-                children=children,
-                metadata=dict(node.metadata),
-            )
-
-        return TracebackTaskTree(
-            event_id=tree.event_id,
-            round_id=tree.round_id,
-            root_nodes=tuple(update(root) for root in tree.root_nodes),
-            created_at=tree.created_at,
-        )
+    def _set_node_status(tree: TracebackTaskTree, node_id: str, status: TTTNodeStatus) -> TracebackTaskTree:
+        return change_node(tree, node_id, status=status)
 
 
 __all__ = [
