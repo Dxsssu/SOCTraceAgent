@@ -108,3 +108,43 @@ OpenCode 配置还拒绝其他工具，Qwen 禁用核心文件和 Shell 工具�
 `progress.json` 记录进度，`analysis.md` / `analysis.json` 汇总配对结果和成本。
 论文 Baseline 依赖实验环境的 `ag2==0.14.0` 和 `azure-ai-inference==1.0.0b9`；
 这是原仓库兼容依赖，不能替换为不提供 `autogen` 导入的 AG2 1.x。
+
+## Ollama Qwen3-32B：关闭思考，论文 Agent 10 题
+
+保持到远端 Ollama 的端口转发开启，并确保本地 ExCyTIn MySQL 容器运行。
+在项目根目录执行（当前实验环境已安装论文 Agent 所需的 AG2/Azure 依赖）：
+
+```bash
+.venv/bin/python -m src.benchmarks.external_agents.ollama_paper \
+  --base-url http://127.0.0.1:11434 \
+  --model qwen3:32b \
+  --sample-size 10 --seed 42 \
+  --max-steps 25 --num-ctx 32768 \
+  --judge-model DeepSeek-V4.1-Flash \
+  --output runtime/excytin_bench/qwen3_32b_no_think_reset_10
+```
+
+- 串行执行，终端进度条显示题数、当前动作/LLM 调用及裁判阶段。
+- 保留论文原版 BaselineAgent 的提示词选择、历史与解析逻辑，仅替换传输。
+  每题创建后调用官方 `reset()`（初始 cache_seed=41），使 Qwen3 使用 reset 后的
+  `O1_PROMPT`。manifest 记录初始化版本，拒绝与旧的未 reset 实验混用输出目录。
+  原仓库 Qwen3 解析器仍优先寻找 `<answer>`，对标准 `Action:` 可能触发其原有
+  格式修复调用；这里保留这一官方行为，不另改解析器。
+  每次发送模型请求时在最新用户消息末尾追加 `/no_think`，并通过 Ollama
+  原生 `/api/chat` 设置 `think: false`，避免兼容接口忽略关闭思考参数。
+  `Thought:` 调查理由仍是论文 Agent 的输出格式，与模型隐藏思考模式不同。
+- 32K 上下文，单条回答最多 4096 tokens；默认每请求 180 秒、每题 600 秒软上限
+  （调用间检查，最后一个在途请求可能超出）。题目为完整 test 集 seed=42 抽样，
+  与前几轮的 10 题相同。每题最多 24 次 SQL 尝试加一次提交。
+- 裁判使用根目录 `.env` 中的 ParaTera 地址/密钥，模型单独指定；SQL 密码自动从
+  `docker/excytin-mysql/.env` 加载。不会改写全局模型配置。
+- 直接复用论文 evaluator 的提示词、reflection 和 reward 算法；当前 DeepSeek 裁判
+  与论文 GPT-4o 不同，不应作为官方可比成绩。统计包含总/平均 reward、正确率、
+  SQL 成功次数、调查耗时以及调查/裁判 token 用量。
+- 输出 `summary.md`、`summary.json`、`manifest.json`、`progress.json`、`run.log`，
+  `cases/<case>/result.json` 保存逐题轨迹与评分，`llm.jsonl` 保存实际带 `/no_think`
+  的请求与模型输出。
+- 相同命令重新执行会复用已有调查，裁判失败可补评；不会自动重跑调查失败或中断
+  的题目，避免覆盖失败记录。完整新实验请更换 `--output` 目录。
+- API/数据库异常、思考未关闭、裁判解析失败均不会冒充 0 分；有未评分题目时，
+  整体 reward 为 `null`，进程非零退出。正常耗尽动作预算但未提交计 0 分。
