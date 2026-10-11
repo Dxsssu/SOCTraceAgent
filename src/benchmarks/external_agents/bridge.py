@@ -12,16 +12,32 @@ from src.agent.rate_limit import get_rate_limiter
 from src.benchmarks.excytin_bench.workflow import ReadOnlySQLValidator
 
 
+def thinking_parameters(config: LLMConfig, *, force_thinking=True):
+    """GLM-5.3 models require reasoning, including when used as the judge."""
+    if config.model.lower() in {'glm-5.3', 'glm-5.3-flash', 'glm-5.3-flashx'}:
+        effort = config.reasoning_effort
+        if effort not in {'low', 'high', 'max'}:
+            raise ValueError('GLM-5.3 reasoning_effort must be low, high, or max')
+        return {'thinking': {'type': 'enabled'}, 'reasoning_effort': effort}
+    return {'thinking': {'type': 'disabled'}} if force_thinking else {}
+
+
 class Bridge:
-    def __init__(self, executor, config: LLMConfig, max_steps=25, max_llm_calls=100):
-        if max_steps < 2 or max_llm_calls < 1:
-            raise ValueError("max_steps >= 2 and max_llm_calls >= 1 required")
+    def __init__(self, executor, config: LLMConfig, max_steps=25, max_llm_calls=0,
+                 *, force_thinking=True):
+        if max_steps < 1 or max_llm_calls < 0:
+            raise ValueError("max_steps >= 1 and max_llm_calls >= 0 required")
         self.executor, self.config = executor, config
         self.max_steps, self.max_llm_calls = max_steps, max_llm_calls
         self.token = secrets.token_urlsafe(32)
         self.actions, self.usage = [], []
         self.answer = None
         self.calls = 0
+        self.force_thinking = force_thinking
+        self.finished = threading.Event()
+        self.ended_at = None
+        self.terminal_reason = None
+        self.post_terminal_usage = []
         self.lock = threading.Lock()
         self.app = Flask(__name__)
         self.app.add_url_rule('/execute_sql', view_func=self.execute_sql, methods=['POST'])
@@ -35,10 +51,8 @@ class Bridge:
 
     def execute_sql(self):
         with self.lock:
-            if self.answer is not None:
-                return jsonify(error='Answer already submitted')
-            if len(self.actions) >= self.max_steps - 1:
-                return jsonify(error='Query budget exhausted. Submit your best answer now.')
+            if self.finished.is_set():
+                return jsonify(error='Episode ended', done=True), 409
             sql = str(request.get_json().get('sql', ''))
             started = time.monotonic()
             try:
@@ -49,22 +63,50 @@ class Bridge:
             action = dict(type='execute_sql', sql=sql, observation=observation,
                           success=success, row_count=rows, elapsed_seconds=time.monotonic()-started)
             self.actions.append(action)
-            return jsonify(**action, queries_remaining=self.max_steps-1-len(self.actions))
+            if len(self.actions) >= self.max_steps:
+                self._finish('budget_exhausted')
+            # Return only the environment observation to the CLI. Accounting and
+            # row counts stay in the trace, like ExcytinEnv.step's separate info.
+            return jsonify(observation=observation)
 
     def submit_answer(self):
         with self.lock:
-            if self.answer is not None:
-                return jsonify(error='Answer already submitted')
+            if self.finished.is_set():
+                return jsonify(error='Episode ended', done=True), 409
             answer = request.get_json().get('answer')
-            if not isinstance(answer, str) or not answer.strip():
-                return jsonify(error='Answer must be a nonempty string')
-            self.answer = answer.strip()
+            if not isinstance(answer, str):
+                return jsonify(error='Answer must be a string'), 400
+            self.answer = answer
             self.actions.append(dict(type='submit_answer', answer=self.answer))
+            self._finish('submitted')
             return jsonify(submitted=True)
+
+    def _finish(self, reason):
+        """Caller holds lock. Submission and the Nth action are both terminal."""
+        if not self.finished.is_set():
+            if reason == 'no_submission' and any(
+                'error_status' in item or 'error_type' in item for item in self.usage
+            ):
+                reason = 'error'
+            self.terminal_reason = reason
+            self.ended_at = time.monotonic()
+            self.finished.set()
+
+    def finish(self, reason):
+        with self.lock:
+            self._finish(reason)
+
+    def record_usage(self, usage):
+        with self.lock:
+            target = self.post_terminal_usage if self.finished.is_set() else self.usage
+            target.append(usage)
 
     def chat(self):
         with self.lock:
-            if self.calls >= self.max_llm_calls:
+            if self.finished.is_set():
+                return jsonify(error={'message': 'Episode ended'}), 409
+            if self.max_llm_calls and self.calls >= self.max_llm_calls:
+                self._finish('llm_limit')
                 return jsonify(error={'message': 'LLM call budget exhausted'}), 429
             self.calls += 1
         body = request.get_json()
@@ -72,7 +114,7 @@ class Bridge:
         body.pop('stream_options', None)
         body['model'] = self.config.model
         body['temperature'] = 0
-        body['thinking'] = {'type': 'disabled'}
+        body.update(thinking_parameters(self.config, force_thinking=self.force_thinking))
         # Restrict exposed model tools to the benchmark MCP interface. Cline
         # uses a generic MCP dispatcher; Qwen may need tool_search discovery.
         if 'tools' in body:
@@ -84,25 +126,30 @@ class Bridge:
                 body.pop('tool_choice', None)
         limiter = get_rate_limiter()
         reservation = limiter.acquire(len(json.dumps(body).encode()) + 16384)
+        # A concurrent tool call may have ended the episode while this request
+        # was waiting for quota. Do not send it upstream after termination.
+        if self.finished.is_set():
+            limiter.finish(reservation, 0)
+            return jsonify(error={'message': 'Episode ended'}), 409
         usage = None
         try:
             with httpx.Client(timeout=self.config.request_timeout_seconds) as client:
                 response = client.post(self.config.base_url.rstrip('/')+'/chat/completions',
                     headers={'Authorization': 'Bearer '+self.config.api_key}, json=body)
             if response.status_code != 200:
-                self.usage.append({'error_status': response.status_code})
+                self.record_usage({'error_status': response.status_code})
                 return jsonify(error={'message': 'Upstream model request failed', 'status': response.status_code}), 502
             result = response.json()
             usage = result.get('usage', {})
-            self.usage.append(usage)
+            self.record_usage(usage)
         except Exception as exc:
-            self.usage.append({'error_type': type(exc).__name__})
+            self.record_usage({'error_type': type(exc).__name__})
             return jsonify(error={'message': type(exc).__name__}), 502
         finally:
             limiter.finish(reservation, usage.get('total_tokens') if usage else None)
         if not stream:
             return jsonify(result)
-        # Buffer one completion, then expose valid SSE chunks to all three CLIs.
+        # Buffer one completion, then expose valid SSE chunks to the native CLIs.
         events = []
         base = {k: result[k] for k in ('id', 'created', 'model') if k in result}
         base['object'] = 'chat.completion.chunk'
@@ -117,6 +164,8 @@ class Bridge:
 
     def __enter__(self):
         self.server = make_server('127.0.0.1', 0, self.app, threaded=True)
+        # server_close joins in-flight handlers, preserving their final usage.
+        self.server.daemon_threads = False
         self.url = f'http://127.0.0.1:{self.server.server_port}'
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()

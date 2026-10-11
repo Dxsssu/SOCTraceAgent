@@ -210,7 +210,7 @@ cases/*.json        # action / observation、TTT、Review、记忆命中
 
 ## 外部 Agent 基线
 
-[external_agents](external_agents/README.md) 管理 OpenCode、Qwen Code、Cline 的原生 CLI 安装、版本和实验结果。它们通过统一 MCP 接口执行只读 SQL、提交答案，不注入本项目的 SM / PM / EM。
+[external_agents](external_agents/README.md) 管理 OpenCode、Qwen Code、Cline、Pi 的原生 CLI 安装、版本和实验结果。它们通过统一 MCP 接口执行只读 SQL、提交答案，不注入本项目的 SM / PM / EM。
 
 除 Python 环境外，需要 Node.js **22+**、npm、Git，以及对应题目和 MySQL 数据：
 
@@ -221,7 +221,7 @@ uv run python -m src.benchmarks.external_agents.runner \
   --workers 3 --max-steps 25 --llm-eval
 ```
 
-外部 CLI runner 不传 `--llm-eval` 时默认不调用裁判。每题使用独立会话和临时配置，模型请求通过本地兼容代理。批量入口 `src.benchmarks.external_agents.batch` 支持三个 CLI、论文 `BaselineAgent` 和 SOCTraceAgent 的五框架配对实验，`src.benchmarks.external_agents.analyze` 汇总结果与成本。版本条件、论文额外依赖和断点复用规则见[基线文档](external_agents/README.md)。
+外部 CLI runner 默认使用论文官方 evaluator，裁判默认复用调查模型的 DeepSeek 配置，`--no-llm-eval` 可关闭评分。默认全量测试集，每题 25 个总动作（查询和提交各计一步，达到上限立即结束），可用 `--max-steps 15`。每题使用独立会话和临时配置。批量入口 `src.benchmarks.external_agents.batch` 支持四个 CLI、论文 `BaselineAgent` 和 SOCTraceAgent 的六框架配对实验；默认全量，也可显式 `--per-incident` 抽样。分析会区分评分失败和 0 分。新协议拒绝混用旧实验目录。版本条件、论文额外依赖和断点复用规则见[基线文档](external_agents/README.md)。
 
 ## 配置参考
 

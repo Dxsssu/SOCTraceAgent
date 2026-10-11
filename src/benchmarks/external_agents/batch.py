@@ -1,4 +1,4 @@
-"""Paired five-agent experiment, resumable per case; no train/test mixing."""
+"""Paired multi-agent experiment, resumable per case; no train/test mixing."""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -16,11 +16,13 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from src.agent.llm import LLMConfig
 from src.benchmarks.excytin_bench.runner import (
-    PROJECT_ROOT, INCIDENT_PORTS, load_test_cases, MySQLQueryExecutor,
-    deterministic_evaluation, llm_judge_evaluation,
+    PROJECT_ROOT, INCIDENT_PORTS, load_test_cases,
+    deterministic_evaluation,
 )
 from src.benchmarks.excytin_bench.workflow import ExcytinBenchWorkflow
 from .bridge import Bridge
+from .environment import PaperQueryExecutor as MySQLQueryExecutor
+from .evaluation import judge_config, protocol_manifest, score_case
 from .runner import AGENTS, AGENT_ROOT, run_case, write_json
 
 ALL_AGENTS = (*AGENTS, 'paper_baseline', 'ours')
@@ -32,10 +34,17 @@ def baseline_class():
     package = types.ModuleType('secgym.agents')
     package.__path__ = [str(UPSTREAM/'secgym/agents')]
     sys.modules['secgym.agents'] = package
-    return importlib.import_module('secgym.agents.baseline_agent').BaselineAgent
+    module = importlib.import_module('secgym.agents.baseline_agent')
+    # Silence only upstream diagnostic prints. Do not redirect process stdout:
+    # concurrent cases and the progress display share it. Full messages remain
+    # available through get_logging() in per-case progress/result files.
+    module.print = lambda *args, **kwargs: None
+    return module.BaselineAgent
 
 
-def select_cases(cases, n=15, seed=20260914):
+def select_cases(cases, n=None, seed=20260914):
+    if n is None:
+        return list(cases)
     chosen = []
     for incident in INCIDENT_PORTS:
         population = [c for c in cases if c.incident == incident]
@@ -50,35 +59,41 @@ def model_call(bridge, messages):
     return response.choices[0].message.content or ''
 
 
-def run_internal(name, case, output, Baseline):
-    path = output/name/case.case_id
+def run_internal(name, case, output, Baseline, *, max_steps=25, timeout=0, max_llm_calls=0,
+                 case_dir=None, stop_event=None):
+    path = case_dir if case_dir is not None else output/name/case.case_id
     path.mkdir(parents=True, exist_ok=False)
+    write_json(path/'result.json', dict(agent=name, **case.manifest_view(),
+               status='running', answer='', actions=[], usage=[]))
     executor = MySQLQueryExecutor(case.incident, password=os.environ['MYSQL_ROOT_PASSWORD'])
     config = LLMConfig.from_env()
     started = time.monotonic()
     error = ''
     workflow = None
     try:
-        with Bridge(executor, config, max_steps=25) as bridge:
+        with Bridge(executor, config, max_steps=max_steps, max_llm_calls=max_llm_calls) as bridge:
             def llm(system, user):
-                if time.monotonic()-started > 600:
-                    raise TimeoutError('Investigation exceeded 600 seconds')
+                if timeout and time.monotonic()-started > timeout:
+                    raise TimeoutError('Investigation exceeded configured timeout')
                 value = model_call(bridge, [{'role': 'system', 'content': system}, {'role': 'user', 'content': user}])
                 write_json(path/'usage.json', {'usage': bridge.usage})
                 return value
             if name == 'ours':
-                workflow = ExcytinBenchWorkflow(max_steps=25, llm=llm)
+                workflow = ExcytinBenchWorkflow(max_steps=max_steps, llm=llm)
             else:
                 class TransportBaseline(Baseline):
                     def _call_llm(self, messages):
-                        if time.monotonic()-started > 600:
-                            raise TimeoutError('Investigation exceeded 600 seconds')
+                        if stop_event is not None and stop_event.is_set():
+                            raise InterruptedError('Investigation interrupted')
+                        if timeout and time.monotonic()-started > timeout:
+                            raise TimeoutError('Investigation exceeded configured timeout')
                         value = model_call(bridge, messages)
                         write_json(path/'usage.json', {'usage': bridge.usage})
                         return value
                 workflow = TransportBaseline(config_list=[{'model': config.model, 'api_key': bridge.token,
-                    'base_url': bridge.url+'/v1', 'api_type': 'openai'}], cache_seed=None,
-                    max_steps=25, temperature=0, retry_num=1)
+                    'base_url': bridge.url+'/v1', 'api_type': 'openai'}], cache_seed=41,
+                    max_steps=max_steps, temperature=0, retry_num=1)
+                workflow.reset()
             client = bridge.app.test_client()
             headers = {'Authorization': 'Bearer '+bridge.token}
             try:
@@ -86,9 +101,12 @@ def run_internal(name, case, output, Baseline):
                     workflow.start({'context': case.question.get('context', ''), 'question': case.question['question']},
                                    runtime_info={'attack': case.incident, 'qid': case.qid, 'split': 'test'})
                 observation = f"{case.question.get('context', '')} {case.question['question']}"
-                for _ in range(25):
-                    if time.monotonic()-started > 600:
-                        raise TimeoutError('Investigation exceeded 600 seconds')
+                for _ in range(max_steps):
+                    if stop_event is not None and stop_event.is_set():
+                        bridge.finish('interrupted')
+                        break
+                    if timeout and time.monotonic()-started > timeout:
+                        raise TimeoutError('Investigation exceeded configured timeout')
                     if name == 'ours':
                         action = workflow.propose_next_action()
                         content, submit = action.content, action.submit
@@ -100,14 +118,21 @@ def run_internal(name, case, output, Baseline):
                     response = client.post('/execute_sql', headers=headers, json={'sql': content}).json
                     observation = response.get('observation', response.get('error', ''))
                     if name == 'ours':
-                        workflow.accept_observation(observation, query_success=response.get('success', False))
+                        if not bridge.finished.is_set():
+                            workflow.accept_observation(observation, query_success=bridge.actions[-1]['success'])
                     write_json(path/'progress.json', {'actions': bridge.actions, 'workflow': workflow.get_logging()})
+                    if bridge.finished.is_set():
+                        break
             except Exception as exc:
                 error = f'{type(exc).__name__}: {exc}'
+            if not bridge.finished.is_set():
+                bridge.finish('interrupted' if stop_event is not None and stop_event.is_set()
+                              else ('error' if error else 'no_submission'))
             result = dict(agent=name, **case.manifest_view(), model=config.model,
-                          status='submitted' if bridge.answer is not None else 'failed', error=error,
+                          status=bridge.terminal_reason, error=error,
                           answer=bridge.answer or '', actions=bridge.actions, usage=bridge.usage,
-                          llm_calls=bridge.calls, elapsed_seconds=time.monotonic()-started,
+                          llm_calls=bridge.calls, elapsed_seconds=bridge.ended_at-started,
+                          max_steps=max_steps, post_terminal_usage=bridge.post_terminal_usage,
                           evaluation=deterministic_evaluation(case.question.get('answer'), bridge.answer or ''),
                           workflow=workflow.get_logging())
     finally:
@@ -116,75 +141,96 @@ def run_internal(name, case, output, Baseline):
     return result
 
 
-def judge(case, result):
-    if not result.get('answer'):
-        result['llm_evaluation'] = {'llm_judge_answer_correct': False, 'llm_judge_reward': 0,
-                                  'llm_judge_answer_analysis': 'No submitted answer.'}
-        return
-    with Bridge(None, LLMConfig.from_env(), max_llm_calls=3) as bridge:
-        def llm(system, user):
-            return model_call(bridge, [{'role': 'system', 'content': system}, {'role': 'user', 'content': user}])
-        try:
-            result['llm_evaluation'] = llm_judge_evaluation(case.question, result['answer'], llm=llm)
-        except Exception as exc:
-            result['judge_error'] = f'{type(exc).__name__}: {exc}'
-        result['judge_usage'] = bridge.usage
+def judge(case, result, config=None):
+    score_case(case, result, config or judge_config())
 
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output', type=Path, required=True)
-    p.add_argument('--per-incident', type=int, default=15)
+    p.add_argument('--agents', nargs='+', choices=ALL_AGENTS,
+                   help='Defaults to all agents for a new run, or the saved manifest when resuming')
+    p.add_argument('--per-incident', type=int, help='Optional stratified subset; default is all 589 test questions')
+    p.add_argument('--max-steps', type=int, default=25)
+    p.add_argument('--timeout', type=int, default=0)
+    p.add_argument('--max-llm-calls', type=int, default=0)
+    p.add_argument('--judge-model', default=None, help='Default: same model as investigation')
     p.add_argument('--seed', type=int, default=20260914)
     p.add_argument('--workers', type=int, default=3)
     args = p.parse_args(argv)
-    if args.per_incident < 1 or args.workers < 1:
-        p.error('Counts must be positive')
+    if (args.per_incident is not None and args.per_incident < 1) or args.workers < 1 or args.max_steps < 2 or min(args.timeout, args.max_llm_calls) < 0:
+        p.error('Counts must be positive; max-steps >= 2; protection limits >= 0')
     load_dotenv(PROJECT_ROOT/'.env')
     load_dotenv(PROJECT_ROOT/'docker/excytin-mysql/.env')
     load_dotenv(PROJECT_ROOT/'docker/neo4j/.env')
-    os.environ['SOCAGENT_LTM_BACKEND'] = 'neo4j'
-    Baseline = baseline_class()
     population = load_test_cases()
+    scoring_config = judge_config(args.judge_model)
     manifest_path = args.output/'manifest.json'
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text())
+        if 'protocol' not in manifest:
+            raise ValueError('Legacy evaluation protocol; use a new output directory')
         lookup = {c.case_id: c for c in population}
         cases = [lookup[c['case_id']] for c in manifest['cases']]
+        if args.agents is not None and list(dict.fromkeys(args.agents)) != manifest['agents']:
+            raise ValueError('Cannot resume with another agent list; use a new output directory')
+        expected_protocol = protocol_manifest(cases, max_steps=args.max_steps, judge=scoring_config,
+                                              timeout=args.timeout, max_llm_calls=args.max_llm_calls)
+        if manifest['protocol'] != expected_protocol:
+            raise ValueError('Evaluation settings/source/questions changed; use a new output directory')
         if manifest['model'] != LLMConfig.from_env().model:
             raise ValueError('Cannot resume with another model')
+        if manifest.get('versions') != json.loads((AGENT_ROOT/'versions.json').read_text()):
+            raise ValueError('Agent versions changed; use a new output directory')
+        if 'paper_baseline' in manifest['agents']:
+            baseline_hash = hashlib.sha256((UPSTREAM/'secgym/agents/baseline_agent.py').read_bytes()).hexdigest()
+            if manifest.get('baseline_source_sha256') != baseline_hash:
+                raise ValueError('Official BaselineAgent source changed; use a new output directory')
     else:
         cases = select_cases(population, args.per_incident, args.seed)
+        selected_agents = list(dict.fromkeys(args.agents or ALL_AGENTS))
         manifest = dict(created_at=datetime.now(UTC).isoformat(), seed=args.seed, split='test',
-            requested_per_incident=args.per_incident, agents=list(ALL_AGENTS), workers=args.workers,
-            model=LLMConfig.from_env().model, max_steps=25, timeout=600, max_llm_calls=100,
+            requested_per_incident=args.per_incident, agents=selected_agents, workers=args.workers,
+            model=LLMConfig.from_env().model, max_steps=args.max_steps, timeout=args.timeout,
+            max_llm_calls=args.max_llm_calls,
+            protocol=protocol_manifest(cases, max_steps=args.max_steps, judge=scoring_config,
+                                       timeout=args.timeout, max_llm_calls=args.max_llm_calls),
             cases=[c.manifest_view() for c in cases], versions=json.loads((AGENT_ROOT/'versions.json').read_text()),
-            baseline_source_sha256=hashlib.sha256((UPSTREAM/'secgym/agents/baseline_agent.py').read_bytes()).hexdigest(),
-            adaptations=['Native BaselineAgent with transport override; native CLI loops; current ours with Neo4j SM/PM/conditional EM',
-                         'Common SQL boundary; 24 SQL attempts plus submission; local judge, not official-paper results',
-                         'All model calls share proxy/temperature=0/thinking disabled and process quota limiter',
-                         'incident_38 has only 11 test questions; no duplication or train supplementation',
-                         'CLI hard timeout 600 seconds; Python agents check deadline between model/actions (inflight call may overrun)'])
+            baseline_source_sha256=(hashlib.sha256((UPSTREAM/'secgym/agents/baseline_agent.py').read_bytes()).hexdigest()
+                                    if 'paper_baseline' in selected_agents else None),
+            adaptations=['Native BaselineAgent with reset and transport override; native CLI loops; ours with SM/PM/conditional EM',
+                         'Shared total action budget, terminal on submission or Nth query; official evaluator with independent judge',
+                         'All model calls share temperature=0 and process quota limiter; thinking settings recorded in protocol',
+                         'Full test set by default; optional per-incident subsampling; no train supplementation',
+                         'Optional non-paper time/LLM limits disabled by default; read-only SQL safety restriction retained'])
         write_json(manifest_path, manifest)
-    jobs = [(agent, case) for case in cases for agent in ALL_AGENTS]
+    agents = manifest['agents']
+    if not agents or any(a not in ALL_AGENTS for a in agents):
+        raise ValueError('Manifest contains an empty or unsupported agent list')
+    Baseline = baseline_class() if 'paper_baseline' in agents else None
+    jobs = [(agent, case) for case in cases for agent in agents]
     def run(job):
         agent, case = job
         path = args.output/agent/case.case_id/'result.json'
         if path.exists():
             result = json.loads(path.read_text())
-            if 'llm_evaluation' in result:
+            if result.get('status') == 'running':
+                result.update(status='interrupted', error='Previous investigation interrupted; not rerun')
+            if result.get('evaluation_status') == 'scored':
                 return result
         else:
             try:
                 if agent in AGENTS:
-                    result = run_case(agent, case, args.output, timeout=600)
+                    result = run_case(agent, case, args.output, max_steps=args.max_steps,
+                                      timeout=args.timeout, max_llm_calls=args.max_llm_calls, llm_eval=False)
                 else:
-                    result = run_internal(agent, case, args.output, Baseline)
+                    result = run_internal(agent, case, args.output, Baseline, max_steps=args.max_steps,
+                                          timeout=args.timeout, max_llm_calls=args.max_llm_calls)
             except Exception as exc:
                 result = dict(agent=agent, **case.manifest_view(), status='error',
                               error=f'{type(exc).__name__}: {exc}', answer='', actions=[], usage=[])
                 write_json(path, result)
-        judge(case, result)
+        judge(case, result, scoring_config)
         write_json(path, result)
         return result
     completed = []
@@ -198,7 +244,7 @@ def main(argv=None):
             write_json(args.output/'progress.json', progress)
             print('PROGRESS', json.dumps(progress), flush=True)
     write_json(args.output/'complete.json', {'completed': len(completed), 'total': len(jobs)})
-    return 0
+    return 0 if all(r.get('evaluation_status') == 'scored' for r in completed) else 1
 
 
 if __name__ == '__main__':

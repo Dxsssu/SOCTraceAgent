@@ -19,7 +19,8 @@ def invoke(path: str, payload: dict) -> dict:
 @mcp.tool()
 def execute_sql(sql: str) -> dict:
     """Execute one read-only MySQL query, including SHOW TABLES and DESCRIBE.
-    Failed queries also consume the query budget. No queries after submission.
+    Every attempt consumes one action, including errors. The episode ends on
+    submission or after the final budgeted action; no extra submission is allowed.
     """
     return invoke("/execute_sql", {"sql": sql})
 

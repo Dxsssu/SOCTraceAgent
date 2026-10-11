@@ -262,6 +262,14 @@ class ExcytinBenchWorkflow:
         if self.state is not None and not self.state.done:
             raise RuntimeError("An ExCyTIn workflow episode is already active")
         question = self._sanitize_initial_input(initial_input)
+        investigation_input = (
+            {
+                key: str(initial_input.get(key) or "").strip()
+                for key in ("context", "question")
+            }
+            if isinstance(initial_input, Mapping)
+            else {"context": "", "question": question}
+        )
         safe_runtime_info = {
             key: runtime_info[key]
             for key in ("attack", "noise_level", "qid", "layer", "split")
@@ -288,7 +296,9 @@ class ExcytinBenchWorkflow:
         )
         planner_context = self._planner_memory.build(event)
         try:
-            ttt = self._plan_initial_ttt(event, planner_context)
+            ttt = self._plan_initial_ttt(
+                event, planner_context, investigation_input=investigation_input
+            )
         except Exception as exc:
             self._bootstrap_status = "failed"
             self._record_trace(
@@ -610,19 +620,23 @@ class ExcytinBenchWorkflow:
         }
 
     def _plan_initial_ttt(
-        self, event: Event, planner_context: Mapping[str, Any]
+        self,
+        event: Event,
+        planner_context: Mapping[str, Any],
+        *,
+        investigation_input: Mapping[str, str],
     ) -> TracebackTaskTree:
         prompt = "\n".join(
             [
-                "请为以下 ExCyTIn-Bench 调查问题初始化最小 TTT，仅展开当前必要任务，只返回 YAML。",
-                "Planner 只能使用已过滤的 Procedural Memory 和 Semantic Memory；不要生成 SQL。",
+                "我们收到的背景信息和调查目标如下：",
                 json.dumps(
-                    {"workflow_memory_context": planner_context},
+                    dict(investigation_input),
                     ensure_ascii=False,
                     indent=2,
                 ),
+                "以下是可供参考的长期记忆（LTM）：",
                 json.dumps(
-                    {"event_id": event.event_id, "question": event.message},
+                    {"workflow_memory_context": planner_context},
                     ensure_ascii=False,
                     indent=2,
                 ),

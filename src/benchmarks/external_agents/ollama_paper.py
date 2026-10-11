@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import ast
 from contextlib import redirect_stdout
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -15,7 +14,6 @@ import sys
 import time
 
 import httpx
-from openai import OpenAI
 from dotenv import load_dotenv
 
 from src.agent.llm import LLMConfig
@@ -24,6 +22,7 @@ from src.benchmarks.excytin_bench.runner import (
     load_test_cases, sample_test_cases,
 )
 from .batch import baseline_class
+from .evaluation import paper_evaluator, validate_judgement
 from .bridge import Bridge
 from .runner import write_json
 
@@ -65,52 +64,6 @@ def ollama_call(client, model, messages, context_size):
         'total_duration_ns': data.get('total_duration'),
     }, payload
 
-
-def paper_evaluator(bridge):
-    """Keep upstream judge prompts/reflection/reward; replace provider imports only."""
-    source = UPSTREAM / 'evaluator.py'
-    tree = ast.parse(source.read_text())
-    tree.body = [n for n in tree.body if not (
-        isinstance(n, ast.ImportFrom) and
-        n.module in ('autogen', 'secgym.myconfig', 'secgym.utils.utils'))]
-
-    class Transport:
-        def __init__(self, **kwargs):
-            pass
-
-        def create(self, messages, **kwargs):
-            with OpenAI(api_key=bridge.token, base_url=bridge.url + '/v1',
-                        timeout=180, max_retries=0) as client:
-                return client.chat.completions.create(
-                    model=bridge.config.model, messages=messages, **kwargs)
-
-    namespace = dict(OpenAIWrapper=Transport, config_list_4o=[],
-                     msging=lambda msg, role='user': {'role': role, 'content': msg},
-                     get_full_question=lambda q: f"{q.get('context', '')} {q['question']}".strip())
-    exec(compile(tree, str(source), 'exec'), namespace)
-    return namespace['LLMEvaluator'](
-        config_list=[], cache_seed=41, ans_check_reflection=True,
-        sol_check_reflection=True, step_checking=True, strict_check=False)
-
-
-def validate_judgement(evaluation):
-    verdict = evaluation.get('check_ans_reflection', '')
-    match = re.search(r'Is_Answer_Correct: (True|False)', verdict)
-    if not match:
-        raise ValueError('Judge did not return a valid reflected answer verdict')
-    if match.group(1) == 'True':
-        if evaluation.get('reward') != 1:
-            raise ValueError('Correct answer must have reward=1')
-        return
-    if not evaluation.get('is_json_success') or not evaluation.get('is_reflect_success'):
-        raise ValueError('Judge step evaluation/reflection failed; reward is unavailable')
-    steps = list(evaluation['check_sol_reflection'].values())
-    if any(s.get('is_step_correct') not in ('True', 'False') for s in steps):
-        raise ValueError('Invalid step verdict')
-    expected = sum(0.4 ** (len(steps) - 1 - i) for i, s in enumerate(steps[:-1])
-                   if s['is_step_correct'] == 'True')
-    if abs(evaluation['reward'] - min(1, expected)) > 1e-9:
-        raise ValueError('Reward does not match the paper discount formula')
 
 
 def investigate(case, args, Baseline, progress):
