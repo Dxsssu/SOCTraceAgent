@@ -1,0 +1,95 @@
+{
+  "mode": "fixed-evidence replay, not an end-to-end success-rate estimate",
+  "checks": [
+    {
+      "case": "reject_script_host",
+      "verdict": {
+        "confirmed": true,
+        "goals": [
+          {
+            "id": "G1",
+            "relation": "E2 的 ProcessCommandLine 证据直接显示 powershell.exe 执行了 get-userprttoken.ps1（PRT 访问脚本），证明该进程名称。",
+            "evidence": [
+              {
+                "execution_id": "E2",
+                "quote": "powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', '6168', 'wmiprvse.exe -secured -Embedding'"
+              }
+            ]
+          }
+        ],
+        "gap": "",
+        "suggestion": ""
+      },
+      "usage": {
+        "calls": 1,
+        "input_tokens": 1519,
+        "output_tokens": 117
+      }
+    },
+    {
+      "case": "confirm_direct_alert_relation",
+      "verdict": {
+        "confirmed": false,
+        "validation_error": "Evidence must quote an actual successful nonempty result",
+        "raw_model_response": {
+          "confirmed": true,
+          "goals": [
+            {
+              "id": "G1",
+              "relation": "E4 直接显示发起进程 powershell.exe 执行 'get-userprttoken.ps1' 时产生的子进程为 BrowserCore.exe，即 PRT 访问活动中涉及的进程。",
+              "evidence": [
+                {
+                  "execution_id": "E4",
+                  "quote": "[('WmiPrvSE.exe', 'wmiprvse.exe -secured -Embedding', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1'), ('powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', 'BrowserCore.exe', '\"browsercore.exe\"')]"
+                },
+                {
+                  "execution_id": "E2",
+                  "quote": "'Possible attempt to access Primary Refresh Token (PRT)', '[\"CredentialAccess\"]', ... 'BrowserCore.exe', 'C:Program FilesWindows SecurityBrowserCore'"
+                }
+              ]
+            }
+          ],
+          "gap": "",
+          "suggestion": ""
+        }
+      },
+      "usage": {
+        "calls": 1,
+        "input_tokens": 90498,
+        "output_tokens": 213
+      }
+    }
+  ],
+  "pm_replay": [
+    {
+      "round": 1,
+      "procedures": [],
+      "reuse": null,
+      "usage": {
+        "calls": 2,
+        "input_tokens": 2448,
+        "output_tokens": 152
+      }
+    },
+    {
+      "round": 2,
+      "procedures": [],
+      "reuse": "retained_itt_knowledge",
+      "usage": {
+        "calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "round": 3,
+      "procedures": [],
+      "reuse": "retained_itt_knowledge",
+      "usage": {
+        "calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    }
+  ]
+}

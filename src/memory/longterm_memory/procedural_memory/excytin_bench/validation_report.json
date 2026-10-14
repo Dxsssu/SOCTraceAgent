@@ -1,0 +1,923 @@
+{
+  "memory_structure": [
+    "name",
+    "status",
+    "goal",
+    "input_slots",
+    "operations"
+  ],
+  "catalog_counts": {
+    "total": 65,
+    "active": 54,
+    "candidate": 11
+  },
+  "history_audit": {
+    "training_trajectories": 237,
+    "training_attempts": 1605,
+    "test_result_files_excluded": 2650,
+    "all_training_attempts_visited": true
+  },
+  "source_support": {
+    "supported_attempts": 892,
+    "supported_episodes": 236,
+    "meaning": "at least one supported partial operation, not complete-task success"
+  },
+  "offline_tests": {
+    "passed": 145,
+    "excluded": "tests/test_splunk_ttt_integration.py"
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "model": "DeepSeek-V4.1-Flash",
+      "catalog_sha256": "52f7dd6577bad34fe001add4290aec44225fdb200a1f4a6bd1702a2c9269c0ba",
+      "summary": {
+        "memory_cases": 12,
+        "passed": 12,
+        "selection_passed": 12,
+        "execution_cases": 9,
+        "execution_passed": 9,
+        "baseline_cases": 9,
+        "baseline_execution_passed": 9
+      },
+      "usage": {
+        "calls": 30,
+        "input_tokens": 60311,
+        "output_tokens": 809
+      },
+      "cases": [
+        {
+          "case_id": "alert_lookup",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "AlertInfo：按 Title 查证"
+          ],
+          "sql": "SELECT AlertId, Title FROM AlertInfo WHERE Title LIKE '%pm-eval-signal%' LIMIT 50;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "a-pm-01",
+                "pm-eval-signal"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "alert_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "AlertEvidence：按 AlertId 查证"
+          ],
+          "sql": "SELECT DeviceName FROM AlertEvidence WHERE AlertId = 'a-pm-01' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "host-pm-01"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "email_recipient_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "EmailUrlInfo → EmailEvents (network_message_id)"
+          ],
+          "sql": "SELECT RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId = 'msg-pm-01' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "recipient@pm.example"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "email_url_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "EmailPostDeliveryEvents → EmailUrlInfo (network_message_id)"
+          ],
+          "sql": "SELECT Url FROM EmailUrlInfo WHERE NetworkMessageId = 'msg-pm-02';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "https://pm.example/target"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "signin_by_ip",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "SigninLogs：按 IPAddress 查证"
+          ],
+          "sql": "SELECT DISTINCT UserPrincipalName FROM SigninLogs WHERE IPAddress = '192.0.2.10' LIMIT 100;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "login@pm.example"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "process_by_pid",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "DeviceProcessEvents：按 ProcessId 查证"
+          ],
+          "sql": "SELECT DeviceName, ProcessId, ProcessCommandLine FROM DeviceProcessEvents WHERE DeviceName = 'host-pm-01' AND ProcessId = '4242' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "host-pm-01",
+                "4242",
+                "target-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "network_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "DeviceProcessEvents → DeviceNetworkEvents (device_name)"
+          ],
+          "sql": "SELECT DeviceName, RemoteIP FROM DeviceNetworkEvents WHERE DeviceName = 'host-pm-01' LIMIT 100;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "host-pm-01",
+                "192.0.2.50"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "unknown_column_repair",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "SecurityAlert：按 AlertName 查证",
+            "字段不存在：核对 schema 后修正查询"
+          ],
+          "sql": "SELECT AlertName, CompromisedEntity FROM SecurityAlert WHERE AlertName = 'pm-eval-alert' LIMIT 50;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "pm-eval-alert",
+                "host-pm-01"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "empty_result_repair",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "空结果：核对值与匹配方式",
+            "DeviceProcessEvents：按 FileName 查证"
+          ],
+          "sql": "SELECT FileName, ProcessCommandLine FROM DeviceProcessEvents WHERE FileName LIKE 'pm-worker%' LIMIT 50;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "pm-worker.exe",
+                "worker-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "schema_unknown",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "陌生日志表：先确认字段再查询"
+          ],
+          "sql": null,
+          "execution": null
+        },
+        {
+          "case_id": "already_complete",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [],
+          "sql": null,
+          "execution": null
+        },
+        {
+          "case_id": "unrelated_task",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [],
+          "sql": null,
+          "execution": null
+        },
+        {
+          "case_id": "alert_lookup",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT AlertId FROM AlertInfo WHERE Title LIKE '%pm-eval-signal%';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "a-pm-01"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "alert_partial",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT DeviceName FROM AlertEvidence WHERE AlertId = 'a-pm-01' LIMIT 5;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "host-pm-01"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "email_recipient_partial",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId = 'msg-pm-01';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "recipient@pm.example"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "email_url_partial",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT Url FROM EmailUrlInfo WHERE NetworkMessageId = 'msg-pm-02';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "https://pm.example/target"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "signin_by_ip",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT DISTINCT UserPrincipalName FROM SigninLogs WHERE IPAddress = '192.0.2.10';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "login@pm.example"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "process_by_pid",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT DeviceName, ProcessId, ProcessCommandLine FROM DeviceProcessEvents WHERE DeviceName = 'host-pm-01' AND ProcessId = '4242' LIMIT 5;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "host-pm-01",
+                "4242",
+                "target-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "network_partial",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT RemoteIP FROM DeviceNetworkEvents WHERE DeviceName = 'host-pm-01' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "192.0.2.50"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "unknown_column_repair",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT CompromisedEntity FROM SecurityAlert WHERE AlertName = 'pm-eval-alert' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "host-pm-01"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "empty_result_repair",
+          "mode": "baseline",
+          "passed": true,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT FileName, ProcessCommandLine FROM DeviceProcessEvents WHERE FileName LIKE 'pm-worker%' LIMIT 100;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "pm-worker.exe",
+                "worker-command"
+              ]
+            ]
+          }
+        }
+      ],
+      "detailed_report": "runtime/procedural_memory/evaluation_iteration_1.json"
+    },
+    {
+      "iteration": 2,
+      "model": "DeepSeek-V4.1-Flash",
+      "catalog_sha256": "52f7dd6577bad34fe001add4290aec44225fdb200a1f4a6bd1702a2c9269c0ba",
+      "summary": {
+        "memory_cases": 6,
+        "passed": 2,
+        "selection_passed": 2,
+        "execution_cases": 4,
+        "execution_passed": 3,
+        "baseline_cases": 0,
+        "baseline_execution_passed": 0
+      },
+      "usage": {
+        "calls": 10,
+        "input_tokens": 26645,
+        "output_tokens": 270
+      },
+      "cases": [
+        {
+          "case_id": "parent_process_partial",
+          "mode": "memory",
+          "passed": false,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [],
+          "sql": "SELECT ProcessCommandLine FROM DeviceProcessEvents WHERE ProcessId = '4242' LIMIT 5;",
+          "execution": {
+            "passed": false,
+            "reason": "wrong_or_extra_rows",
+            "rows": [
+              [
+                "child-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "recipient_scope_partial",
+          "mode": "memory",
+          "passed": false,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [
+            "EmailPostDeliveryEvents：按 NetworkMessageId 查证"
+          ],
+          "sql": "SELECT DeliveryAction FROM EmailEvents WHERE NetworkMessageId = 'msg-scope-01' AND RecipientEmailAddress = 'target@pm.example' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "Blocked"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "pid_reuse_scope",
+          "mode": "memory",
+          "passed": false,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [
+            "空结果：逐项核查过度约束"
+          ],
+          "sql": "SELECT ProcessCommandLine FROM DeviceProcessEvents WHERE DeviceName = 'host-pm-01' AND ProcessId = '4242' AND ProcessCreationTime = '2026-01-01T00:00:00Z' LIMIT 5;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "original-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "network_process_scope",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "DeviceNetworkEvents：按 DeviceName 查证"
+          ],
+          "sql": "SELECT RemoteIP FROM DeviceNetworkEvents WHERE DeviceName = 'host-pm-01' AND InitiatingProcessId = '4242';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "192.0.2.42"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "unsupported_registry",
+          "mode": "memory",
+          "passed": false,
+          "selection_passed": false,
+          "selection_precision": 0.0,
+          "selected_names": [
+            "空结果：核对值与匹配方式",
+            "空结果：检查筛选字段映射"
+          ],
+          "sql": null,
+          "execution": null
+        },
+        {
+          "case_id": "candidate_not_active",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [],
+          "sql": null,
+          "execution": null
+        }
+      ],
+      "detailed_report": "runtime/procedural_memory/evaluation_iteration_2.json"
+    },
+    {
+      "iteration": 3,
+      "model": "DeepSeek-V4.1-Flash",
+      "catalog_sha256": "4960a00b647d7d040461eb1b91163faf2f1bada43f21296075a5169b802b8a8d",
+      "summary": {
+        "memory_cases": 18,
+        "passed": 18,
+        "selection_passed": 18,
+        "execution_cases": 13,
+        "execution_passed": 13,
+        "baseline_cases": 0,
+        "baseline_execution_passed": 0
+      },
+      "usage": {
+        "calls": 31,
+        "input_tokens": 85457,
+        "output_tokens": 709
+      },
+      "cases": [
+        {
+          "case_id": "alert_lookup",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "AlertInfo：按 Title 查证"
+          ],
+          "sql": "SELECT AlertId, Title FROM AlertInfo WHERE Title LIKE '%pm-eval-signal%' LIMIT 50;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "a-pm-01",
+                "pm-eval-signal"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "alert_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "AlertEvidence：按 AlertId 查证"
+          ],
+          "sql": "SELECT DeviceName FROM AlertEvidence WHERE AlertId = 'a-pm-01' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "host-pm-01"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "email_recipient_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "EmailEvents：按 NetworkMessageId 查证"
+          ],
+          "sql": "SELECT NetworkMessageId, RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId = 'msg-pm-01';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "msg-pm-01",
+                "recipient@pm.example"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "email_url_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "EmailUrlInfo：按 NetworkMessageId 查证"
+          ],
+          "sql": "SELECT Url FROM EmailUrlInfo WHERE NetworkMessageId = 'msg-pm-02' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "https://pm.example/target"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "signin_by_ip",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "SigninLogs：按 IPAddress 查证"
+          ],
+          "sql": "SELECT UserPrincipalName FROM SigninLogs WHERE IPAddress = '192.0.2.10' LIMIT 100;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "login@pm.example"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "process_by_pid",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "DeviceProcessEvents：按 ProcessId 查证"
+          ],
+          "sql": "SELECT ProcessCommandLine FROM DeviceProcessEvents WHERE DeviceName = 'host-pm-01' AND ProcessId = '4242';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "target-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "network_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "DeviceNetworkEvents：按 DeviceName 查证"
+          ],
+          "sql": "SELECT DeviceName, RemoteIP FROM DeviceNetworkEvents WHERE DeviceName = 'host-pm-01' LIMIT 100;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "host-pm-01",
+                "192.0.2.50"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "unknown_column_repair",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "字段不存在：核对 schema 后修正查询",
+            "SecurityAlert：按 AlertName 查证"
+          ],
+          "sql": "SELECT AlertName, CompromisedEntity FROM SecurityAlert WHERE AlertName = 'pm-eval-alert' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "pm-eval-alert",
+                "host-pm-01"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "empty_result_repair",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "空结果：核对值与匹配方式",
+            "DeviceProcessEvents：按 FileName 查证"
+          ],
+          "sql": "SELECT FileName, ProcessCommandLine FROM DeviceProcessEvents WHERE FileName LIKE 'pm-worker%' LIMIT 100;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "pm-worker.exe",
+                "worker-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "schema_unknown",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "陌生日志表：先确认字段再查询"
+          ],
+          "sql": null,
+          "execution": null
+        },
+        {
+          "case_id": "already_complete",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [],
+          "sql": null,
+          "execution": null
+        },
+        {
+          "case_id": "unrelated_task",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [],
+          "sql": null,
+          "execution": null
+        },
+        {
+          "case_id": "parent_process_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "DeviceProcessEvents：按 ProcessId 查证"
+          ],
+          "sql": "SELECT InitiatingProcessCommandLine FROM DeviceProcessEvents WHERE ProcessId = '4242' LIMIT 5;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "parent-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "recipient_scope_partial",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "EmailEvents：按 NetworkMessageId 查证"
+          ],
+          "sql": "SELECT DeliveryAction FROM EmailEvents WHERE NetworkMessageId = 'msg-scope-01' AND RecipientEmailAddress = 'target@pm.example';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "Blocked"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "pid_reuse_scope",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "DeviceProcessEvents：按 ProcessId 查证"
+          ],
+          "sql": "SELECT ProcessCommandLine FROM DeviceProcessEvents WHERE DeviceName = 'host-pm-01' AND ProcessId = '4242' AND ProcessCreationTime = '2026-01-01T00:00:00Z' LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "original-command"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "network_process_scope",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [
+            "DeviceProcessEvents → DeviceNetworkEvents (device_name)"
+          ],
+          "sql": "SELECT RemoteIP FROM DeviceNetworkEvents WHERE DeviceName = 'host-pm-01' AND InitiatingProcessId = '4242';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "192.0.2.42"
+              ]
+            ]
+          }
+        },
+        {
+          "case_id": "unsupported_registry",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [],
+          "sql": null,
+          "execution": null
+        },
+        {
+          "case_id": "candidate_not_active",
+          "mode": "memory",
+          "passed": true,
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "selected_names": [],
+          "sql": null,
+          "execution": null
+        }
+      ],
+      "detailed_report": "runtime/procedural_memory/evaluation_iteration_3.json"
+    }
+  ],
+  "total_api_usage": {
+    "calls": 71,
+    "input_tokens": 172413,
+    "output_tokens": 1788
+  },
+  "estimated_cost_cny_at_user_rates": 0.35913,
+  "pricing_assumption": "CNY 2 / 1M input tokens, CNY 8 / 1M output tokens; ignores cache discounts",
+  "limitations": [
+    "Synthetic development/regression cases, not unseen benchmark accuracy.",
+    "SQLite fixture execution does not validate all MySQL behaviors.",
+    "No-memory baseline passed all 9 initial SQL cases; causal benefit or reward improvement is not established.",
+    "Iteration 2 failures informed wording changes; iteration 3 is a regression result, not an independent generalization result."
+  ],
+  "iteration_changes": [
+    "Replaced adjacent-pair-only mining with seven partial-operation families.",
+    "Clarified that completing a prefix does not complete all operations.",
+    "Restricted empty-result procedures to actual empty outcomes.",
+    "Clarified target/initiating process fields and PID scope.",
+    "Separated email delivery from post-delivery and preserved recipient scope.",
+    "Corrected production Executor prompt that previously said to use Semantic Memory only on first SQL."
+  ]
+}

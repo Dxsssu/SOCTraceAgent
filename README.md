@@ -54,7 +54,7 @@ uv run python main.py -role reviewer
 
 ```text
 告警 Event
-  -> Planner：建立最小 TTT，选择 next_task_id
+  -> Planner：接收 context + question 与适用 PM，建立 ITT
   -> Executor：执行一个 L3，记录 Execution 与证据
   -> Reviewer：生成 RoundReview
   -> Planner：提交版本化增量更新
@@ -63,9 +63,10 @@ uv run python main.py -role reviewer
 
 | 角色 | 职责 | 长期记忆权限 |
 | --- | --- | --- |
-| Planner | 建立目标与问题、展开任务、选择下一步、更新 TTT | PM + SM |
-| Executor | 生成和执行查询、记录真实 observation | 首次仅 SM；ExCyTIn 查询错误或空结果修复时使用 EM |
-| Reviewer | 检查证据、结论与缺口，反馈后续调查方向 | SM |
+| Planner | 建立目标与问题、展开任务、选择下一步、更新 TTT | PM（含 semantic_refs） |
+| Executor | 仅根据当前 T 构造查询；程序执行并回写 ITT | 正常仅使用 T；SQL error 后额外检索最多 1 条 EM |
+| Reviewer | 审核真实结果，提供事实、缺口和建议 | 不检索记忆；仅任务树与执行证据 |
+| Verifier（SQL workflow） | 提交前核验目标关系及真实证据；拒绝时补查或明确无法确认 | 不检索记忆 |
 
 本地调查每轮执行一个 L3，再进入复盘与重规划。业务事实以 SQLite 持久化状态为准，`MessageEnvelope` 是审计与展示层。默认数据库为 `runtime/socagent.db`，包含 `events`、`ttt_snapshots`、`executions`、`round_reviews`、`messages`。
 
@@ -78,38 +79,37 @@ pending -> planned -> executing -> reviewing -> replanning
 
 `completed` 要求 L1 目标明确为 `resolved`；没有待执行任务不代表成功。角色处理异常也可能将事件置为 `failed`。
 
-## TTT 约束
+## ITT 约束
 
-TTT 随调查逐步展开，普通 SQLite 调查与 ExCyTIn 使用同一套校验逻辑。
+Planner 输入只保留 `context` 与 `question`。运行时构建事件 ID、轮次等管理信息；`runtime_info` 仅用于运行记录，不传入模型或 PM 选择助手。
 
-- 初始只建立一个固定 L1 目标、少量 L2 问题，通常展开一个 L3。L2 可以暂时没有子任务。
-- L1/L2 状态：`open / resolved / blocked / n/a`；L3 状态：`todo / in_progress / done / blocked / n/a`。
-- L3 执行结束不会自动解决父问题。空结果不直接否定假设；ExCyTIn 的查询修复保留在原 L3 内。
-- 节点保留稳定 `node_id`、显式 `level`、`result_summary`、`evidence_refs`；不使用 `answer_requirements`。
-- `evidence_refs` 指向真实执行记录：普通调查使用 Execution UUID，ExCyTIn 使用单次调查内唯一的 `E{step_no}`。引用需结合 event_id 查找，SM 描述不是案件证据。
-- Planner 用 `next_task_id` 指定下一项可执行 L3，用 `selection_reason` 说明理由；不再依照编号排序。
-- 初始化输出完整树，后续只输出 `base_version + updates + next_task_id`。支持 `add_node` 和 `update_node`，不允许删除节点、改 ID 或改目标；重开节点必须说明原因。
-- Workflow 校验版本、层级、引用和任务选择后生成完整快照。SQLite 保存 schema 2.0 快照，写入前检查期望版本，旧快照仍可读取。
-- 目标仍 open 且没有可执行任务时必须继续展开或明确 blocked。普通调查将阻塞/非法计划标记为 failed；ExCyTIn 允许明确阻塞或预算耗尽时提交已有信息，这不表示目标已经解决。
+PM 选择助手根据 question 和当前进展，从 active 查询模板的精简目录中一次选择最多一个模板。没有多阶段前提审核或独立复核。选中的模板传给 Planner；T 只保存 template_id，程序附加真实模板，Executor 绑定已知参数后由程序生成 SQL。模板只提供查询方法，不能改变 G 或证明答案；无适用 PM 时由轻量 SM 代理提供结构知识。
 
-例如，首次查告警取得进程 ID 后，再在“创建时间是什么”问题下追加任务：
+普通 SQLite 调查与 ExCyTIn 使用相同的 ITT YAML 列表协议：
+
+- G 的 `objective` 由 LLM 从 question 提炼，每个需要独立回答的调查问题对应一个 G，不根据背景额外扩大目标。F 由 LLM 联合初始 context 和 question 初始化，描述服务于该问题的调查方向。每个 G 包含 F，每个 F 至少包含一个 T；不允许第四层。
+- 节点字段为 `id`、`objective`、`status`，状态为 `todo/done/failed`。G/F 使用 `children`，T 使用 `semantic_refs`、`execution_code` 和 `execution_result`。
+- T 的 `semantic_refs` 为 `[{table: 表名, fields: [字段名]}]`，保存相关表字段，可参考 PM、已有 ITT 知识及真实结构查询结果，结构未知时为 `[]`。校验字段格式，不限制引用来源；存储于内部节点 metadata，随任务传给 Executor，已结束任务保留原引用。
+- 初始化与重规划均输出完整列表。已有 ID、目标、父子关系和历史路径保留；需要继续调查已结束路径时创建新任务。
+- 未执行任务的执行字段为空；执行后由运行时写入真实代码和结果，Planner 更新必须原样保留。多次尝试使用 JSON 数组字符串保留全部代码和结果。
+- Planner 按优先级排列列表，运行时选择首个祖先未结束的 todo 任务。未解决目标没有可执行任务时必须展开任务或明确失败。
+- 内部仍使用 TTT 快照存储，并转换状态和字段；事件 ID、轮次、版本与 `next_task_id` 由运行时管理。SQLite 写入仍检查期望版本。
 
 ```yaml
-response_type: TTT_UPDATE
-base_version: 5  # 必须与输入快照一致
-updates:
-  - operation: add_node
-    parent_id: Q2
-    node:
-      node_id: T2
-      level: 3
-      title: 读取已定位进程的创建记录
+- id: G1
+  objective: 告警涉及的进程 ID 是什么？
+  status: todo
+  children:
+    - id: F1
+      objective: 沿告警证据定位进程
       status: todo
-      result_summary: ""
-      evidence_refs: []
-      children: []
-next_task_id: T2
-selection_reason: E1 已提供进程 ID，当前仍缺少创建时间
+      children:
+        - id: T1
+          objective: 查询告警关联的进程 ID
+          status: todo
+          semantic_refs: []
+          execution_code: ""
+          execution_result: ""
 ```
 
 ## Splunk / BOTS 调查
@@ -149,8 +149,8 @@ Web 提供事件列表、详情、执行记录、复盘与层级查询；具体�
 | 类型 | 内容与来源 | 详细说明 |
 | --- | --- | --- |
 | Semantic Memory（SM） | 从实际 schema 汇总表、字段、类型和关联键，提供中英文描述 | [构建与导入](src/memory/longterm_memory/semantic_memory/excytin_bench/README.md) |
-| Episodic Memory（EM） | 来自训练轨迹的脱敏 SQL 尝试、错误和修复关系 | [构建与导入](src/memory/longterm_memory/episodic_memory/excytin_bench/README.md) |
-| Procedural Memory（PM） | 调查阶段、流程和适用条件，连接 schema 与训练经验 | [构建与导入](src/memory/longterm_memory/procedural_memory/excytin_bench/README.md) |
+| Episodic Memory（EM） | 三字段失败恢复：背景、报错、修复；21 条，覆盖训练历史 70 次错误 | [构建与导入](src/memory/longterm_memory/episodic_memory/excytin_bench/README.md) |
+| Procedural Memory（PM） | 训练轨迹中重复的操作序列；以名称、状态、目标检索，按需读取输入槽和步骤 | [构建与导入](src/memory/longterm_memory/procedural_memory/excytin_bench/README.md) |
 
 普通事件通过 `context.memory_profile` 指定 `excytin_bench`，或设置默认 `SOCAGENT_MEMORY_PROFILE=excytin_bench`，才注入该 Profile 的记忆；事件配置优先。不设置时，普通 Splunk 调查不会注入 ExCyTIn 记忆。指定 Profile 不会把本地 Splunk Executor 切换为 MySQL 测评流程。
 
@@ -162,15 +162,17 @@ Web 提供事件列表、详情、执行记录、复盘与层级查询；具体�
 
 `.env.example` 含 Neo4j 占位密码，首次运行建议显式使用 `snapshot`。使用图后端时，按 [Neo4j 部署说明](docker/neo4j/README.md) 启动服务，将连接配置导出到进程或写入根目录 `.env`，再依次导入 **SM → EM → PM**。重建 JSON 不会自动更新 Neo4j。
 
-当前检索使用 schema、文本匹配和关联关系；虽然 `LLMClient.embed()` 已提供 embedding 调用入口，长期记忆检索尚未使用向量检索。
+PM v5 保存可复用查询模板：`id/name/status/purpose/inputs/sql_template/returns/semantic_refs`。从训练成功查询中归纳 46 条模板（34 active、12 candidate），案件具体值参数化，表字段离线校验。在线仅一次有界模型选择（不再前提审核/独立复核），Planner 在 T 中引用 `template_id`，程序装载模板，Executor 只返回参数，程序安全生成 SQL；PM 未命中时检索精简 SM。模板与构建审计详见 `src/memory/longterm_memory/procedural_memory/excytin_bench/README.md`。Reviewer 不检索长期记忆；SQL 报错后仍仅一次 EM 修复。
+
+SM 使用 schema、文本匹配和关联关系；EM v2 先按错误类型与对象查本地倒排索引，再以失败 SQL 的表/别名作用域消歧，优先报错位置并用 TF-IDF 相似度排序，最多取一条供 Executor 修复，未调用 embedding API。PM 使用以问题为目标的候选召回与适用性审查；引用存在不等于语义关联正确，真实执行仍需核实。
 
 ## ExCyTIn-Bench 测评
 
 测评使用独立的同步 workflow，不通过 Web 或后台 SQLite 轮询运行：
 
 ```text
-context + question -> Planner / TTT -> Executor 生成只读 SQL
-    -> 环境执行 -> observation -> Reviewer -> Planner 更新 / 提交答案
+context + question -> Planner / ITT -> 当前 T -> Executor 生成只读 SQL
+    -> 环境执行 -> 程序回写 T 的 SQL/结果/状态 -> Reviewer -> Planner 更新 / 提交答案
 ```
 
 [src/benchmarks/excytin_bench/agent.py](src/benchmarks/excytin_bench/agent.py) 提供 SecGym 的 `reset()`、`act()`、`get_logging()` 接口，可由官方 `ExcytinEnv.step()` 执行 SQL。仓库自己的 runner 使用兼容的 MySQL 执行边界，负责抽题、并行运行和落盘；应区分自有 runner 与官方环境的成绩。
@@ -194,7 +196,7 @@ SOCAGENT_LTM_BACKEND=snapshot uv run python -m src.benchmarks.excytin_bench.runn
 
 可用 `--incident incident_5` 限定抽题范围，`--question-dir` 和 `--output-dir` 覆盖输入、输出目录。runner **默认开启 LLM 裁判**；上例显式关闭，仅计算匹配和查询指标。需要模糊答案与部分步骤评分时改为 `--llm-eval`，会额外调用模型。
 
-默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 3 条 SQL；首次仅使用 SM，SQL error 或空结果后才检索 EM 辅助修复。Reviewer 判断答案证据充分时可直接提交；预算耗尽或明确阻塞时也可提交已有信息，这不代表目标已解决。
+默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 2 条 SQL；每次仅传当前 T，首次 SQL error 后检索一次 EM 并重试一次，空结果直接交给 Reviewer，不在 Executor 内重试；Reviewer 不检索 SM/PM。Reviewer 判断答案证据充分时可直接提交；预算耗尽或明确阻塞时也可提交已有信息，这不代表目标已解决。
 
 每次运行输出到 `runtime/excytin_bench/runs/<run-id>/`：
 
@@ -224,6 +226,28 @@ uv run python -m src.benchmarks.external_agents.runner \
 外部 CLI runner 默认使用论文官方 evaluator，裁判默认复用调查模型的 DeepSeek 配置，`--no-llm-eval` 可关闭评分。默认全量测试集，每题 25 个总动作（查询和提交各计一步，达到上限立即结束），可用 `--max-steps 15`。每题使用独立会话和临时配置。批量入口 `src.benchmarks.external_agents.batch` 支持四个 CLI、论文 `BaselineAgent` 和 SOCTraceAgent 的六框架配对实验；默认全量，也可显式 `--per-incident` 抽样。分析会区分评分失败和 0 分。新协议拒绝混用旧实验目录。版本条件、论文额外依赖和断点复用规则见[基线文档](external_agents/README.md)。
 
 ## 配置参考
+
+支持 ParaTera 和 Fancybag；默认保持 ParaTera。使用 Fancybag 时，在根目录 `.env` 填入并切换：
+
+```dotenv
+SOCAGENT_LLM_PROVIDER=fancybag
+FANCYBAG_API_KEY=填入你的key
+FANCYBAG_BASE_URL=https://sub.fancybag.cn/v1
+FANCYBAG_MODEL=deepseek-v4.1-flash
+```
+
+重启 Agent 进程使配置生效。Fancybag 使用独立的 `FANCYBAG_*` 配置，不会回退使用 ParaTera 的密钥；切回时设为 `SOCAGENT_LLM_PROVIDER=paratera`。聊天限流与输出 token 预留仍共用现有 `PARATERA_RPM_LIMIT`、`PARATERA_TPM_LIMIT`、`PARATERA_RATE_UTILIZATION` 和 `PARATERA_OUTPUT_TOKEN_RESERVE` 配置。Fancybag 的 embedding 模型默认留空，有需要时按账号支持情况设置 `FANCYBAG_EMBEDDING_MODEL`。
+
+XTY 接口使用独立配置，填写 `.env` 中的 `XTY_API_KEY` 后可切换：
+
+```dotenv
+SOCAGENT_LLM_PROVIDER=xty
+XTY_API_KEY=your_api_key_here
+XTY_BASE_URL=https://api.xty.app/v1
+XTY_MODEL=deepseek-v4.1-flash
+```
+
+实验入口 `src.benchmarks.external_agents.resume` 也支持 `--provider xty`，只覆盖当前进程的接口选择。实际聊天请求发送到 `/v1/chat/completions`；embedding 模型默认留空。
 
 配置从根目录 `.env` 加载，完整示例见 [.env.example](.env.example)，依赖以 [pyproject.toml](pyproject.toml) 和 `uv.lock` 为准。
 
@@ -307,3 +331,5 @@ SOCTraceAgent/
 - 本地调查的真实工具集中于 Splunk；资产查询、威胁情报等能力尚未接入。
 - 外部数据、数据库服务和原生 CLI 需要单独准备；`uv sync` 只安装 Python 项目依赖。
 - 原生 CLI 基线使用统一代理、工具和预算约束，比较结果需同时报告这些条件以及各框架是否使用长期记忆。
+
+PM 未命中时使用轻量 SM 兜底：一次模型调用只从精简表目录选择最多两张表，由程序加载真实字段名。代理输入（系统提示词及任务目录）最多 6,000 UTF-8 字节，输出最多 192 token、关闭 thinking、不进行格式重试；选中 schema 最多约 6,000 字节，不传完整 ITT 或执行历史。相同任务和 SM 库复用缓存（含未命中）。SM 也未命中时，Planner 应安排结构查询，不猜字段。

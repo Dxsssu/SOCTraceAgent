@@ -1,0 +1,88 @@
+{
+  "case_id": "incident_5-q0028",
+  "mode": "with_pm",
+  "input": {
+    "context": "A security incident raised flags due to suspicious WMI process creation observed on a machine, which is indicative of possible malware activity. This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts. WMI is often utilized by malware to spawn new processes, breaking process trees and further infecting a machine.",
+    "question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?"
+  },
+  "pm": [
+    {
+      "name": "根据文件名称查证进程活动",
+      "status": "active",
+      "goal": "根据已知的文件名称，调查进程命令行、进程标识、父进程和运行账户。",
+      "input_slots": {
+        "文件名称": "本次调查已提供或已查得文件名称的具体内容。"
+      },
+      "operations": "用已知的文件名称及已有设备、时间线索定位进程，按问题读取目标进程或父进程的信息。",
+      "semantic_refs": [
+        {
+          "table": "DeviceProcessEvents",
+          "fields": [
+            "AccountName",
+            "DeviceId",
+            "DeviceName",
+            "FileName",
+            "InitiatingProcessCommandLine",
+            "InitiatingProcessId",
+            "ProcessCommandLine",
+            "ProcessCreationTime",
+            "ProcessId",
+            "TenantId",
+            "TimeGenerated",
+            "Timestamp"
+          ]
+        }
+      ]
+    }
+  ],
+  "success": true,
+  "itt": [
+    {
+      "id": "G1",
+      "objective": "在尝试访问 Primary Refresh Token (PRT) 的相关活动中，涉及的进程名称是什么？",
+      "status": "todo",
+      "children": [
+        {
+          "id": "F1",
+          "objective": "沿进程线索调查与 PRT 访问尝试相关的进程活动，查清涉及的进程名称。",
+          "status": "todo",
+          "children": [
+            {
+              "id": "T1",
+              "objective": "根据已知的脚本文件名 get-userprttoken.ps1 定位相关进程，读取其进程名称、进程命令行、父进程信息及运行账户。",
+              "status": "todo",
+              "semantic_refs": [
+                {
+                  "table": "DeviceProcessEvents",
+                  "fields": [
+                    "AccountName",
+                    "DeviceId",
+                    "DeviceName",
+                    "FileName",
+                    "InitiatingProcessCommandLine",
+                    "InitiatingProcessId",
+                    "ProcessCommandLine",
+                    "ProcessCreationTime",
+                    "ProcessId",
+                    "TenantId",
+                    "TimeGenerated",
+                    "Timestamp"
+                  ]
+                }
+              ],
+              "execution_code": "",
+              "execution_result": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "next_task_id": "T1",
+  "usage": {
+    "calls": 1,
+    "input_tokens": 1447,
+    "output_tokens": 221
+  },
+  "attempts": 1
+}

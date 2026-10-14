@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from src.schema.itt import execution_fields, task_payload
+
 import json
 import logging
 import time
@@ -20,40 +22,12 @@ logger = logging.getLogger(__name__)
 
 EXECUTOR_SYSTEM_PROMPT = """
 你是多智能体驱动的 SOC 智能溯源系统中的 Executor。
-
-## 角色定位
-将 Workflow 指定的一个 TTT L3 任务转化为结构化查询请求。
-
-## 输入信息
-- 原始事件、当前 L3 节点，以及输入提供的 event_id、round_id。
-- Workflow 按角色权限提供的 Semantic Memory 和可选 Episodic Memory。
-- 已提供的执行结果、错误信息及可用工具约束。
-
-## 工作流程
-1. 理解当前 L3 所需证据，核对实际表字段与合法关联关系。
-2. 根据已有结果和可用修复案例构造当前查询。
-3. 输出请求，等待工具返回真实结果。
-
-## 约束条件
-- 只处理当前 L3，不自行选择任务、修改 TTT、扩大调查方向或生成最终答案。
-- Semantic Memory 约束表字段；Episodic Memory 仅供参考历史查询与修复方式，不是当前案件证据。
-- 仅使用输入中提供的记忆，不访问 Procedural Memory，不臆测尚未返回的结果。
-- 查询遵守工具接口与方言约束，不编造表字段或参数。
-
-## 输出格式
-只输出一个合法 YAML 对象，不使用 Markdown 代码围栏或额外说明。
-response_type 为 EXECUTION_SQL；execution 包含 node_id、node_title、tool_name、parameters。
-event_id、round_id 和节点标识沿用输入值；本格式用于查询请求，工具路由阶段遵循单独的路由协议。
-
-## 输出示例
-response_type: EXECUTION_SQL
-event_id: 来自输入的事件标识
-round_id: 1
-execution:
-  node_id: T1
-  node_title: 来自输入的当前任务标题
-  tool_name: sql
-  parameters: 根据实际 Schema 构造的查询语句
+只根据当前 T 节点构造查询请求，不检索记忆、不修改 ITT、不生成最终答案。
+objective 描述查询目标及范围；semantic_refs 提供相关表字段参考。
+execution_code 和 execution_result 记录当前任务已执行的查询与真实结果，可用于修复。
+不编造未知实体或结果。遵守工具接口和查询方言，只生成一条只读查询。
+只输出合法 YAML：response_type 为 EXECUTION_SQL；execution 包含 node_id、node_title、tool_name、parameters。
+不使用 Markdown 围栏或额外说明。运行标识由程序维护。
 """.strip()
 
 
@@ -64,7 +38,7 @@ EXECUTOR_ROUTER_PROMPT = """
 为当前 L3 从候选 MCP 工具中选择唯一一个最合适的工具。
 
 ## 输入信息
-当前事件、L3 调查意图、Workflow 提供的记忆上下文，以及候选工具的名称、用途和限制。
+当前 T 节点，以及候选工具的名称、用途和限制。
 
 ## 工作流程
 1. 核对当前任务需要的能力与工具限制。
@@ -201,15 +175,7 @@ class ExecutorRuntime:
             payload={"node_id": claimed.node_id, "node_title": claimed.title},
         )
 
-        prior_executions = self.storage.list_executions(event.event_id)
-        workflow_context = self.context_provider.build(
-            event,
-            node=claimed,
-            executions=prior_executions,
-        )
-        tool_selection = self._select_tool(
-            claimed, event, workflow_context=workflow_context
-        )
+        tool_selection = self._select_tool(claimed, event)
         tool_name = tool_selection["tool_name"]
         self._publish(
             event_id=event.event_id,
@@ -234,7 +200,6 @@ class ExecutorRuntime:
             claimed,
             tool_name,
             tool_selection=tool_selection,
-            workflow_context=workflow_context,
         )
         execution = Execution(
             event_id=event.event_id,
@@ -252,6 +217,9 @@ class ExecutorRuntime:
             updated_at=utc_now(),
         )
         self.storage.save_execution(execution)
+        execution_code, execution_result, _ = execution_fields(
+            self.storage.list_executions(event.event_id), claimed.node_id
+        )
         self.ttt_store.update_node_status(
             event_id=event.event_id,
             node_id=claimed.node_id,
@@ -259,6 +227,8 @@ class ExecutorRuntime:
             updated_by=self.agent.role_name,
             round_id=event.current_round,
             metadata_updates={
+                "execution_code": execution_code,
+                "execution_result": execution_result,
                 "tool_name": tool_name,
                 "last_execution_id": execution.execution_id,
                 "last_execution_status": execution.execution_status.value,
@@ -321,10 +291,7 @@ class ExecutorRuntime:
                 "confidence 只允许：high, medium, low。",
                 "不得输出未列出的工具名。",
                 f"intent: {intent}",
-                f"event: {json.dumps(event.to_dict(), ensure_ascii=False, indent=2)}",
-                f"node: {json.dumps({'node_id': getattr(node, 'node_id', ''), 'title': intent}, ensure_ascii=False, indent=2)}",
-                f"context: {json.dumps(event.context or {}, ensure_ascii=False, indent=2)}",
-                f"workflow_memory_context: {json.dumps(workflow_context or {}, ensure_ascii=False, indent=2)}",
+                f"node: {json.dumps(task_payload(node), ensure_ascii=False)}",
                 f"tools: {json.dumps(tools, ensure_ascii=False, indent=2)}",
             ]
         )
@@ -410,24 +377,7 @@ class ExecutorRuntime:
         *,
         workflow_context: dict[str, Any] | None = None,
     ) -> str:
-        node_title = str(getattr(node, "title", "") or "").strip()
-        node_id = str(getattr(node, "node_id", "") or "").strip()
-        context_text = json.dumps(event.context or {}, ensure_ascii=False, indent=2)
-        return "\n".join(
-            [
-                "请基于以下事件背景与待执行任务，完成本次调查查询。",
-                f"事件名称: {event.event_name}",
-                f"事件描述: {event.message}",
-                f"事件来源: {event.source}",
-                f"事件严重级别: {event.severity.value}",
-                f"TTT 节点 ID: {node_id}",
-                f"TTT 叶子节点任务: {node_title}",
-                "事件上下文:",
-                context_text,
-                "Workflow 提供的角色受限长期记忆上下文:",
-                json.dumps(workflow_context or {}, ensure_ascii=False, indent=2),
-            ]
-        )
+        return json.dumps(task_payload(node), ensure_ascii=False)
 
     def _publish(
         self,

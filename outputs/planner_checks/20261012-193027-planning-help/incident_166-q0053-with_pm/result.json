@@ -1,0 +1,76 @@
+{
+  "case_id": "incident_166-q0053",
+  "mode": "with_pm",
+  "input": {
+    "context": "A sign-in from an anonymous IP address, `95.202.65.202`, was detected on 2024-07-22 08:45:32.664841+00:00. Anonymous IP addresses are typically used via Tor or VPNs to mask the actual source of the connection. This activity was flagged as suspicious.",
+    "question": "What is the IP address associated with the end alert in the incident?"
+  },
+  "pm": [
+    {
+      "name": "根据登录来源地址查证账号登录",
+      "status": "active",
+      "goal": "根据已知的登录来源地址，调查账号登录、登录来源地址及登录结果。",
+      "input_slots": {
+        "登录来源地址": "本次调查已提供或已查得登录来源地址的具体内容。"
+      },
+      "operations": "用已知的登录来源地址筛选账号登录，在当前调查范围内读取问题所需的信息。",
+      "semantic_refs": [
+        {
+          "table": "SigninLogs",
+          "fields": [
+            "IPAddress",
+            "ResultDescription",
+            "ResultType",
+            "TenantId",
+            "TimeGenerated",
+            "UserPrincipalName"
+          ]
+        }
+      ]
+    }
+  ],
+  "success": true,
+  "itt": [
+    {
+      "id": "G1",
+      "objective": "What is the IP address associated with the end alert in the incident?",
+      "status": "todo",
+      "children": [
+        {
+          "id": "F1",
+          "objective": "沿登录来源地址线索，查证该匿名 IP 地址在账号登录记录中的登录情况，确认与 incident 末尾告警关联的 IP 地址。",
+          "status": "todo",
+          "children": [
+            {
+              "id": "T1",
+              "objective": "使用已知登录来源地址 95.202.65.202 查询账号登录日志，读取登录来源 IP、登录结果及时间等信息，确认关联的 IP 地址。",
+              "status": "todo",
+              "semantic_refs": [
+                {
+                  "table": "SigninLogs",
+                  "fields": [
+                    "IPAddress",
+                    "ResultDescription",
+                    "ResultType",
+                    "TenantId",
+                    "TimeGenerated",
+                    "UserPrincipalName"
+                  ]
+                }
+              ],
+              "execution_code": "",
+              "execution_result": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "next_task_id": "T1",
+  "usage": {
+    "calls": 1,
+    "input_tokens": 1394,
+    "output_tokens": 198
+  },
+  "attempts": 1
+}

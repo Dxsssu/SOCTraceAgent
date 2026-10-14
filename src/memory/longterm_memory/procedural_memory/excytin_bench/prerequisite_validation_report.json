@@ -1,0 +1,185 @@
+{
+  "catalog_sha256": "9887d2642292c79340e8c14310988e90b2a2351a8e023b27bbdcaf562f8d828c",
+  "workflow": "single header selection -> prerequisites checked against current context -> operations loaded",
+  "offline_full_suite": {
+    "passed": 151,
+    "excluded": "tests/test_splunk_ttt_integration.py"
+  },
+  "after_final_wording_change": {
+    "targeted_tests_passed": 28
+  },
+  "neo4j_matches_snapshot": true,
+  "live_iterations": [
+    {
+      "suite": "synthetic_partial_step_reuse",
+      "is_benchmark_reward": false,
+      "catalog_sha256": "369ec4741c9a0769ab2380b308b035b97d540623f95b9dd2b6a618de2cb1da8c",
+      "model": "DeepSeek-V4.1-Flash",
+      "summary": {
+        "memory_cases": 4,
+        "passed": 3,
+        "selection_passed": 4,
+        "execution_cases": 2,
+        "execution_passed": 1,
+        "baseline_cases": 0,
+        "baseline_execution_passed": 0
+      },
+      "usage": {
+        "calls": 9,
+        "input_tokens": 15696,
+        "output_tokens": 238
+      },
+      "elapsed_seconds": 20.26,
+      "results": [
+        {
+          "case_id": "email_recipient_partial",
+          "selected_names": [
+            "EmailUrlInfo → EmailEvents (network_message_id)"
+          ],
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "response": "response_type: EXECUTE_SQL\nsql: \"SELECT RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId = 'msg-pm-01';\"",
+          "sql": "SELECT RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId = 'msg-pm-01';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "recipient@pm.example"
+              ]
+            ]
+          },
+          "passed": true,
+          "mode": "memory"
+        },
+        {
+          "case_id": "parent_process_partial",
+          "selected_names": [
+            "DeviceProcessEvents：按 ProcessId 查证"
+          ],
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "response": "response_type: EXECUTE_SQL\nsql: \"SELECT ProcessId, ParentProcessId, ProcessCommandLine, InitiatingProcessCommandLine, DeviceId, ProcessCreationTime FROM DeviceProcessEvents WHERE ProcessId = '4242';\"",
+          "sql": "SELECT ProcessId, ParentProcessId, ProcessCommandLine, InitiatingProcessCommandLine, DeviceId, ProcessCreationTime FROM DeviceProcessEvents WHERE ProcessId = '4242';",
+          "execution": {
+            "passed": false,
+            "reason": "OperationalError: no such column: ParentProcessId"
+          },
+          "passed": false,
+          "mode": "memory"
+        },
+        {
+          "case_id": "email_missing_prerequisite",
+          "selected_names": [],
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "passed": true,
+          "mode": "memory"
+        },
+        {
+          "case_id": "email_field_name_only",
+          "selected_names": [],
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "passed": true,
+          "mode": "memory"
+        }
+      ],
+      "review_queue": [
+        {
+          "case_id": "parent_process_partial",
+          "selected_names": [
+            "DeviceProcessEvents：按 ProcessId 查证"
+          ],
+          "failure": "OperationalError: no such column: ParentProcessId"
+        }
+      ]
+    },
+    {
+      "suite": "synthetic_partial_step_reuse",
+      "is_benchmark_reward": false,
+      "catalog_sha256": "b8c57f16b80b77235a89d6f57cc773f6133bd6963ec5ee51dc91818f2fc3cb67",
+      "model": "DeepSeek-V4.1-Flash",
+      "summary": {
+        "memory_cases": 4,
+        "passed": 4,
+        "selection_passed": 4,
+        "execution_cases": 2,
+        "execution_passed": 2,
+        "baseline_cases": 0,
+        "baseline_execution_passed": 0
+      },
+      "usage": {
+        "calls": 9,
+        "input_tokens": 15702,
+        "output_tokens": 211
+      },
+      "elapsed_seconds": 16.09,
+      "results": [
+        {
+          "case_id": "email_recipient_partial",
+          "selected_names": [
+            "EmailEvents：按 NetworkMessageId 查证"
+          ],
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "response": "response_type: EXECUTE_SQL\nsql: \"SELECT RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId = 'msg-pm-01';\"",
+          "sql": "SELECT RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId = 'msg-pm-01';",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "recipient@pm.example"
+              ]
+            ]
+          },
+          "passed": true,
+          "mode": "memory"
+        },
+        {
+          "case_id": "parent_process_partial",
+          "selected_names": [
+            "DeviceProcessEvents：按 ProcessId 查证"
+          ],
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "response": "response_type: EXECUTE_SQL\nsql: \"SELECT DISTINCT InitiatingProcessCommandLine FROM DeviceProcessEvents WHERE ProcessId = '4242' AND InitiatingProcessCommandLine IS NOT NULL LIMIT 10;\"",
+          "sql": "SELECT DISTINCT InitiatingProcessCommandLine FROM DeviceProcessEvents WHERE ProcessId = '4242' AND InitiatingProcessCommandLine IS NOT NULL LIMIT 10;",
+          "execution": {
+            "passed": true,
+            "reason": "matched_expected_row",
+            "rows": [
+              [
+                "parent-command"
+              ]
+            ]
+          },
+          "passed": true,
+          "mode": "memory"
+        },
+        {
+          "case_id": "email_missing_prerequisite",
+          "selected_names": [],
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "passed": true,
+          "mode": "memory"
+        },
+        {
+          "case_id": "email_field_name_only",
+          "selected_names": [],
+          "selection_passed": true,
+          "selection_precision": 1.0,
+          "passed": true,
+          "mode": "memory"
+        }
+      ],
+      "review_queue": []
+    }
+  ],
+  "limitations": [
+    "Synthetic development cases, not full benchmark reward.",
+    "Exact quotations ground prerequisites in context; semantic sufficiency still depends on the model."
+  ]
+}

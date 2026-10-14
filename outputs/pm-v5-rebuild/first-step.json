@@ -1,0 +1,466 @@
+{
+  "scope": "first query only, no final-answer scoring",
+  "sql": "SELECT DeviceName, ProcessCommandLine, TimeGenerated, AccountSid, DeviceId, FileName, InitiatingProcessCommandLine, InitiatingProcessFileName, InitiatingProcessId, ProcessId, Timestamp FROM DeviceProcessEvents WHERE ProcessCommandLine LIKE '%get-userprttoken.ps1%' LIMIT 100;",
+  "success": true,
+  "rows": 4,
+  "usage": {
+    "calls": 3,
+    "input_tokens": 6246,
+    "output_tokens": 314
+  },
+  "workflow": {
+    "workflow": "excytin_bench",
+    "event_id": "excytin-abbf8c7f-1046-45d1-8c8e-4e714c61c135",
+    "status": "active",
+    "actions_issued": 1,
+    "max_steps": 25,
+    "max_executor_attempts_per_l3": 2,
+    "initial_input": "A security incident raised flags due to suspicious WMI process creation observed on a machine, which is indicative of possible malware activity. This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts. WMI is often utilized by malware to spawn new processes, breaking process trees and further infecting a machine. In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?",
+    "ttt": {
+      "version": 2,
+      "next_task_id": "T1",
+      "selection_reason": "",
+      "event_id": "excytin-abbf8c7f-1046-45d1-8c8e-4e714c61c135",
+      "round_id": 1,
+      "root_nodes": [
+        {
+          "level": 1,
+          "result_summary": "",
+          "evidence_refs": [],
+          "node_id": "G1",
+          "title": "在尝试访问 Primary Refresh Token (PRT) 的相关活动中，涉及的进程名称是什么？",
+          "status": "open",
+          "children": [
+            {
+              "level": 2,
+              "result_summary": "",
+              "evidence_refs": [],
+              "node_id": "F1",
+              "title": "沿与 get-userprttoken.ps1 关联的进程线索调查，查清尝试访问 PRT 时涉及的进程名称",
+              "status": "open",
+              "children": [
+                {
+                  "level": 3,
+                  "result_summary": "",
+                  "evidence_refs": [],
+                  "node_id": "T1",
+                  "title": "查询 DeviceProcessEvents 中 ProcessCommandLine 包含 get-userprttoken.ps1 的记录，获取 DeviceName、ProcessCommandLine、TimeGenerated、AccountSid、DeviceId、FileName、InitiatingProcessCommandLine、InitiatingProcessFileName、InitiatingProcessId、ProcessId、Timestamp，以找出访问 PRT 相关活动的进程名称",
+                  "status": "in_progress",
+                  "children": [],
+                  "metadata": {
+                    "query_template": {
+                      "id": "pm_9bcd7a51b8c7",
+                      "inputs": {
+                        "p1": {
+                          "field": "ProcessCommandLine",
+                          "type": "string",
+                          "description": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                          "operator": "LIKE"
+                        }
+                      },
+                      "sql_template": "SELECT DeviceName, ProcessCommandLine, TimeGenerated, AccountSid, DeviceId, FileName, InitiatingProcessCommandLine, InitiatingProcessFileName, InitiatingProcessId, ProcessId, Timestamp FROM DeviceProcessEvents WHERE ProcessCommandLine LIKE :p1 LIMIT 100",
+                      "returns": {
+                        "DeviceName": "报告此进程事件的端点的完全限定域名。可用于人工可读的范围限定和报告，但跨表精确连接时应以 DeviceId 为透视键。",
+                        "ProcessCommandLine": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。",
+                        "TimeGenerated": "MDE 代理在终端上记录该事件的日期和时间。是进程调查的主要时间界限；与进程及父进程创建时间比较可了解执行顺序。",
+                        "AccountSid": "与此进程事件关联账户的安全标识符。当名称有歧义时，可用于在 Windows 侧稳定关联账户；不要臆造或假定 SID 格式。",
+                        "DeviceId": "生成此进程事件的设备的服务分配标识符。与其他 Defender 表连接时，应使用此稳定设备键；DeviceName 可能变化，关联可靠性较低。",
+                        "FileName": "在此记录的进程事件中所操作文件的名称。应与 InitiatingProcessFileName 区分，后者表示导致该事件的进程名称。",
+                        "InitiatingProcessCommandLine": "启动导致此事件的进程所用的命令行。是检测可疑参数、编码脚本或 LOLBin 滥用的核心，应始终结合其父进程和目标进程上下文。",
+                        "InitiatingProcessFileName": "导致此事件的进程名称。应结合其命令行、文件夹路径和哈希来识别负责的可执行文件，而不是目标文件。",
+                        "InitiatingProcessId": "导致此事件的进程的进程 ID。PID 可复用，因此应结合设备和时间限定范围；重建进程树时与创建时间或父 ID 配合使用。",
+                        "ProcessId": "新建进程的进程 ID。PID 会复用且仅运行期间对同一机器唯一；需结合 DeviceId 与 ProcessCreationTime 限定，并与 InitiatingProcessId 关联谱系。",
+                        "Timestamp": "源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。"
+                      },
+                      "semantic_refs": [
+                        {
+                          "table": "DeviceProcessEvents",
+                          "fields": [
+                            "AccountSid",
+                            "DeviceId",
+                            "DeviceName",
+                            "FileName",
+                            "InitiatingProcessCommandLine",
+                            "InitiatingProcessFileName",
+                            "InitiatingProcessId",
+                            "ProcessCommandLine",
+                            "ProcessId",
+                            "TimeGenerated",
+                            "Timestamp"
+                          ]
+                        }
+                      ]
+                    },
+                    "semantic_refs": [
+                      {
+                        "table": "DeviceProcessEvents",
+                        "fields": [
+                          "AccountSid",
+                          "DeviceId",
+                          "DeviceName",
+                          "FileName",
+                          "InitiatingProcessCommandLine",
+                          "InitiatingProcessFileName",
+                          "InitiatingProcessId",
+                          "ProcessCommandLine",
+                          "ProcessId",
+                          "TimeGenerated",
+                          "Timestamp"
+                        ]
+                      }
+                    ],
+                    "execution_code": "",
+                    "execution_result": ""
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "created_at": "2026-10-12T14:10:18.970082+00:00",
+      "updated_at": "2026-10-12T14:10:18.970199+00:00"
+    },
+    "executions": [],
+    "reviews": [],
+    "verifications": [],
+    "memory_retrievals": [
+      {
+        "role": "planner",
+        "allowed_memory_types": [
+          "procedural"
+        ],
+        "table_ids": [],
+        "procedure_names": [
+          "按ProcessCommandLine模式查询DeviceProcessEvents"
+        ],
+        "procedure_application": null,
+        "template_ids": [
+          "pm_9bcd7a51b8c7"
+        ],
+        "procedure_retrieval": {
+          "status": "selected",
+          "model_calls": 1,
+          "candidate_count": 32,
+          "input_bytes": 11705,
+          "selected_ids": [
+            "pm_9bcd7a51b8c7"
+          ]
+        },
+        "procedure_reuse": null,
+        "semantic_status": null,
+        "semantic_reuse": null,
+        "recovery_ids": []
+      }
+    ],
+    "ttt_history": [
+      {
+        "version": 1,
+        "next_task_id": "T1",
+        "selection_reason": "",
+        "event_id": "excytin-abbf8c7f-1046-45d1-8c8e-4e714c61c135",
+        "round_id": 1,
+        "root_nodes": [
+          {
+            "level": 1,
+            "result_summary": "",
+            "evidence_refs": [],
+            "node_id": "G1",
+            "title": "在尝试访问 Primary Refresh Token (PRT) 的相关活动中，涉及的进程名称是什么？",
+            "status": "open",
+            "children": [
+              {
+                "level": 2,
+                "result_summary": "",
+                "evidence_refs": [],
+                "node_id": "F1",
+                "title": "沿与 get-userprttoken.ps1 关联的进程线索调查，查清尝试访问 PRT 时涉及的进程名称",
+                "status": "open",
+                "children": [
+                  {
+                    "level": 3,
+                    "result_summary": "",
+                    "evidence_refs": [],
+                    "node_id": "T1",
+                    "title": "查询 DeviceProcessEvents 中 ProcessCommandLine 包含 get-userprttoken.ps1 的记录，获取 DeviceName、ProcessCommandLine、TimeGenerated、AccountSid、DeviceId、FileName、InitiatingProcessCommandLine、InitiatingProcessFileName、InitiatingProcessId、ProcessId、Timestamp，以找出访问 PRT 相关活动的进程名称",
+                    "status": "todo",
+                    "children": [],
+                    "metadata": {
+                      "query_template": {
+                        "id": "pm_9bcd7a51b8c7",
+                        "inputs": {
+                          "p1": {
+                            "field": "ProcessCommandLine",
+                            "type": "string",
+                            "description": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                            "operator": "LIKE"
+                          }
+                        },
+                        "sql_template": "SELECT DeviceName, ProcessCommandLine, TimeGenerated, AccountSid, DeviceId, FileName, InitiatingProcessCommandLine, InitiatingProcessFileName, InitiatingProcessId, ProcessId, Timestamp FROM DeviceProcessEvents WHERE ProcessCommandLine LIKE :p1 LIMIT 100",
+                        "returns": {
+                          "DeviceName": "报告此进程事件的端点的完全限定域名。可用于人工可读的范围限定和报告，但跨表精确连接时应以 DeviceId 为透视键。",
+                          "ProcessCommandLine": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。",
+                          "TimeGenerated": "MDE 代理在终端上记录该事件的日期和时间。是进程调查的主要时间界限；与进程及父进程创建时间比较可了解执行顺序。",
+                          "AccountSid": "与此进程事件关联账户的安全标识符。当名称有歧义时，可用于在 Windows 侧稳定关联账户；不要臆造或假定 SID 格式。",
+                          "DeviceId": "生成此进程事件的设备的服务分配标识符。与其他 Defender 表连接时，应使用此稳定设备键；DeviceName 可能变化，关联可靠性较低。",
+                          "FileName": "在此记录的进程事件中所操作文件的名称。应与 InitiatingProcessFileName 区分，后者表示导致该事件的进程名称。",
+                          "InitiatingProcessCommandLine": "启动导致此事件的进程所用的命令行。是检测可疑参数、编码脚本或 LOLBin 滥用的核心，应始终结合其父进程和目标进程上下文。",
+                          "InitiatingProcessFileName": "导致此事件的进程名称。应结合其命令行、文件夹路径和哈希来识别负责的可执行文件，而不是目标文件。",
+                          "InitiatingProcessId": "导致此事件的进程的进程 ID。PID 可复用，因此应结合设备和时间限定范围；重建进程树时与创建时间或父 ID 配合使用。",
+                          "ProcessId": "新建进程的进程 ID。PID 会复用且仅运行期间对同一机器唯一；需结合 DeviceId 与 ProcessCreationTime 限定，并与 InitiatingProcessId 关联谱系。",
+                          "Timestamp": "源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。"
+                        },
+                        "semantic_refs": [
+                          {
+                            "table": "DeviceProcessEvents",
+                            "fields": [
+                              "AccountSid",
+                              "DeviceId",
+                              "DeviceName",
+                              "FileName",
+                              "InitiatingProcessCommandLine",
+                              "InitiatingProcessFileName",
+                              "InitiatingProcessId",
+                              "ProcessCommandLine",
+                              "ProcessId",
+                              "TimeGenerated",
+                              "Timestamp"
+                            ]
+                          }
+                        ]
+                      },
+                      "semantic_refs": [
+                        {
+                          "table": "DeviceProcessEvents",
+                          "fields": [
+                            "AccountSid",
+                            "DeviceId",
+                            "DeviceName",
+                            "FileName",
+                            "InitiatingProcessCommandLine",
+                            "InitiatingProcessFileName",
+                            "InitiatingProcessId",
+                            "ProcessCommandLine",
+                            "ProcessId",
+                            "TimeGenerated",
+                            "Timestamp"
+                          ]
+                        }
+                      ],
+                      "execution_code": "",
+                      "execution_result": ""
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "created_at": "2026-10-12T14:10:18.970082+00:00",
+        "updated_at": "2026-10-12T14:10:18.970082+00:00"
+      }
+    ],
+    "action_history": [
+      {
+        "action_type": "query",
+        "content": "SELECT DeviceName, ProcessCommandLine, TimeGenerated, AccountSid, DeviceId, FileName, InitiatingProcessCommandLine, InitiatingProcessFileName, InitiatingProcessId, ProcessId, Timestamp FROM DeviceProcessEvents WHERE ProcessCommandLine LIKE '%get-userprttoken.ps1%' LIMIT 100;",
+        "step_no": 1,
+        "node_id": "T1",
+        "submit": false
+      }
+    ],
+    "trace": [
+      {
+        "timestamp": "2026-10-12T14:10:05.268105+00:00",
+        "event_type": "workflow_starting",
+        "payload": {
+          "event_id": "excytin-abbf8c7f-1046-45d1-8c8e-4e714c61c135"
+        }
+      },
+      {
+        "timestamp": "2026-10-12T14:10:18.970035+00:00",
+        "event_type": "role_yaml_parsed",
+        "payload": {
+          "role": "planner",
+          "attempt": 1,
+          "response_type": "ITT"
+        }
+      },
+      {
+        "timestamp": "2026-10-12T14:10:18.970134+00:00",
+        "event_type": "workflow_started",
+        "payload": {
+          "event_id": "excytin-abbf8c7f-1046-45d1-8c8e-4e714c61c135",
+          "round_id": 1
+        }
+      },
+      {
+        "timestamp": "2026-10-12T14:10:18.970144+00:00",
+        "event_type": "memory_retrieved",
+        "payload": {
+          "role": "planner",
+          "allowed_memory_types": [
+            "procedural"
+          ],
+          "table_ids": [],
+          "procedure_names": [
+            "按ProcessCommandLine模式查询DeviceProcessEvents"
+          ],
+          "procedure_application": null,
+          "template_ids": [
+            "pm_9bcd7a51b8c7"
+          ],
+          "procedure_retrieval": {
+            "status": "selected",
+            "model_calls": 1,
+            "candidate_count": 32,
+            "input_bytes": 11705,
+            "selected_ids": [
+              "pm_9bcd7a51b8c7"
+            ]
+          },
+          "procedure_reuse": null,
+          "semantic_status": null,
+          "semantic_reuse": null,
+          "recovery_ids": []
+        }
+      },
+      {
+        "timestamp": "2026-10-12T14:10:18.970151+00:00",
+        "event_type": "ttt_planned",
+        "payload": {
+          "ttt": {
+            "version": 1,
+            "next_task_id": "T1",
+            "selection_reason": "",
+            "event_id": "excytin-abbf8c7f-1046-45d1-8c8e-4e714c61c135",
+            "round_id": 1,
+            "root_nodes": [
+              {
+                "level": 1,
+                "result_summary": "",
+                "evidence_refs": [],
+                "node_id": "G1",
+                "title": "在尝试访问 Primary Refresh Token (PRT) 的相关活动中，涉及的进程名称是什么？",
+                "status": "open",
+                "children": [
+                  {
+                    "level": 2,
+                    "result_summary": "",
+                    "evidence_refs": [],
+                    "node_id": "F1",
+                    "title": "沿与 get-userprttoken.ps1 关联的进程线索调查，查清尝试访问 PRT 时涉及的进程名称",
+                    "status": "open",
+                    "children": [
+                      {
+                        "level": 3,
+                        "result_summary": "",
+                        "evidence_refs": [],
+                        "node_id": "T1",
+                        "title": "查询 DeviceProcessEvents 中 ProcessCommandLine 包含 get-userprttoken.ps1 的记录，获取 DeviceName、ProcessCommandLine、TimeGenerated、AccountSid、DeviceId、FileName、InitiatingProcessCommandLine、InitiatingProcessFileName、InitiatingProcessId、ProcessId、Timestamp，以找出访问 PRT 相关活动的进程名称",
+                        "status": "todo",
+                        "children": [],
+                        "metadata": {
+                          "query_template": {
+                            "id": "pm_9bcd7a51b8c7",
+                            "inputs": {
+                              "p1": {
+                                "field": "ProcessCommandLine",
+                                "type": "string",
+                                "description": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                                "operator": "LIKE"
+                              }
+                            },
+                            "sql_template": "SELECT DeviceName, ProcessCommandLine, TimeGenerated, AccountSid, DeviceId, FileName, InitiatingProcessCommandLine, InitiatingProcessFileName, InitiatingProcessId, ProcessId, Timestamp FROM DeviceProcessEvents WHERE ProcessCommandLine LIKE :p1 LIMIT 100",
+                            "returns": {
+                              "DeviceName": "报告此进程事件的端点的完全限定域名。可用于人工可读的范围限定和报告，但跨表精确连接时应以 DeviceId 为透视键。",
+                              "ProcessCommandLine": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。",
+                              "TimeGenerated": "MDE 代理在终端上记录该事件的日期和时间。是进程调查的主要时间界限；与进程及父进程创建时间比较可了解执行顺序。",
+                              "AccountSid": "与此进程事件关联账户的安全标识符。当名称有歧义时，可用于在 Windows 侧稳定关联账户；不要臆造或假定 SID 格式。",
+                              "DeviceId": "生成此进程事件的设备的服务分配标识符。与其他 Defender 表连接时，应使用此稳定设备键；DeviceName 可能变化，关联可靠性较低。",
+                              "FileName": "在此记录的进程事件中所操作文件的名称。应与 InitiatingProcessFileName 区分，后者表示导致该事件的进程名称。",
+                              "InitiatingProcessCommandLine": "启动导致此事件的进程所用的命令行。是检测可疑参数、编码脚本或 LOLBin 滥用的核心，应始终结合其父进程和目标进程上下文。",
+                              "InitiatingProcessFileName": "导致此事件的进程名称。应结合其命令行、文件夹路径和哈希来识别负责的可执行文件，而不是目标文件。",
+                              "InitiatingProcessId": "导致此事件的进程的进程 ID。PID 可复用，因此应结合设备和时间限定范围；重建进程树时与创建时间或父 ID 配合使用。",
+                              "ProcessId": "新建进程的进程 ID。PID 会复用且仅运行期间对同一机器唯一；需结合 DeviceId 与 ProcessCreationTime 限定，并与 InitiatingProcessId 关联谱系。",
+                              "Timestamp": "源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。"
+                            },
+                            "semantic_refs": [
+                              {
+                                "table": "DeviceProcessEvents",
+                                "fields": [
+                                  "AccountSid",
+                                  "DeviceId",
+                                  "DeviceName",
+                                  "FileName",
+                                  "InitiatingProcessCommandLine",
+                                  "InitiatingProcessFileName",
+                                  "InitiatingProcessId",
+                                  "ProcessCommandLine",
+                                  "ProcessId",
+                                  "TimeGenerated",
+                                  "Timestamp"
+                                ]
+                              }
+                            ]
+                          },
+                          "semantic_refs": [
+                            {
+                              "table": "DeviceProcessEvents",
+                              "fields": [
+                                "AccountSid",
+                                "DeviceId",
+                                "DeviceName",
+                                "FileName",
+                                "InitiatingProcessCommandLine",
+                                "InitiatingProcessFileName",
+                                "InitiatingProcessId",
+                                "ProcessCommandLine",
+                                "ProcessId",
+                                "TimeGenerated",
+                                "Timestamp"
+                              ]
+                            }
+                          ],
+                          "execution_code": "",
+                          "execution_result": ""
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "created_at": "2026-10-12T14:10:18.970082+00:00",
+            "updated_at": "2026-10-12T14:10:18.970082+00:00"
+          }
+        }
+      },
+      {
+        "timestamp": "2026-10-12T14:10:19.952404+00:00",
+        "event_type": "role_yaml_parsed",
+        "payload": {
+          "role": "executor",
+          "attempt": 1,
+          "response_type": null
+        }
+      },
+      {
+        "timestamp": "2026-10-12T14:10:19.960118+00:00",
+        "event_type": "action_issued",
+        "payload": {
+          "action": {
+            "action_type": "query",
+            "content": "SELECT DeviceName, ProcessCommandLine, TimeGenerated, AccountSid, DeviceId, FileName, InitiatingProcessCommandLine, InitiatingProcessFileName, InitiatingProcessId, ProcessId, Timestamp FROM DeviceProcessEvents WHERE ProcessCommandLine LIKE '%get-userprttoken.ps1%' LIMIT 100;",
+            "step_no": 1,
+            "node_id": "T1",
+            "submit": false
+          },
+          "executor_attempt_no": 1,
+          "max_executor_attempts_per_l3": 2
+        }
+      }
+    ],
+    "final_answer": ""
+  }
+}

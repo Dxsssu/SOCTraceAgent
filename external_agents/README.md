@@ -77,6 +77,51 @@ Pi 使用原生 MCP direct 模式，仅启用 `execute_sql` / `submit_answer`，
 
 ## 运行
 
+### PromptSauceAgent + Fancybag
+
+已接入论文原版 `PromptSauceAgent` 的完整调查、官方 evaluator 评分、进度统计与断点续跑流程。原始源码位于 `data/excytin-bench/github/secgym/agents/prompt_sauce_agent.py`。保留其告警/实体调查提示词、历史维护及 SQL/答案解析，只替换模型传输；每题调用 `reset()`，不注入本项目 SM/PM/EM。
+
+原始类在最后一步读取未初始化的 `submit_summary`，适配层显式设为 `False`，避免末步 AttributeError，并保持每题 25 个总动作的共同预算，不额外强制提交。manifest 记录该适配版本、Agent/解析工具源码哈希、模型、接口及评分协议；改动这些条件时必须换结果目录。
+
+运行前确保根目录 `.env` 已填写 `FANCYBAG_API_KEY`，MySQL incident 容器与 `docker/excytin-mysql/.env` 可用。Python 依赖与论文 Baseline 相同（当前环境已安装），新环境在项目根目录执行以下命令；不需要安装 OpenCode/Pi CLI：
+
+```bash
+uv sync
+uv pip install --python .venv/bin/python 'ag2==0.14.0' 'azure-ai-inference==1.0.0b9'
+```
+
+这两项上游依赖暂未纳入项目锁文件；后续再次执行 `uv sync` 后，需要重新安装。
+
+先抽 10 道题验证：
+
+```bash
+.venv/bin/python -m src.benchmarks.external_agents.resume \
+  --agent prompt_sauce --provider fancybag \
+  --model deepseek-v4.1-flash \
+  --sample-size 10 --seed 42 --workers 3 --max-steps 25 \
+  --output results/prompt_sauce/fancybag-deepseek-v4.1-flash/smoke10
+```
+
+全量 589 道测试题：
+
+```bash
+.venv/bin/python -m src.benchmarks.external_agents.resume \
+  --agent prompt_sauce --provider fancybag \
+  --model deepseek-v4.1-flash \
+  --workers 3 --max-steps 25 \
+  --output results/prompt_sauce/fancybag-deepseek-v4.1-flash/full589
+```
+
+`--provider` 只覆盖当前进程，不修改 `.env`；`--model` 写入所选 provider 的运行时配置，不会误写到另一个接口。调查与裁判默认都使用 Fancybag，已有 `EXCYTIN_JUDGE_BASE_URL/API_KEY` 会覆盖裁判连接，需保持未设置才能保证同一接口。模型名使用接口要求的小写 `deepseek-v4.1-flash`。
+
+重复相同命令可续跑：已评分题（含错误答案或预算耗尽）跳过；调查完成但裁判失败只补评；调查失败重跑并保留旧尝试。`summary.json` 保存指标及结果，`progress.json` 保存完成进度，`cases/<case>/result.json` 保存 SQL、答案、评分、实际 token 使用量。不同题集的小规模测试与全量结果使用不同目录。
+
+离线回归：
+
+```bash
+uv run --with pytest python -m pytest tests/test_prompt_sauce.py tests/test_opencode_resume.py tests/test_external_paper_protocol.py -q
+```
+
 ### OpenCode 全量运行与断点续跑
 
 论文原版 `BaselineAgent` 也支持同一进度显示和续跑规则：
@@ -256,3 +301,111 @@ manifest 记录协议版本、题目内容及官方 evaluator 的 SHA-256、裁�
   的题目，避免覆盖失败记录。完整新实验请更换 `--output` 目录。
 - API/数据库异常、思考未关闭、裁判解析失败均不会冒充 0 分；有未评分题目时，
   整体 reward 为 `null`，进程非零退出。正常耗尽动作预算但未提交计 0 分。
+
+### ReAct + Fancybag
+
+接入论文原版 `ReActAgent`：保留 3 条固定示例、完整对话历史、动作解析及
+`Observation:` / `observation:` 停止词。模型传输使用 Fancybag，不注入本项目记忆。
+适配层为上游缺失的 Azure 凭据模块提供空占位；实际凭据仍读取 `FANCYBAG_API_KEY`。
+源文件与示例内容哈希、示例顺序写入 manifest，支持原有评分和断点续跑。
+依赖与上面的 PromptSauce 相同。
+
+先验证 1 题（Table 3 的每次尝试 15 动作预算）：
+
+```bash
+.venv/bin/python -m src.benchmarks.external_agents.resume \
+  --agent react --provider fancybag --model deepseek-v4.1-flash \
+  --sample-size 1 --seed 42 --workers 1 --max-steps 15 \
+  --output results/react/fancybag-deepseek-v4.1-flash/smoke1
+```
+
+全量 589 题：
+
+```bash
+.venv/bin/python -m src.benchmarks.external_agents.resume \
+  --agent react --provider fancybag --model deepseek-v4.1-flash \
+  --workers 3 --max-steps 15 \
+  --output results/react/fancybag-deepseek-v4.1-flash/full589-steps15
+```
+
+如需与现有 25 动作的 Base/Strategy 结果对齐，改为 `--max-steps 25`，
+并使用新的 `full589-steps25` 目录。相同命令可续跑；调查与裁判均默认使用所选接口，
+单独设置的 `EXCYTIN_JUDGE_*` 环境变量仍优先覆盖裁判配置。
+
+### ExpeL + Fancybag
+
+使用论文发布的 151 条 insights 和 237 条成功训练轨迹，保留原版提示词、
+动作解析、完整调查历史和 `all-mpnet-base-v2` 的 context + question 向量 top-1 检索。
+不重新训练规则，不使用本项目 SM/PM/EM。发布文件中的 key/trajectory 错配按
+轨迹初始提问重新匹配训练集，无法唯一匹配时终止；修正数量及文件哈希记录在 manifest。
+修正版经验文件保存到 `runtime/expel/`，不改动发布文件。
+
+安装附加依赖（再次 `uv sync` 后需要重装）：
+
+```bash
+uv pip install --python .venv/bin/python -r external_agents/requirements-expel.txt
+```
+
+首次运行会下载 Hugging Face embedding 模型。每个进程只加载一次模型与经验索引，
+各题检索共享索引；模型权重缓存后不必重复下载。调查与评分默认均使用 Fancybag。
+
+先跑 1 题：
+
+```bash
+.venv/bin/python -m src.benchmarks.external_agents.resume \
+  --agent expel --provider fancybag --model deepseek-v4.1-flash \
+  --sample-size 1 --seed 42 --workers 1 --max-steps 15 \
+  --output results/expel/fancybag-deepseek-v4.1-flash/smoke1
+```
+
+全量 589 题（与 ReAct 同为每题 15 动作，支持相同命令断点续跑）：
+
+```bash
+.venv/bin/python -m src.benchmarks.external_agents.resume \
+  --agent expel --provider fancybag --model deepseek-v4.1-flash \
+  --workers 3 --max-steps 15 \
+  --output results/expel/fancybag-deepseek-v4.1-flash/full589-steps15
+```
+
+复现边界：这是发布规则的在线评测，不包含使用 Fancybag 重新进行规则提炼；
+修正了上游经验 key 错配，并缓存进程内向量索引，均在 manifest 留痕。
+
+### ReAct / ExpeL 单步交互修复版（single-step-v2）
+
+默认全量命令：
+
+```bash
+./scripts/run_react.sh
+./scripts/run_expel.sh
+```
+
+两条命令分别执行；需要并行时使用两个终端。追加 `smoke1` / `smoke10`
+可运行固定 seed=42 的 1 / 10 题，默认 `full` 为全量 589 题。
+均为 Fancybag `deepseek-v4.1-flash`、15 动作、3 并发；`smoke1` 使用 1 并发。
+可用 `WORKERS=1 ./scripts/run_expel.sh` 修改并发。
+
+新结果写入 `results/{react,expel}/fancybag-deepseek-v4.1-flash/single-step-v2/`，
+不会复用旧版结果。相同脚本和模式可断点续跑。
+
+该版本增加本地动作边界：只解析第一个完整 Action，丢弃其后的模型生成内容，
+不把模型生成的 Observation 加入历史。SQL 中字符串、反引号、分号和方括号保持原样，
+SQL 仍经过环境只读单语句校验。无成功 SQL 时禁止提交；格式错误最多重试一次，
+重试仍失败则显式报错，不从后续文本寻找答案。两个 Agent 都发送 Observation stop，
+本地边界不依赖服务端是否遵守 stop。每次请求附带简短单步约束，
+`workflow.boundary_events` 保存截断/拒绝事件；manifest 记录协议及实现哈希。
+这些是运行协议修正，已不再使用上游宽松解析器。
+
+### Qwen Code 统一脚本
+
+```bash
+./scripts/run_qwen_code.sh          # 全量 589 题
+./scripts/run_qwen_code.sh smoke10  # 固定抽样 10 题
+./scripts/run_qwen_code.sh smoke1   # 固定抽样 1 题
+```
+
+与 ReAct / ExpeL 共用 resume 入口、中文进度输出和文件布局。默认 Fancybag
+`deepseek-v4.1-flash`、15 动作、3 并发（smoke1 为 1）。全量目录为
+`results/qwen-code/fancybag-deepseek-v4.1-flash/single-step-v2/full589-steps15/`，
+包含 `manifest.json`、`progress.json`、`summary.json`、`cases/` 和重试时的 `attempts/`。
+`single-step-v2` 是本组实验的目录标签；Qwen Code 保持原生工具调用循环，不套用论文 Agent 的文本动作解析器。
+重复同一命令跳过已评分题，补评裁判失败题并重跑调查失败题；旧 batch 输出保留在原目录。

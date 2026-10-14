@@ -1,0 +1,537 @@
+[
+  {
+    "case_id": "alert_lookup",
+    "task": "当前只知道告警标题包含 pm-eval-signal。请定位对应的 AlertId；当前没有告警 ID。",
+    "tables": [
+      {
+        "name": "AlertInfo",
+        "columns": [
+          "AlertId",
+          "Title"
+        ],
+        "rows": [
+          [
+            "a-pm-01",
+            "pm-eval-signal"
+          ],
+          [
+            "a-other",
+            "irrelevant"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "AlertInfo",
+    "expected_value": "a-pm-01",
+    "required_binding": "pm-eval-signal",
+    "allowed_names": [
+      "根据标题线索查证告警概要",
+      "通过告警标识从告警概要关联告警证据"
+    ]
+  },
+  {
+    "case_id": "alert_partial",
+    "task": "E1 已从 AlertInfo 取得 AlertId=a-pm-01。只缺该告警关联的 DeviceName，请直接补这一步，勿重复查 AlertInfo。",
+    "tables": [
+      {
+        "name": "AlertEvidence",
+        "columns": [
+          "AlertId",
+          "DeviceName"
+        ],
+        "rows": [
+          [
+            "a-pm-01",
+            "host-pm-01"
+          ],
+          [
+            "a-other",
+            "host-other"
+          ]
+        ]
+      },
+      {
+        "name": "AlertInfo",
+        "columns": [
+          "AlertId",
+          "Title"
+        ],
+        "rows": [
+          [
+            "a-pm-01",
+            "known"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "AlertEvidence",
+    "expected_value": "host-pm-01",
+    "required_binding": "a-pm-01",
+    "allowed_names": [
+      "根据告警标识查证告警证据",
+      "通过告警标识从告警概要关联告警证据"
+    ]
+  },
+  {
+    "case_id": "email_recipient_partial",
+    "task": "E1 已从 EmailUrlInfo 得到 NetworkMessageId=msg-pm-01。现在只需要这封邮件的 RecipientEmailAddress，不要再查询 URL 表。",
+    "tables": [
+      {
+        "name": "EmailEvents",
+        "columns": [
+          "NetworkMessageId",
+          "RecipientEmailAddress"
+        ],
+        "rows": [
+          [
+            "msg-pm-01",
+            "recipient@pm.example"
+          ],
+          [
+            "msg-other",
+            "other@pm.example"
+          ]
+        ]
+      },
+      {
+        "name": "EmailUrlInfo",
+        "columns": [
+          "NetworkMessageId",
+          "Url"
+        ],
+        "rows": [
+          [
+            "msg-pm-01",
+            "https://pm.example/link"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "EmailEvents",
+    "expected_value": "recipient@pm.example",
+    "required_binding": "msg-pm-01",
+    "allowed_names": [
+      "通过邮件系统分配的消息标识从邮件链接关联邮件详情",
+      "根据邮件系统分配的消息标识查证邮件详情"
+    ]
+  },
+  {
+    "case_id": "email_url_partial",
+    "task": "E1 已核对 EmailPostDeliveryEvents 并取得 NetworkMessageId=msg-pm-02，只差邮件中包含的 Url。直接完成后续查询。",
+    "tables": [
+      {
+        "name": "EmailUrlInfo",
+        "columns": [
+          "NetworkMessageId",
+          "Url"
+        ],
+        "rows": [
+          [
+            "msg-pm-02",
+            "https://pm.example/target"
+          ],
+          [
+            "msg-other",
+            "https://pm.example/other"
+          ]
+        ]
+      },
+      {
+        "name": "EmailPostDeliveryEvents",
+        "columns": [
+          "NetworkMessageId",
+          "Action"
+        ],
+        "rows": [
+          [
+            "msg-pm-02",
+            "moved"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "EmailUrlInfo",
+    "expected_value": "https://pm.example/target",
+    "required_binding": "msg-pm-02",
+    "allowed_names": [
+      "通过邮件系统分配的消息标识从邮件投递后处置关联邮件链接",
+      "根据邮件系统分配的消息标识查证邮件链接"
+    ]
+  },
+  {
+    "case_id": "signin_by_ip",
+    "task": "已知当前关注的登录来源 IPAddress 是 192.0.2.10，查询关联登录记录的 UserPrincipalName。",
+    "tables": [
+      {
+        "name": "SigninLogs",
+        "columns": [
+          "IPAddress",
+          "UserPrincipalName"
+        ],
+        "rows": [
+          [
+            "192.0.2.10",
+            "login@pm.example"
+          ],
+          [
+            "192.0.2.11",
+            "other@pm.example"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "SigninLogs",
+    "expected_value": "login@pm.example",
+    "required_binding": "192.0.2.10",
+    "allowed_names": [
+      "根据登录来源地址查证账号登录"
+    ]
+  },
+  {
+    "case_id": "process_by_pid",
+    "task": "已知当前设备 host-pm-01 的目标 ProcessId=4242，返回目标进程的 ProcessCommandLine，不是父进程命令。设备范围也必须保留。",
+    "tables": [
+      {
+        "name": "DeviceProcessEvents",
+        "columns": [
+          "ProcessId",
+          "DeviceName",
+          "ProcessCommandLine"
+        ],
+        "rows": [
+          [
+            "4242",
+            "host-pm-01",
+            "target-command"
+          ],
+          [
+            "4242",
+            "host-other",
+            "wrong-device-command"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "DeviceProcessEvents",
+    "expected_value": "target-command",
+    "required_binding": "4242",
+    "allowed_names": [
+      "根据目标进程编号查证进程活动"
+    ]
+  },
+  {
+    "case_id": "network_partial",
+    "task": "E1 已从 DeviceProcessEvents 查到 DeviceName=host-pm-01，现在补查这台设备的 RemoteIP。不要重新查进程表。",
+    "tables": [
+      {
+        "name": "DeviceNetworkEvents",
+        "columns": [
+          "DeviceName",
+          "RemoteIP"
+        ],
+        "rows": [
+          [
+            "host-pm-01",
+            "192.0.2.50"
+          ],
+          [
+            "host-other",
+            "192.0.2.99"
+          ]
+        ]
+      },
+      {
+        "name": "DeviceProcessEvents",
+        "columns": [
+          "DeviceName"
+        ],
+        "rows": [
+          [
+            "host-pm-01"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "DeviceNetworkEvents",
+    "expected_value": "192.0.2.50",
+    "required_binding": "host-pm-01",
+    "allowed_names": [
+      "通过设备名称从进程活动关联网络连接",
+      "根据设备名称查证网络连接"
+    ]
+  },
+  {
+    "case_id": "unknown_column_repair",
+    "task": "上一条对 SecurityAlert.Title 的查询报 Unknown column Title。已确认这张表真实名称字段为 AlertName。要查告警名 pm-eval-alert 的 CompromisedEntity，修正后执行。",
+    "tables": [
+      {
+        "name": "SecurityAlert",
+        "columns": [
+          "AlertName",
+          "CompromisedEntity"
+        ],
+        "rows": [
+          [
+            "pm-eval-alert",
+            "host-pm-01"
+          ],
+          [
+            "unrelated",
+            "host-other"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "SecurityAlert",
+    "expected_value": "host-pm-01",
+    "required_binding": "pm-eval-alert",
+    "allowed_names": [
+      "修正查询中不存在的信息项",
+      "根据告警名称查证安全告警"
+    ]
+  },
+  {
+    "case_id": "empty_result_repair",
+    "task": "上一条在 DeviceProcessEvents 用 FileName 等于 pm-worker 没有结果。当前证据表明 Windows 文件可能带 .exe 后缀；请按同一文件名前缀检查实际文件，并返回 ProcessCommandLine。不能无条件扫描全表。",
+    "tables": [
+      {
+        "name": "DeviceProcessEvents",
+        "columns": [
+          "FileName",
+          "ProcessCommandLine"
+        ],
+        "rows": [
+          [
+            "pm-worker.exe",
+            "worker-command"
+          ],
+          [
+            "other.exe",
+            "other-command"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "DeviceProcessEvents",
+    "expected_value": "worker-command",
+    "required_binding": "pm-worker",
+    "allowed_names": [
+      "查询无结果时核查线索内容和匹配方式",
+      "根据文件名称查证进程活动"
+    ]
+  },
+  {
+    "case_id": "schema_unknown",
+    "task": "尚不知道当前事件有哪些日志表、相关表的字段是什么；需要先获得可靠 schema 再组织查询。",
+    "allowed_names": [
+      "确认调查所需的记录结构"
+    ]
+  },
+  {
+    "case_id": "already_complete",
+    "task": "所问 AlertId 和关联 DeviceName 已经通过 E1、E2 完整确认，当前只需提交已核实答案，不需要新的调查操作。",
+    "allowed_names": []
+  },
+  {
+    "case_id": "unrelated_task",
+    "task": "请写一首关于春天的短诗，与日志、安全调查和数据库查询无关。",
+    "allowed_names": []
+  },
+  {
+    "case_id": "parent_process_partial",
+    "task": "E1 已定位 ProcessId=4242，现在只需它的父进程命令行，不是 4242 自身的命令。不要重新定位进程。",
+    "tables": [
+      {
+        "name": "DeviceProcessEvents",
+        "columns": [
+          "ProcessId",
+          "ProcessCommandLine",
+          "InitiatingProcessCommandLine"
+        ],
+        "rows": [
+          [
+            "4242",
+            "child-command",
+            "parent-command"
+          ],
+          [
+            "9999",
+            "other-child",
+            "other-parent"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "DeviceProcessEvents",
+    "expected_value": "parent-command",
+    "required_binding": "4242",
+    "allowed_names": [
+      "根据目标进程编号查证进程活动"
+    ]
+  },
+  {
+    "case_id": "recipient_scope_partial",
+    "task": "已从前序记录得到 NetworkMessageId=msg-scope-01 和 RecipientEmailAddress=target@pm.example。只查这位收件人的 DeliveryAction，同一消息还有其他收件人，不可混入。",
+    "tables": [
+      {
+        "name": "EmailEvents",
+        "columns": [
+          "NetworkMessageId",
+          "RecipientEmailAddress",
+          "DeliveryAction"
+        ],
+        "rows": [
+          [
+            "msg-scope-01",
+            "target@pm.example",
+            "Blocked"
+          ],
+          [
+            "msg-scope-01",
+            "other@pm.example",
+            "Delivered"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "EmailEvents",
+    "expected_value": "Blocked",
+    "required_binding": "msg-scope-01",
+    "allowed_names": [
+      "根据邮件系统分配的消息标识查证邮件详情",
+      "通过邮件系统分配的消息标识从邮件投递后处置关联邮件详情",
+      "通过邮件系统分配的消息标识从邮件链接关联邮件详情"
+    ]
+  },
+  {
+    "case_id": "pid_reuse_scope",
+    "task": "E1 已知设备 host-pm-01、ProcessId=4242、ProcessCreationTime=2026-01-01T00:00:00Z。只补查这一次进程的命令行；同设备后来重用了同一 PID，不能混淆。",
+    "tables": [
+      {
+        "name": "DeviceProcessEvents",
+        "columns": [
+          "ProcessId",
+          "DeviceName",
+          "ProcessCreationTime",
+          "ProcessCommandLine"
+        ],
+        "rows": [
+          [
+            "4242",
+            "host-pm-01",
+            "2026-01-01T00:00:00Z",
+            "original-command"
+          ],
+          [
+            "4242",
+            "host-pm-01",
+            "2026-01-02T00:00:00Z",
+            "reused-pid-command"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "DeviceProcessEvents",
+    "expected_value": "original-command",
+    "required_binding": "4242",
+    "allowed_names": [
+      "根据目标进程编号查证进程活动"
+    ]
+  },
+  {
+    "case_id": "network_process_scope",
+    "task": "E1 从进程记录确认 DeviceName=host-pm-01、目标 ProcessId=4242。下一步只查该进程发起连接的 RemoteIP，不是同设备所有连接；网络表的发起进程字段是 InitiatingProcessId。",
+    "tables": [
+      {
+        "name": "DeviceNetworkEvents",
+        "columns": [
+          "DeviceName",
+          "InitiatingProcessId",
+          "RemoteIP"
+        ],
+        "rows": [
+          [
+            "host-pm-01",
+            "4242",
+            "192.0.2.42"
+          ],
+          [
+            "host-pm-01",
+            "9999",
+            "192.0.2.99"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "DeviceNetworkEvents",
+    "expected_value": "192.0.2.42",
+    "required_binding": "host-pm-01",
+    "allowed_names": [
+      "通过设备名称从进程活动关联网络连接",
+      "根据设备名称查证网络连接"
+    ]
+  },
+  {
+    "case_id": "unsupported_registry",
+    "task": "当前任务只查询 DeviceRegistryEvents 的注册表 Run 键持久化记录，schema 已提供，不需要检查 schema，也不需要进程、文件、告警或网络查询。只选能直接帮助这一步的已激活记忆；没有就不选。",
+    "allowed_names": []
+  },
+  {
+    "case_id": "candidate_not_active",
+    "task": "当前 L3 仅使用 EmailEvents.InternetMessageId 查收件人。已经有这个字段的值和 schema；没有 NetworkMessageId，不需要其他表、不需要改变查询路径。只选直接适用的 active 记忆，没有就不选。",
+    "allowed_names": []
+  },
+  {
+    "case_id": "email_missing_prerequisite",
+    "task": "请查出这封邮件的收件人。目前只有调查目标，尚未取得邮件标识、邮件内容或其他具体定位线索，也没有查过数据库。",
+    "allowed_names": []
+  },
+  {
+    "case_id": "email_field_name_only",
+    "task": "请查出目标邮件的收件人。目前只知道邮件系统有一个 NetworkMessageId 字段，但还不知道目标邮件在该字段中的值，也没有其他邮件线索。",
+    "allowed_names": []
+  },
+  {
+    "case_id": "email_natural_language",
+    "task": "已确认目标邮件在邮件系统中的消息标识为 msg-pm-01，属于本次调查。请继续查出这封邮件的收件人。",
+    "tables": [
+      {
+        "name": "EmailEvents",
+        "columns": [
+          "NetworkMessageId",
+          "RecipientEmailAddress"
+        ],
+        "rows": [
+          [
+            "msg-pm-01",
+            "recipient@pm.example"
+          ],
+          [
+            "msg-other",
+            "other@pm.example"
+          ]
+        ]
+      },
+      {
+        "name": "EmailUrlInfo",
+        "columns": [
+          "NetworkMessageId",
+          "Url"
+        ],
+        "rows": [
+          [
+            "msg-pm-01",
+            "https://pm.example/link"
+          ]
+        ]
+      }
+    ],
+    "expected_table": "EmailEvents",
+    "expected_value": "recipient@pm.example",
+    "required_binding": "msg-pm-01",
+    "allowed_names": [
+      "通过邮件系统分配的消息标识从邮件链接关联邮件详情",
+      "根据邮件系统分配的消息标识查证邮件详情"
+    ]
+  }
+]

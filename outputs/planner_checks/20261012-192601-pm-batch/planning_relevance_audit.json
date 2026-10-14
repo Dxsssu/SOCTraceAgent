@@ -1,0 +1,182 @@
+{
+  "method": "Manual semantic audit against context/question, selected PM operations, input_slots and semantic_refs; no ground truth answers or database results consulted. Judgments concern plausible planning usefulness, not measured downstream success.",
+  "admitted_judgments": {
+    "weak_or_misdirecting": 4,
+    "useful_start": 2,
+    "unassessable": 1,
+    "needs_adaptation": 1
+  },
+  "all_judgments": {
+    "not_suitable": 2,
+    "needs_adaptation": 8,
+    "weak_or_misdirecting": 4,
+    "useful_start": 2,
+    "useful_but_false_rejected": 1,
+    "weak_generic": 1,
+    "weak_generic_false_rejection": 1,
+    "unassessable": 1
+  },
+  "correction_to_previous_commentary": "incident_322-q0016 context contains the full URL; missing URL is a verifier false negative, not genuinely absent input.",
+  "cases": [
+    {
+      "case_id": "incident_134-q0023",
+      "admitted": false,
+      "candidate": null,
+      "judgment": "not_suitable",
+      "reason": "选中 candidate 状态的链接点击抽样流程；题目需要可疑邮件的发送方 IP，点击来源 IP 与邮件发送 IP 不能混同。",
+      "suggested_planning_step": "先定位对应邮件/链接告警与消息标识，再查询邮件发送方 IP；需要补出关联步骤。"
+    },
+    {
+      "case_id": "incident_134-q0045",
+      "admitted": false,
+      "candidate": "根据登录来源地址查证账号登录",
+      "judgment": "needs_adaptation",
+      "reason": "账号登录方向相关，但输入提供账号和精确时间，并未提供目标登录 IP；该 PM 使用了错误的起始条件，且 refs 未包含 UserId。",
+      "suggested_planning_step": "按已知账号与题目时间定位登录记录，确认匿名登录事件后读取用户 ID。"
+    },
+    {
+      "case_id": "incident_166-q0030",
+      "admitted": true,
+      "candidate": "根据登录来源地址查证账号登录",
+      "judgment": "weak_or_misdirecting",
+      "reason": "背景 IP 属于可疑收件箱规则活动，不足以证明是密码喷洒来源；按该 IP 过滤后再查攻击来源 IP 有确认偏差。",
+      "suggested_planning_step": "先定位密码喷洒告警/事件，再提取来源 IP；背景账号/IP 只能作为待验证关联线索。"
+    },
+    {
+      "case_id": "incident_166-q0053",
+      "admitted": true,
+      "candidate": "根据登录来源地址查证账号登录",
+      "judgment": "weak_or_misdirecting",
+      "reason": "已知匿名登录 IP 不等于 incident 最后一个告警的 IP；PM 无告警集合、排序或终点定位操作。",
+      "suggested_planning_step": "先确认 incident 关联告警范围及时间顺序，定位最后一个告警，再取其 IP 实体。"
+    },
+    {
+      "case_id": "incident_166-q0079",
+      "admitted": false,
+      "candidate": "根据用户登录账号查证账号登录",
+      "judgment": "needs_adaptation",
+      "reason": "登录领域相关，但目标账号尚未知，refs 也未提供 SAP 应用名和应用 ID 字段；直接放宽输入检查仍缺关键步骤。",
+      "suggested_planning_step": "先确认 BEC 账号，再按 SAP 与时间范围定位可疑登录，读取对应应用 ID。"
+    },
+    {
+      "case_id": "incident_322-q0014",
+      "admitted": true,
+      "candidate": "根据设备名称查证网络连接",
+      "judgment": "useful_start",
+      "reason": "设备名已知，DeviceNetworkEvents 的 DeviceName/RemoteUrl 可支持由设备定位 URL 的调查步骤。",
+      "suggested_planning_step": "保留时间和事件范围，核实端点网络记录与题目要求的代理日志是否对应，不能把任意 URL 当成恶意 URL。"
+    },
+    {
+      "case_id": "incident_322-q0016",
+      "admitted": false,
+      "candidate": "根据网址查证邮件链接",
+      "judgment": "useful_but_false_rejected",
+      "reason": "context 已明确给出完整恶意 URL。EmailUrlInfo 按 URL 查询并得到 NetworkMessageId 是合适的起步操作；核对返回缺少网址属于明确误判。",
+      "suggested_planning_step": "按 URL 获得 NetworkMessageId，再关联 EmailEvents 读取 RecipientEmailAddress；后半步未由所选 PM 完整覆盖。"
+    },
+    {
+      "case_id": "incident_322-q0053",
+      "admitted": false,
+      "candidate": "根据目标进程命令内容查证进程活动",
+      "judgment": "not_suitable",
+      "reason": "题目询问命令内容，候选 PM 却以已知命令内容为定位条件，形成循环依赖。",
+      "suggested_planning_step": "先按 final alert/Ntdsutil 行为线索定位目标告警与进程，再读取命令行。"
+    },
+    {
+      "case_id": "incident_34-q0001",
+      "admitted": false,
+      "candidate": "确认调查所需的记录结构",
+      "judgment": "weak_generic",
+      "reason": "查结构是通用动作，semantic_refs 覆盖 22 张表，未提供人工启动自动调查到主机的具体证据路径。",
+      "suggested_planning_step": "优先检查相关安全告警的调查信息、扩展属性及实体，在日期/用户范围内识别人工启动记录。"
+    },
+    {
+      "case_id": "incident_34-q0025",
+      "admitted": true,
+      "candidate": "根据设备名称查证告警证据",
+      "judgment": "useful_start",
+      "reason": "已知设备名，AlertEvidence 的 AlertId/FileName/EntityType/EvidenceRole 能支持查找相关告警文件实体。",
+      "suggested_planning_step": "需要进一步限定 ASEP/注册表异常告警，并区分执行文件与被注册文件；不能直接取设备上任意 FileName。"
+    },
+    {
+      "case_id": "incident_34-q0078",
+      "admitted": false,
+      "candidate": "根据文件名称、发起进程文件名称查证进程活动",
+      "judgment": "needs_adaptation",
+      "reason": "题目没有给出目标与父进程两个文件名，也未证明 schtasks 是后续 PowerShell 的父进程；PM 绑定方式不适合直接执行。",
+      "suggested_planning_step": "用调度任务时间与后续 PowerShell 行为建立关联，再读取运行账户。"
+    },
+    {
+      "case_id": "incident_38-q0000",
+      "admitted": false,
+      "candidate": "根据文件名称、目标进程命令内容查证进程活动",
+      "judgment": "needs_adaptation",
+      "reason": "进程表与 AccountName 相关，但已有设备名和 PID，候选却额外要求未知命令行；更适合使用现有定位键的 PM。",
+      "suggested_planning_step": "按设备/PID及事件范围定位进程，再确认注入链上相关账户。"
+    },
+    {
+      "case_id": "incident_38-q0001",
+      "admitted": false,
+      "candidate": "抽样查看进程活动以寻找线索",
+      "judgment": "weak_generic_false_rejection",
+      "reason": "question 已说明查询进程命令行，调查对象缺失的判断过严；但简单抽样也缺乏 incident/时间/设备锚点，不能认为放行就能可靠解决题目。",
+      "suggested_planning_step": "先界定本 incident 的调查范围或取得相关发现行为告警，再检查进程命令行。"
+    },
+    {
+      "case_id": "incident_38-q0003",
+      "admitted": false,
+      "candidate": "根据标题线索查证告警证据",
+      "judgment": "needs_adaptation",
+      "reason": "告警证据方向相关，但背景标题属于发现行为，不一定是目标注入事件；该 PM refs 也没有 RemoteUrl。",
+      "suggested_planning_step": "用注入行为和日期定位目标告警，再检查 URL 实体或关联网络事件。"
+    },
+    {
+      "case_id": "incident_39-q0007",
+      "admitted": true,
+      "candidate": "根据描述线索、标题线索查证安全事件",
+      "judgment": "weak_or_misdirecting",
+      "reason": "绑定把钓鱼背景作为描述、把整个问题当标题；两者并不保证筛中禁用 Defender 的事件。SecurityIncident 所给字段不直接覆盖执行账户。",
+      "suggested_planning_step": "定位禁用 Defender 的告警/进程活动，再取操作账户；种子钓鱼事件仅作关联起点。"
+    },
+    {
+      "case_id": "incident_39-q0089",
+      "admitted": true,
+      "candidate": "根据目标进程命令内容查证进程活动",
+      "judgment": "unassessable",
+      "reason": "question 只有截断文本 The suspicious file，不能确定待回答问题，因此无法评价规划帮助。",
+      "suggested_planning_step": "先修复样本输入；已有命令行可执行不等于与未知问题相关。"
+    },
+    {
+      "case_id": "incident_5-q0028",
+      "admitted": true,
+      "candidate": "根据文件名称查证进程活动",
+      "judgment": "needs_adaptation",
+      "reason": "进程表方向相关，但绑定的是 get-userprttoken.ps1 脚本名；它不一定是进程 FileName，原操作可能误把脚本名作为可执行文件名过滤。",
+      "suggested_planning_step": "先在命令行中定位该脚本，再读取实际进程 FileName，必要时检查父进程。"
+    },
+    {
+      "case_id": "incident_5-q0050",
+      "admitted": false,
+      "candidate": "根据告警名称、受影响实体、描述线索查证安全告警",
+      "judgment": "needs_adaptation",
+      "reason": "安全告警方向可用，但当前 bindings 的描述是删除卷影副本，question 针对 PRT；不能只沿背景行为过滤。",
+      "suggested_planning_step": "以 PRT 访问行为定位相关告警，再通过已验证设备/事件关联读取进程文件名。"
+    },
+    {
+      "case_id": "incident_55-q0060",
+      "admitted": true,
+      "candidate": "根据文件名称查证进程活动",
+      "judgment": "weak_or_misdirecting",
+      "reason": "已知工具进程运行账户并不必然等于读取指定 ADFS 对象 DKM key 的用户；PM 没有对象 ID 与读取操作的证据关联。",
+      "suggested_planning_step": "先定位目标对象 ID 对应的目录读取活动及执行主体，再用进程线索交叉验证。"
+    },
+    {
+      "case_id": "incident_55-q0077",
+      "admitted": false,
+      "candidate": "根据告警名称、描述线索查证安全告警",
+      "judgment": "needs_adaptation",
+      "reason": "安全告警可作为方向，但输入没有精确 AlertName；不能把背景 Jul4 的进程注入作为 Jul7 OAuth 凭证变更的描述过滤。",
+      "suggested_planning_step": "按题目日期、Luciano Herrera、OAuth 凭证增加行为定位活动，再读取应用名与实例信息。"
+    }
+  ]
+}

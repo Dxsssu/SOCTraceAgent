@@ -93,3 +93,38 @@ def test_chat_uses_paratera_compatible_request_shape() -> None:
         reasoning_effort="low",
         extra_body={"thinking": {"type": "disabled"}},
     )
+
+
+def test_fancybag_uses_its_own_endpoint_model_and_key() -> None:
+    with patch.dict(os.environ, {
+        "SOCAGENT_LLM_PROVIDER": "fancybag",
+        "FANCYBAG_API_KEY": "fancybag-test-key",
+        "PARATERA_API_KEY": "other-provider-key",
+        "PARATERA_BASE_URL": "https://other.invalid/v1",
+    }, clear=True):
+        config = LLMConfig.from_env()
+    assert config.api_key == "fancybag-test-key"
+    assert config.base_url == "https://sub.fancybag.cn/v1"
+    assert config.model == "deepseek-v4.1-flash"
+    assert config.embedding_model == ""
+    with patch("src.agent.llm.OpenAI") as openai:
+        LLMClient(config)
+    assert openai.call_args.kwargs["base_url"] == config.base_url
+    assert openai.call_args.kwargs["api_key"] == "fancybag-test-key"
+
+
+def test_fancybag_never_falls_back_to_paratera_key() -> None:
+    import pytest
+    with patch.dict(os.environ, {
+        "SOCAGENT_LLM_PROVIDER": "fancybag", "PARATERA_API_KEY": "other-key",
+        "FANCYBAG_API_KEY": "",
+    }, clear=True):
+        with pytest.raises(ValueError, match="FANCYBAG_API_KEY"):
+            LLMConfig.from_env()
+
+
+def test_invalid_provider_is_rejected() -> None:
+    import pytest
+    with patch.dict(os.environ, {"SOCAGENT_LLM_PROVIDER": "typo"}, clear=True):
+        with pytest.raises(ValueError, match="SOCAGENT_LLM_PROVIDER"):
+            LLMConfig.from_env()

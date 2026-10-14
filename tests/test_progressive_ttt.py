@@ -1,4 +1,7 @@
+from pm_fakes import verify
+import json
 from dataclasses import replace
+from src.schema.itt import itt_payload, parse_itt
 from unittest.mock import patch
 
 import pytest
@@ -81,20 +84,39 @@ def test_sqlite_roundtrip_selection_and_compare_and_swap(tmp_path):
     assert store.get_latest_ttt('event').root_nodes[0].status == S.OPEN
 
 
+def initial_itt():
+    payload = itt_payload(tree())
+    payload[0]["children"].pop()  # New frontiers are created when they have an actionable task.
+    return payload
+
+
+def expanded_itt(current, executions=()):
+    payload = itt_payload(current, executions)
+    payload[0]["children"].append({"id": "Q2", "objective": "进程创建时间是什么？", "status": "todo",
+        "children": [{"id": "T2", "objective": "读取已定位进程的创建记录", "status": "todo",
+                      "semantic_refs": [], "execution_code": "", "execution_result": ""}]})
+    # Ordering carries the planner's choice of the next task.
+    payload[0]["children"].reverse()
+    return payload
+
+
 def test_benchmark_progressive_two_query_investigation():
     workflow = None
     def llm(system, prompt):
+        if "你是 Verifier" in system: return verify(prompt)
+        if system.startswith("你正在为当前 Agent"):
+            return "[]"
         if '最终答案整理器' in system:
             return 'answer: "42, 2026-01-01T00:00:00Z"'
-        if '中的 Executor' in system:
+        if '你是 SQL 查询生成器' in system:
             return 'sql: SELECT ProcessId FROM AlertEvidence LIMIT 1'
-        if '中的 Reviewer' in system:
+        if '你是 Reviewer' in system:
             if len(workflow.state.executions) == 1:
-                return 'decision: continue\nfindings: ["进程 ID 为 42"]\ngaps: ["缺少创建时间"]'
-            return 'decision: ready_to_submit\nfindings: ["进程创建时间已确认"]\nanswer_facts: ["42, 2026-01-01T00:00:00Z"]'
+                return 'summary: 进程 ID 为 42\nsuggestion: 缺少创建时间\n'
+            return 'summary: 进程创建时间已确认\nsuggestion: 提交答案\n'
         if workflow.state is None:
-            return yaml.safe_dump({'ttt': initial()}, allow_unicode=True)
-        return yaml.safe_dump(expansion(workflow.state.ttt), allow_unicode=True)
+            return yaml.safe_dump(initial_itt(), allow_unicode=True)
+        return yaml.safe_dump(expanded_itt(workflow.state.ttt, workflow.state.executions), allow_unicode=True)
     workflow = ExcytinBenchWorkflow(max_steps=5, llm=llm)
     first = workflow.act({'context': '告警 A', 'question': '进程 ID 和创建时间是什么？'})
     assert first.node_id == 'T9'
@@ -108,29 +130,20 @@ def test_benchmark_progressive_two_query_investigation():
     assert workflow.get_logging()['executions'][0]['execution_id'] == 'E1'
 
 
-def test_deferred_only_tree_replans_instead_of_submitting():
-    workflow = None
-    def llm(system, prompt):
-        if '中的 Executor' in system: return 'sql: SELECT 1'
-        if workflow.state is None:
-            payload = initial()
-            payload['root_nodes'][0]['children'][0]['children'] = []
-            payload['next_task_id'] = None
-            return yaml.safe_dump({'ttt': payload}, allow_unicode=True)
-        return yaml.safe_dump(expansion(workflow.state.ttt), allow_unicode=True)
-    workflow = ExcytinBenchWorkflow(max_steps=5, llm=llm)
-    action = workflow.act('确定进程 ID 和创建时间')
-    assert action.action_type == BenchmarkActionType.QUERY
-    assert action.node_id == 'T2'
+def test_initial_frontier_without_task_is_rejected():
+    payload = initial_itt()
+    payload[0]["children"][0]["children"] = []
+    with pytest.raises(ValueError, match="child"):
+        parse_itt(payload, "event", 1)
 
 
-def test_background_planner_uses_same_patch_protocol(tmp_path):
+def test_background_planner_uses_same_itt_protocol(tmp_path):
     workflow = SOCTraceWorkflow(db_path=str(tmp_path / 'runtime.db'))
     event = Event(event_id='event', event_name='alert', message='确定进程 ID 和创建时间', event_status=EventStatus.REPLANNING)
-    current = workflow.ttt_store.save_snapshot(tree())
+    current = workflow.ttt_store.save_snapshot(parse_itt(initial_itt(), "event", 1))
     workflow.storage.save_event(event)
     workflow.storage.save_round_review(RoundReview(event_id='event', round_id=1, gaps=('缺少创建时间',)))
-    with patch('src.agent.planner.call_llm', return_value=yaml.safe_dump(expansion(current), allow_unicode=True)):
+    with patch('src.agent.planner.call_llm', return_value=yaml.safe_dump(expanded_itt(current), allow_unicode=True)):
         updated = workflow.planner.process_replanning(event)
     assert updated.event_status == EventStatus.PLANNED
     saved = workflow.ttt_store.get_latest_ttt('event')
@@ -154,7 +167,7 @@ def test_resolution_requires_evidence_and_blocked_is_not_success():
 def test_background_open_goal_without_task_is_not_completed(tmp_path):
     workflow = SOCTraceWorkflow(db_path=str(tmp_path / 'runtime.db'))
     event = Event(event_id='event', event_name='alert', message='定位进程', event_status=EventStatus.REPLANNING)
-    current = workflow.ttt_store.save_snapshot(tree())
+    current = workflow.ttt_store.save_snapshot(parse_itt(initial_itt(), "event", 1))
     workflow.storage.save_event(event)
     workflow.storage.save_round_review(RoundReview(event_id='event', round_id=1, gaps=('缺少证据',)))
     update = {'base_version': current.version, 'updates': [], 'next_task_id': None}

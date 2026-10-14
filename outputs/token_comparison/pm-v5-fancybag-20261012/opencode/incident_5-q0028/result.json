@@ -1,0 +1,92 @@
+{
+  "agent": "opencode",
+  "case_id": "incident_5-q0028",
+  "incident": "incident_5",
+  "qid": 28,
+  "question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?",
+  "model": "deepseek-v4.1-flash",
+  "status": "submitted",
+  "answer": "BrowserCore.exe — the PowerShell script get-userprttoken.ps1 (launched via WmiPrvSE.exe) spawned browsercore.exe to attempt access to the user's Primary Refresh Token (PRT).",
+  "actions": [
+    {
+      "type": "execute_sql",
+      "sql": "SHOW TABLES",
+      "observation": "[('AADManagedIdentitySignInLogs',), ('AADNonInteractiveUserSignInLogs',), ('AADProvisioningLogs',), ('AADRiskyUsers',), ('AADServicePrincipalSignInLogs',), ('AADUserRiskEvents',), ('AlertEvidence',), ('AlertInfo',), ('AuditLogs',), ('AzureMetrics',), ('CloudAppEvents',), ('DeviceEvents',), ('DeviceFileCertificateInfo',), ('DeviceFileEvents',), ('DeviceImageLoadEvents',), ('DeviceInfo',), ('DeviceLogonEvents',), ('DeviceNetworkEvents',), ('DeviceNetworkInfo',), ('DeviceProcessEvents',), ('DeviceRegistryEvents',), ('EmailAttachmentInfo',), ('EmailEvents',), ('EmailUrlInfo',), ('Heartbeat',), ('IdentityDirectoryEvents',), ('IdentityLogonEvents',), ('IdentityQueryEvents',), ('MicrosoftAzureBastionAuditLogs',), ('MicrosoftGraphActivityLogs',), ('SecurityAlert',), ('SecurityIncident',), ('SigninLogs',), ('ThreatIntelligenceIndicator',), ('UrlClickEvents',), ('Usage',)]",
+      "success": true,
+      "row_count": 36,
+      "elapsed_seconds": 0.019145000027492642
+    },
+    {
+      "type": "execute_sql",
+      "sql": "SELECT DeviceName, ActionType, FileName, ProcessCommandLine, InitiatingProcessFileName, InitiatingProcessCommandLine, Timestamp FROM DeviceProcessEvents WHERE ProcessCommandLine LIKE '%prttoken%' OR ProcessCommandLine LIKE '%PRT%' OR FileName LIKE '%prttoken%' OR InitiatingProcessCommandLine LIKE '%prttoken%' LIMIT 50",
+      "observation": "[('vnevado-win10v.vnevado.alpineskihouse.co', 'ProcessCreated', 'wevtutil.exe', 'wevtutil.exe install-manifest \"C:ProgramDataMicrosoftWindows DefenderPlatform4.18.24050.7-0Microsoft-Antimalware-RTP.man\" \"/resourceFilePath:C:ProgramDataMicrosoftWindows DefenderPlatform4.18.24050.7-0MpRtp.dll\" \"/messageFilePath:C:ProgramDataMicrosoftWindows DefenderPlatform4.18.24050.7-0MpRtp.dll\" \"/parameterFilePath:C:ProgramDataMicrosoftWindows DefenderPlatform4.18.24050.7-0MpRtp.dll\"', 'MsMpEng.exe', '\"MsMpEng.exe\"', '2024-06-20 07:37:03.918385+00:00'), ('mb-adfs.internal.niseko.alpineskihouse.co', 'ProcessCreated', 'wevtutil.exe', 'wevtutil.exe install-manifest \"C:ProgramDataMicrosoftWindows DefenderPlatform4.18.24050.7-0Microsoft-Antimalware-RTP.man\" \"/resourceFilePath:C:ProgramDataMicrosoftWindows DefenderPlatform4.18.24050.7-0MpRtp.dll\" \"/messageFilePath:C:ProgramDataMicrosoftWindows DefenderPlatform4.18.24050.7-0MpRtp.dll\" \"/parameterFilePath:C:ProgramDataMicrosoftWindows DefenderPlatform4.18.24050.7-0MpRtp.dll\"', 'MsMpEng.exe', '\"MsMpEng.exe\"', '2024-06-20 08:30:26.500523+00:00'), ('vnevado-win10s.vnevado.alpineskihouse.co', 'ProcessCreated', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', 'WmiPrvSE.exe', 'wmiprvse.exe -secured -Embedding', '2024-06-20 09:10:53.131888+00:00'), ('vnevado-win10r.vnevado.alpineskihouse.co', 'ProcessCreated', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', 'WmiPrvSE.exe', 'wmiprvse.exe -secured -Embedding', '2024-06-20 09:10:54.100679+00:00'), ('vnevado-win10s.vnevado.alpineskihouse.co', 'ProcessCreated', 'BrowserCore.exe', '\"browsercore.exe\"', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', '2024-06-20 09:10:59.878523+00:00'), ('vnevado-win10r.vnevado.alpineskihouse.co', 'ProcessCreated', 'BrowserCore.exe', '\"browsercore.exe\"', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', '2024-06-20 09:11:01.268207+00:00'), ('vnevado-win11t.vnevado.alpineskihouse.co', 'ProcessCreated', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', 'WmiPrvSE.exe', 'wmiprvse.exe -secured -Embedding', '2024-06-20 09:29:43.951789+00:00'), ('vnevado-win11t.vnevado.alpineskihouse.co', 'ProcessCreated', 'BrowserCore.exe', '\"browsercore.exe\"', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', '2024-06-20 09:29:49.611073+00:00'), ('vnevado-win11u.vnevado.alpineskihouse.co', 'ProcessCreated', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', 'WmiPrvSE.exe', 'wmiprvse.exe -secured -Embedding', '2024-06-20 09:32:06.121070+00:00'), ('vnevado-win11u.vnevado.alpineskihouse.co', 'ProcessCreated', 'BrowserCore.exe', '\"browsercore.exe\"', 'powershell.exe', 'powershell -File C:Scriptsget-userprttoken.ps1', '2024-06-20 09:32:12.479136+00:00')]",
+      "success": true,
+      "row_count": 10,
+      "elapsed_seconds": 0.017971999943256378
+    },
+    {
+      "type": "submit_answer",
+      "answer": "BrowserCore.exe — the PowerShell script get-userprttoken.ps1 (launched via WmiPrvSE.exe) spawned browsercore.exe to attempt access to the user's Primary Refresh Token (PRT)."
+    }
+  ],
+  "usage": [
+    {
+      "prompt_tokens": 766,
+      "completion_tokens": 10,
+      "total_tokens": 776
+    },
+    {
+      "prompt_tokens": 2668,
+      "completion_tokens": 45,
+      "total_tokens": 2713
+    },
+    {
+      "prompt_tokens": 2893,
+      "completion_tokens": 193,
+      "total_tokens": 3086,
+      "prompt_tokens_details": {
+        "cached_tokens": 1792
+      }
+    },
+    {
+      "prompt_tokens": 4224,
+      "completion_tokens": 116,
+      "total_tokens": 4340
+    }
+  ],
+  "llm_calls": 4,
+  "max_steps": 25,
+  "returncode": -15,
+  "post_terminal_usage": [],
+  "elapsed_seconds": 19.588558667106554,
+  "process_elapsed_seconds": 19.62670654221438,
+  "evaluation": {
+    "exact_match": false,
+    "containment_match": true,
+    "ground_truth": "browsercore.exe",
+    "submitted_answer": "BrowserCore.exe — the PowerShell script get-userprttoken.ps1 (launched via WmiPrvSE.exe) spawned browsercore.exe to attempt access to the user's Primary Refresh Token (PRT)."
+  },
+  "judge_usage": [
+    {
+      "prompt_tokens": 820,
+      "completion_tokens": 86,
+      "total_tokens": 906
+    },
+    {
+      "prompt_tokens": 889,
+      "completion_tokens": 141,
+      "total_tokens": 1030
+    }
+  ],
+  "paper_evaluation": {
+    "check_ans_response": "Analysis: The submitted answer identifies `BrowserCore.exe`, which matches the golden answer `browsercore.exe` (case-insensitive), and provides relevant context about the PRT access attempt.\n\nIs_Answer_Correct: True",
+    "reward": 1,
+    "check_ans_reflection": "Reflection: The previous evaluation correctly identified that the submitted answer includes `BrowserCore.exe`, which matches the golden answer `browsercore.exe` ignoring case. The additional context about `get-userprttoken.ps1` and PRT access is relevant and does not contradict the golden answer.\n\nAnalysis: The key requested process name is present in the submitted answer. The capitalization difference is immaterial, and the extra context is appropriate for the incident description.\n\nIs_Answer_Correct: True"
+  },
+  "evaluation_status": "scored",
+  "llm_evaluation": {
+    "llm_judge_answer_correct": true,
+    "llm_judge_reward": 1,
+    "llm_judge_answer_analysis": "Reflection: The previous evaluation correctly identified that the submitted answer includes `BrowserCore.exe`, which matches the golden answer `browsercore.exe` ignoring case. The additional context about `get-userprttoken.ps1` and PRT access is relevant and does not contradict the golden answer.\n\nAnalysis: The key requested process name is present in the submitted answer. The capitalization difference is immaterial, and the extra context is appropriate for the incident description.\n\nIs_Answer_Correct: True"
+  }
+}

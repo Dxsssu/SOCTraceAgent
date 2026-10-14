@@ -1,0 +1,423 @@
+[
+  {
+    "case_id": "incident_322-q0014",
+    "mode": "with_pm",
+    "input": {
+      "context": "In a recent incident, a user (`alyssat@vnevado.alpineskihouse.co`) clicked on a potentially malicious URL. Following this, emails containing malicious URLs were detected and removed. A malicious URL click was later detected on a device. The connection was made from the host `vnevado-win11h.vnevado.alpineskihouse.co` to the suspicious URL, which was reported in our proxy logs. Specific actions include investigating the URL connection from the proxy logs.",
+      "question": "Can you retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`?"
+    },
+    "pm": [
+      {
+        "name": "根据设备名称查证网络连接",
+        "status": "active",
+        "goal": "根据已知的设备名称，调查设备网络连接的远端地址、端口和发起进程。",
+        "input_slots": {
+          "设备名称": "本次调查已提供或已查得设备名称的具体内容。"
+        },
+        "operations": "用已知的设备名称筛选网络连接，在当前调查范围内读取问题所需的信息。",
+        "semantic_refs": [
+          {
+            "table": "DeviceNetworkEvents",
+            "fields": [
+              "DeviceId",
+              "DeviceName",
+              "InitiatingProcessCommandLine",
+              "InitiatingProcessId",
+              "RemoteIP",
+              "RemotePort",
+              "RemoteUrl",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ]
+      }
+    ],
+    "success": true,
+    "itt": [
+      {
+        "id": "G1",
+        "objective": "Retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`.",
+        "status": "todo",
+        "children": [
+          {
+            "id": "F1",
+            "objective": "沿 Host 线索调查 `vnevado-win11h.vnevado.alpineskihouse.co` 的网络连接，确定其连接的远端地址、端口和发起进程，以识别恶意 URL。",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T1",
+                "objective": "根据设备名称 `vnevado-win11h.vnevado.alpineskihouse.co` 筛选网络连接记录，读取远端 URL 信息。",
+                "status": "todo",
+                "semantic_refs": [
+                  {
+                    "table": "DeviceNetworkEvents",
+                    "fields": [
+                      "DeviceName",
+                      "RemoteUrl",
+                      "RemoteIP",
+                      "RemotePort",
+                      "InitiatingProcessCommandLine",
+                      "InitiatingProcessId",
+                      "TimeGenerated"
+                    ]
+                  }
+                ],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "next_task_id": "T1",
+    "usage": {
+      "calls": 1,
+      "input_tokens": 1464,
+      "output_tokens": 228
+    },
+    "attempts": 1
+  },
+  {
+    "case_id": "incident_322-q0014",
+    "mode": "without_pm",
+    "input": {
+      "context": "In a recent incident, a user (`alyssat@vnevado.alpineskihouse.co`) clicked on a potentially malicious URL. Following this, emails containing malicious URLs were detected and removed. A malicious URL click was later detected on a device. The connection was made from the host `vnevado-win11h.vnevado.alpineskihouse.co` to the suspicious URL, which was reported in our proxy logs. Specific actions include investigating the URL connection from the proxy logs.",
+      "question": "Can you retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`?"
+    },
+    "pm": [],
+    "success": true,
+    "itt": [
+      {
+        "id": "G1",
+        "objective": "Retrieve the malicious URL detected in the proxy logs originating from vnevado-win11h.vnevado.alpineskihouse.co.",
+        "status": "todo",
+        "children": [
+          {
+            "id": "F1",
+            "objective": "Investigate proxy logs to identify the malicious URL accessed from the host vnevado-win11h.vnevado.alpineskihouse.co.",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T1",
+                "objective": "Query proxy logs for connections originating from vnevado-win11h.vnevado.alpineskihouse.co to identify the malicious URL.",
+                "status": "todo",
+                "semantic_refs": [],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "next_task_id": "T1",
+    "usage": {
+      "calls": 2,
+      "input_tokens": 2592,
+      "output_tokens": 449
+    },
+    "attempts": 2
+  },
+  {
+    "case_id": "incident_5-q0028",
+    "mode": "with_pm",
+    "input": {
+      "context": "A security incident raised flags due to suspicious WMI process creation observed on a machine, which is indicative of possible malware activity. This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts. WMI is often utilized by malware to spawn new processes, breaking process trees and further infecting a machine.",
+      "question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?"
+    },
+    "pm": [
+      {
+        "name": "根据文件名称查证进程活动",
+        "status": "active",
+        "goal": "根据已知的文件名称，调查进程命令行、进程标识、父进程和运行账户。",
+        "input_slots": {
+          "文件名称": "本次调查已提供或已查得文件名称的具体内容。"
+        },
+        "operations": "用已知的文件名称及已有设备、时间线索定位进程，按问题读取目标进程或父进程的信息。",
+        "semantic_refs": [
+          {
+            "table": "DeviceProcessEvents",
+            "fields": [
+              "AccountName",
+              "DeviceId",
+              "DeviceName",
+              "FileName",
+              "InitiatingProcessCommandLine",
+              "InitiatingProcessId",
+              "ProcessCommandLine",
+              "ProcessCreationTime",
+              "ProcessId",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ]
+      }
+    ],
+    "success": true,
+    "itt": [
+      {
+        "id": "G1",
+        "objective": "在尝试访问 Primary Refresh Token (PRT) 的相关活动中，涉及的进程名称是什么？",
+        "status": "todo",
+        "children": [
+          {
+            "id": "F1",
+            "objective": "沿进程线索调查与 PRT 访问尝试相关的进程活动，查清涉及的进程名称。",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T1",
+                "objective": "根据已知的脚本文件名 get-userprttoken.ps1 定位相关进程，读取其进程名称、进程命令行、父进程信息及运行账户。",
+                "status": "todo",
+                "semantic_refs": [
+                  {
+                    "table": "DeviceProcessEvents",
+                    "fields": [
+                      "AccountName",
+                      "DeviceId",
+                      "DeviceName",
+                      "FileName",
+                      "InitiatingProcessCommandLine",
+                      "InitiatingProcessId",
+                      "ProcessCommandLine",
+                      "ProcessCreationTime",
+                      "ProcessId",
+                      "TenantId",
+                      "TimeGenerated",
+                      "Timestamp"
+                    ]
+                  }
+                ],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "next_task_id": "T1",
+    "usage": {
+      "calls": 1,
+      "input_tokens": 1447,
+      "output_tokens": 221
+    },
+    "attempts": 1
+  },
+  {
+    "case_id": "incident_166-q0053",
+    "mode": "with_pm",
+    "input": {
+      "context": "A sign-in from an anonymous IP address, `95.202.65.202`, was detected on 2024-07-22 08:45:32.664841+00:00. Anonymous IP addresses are typically used via Tor or VPNs to mask the actual source of the connection. This activity was flagged as suspicious.",
+      "question": "What is the IP address associated with the end alert in the incident?"
+    },
+    "pm": [
+      {
+        "name": "根据登录来源地址查证账号登录",
+        "status": "active",
+        "goal": "根据已知的登录来源地址，调查账号登录、登录来源地址及登录结果。",
+        "input_slots": {
+          "登录来源地址": "本次调查已提供或已查得登录来源地址的具体内容。"
+        },
+        "operations": "用已知的登录来源地址筛选账号登录，在当前调查范围内读取问题所需的信息。",
+        "semantic_refs": [
+          {
+            "table": "SigninLogs",
+            "fields": [
+              "IPAddress",
+              "ResultDescription",
+              "ResultType",
+              "TenantId",
+              "TimeGenerated",
+              "UserPrincipalName"
+            ]
+          }
+        ]
+      }
+    ],
+    "success": true,
+    "itt": [
+      {
+        "id": "G1",
+        "objective": "What is the IP address associated with the end alert in the incident?",
+        "status": "todo",
+        "children": [
+          {
+            "id": "F1",
+            "objective": "沿登录来源地址线索，查证该匿名 IP 地址在账号登录记录中的登录情况，确认与 incident 末尾告警关联的 IP 地址。",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T1",
+                "objective": "使用已知登录来源地址 95.202.65.202 查询账号登录日志，读取登录来源 IP、登录结果及时间等信息，确认关联的 IP 地址。",
+                "status": "todo",
+                "semantic_refs": [
+                  {
+                    "table": "SigninLogs",
+                    "fields": [
+                      "IPAddress",
+                      "ResultDescription",
+                      "ResultType",
+                      "TenantId",
+                      "TimeGenerated",
+                      "UserPrincipalName"
+                    ]
+                  }
+                ],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "next_task_id": "T1",
+    "usage": {
+      "calls": 1,
+      "input_tokens": 1394,
+      "output_tokens": 198
+    },
+    "attempts": 1
+  },
+  {
+    "case_id": "incident_5-q0028",
+    "mode": "without_pm",
+    "input": {
+      "context": "A security incident raised flags due to suspicious WMI process creation observed on a machine, which is indicative of possible malware activity. This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts. WMI is often utilized by malware to spawn new processes, breaking process trees and further infecting a machine.",
+      "question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?"
+    },
+    "pm": [],
+    "success": true,
+    "itt": [
+      {
+        "id": "G1",
+        "objective": "Which process was involved in the attempt to access the Primary Refresh Token (PRT)?",
+        "status": "todo",
+        "children": [
+          {
+            "id": "F1",
+            "objective": "沿 Process 线索调查与 get-userprttoken.ps1 相关的进程创建及执行链，查清实际参与 PRT 访问尝试的进程名称。",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T1",
+                "objective": "查询与 get-userprttoken.ps1 相关的进程创建事件，获取其进程名称、命令行及父进程信息。",
+                "status": "todo",
+                "semantic_refs": [],
+                "execution_code": "",
+                "execution_result": ""
+              },
+              {
+                "id": "T2",
+                "objective": "查询与 curl 相关的进程创建事件，确认其是否属于 PRT 访问尝试链并获取进程名称。",
+                "status": "todo",
+                "semantic_refs": [],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          },
+          {
+            "id": "F2",
+            "objective": "沿 WMI 线索调查可疑 WMI 进程创建事件，查清通过 WMI 发起的进程中与 PRT 访问尝试相关的进程名称。",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T3",
+                "objective": "查询可疑 WMI 进程创建告警相关事件，获取触发告警的进程名称、命令行及关联进程信息。",
+                "status": "todo",
+                "semantic_refs": [],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          },
+          {
+            "id": "F3",
+            "objective": "沿 Alert 线索调查已触发的安全告警，查清告警所指向的与 PRT 访问尝试相关的进程实体名称。",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T4",
+                "objective": "查询与可疑 WMI 进程创建及 PRT 访问相关的安全告警记录，提取告警中涉及的进程名称。",
+                "status": "todo",
+                "semantic_refs": [],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "next_task_id": "T1",
+    "usage": {
+      "calls": 1,
+      "input_tokens": 1241,
+      "output_tokens": 430
+    },
+    "attempts": 1
+  },
+  {
+    "case_id": "incident_166-q0053",
+    "mode": "without_pm",
+    "input": {
+      "context": "A sign-in from an anonymous IP address, `95.202.65.202`, was detected on 2024-07-22 08:45:32.664841+00:00. Anonymous IP addresses are typically used via Tor or VPNs to mask the actual source of the connection. This activity was flagged as suspicious.",
+      "question": "What is the IP address associated with the end alert in the incident?"
+    },
+    "pm": [],
+    "success": true,
+    "itt": [
+      {
+        "id": "G1",
+        "objective": "What is the IP address associated with the end alert in the incident?",
+        "status": "todo",
+        "children": [
+          {
+            "id": "F1",
+            "objective": "沿 Alert 线索调查该事件关联的告警，确认事件末端告警所涉及的 IP 地址",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T1",
+                "objective": "查询该事件关联的全部告警记录，定位最后一条（末端）告警并提取其关联的 IP 地址",
+                "status": "todo",
+                "semantic_refs": [],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          },
+          {
+            "id": "F2",
+            "objective": "沿 IP 线索调查告警中出现的 IP 实体，确认其是否为事件末端告警对应的 IP",
+            "status": "todo",
+            "children": [
+              {
+                "id": "T2",
+                "objective": "查询事件关联告警中的 IP 实体信息，核对 IP 地址与末端告警的对应关系",
+                "status": "todo",
+                "semantic_refs": [],
+                "execution_code": "",
+                "execution_result": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "next_task_id": "T1",
+    "usage": {
+      "calls": 1,
+      "input_tokens": 1225,
+      "output_tokens": 229
+    },
+    "attempts": 1
+  }
+]

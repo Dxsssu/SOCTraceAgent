@@ -541,11 +541,11 @@ def calculate_metrics(
         "immediate_repair_count": repaired,
         "immediate_repair_rate": _ratio(repaired, repair_opportunities),
         "planner_pm_hit_rate": _ratio(
-            sum(bool(item.get("procedure_ids")) for item in planner_retrievals),
+            sum(bool(item.get("procedure_names") or item.get("procedure_ids")) for item in planner_retrievals),
             len(planner_retrievals),
         ),
         "executor_em_hit_rate": _ratio(
-            sum(bool(item.get("episode_ids")) for item in executor_retrievals),
+            sum(bool((item.get("recovery_ids") or item.get("episode_ids"))) for item in executor_retrievals),
             len(executor_retrievals),
         ),
         "average_case_latency_seconds": _mean(

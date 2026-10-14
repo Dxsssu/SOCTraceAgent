@@ -32,6 +32,7 @@ class RoleName(StrEnum):
     PLANNER = "_planner"
     EXECUTOR = "_executor"
     REVIEWER = "_reviewer"
+    VERIFIER = "_verifier"
     SYSTEM = "system"
 
 

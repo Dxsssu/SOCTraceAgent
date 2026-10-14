@@ -1,0 +1,114 @@
+{
+  "agent": "opencode",
+  "case_id": "incident_5-q0028",
+  "incident": "incident_5",
+  "qid": 28,
+  "question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?",
+  "model": "DeepSeek-V4.1-Flash",
+  "status": "submitted",
+  "answer": "The process involved in the Primary Refresh Token (PRT) access attempt is `powershell.exe` (Windows PowerShell). It was spawned via WMI by `wmiprvse.exe -secured -Embedding` (WmiPrvSE.exe) executing the command `powershell -File C:\\Scripts\\get-userprttoken.ps1`, running as NT AUTHORITY\\NETWORK SERVICE on multiple hosts (e.g., vnevado-win10s, vnevado-win10r, vnevado-win11t, vnevado-win11u).",
+  "actions": [
+    {
+      "type": "execute_sql",
+      "sql": "SHOW TABLES",
+      "observation": "[('AADManagedIdentitySignInLogs',), ('AADNonInteractiveUserSignInLogs',), ('AADProvisioningLogs',), ('AADRiskyUsers',), ('AADServicePrincipalSignInLogs',), ('AADUserRiskEvents',), ('AlertEvidence',), ('AlertInfo',), ('AuditLogs',), ('AzureMetrics',), ('CloudAppEvents',), ('DeviceEvents',), ('DeviceFileCertificateInfo',), ('DeviceFileEvents',), ('DeviceImageLoadEvents',), ('DeviceInfo',), ('DeviceLogonEvents',), ('DeviceNetworkEvents',), ('DeviceNetworkInfo',), ('DeviceProcessEvents',), ('DeviceRegistryEvents',), ('EmailAttachmentInfo',), ('EmailEvents',), ('EmailUrlInfo',), ('Heartbeat',), ('IdentityDirectoryEvents',), ('IdentityLogonEvents',), ('IdentityQueryEvents',), ('MicrosoftAzureBastionAuditLogs',), ('MicrosoftGraphActivityLogs',), ('SecurityAlert',), ('SecurityIncident',), ('SigninLogs',), ('ThreatIntelligenceIndicator',), ('UrlClickEvents',), ('Usage',)]",
+      "success": true,
+      "row_count": 36,
+      "elapsed_seconds": 0.041752625023946166
+    },
+    {
+      "type": "execute_sql",
+      "sql": "SELECT * FROM DeviceProcessEvents WHERE FileName LIKE '%get-userprttoken%' OR ProcessCommandLine LIKE '%get-userprttoken%' OR ProcessCommandLine LIKE '%prttoken%' LIMIT 50",
+      "observation": "[('e34d562e-ef12-4c4e-9bc0-7c6ae357c015', 'vnevado', 'dp5hn', '', 'S-1-5-21-1840191660-8534830288-125585561-1522', 'dp5hn@vnevado.alpineskihouse.co', 'ProcessCreated', '{}', '', '1f7d022bfc5cdbb473a0c92dda0343e997c2cd27', 'vnevado-win10s.vnevado.alpineskihouse.co', 'powershell.exe', 'C:WindowsSystem32WindowsPowerShellv1.0powershell.exe', '455680.0', 'nt authority', 'network service', '', 'S-9-2-83', '', 'wmiprvse.exe -secured -Embedding', 'WmiPrvSE.exe', 'c:windowssystem32wbemwmiprvse.exe', '1000', 'System', '0', '8bb61c2b1e34ff3c778cf150bdf08238', 'svchost.exe', '788', '7f530281c5ba86b81ae4230dab1617cb55260d9e', '8bbdead7357af7bf0efe397f9fd7e0ec578755eb8bdbaa65ae4f28ef00087ad5', 'TokenElevationTypeDefault', '496640.0', 'Microsoft Corporation', 'Microsoft® Windows® Operating System', '10.0.19041.3636', 'Wmiprvse.exe', 'Wmiprvse.exe', 'WMI Provider Host', '75229105', '2e5a8590cf6848968fc23de3fa1e25f1', 'ModernWork - Full automation', 'powershell -File C:Scriptsget-userprttoken.ps1', '2024-06-20 09:10:53.070135+00:00', '6168', 'High', 'TokenElevationTypeDefault', 'Microsoft Corporation', 'Microsoft® Windows® Operating System', '10.0.19041.3996', 'POWERSHELL', 'PowerShell.EXE', 'Windows PowerShell', 'OsVendor', 'Valid', '39206', '801262e122db6a2e758962896f260b55bbd0136a', '9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3', '2024-06-20 09:10:53.131888+00:00', '2024-06-20 09:10:53.131888+00:00', '2024-06-17 14:47:34.766979+00:00', '2024-06-20 09:10:47.958237+00:00', '', 'DeviceProcessEvents'), ('e34d562e-ef12-4c4e-9bc0-7c6ae357c015', 'vnevado', 'dp5hn', '', 'S-1-5-21-1840191660-8534830288-125585561-1522', 'dp5hn@vnevado.alpineskihouse.co', 'ProcessCreated', '{}', '', 'f76578a00c71e0799ca5ce9b577c831c672fc255', 'vnevado-win10r.vnevado.alpineskihouse.co', 'powershell.exe', 'C:WindowsSystem32WindowsPowerShellv1.0powershell.exe', '455680.0', 'nt authority', 'network service', '', 'S-9-2-83', '', 'wmiprvse.exe -secured -Embedding', 'WmiPrvSE.exe', 'c:windowssystem32wbemwmiprvse.exe', '1868', 'System', '0', '8bb61c2b1e34ff3c778cf150bdf08238', 'svchost.exe', '804', '7f530281c5ba86b81ae4230dab1617cb55260d9e', '8bbdead7357af7bf0efe397f9fd7e0ec578755eb8bdbaa65ae4f28ef00087ad5', 'TokenElevationTypeDefault', '496640.0', 'Microsoft Corporation', 'Microsoft® Windows® Operating System', '10.0.19041.3636', 'Wmiprvse.exe', 'Wmiprvse.exe', 'WMI Provider Host', '213917892', '2e5a8590cf6848968fc23de3fa1e25f1', 'ModernWork - Full automation', 'powershell -File C:Scriptsget-userprttoken.ps1', '2024-06-20 09:10:54.079837+00:00', '2820', 'High', 'TokenElevationTypeDefault', 'Microsoft Corporation', 'Microsoft® Windows® Operating System', '10.0.19041.3996', 'POWERSHELL', 'PowerShell.EXE', 'Windows PowerShell', 'OsVendor', 'Valid', '101560', '801262e122db6a2e758962896f260b55bbd0136a', '9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3', '2024-06-20 09:10:54.100679+00:00', '2024-06-20 09:10:54.100679+00:00', '2024-06-13 07:29:40.758433+00:00', '2024-06-20 08:37:35.747431+00:00', '', 'DeviceProcessEvents'), ('e34d562e-ef12-4c4e-9bc0-7c6ae357c015', 'vnevado', 'dp5hn', '', 'S-1-5-21-1840191660-8534830288-125585561-1522', 'VNEVADO-Win11T$@vnevado.alpineskihouse.co', 'ProcessCreated', '{}', '', '898b0b9401f2867ad49f951dfd0090d29ec08c42', 'vnevado-win11t.vnevado.alpineskihouse.co', 'powershell.exe', 'C:WindowsSystem32WindowsPowerShellv1.0powershell.exe', '450560.0', 'nt authority', 'network service', '', 'S-9-2-83', '', 'wmiprvse.exe -secured -Embedding', 'WmiPrvSE.exe', 'c:windowssystem32wbemwmiprvse.exe', '2212', 'System', '996', '7528ccabaccd5c1748e63e192097472a', 'svchost.exe', '868', '91180ed89976d16353404ac982a422a707f2ae37', '196cabed59111b6c4bbf78c84a56846d96cbbc4f06935a4fd4e6432ef0ae4083', 'TokenElevationTypeDefault', '516096.0', 'Microsoft Corporation', 'Microsoft® Windows® Operating System', '10.0.22621.1', 'Wmiprvse.exe', 'Wmiprvse.exe', 'WMI Provider Host', '268778832', '9d8e30daf21108092d5980c931876b7e', 'ModernWork - Full automation', 'powershell -File C:Scriptsget-userprttoken.ps1', '2024-06-20 09:29:43.919808+00:00', '6280', 'High', 'TokenElevationTypeDefault', 'Microsoft Corporation', 'Microsoft® Windows® Operating System', '10.0.22621.3085', 'POWERSHELL', 'PowerShell.EXE', 'Windows PowerShell', 'OsVendor', 'Valid', '107689', '7c04ec2377e32b3c7742f581f6c5437464dd2cf2', '3247bcfd60f6dd25f34cb74b5889ab10ef1b3ec72b4d4b3d95b5b25b534560b8', '2024-06-20 09:29:43.951789+00:00', '2024-06-20 09:29:43.951789+00:00', '2024-06-13 07:29:48.315492+00:00', '2024-06-20 09:13:04.441788+00:00', '', 'DeviceProcessEvents'), ('e34d562e-ef12-4c4e-9bc0-7c6ae357c015', 'vnevado', 'dp5hn', '', 'S-1-5-21-1840191660-8534830288-125585561-1522', '', 'ProcessCreated', '{}', '', 'e71d36e038408014b8fe351202c5af7d0d1e4740', 'vnevado-win11u.vnevado.alpineskihouse.co', 'powershell.exe', 'C:WindowsSystem32WindowsPowerShellv1.0powershell.exe', '450560.0', 'nt authority', 'network service', '', 'S-9-2-83', '', 'wmiprvse.exe -secured -Embedding', 'WmiPrvSE.exe', 'c:windowssystem32wbemwmiprvse.exe', '7436', 'System', '0', '7528ccabaccd5c1748e63e192097472a', 'svchost.exe', '868', '91180ed89976d16353404ac982a422a707f2ae37', '196cabed59111b6c4bbf78c84a56846d96cbbc4f06935a4fd4e6432ef0ae4083', 'TokenElevationTypeDefault', '516096.0', 'Microsoft Corporation', 'Microsoft® Windows® Operating System', '10.0.22621.1', 'Wmiprvse.exe', 'Wmiprvse.exe', 'WMI Provider Host', '276031654', '9d8e30daf21108092d5980c931876b7e', 'ModernWork - Full automation', 'powershell -File C:Scriptsget-userprttoken.ps1', '2024-06-20 09:32:06.090285+00:00', '5708', 'High', 'TokenElevationTypeDefault', 'Microsoft Corporation', 'Microsoft® Windows® Operating System', '10.0.22621.3085', 'POWERSHELL', 'PowerShell.EXE', 'Windows PowerShell', 'OsVendor', 'Valid', '106636', '7c04ec2377e32b3c7742f581f6c5437464dd2cf2', '3247bcfd60f6dd25f34cb74b5889ab10ef1b3ec72b4d4b3d95b5b25b534560b8', '2024-06-20 09:32:06.121070+00:00', '2024-06-20 09:32:06.121070+00:00', '2024-06-13 07:28:24.256439+00:00', '2024-06-20 09:31:25.441769+00:00', '', 'DeviceProcessEvents')]",
+      "success": true,
+      "row_count": 4,
+      "elapsed_seconds": 0.02258416684344411
+    },
+    {
+      "type": "submit_answer",
+      "answer": "The process involved in the Primary Refresh Token (PRT) access attempt is `powershell.exe` (Windows PowerShell). It was spawned via WMI by `wmiprvse.exe -secured -Embedding` (WmiPrvSE.exe) executing the command `powershell -File C:\\Scripts\\get-userprttoken.ps1`, running as NT AUTHORITY\\NETWORK SERVICE on multiple hosts (e.g., vnevado-win10s, vnevado-win10r, vnevado-win11t, vnevado-win11u)."
+    }
+  ],
+  "usage": [
+    {
+      "completion_tokens": 5,
+      "prompt_tokens": 766,
+      "total_tokens": 771,
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "cached_tokens": 640
+      },
+      "_request": {
+        "kind": "native_opencode",
+        "messages": 3,
+        "message_chars": 3460,
+        "tool_schema_chars": 2
+      }
+    },
+    {
+      "completion_tokens": 56,
+      "prompt_tokens": 2560,
+      "total_tokens": 2616,
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "_request": {
+        "kind": "native_opencode",
+        "messages": 2,
+        "message_chars": 10255,
+        "tool_schema_chars": 735
+      }
+    },
+    {
+      "completion_tokens": 95,
+      "prompt_tokens": 2879,
+      "total_tokens": 2974,
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "cached_tokens": 2560
+      },
+      "_request": {
+        "kind": "native_opencode",
+        "messages": 4,
+        "message_chars": 11512,
+        "tool_schema_chars": 735
+      }
+    },
+    {
+      "completion_tokens": 193,
+      "prompt_tokens": 5650,
+      "total_tokens": 5843,
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "cached_tokens": 2816
+      },
+      "_request": {
+        "kind": "native_opencode",
+        "messages": 6,
+        "message_chars": 18127,
+        "tool_schema_chars": 735
+      }
+    }
+  ],
+  "llm_calls": 4,
+  "max_steps": 25,
+  "returncode": -15,
+  "post_terminal_usage": [],
+  "elapsed_seconds": 16.07548304181546,
+  "process_elapsed_seconds": 16.149089667014778,
+  "evaluation": {
+    "exact_match": false,
+    "containment_match": false,
+    "ground_truth": "browsercore.exe",
+    "submitted_answer": "The process involved in the Primary Refresh Token (PRT) access attempt is `powershell.exe` (Windows PowerShell). It was spawned via WMI by `wmiprvse.exe -secured -Embedding` (WmiPrvSE.exe) executing the command `powershell -File C:\\Scripts\\get-userprttoken.ps1`, running as NT AUTHORITY\\NETWORK SERVICE on multiple hosts (e.g., vnevado-win10s, vnevado-win10r, vnevado-win11t, vnevado-win11u)."
+  }
+}

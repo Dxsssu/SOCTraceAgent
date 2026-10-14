@@ -7,13 +7,20 @@ Reviewer 审查和 Planner 重规划。
 
 ```text
 initial observation
-  -> PM retrieval -> SM retrieval -> Planner minimal TTT + next_task_id
-  -> L3 -> SM + EM retrieval -> Executor one read-only SQL
+  -> Agent shortlists active PM by question + goals + inputs -> load applicable PM (including semantic_refs) -> Planner G/F/T ITT list
+  -> T node only -> Executor one read-only SQL
   -> ExcytinEnv.step(SQL)
-  -> observation -> Reviewer (SM only)
-  -> Review + PM + SM -> Planner versioned patches -> validated TTT snapshot
-  -> next L3 / final answer -> ExcytinEnv.step(submit=True)
+  -> observation -> program writes SQL/result/status into T -> Reviewer (question + task outline + execution evidence)
+  -> Review + PM -> Planner full ITT list -> validated internal snapshot
+  -> next T / candidate answer -> Verifier -> confirmed answer / Planner follow-up
+  -> ExcytinEnv.step(submit=True)
 ```
+
+Verifier 是 SQL workflow 内同步调用的独立 LLM 角色，不另起轮询进程。所有答案提交路径（Reviewer 建议、Planner 完成、阻塞及预算退出）均经过核验。它只接收问题、G 目标、候选答案和实际执行记录，不检索记忆；确认必须覆盖全部 G，并说明所求关系、引用成功非空结果中的真实 execution_id 与 excerpt_id；程序回填逐字原文。格式/证据校验失败不会放行。初审通过后再进行一次独立反证审查，不传递前一审查的推理；明确的括号缩写目标还要求引用中出现独立术语或对应全称，不能只出现在脚本名的子串里。该保守规则可能要求额外取证。输入按问题和候选选择实际结果的有重叠片段，并标明并非完整结果；片段不足时拒绝确认。
+
+验证拒绝且仍可调查时，程序撤销 G/F 的提前完成状态，保留 T 历史并交给 Planner 新建验证任务；同一证据状态最多两次纠偏，防止没有新查询的重规划循环。预算耗尽或已无可行方向时，只提交“无法确认答案”和缺口，不把未验证候选作为事实。`verifications` 与 `answer_verified` trace 保存核验记录。该机制仍依赖模型判断关系充分性，不是形式化正确性证明。
+
+PM 成本控制：v5 查询模板经离线归纳和 schema 校验，在线只调用一次选择代理，输入上限 14,000 UTF-8 字节、输出上限 192 token、关闭 thinking。最多一个模板，未命中转 SM；缓存正负结果。Planner 写 template_id，程序向当前 T 装载模板，Executor 填参，避免反复生成已有 SQL。
 
 核心接口：
 
@@ -45,16 +52,17 @@ for _ in range(env.max_steps):
 注意：
 
 - 初始字典只读取 `context` 和 `question`，不会读取答案、solution 或 Ground Truth。
-- Executor 首次查询只收到 Semantic Memory；仅当同一 L3 的 SQL 返回数据库 error
-  或空结果时，才按失败现象检索并注入训练集脱敏 Episodic Memory。
-- Planner 只收到 Procedural Memory 与 Semantic Memory。
-- Reviewer 只收到 Semantic Memory。
+- Executor 仅收到当前 T 的 id/objective/status/semantic_refs/execution_code/execution_result，正常查询不检索记忆，可携带程序装载的 query_template；SQL error 后仅检索最多一条 EM 用于恢复，不构建 SM/PM，不传原始问题、全树或其他 T 的历史。Planner 负责将必要实体、范围和输出要求写入自包含的 T.objective。
+- Planner 从 active 查询模板中选择可用操作（一次选择调用），T.template_id 引用真实模板；程序附加 inputs/sql_template/returns/semantic_refs。Executor 收到 query_template 时只返回 template_id 和 bindings，程序安全填参；无模板或 EM 修复时输出 SQL。
+- Planner 仅收到 context/question 和适用的 Procedural Memory（包含 semantic_refs），PM 未命中时以一次小代理调用从精简 SM 目录选择最多两张表，程序加载真实字段名；输入上限 6,000 UTF-8 字节、输出上限 192 token、关闭 thinking、不重试，相同任务和 SM 库缓存结果。PM 部分仍为空。runtime_info 仅供运行时使用，不传给模型或 PM 选择助手。
+- Reviewer 不检索 SM/PM/EM。仅接收 context/question、精简 ITT（id/objective/status/children）、执行记录及当前任务 ID；每条 SQL 和结果只发送一次，保留证据 ID、错误和截断信息。
+- Reviewer 模型仅输出 `summary`（最多 80 字符）和 `suggestion`（最多 60 字符），程序严格校验字段与长度；超限按现有有限格式重试处理，不截断证据。`suggestion` 为“提交答案”或“停止调查”时由程序映射终止决策，其余为继续调查建议；存储层兼容旧审核字段，Planner 输入只传两字段。
 - Reviewer 会先对照原始问题与真实 SQL 证据；答案实体或关系已明确且无冲突时返回
   `ready_to_submit`，Workflow 跳过 Planner 重规划并直接提交。
 - SQL 必须是单条、MySQL 可解析的只读语句。
 - 每题默认最多 25 个 benchmark action；Workflow 会预留最后一个 action 用于提交最终答案，因此成功提交前最多执行 24 条 SQL。
-- Executor 针对同一个 L3 的内部查询循环最多执行 3 条 SQL。首次查询不使用 EM；出现 SQL error 或空结果后才使用 EM 修复。无论失败类型如何交替，达到 3 次都会交回 Reviewer/Planner。
-- SQL error 和空结果各自最多允许两次 EM 辅助修复，但同时受上述每个 L3 总计 3 次的硬上限约束。
+- Executor 针对同一个 L3 的内部查询循环最多执行 3 条 SQL。SQL error 时用失败 SQL 和错误精确检索 EM；空结果按正常返回回写 T 并直接交给 Reviewer，不在 Executor 内重试。SQL 报错达到次数上限后交回 Reviewer/Planner。
+- 仅 SQL error 允许一次 EM 检索和一次辅助修复，同时受每个 T 总计 2 次的硬上限约束；已移除 max_empty_repairs 参数。空结果不表示问题解决，Reviewer 可建议 Planner 新建调查任务。
 - 单次 LLM 请求默认 120 秒超时且不自动重试，可通过
   `PARATERA_REQUEST_TIMEOUT_SECONDS` 和 `PARATERA_MAX_RETRIES` 调整；超时会作为该题失败记录，而不是无限停在 `running`。
 
@@ -112,3 +120,22 @@ cases/*.json        # 每道题逐步 action/observation、TTT、Review 和记�
 `python -m src.benchmarks.external_agents.runner`。
 源码安装、模型代理、独立会话、预算和运行示例见
 [`external_agents/README.md`](../../../external_agents/README.md)。
+
+
+## PM 真实 Workflow 开关对照
+
+```bash
+.venv/bin/python -m src.benchmarks.excytin_bench.pm_workflow_check \
+  --model DeepSeek-V4.1-Flash \
+  --cases incident_39-q0088 incident_55-q0022 incident_5-q0001 \
+  --max-steps 12 \
+  --output results/pm_workflow_check/new_run
+.venv/bin/python -m src.benchmarks.excytin_bench.pm_workflow_report \
+  results/pm_workflow_check/new_run
+```
+
+使用生产 ExcytinBenchWorkflow 的 Planner/Executor/Reviewer、Neo4j 长期记忆和真实 MySQL。两组使用相同题目、模型和动作预算，baseline 仅关闭 PM 选择与加载，Reviewer 不使用长期记忆，Executor 仅在 SQL error 后使用 EM。默认三题各跑两次，自动读取本地数据库配置。已完成的题目/模式会跳过；重新独立评估请换输出目录。
+
+`calls/` 保存单次模板选择及角色请求原文（历史 v4 报告仍包含前提核对），`cases/` 保存真实 SQL、结果和答案评估；顶层保留知识库快照及 manifest。`analysis.json` 区分检索、实际注入和 SQL 引用重合，并汇总耗时、tokens 和费用。SQL 引用重合不证明因果依赖；少量诊断题和单次运行也不构成准确率提升证据。答案使用字符串归一化匹配，不计算论文 reward。
+
+Benchmark 与通用后台共用 ITT YAML 列表协议：支持多个 G，三级 G/F/T，todo/done/failed 状态，以及任务 semantic_refs/execution_code/execution_result。G.objective 从 question 提炼，一个独立问题对应一个 G；初始 F 由 LLM 联合 context/question 生成。T.semantic_refs 保存相关 PM 的表和字段，随任务传给 Executor，无相关知识时为 []。初始化与更新都输出完整列表，运行时选择首个可执行任务并管理版本与快照。

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pm_fakes import approve
+
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -18,6 +20,14 @@ from src.workflow.context import (
     MemoryType,
 )
 from src.workflow.orchestrator import SOCTraceWorkflow
+
+
+def choose_procedure(system, prompt):
+    payload = json.loads(prompt)
+    if "candidates" in payload:
+        return approve(prompt)
+    headers = payload["catalog"]
+    return json.dumps([p["id"] for p in headers][:1])
 
 
 def excytin_event() -> Event:
@@ -41,42 +51,42 @@ def test_role_policy_prevents_planner_episodic_access() -> None:
         policy.require(RoleName.PLANNER, MemoryType.EPISODIC)
 
 
-def test_planner_receives_only_procedural_and_semantic_memory() -> None:
-    view = MemoryContextService().planner_view()
-    context = view.build(excytin_event())
+def test_planner_receives_only_procedural_memory() -> None:
+    view = MemoryContextService(procedure_selector=choose_procedure).planner_view()
+    event = excytin_event()
+    event = Event(
+        event_id=event.event_id,
+        event_name=event.event_name,
+        message="Investigate AlertInfo and AlertEvidence using AlertId",
+        context=event.context,
+    )
+    context = view.build(event)
     serialized = json.dumps(context, ensure_ascii=False).lower()
 
     assert context["enabled"] is True
-    assert context["allowed_memory_types"] == ["procedural", "semantic"]
+    assert context["allowed_memory_types"] == ["procedural"]
     assert context["procedural_memory"]["procedures"]
-    assert context["semantic_memory"]["tables"]
+    assert "semantic_memory" not in context
     assert "episodic_memory" not in context
     assert "exemplar_attempt" not in serialized
     assert "support_episode" not in serialized
     assert not hasattr(view, "retrieve_episodes")
 
 
-def test_executor_receives_semantic_and_sanitized_episodic_memory() -> None:
+def test_executor_receives_recovery_only_for_explicit_error() -> None:
     event = excytin_event()
-    node = TTTNode(
-        node_id="1-1-1",
-        title="Collect the device and process associated with the suspicious IP",
-        metadata={
-            "candidate_tables": ["DeviceNetworkEvents"],
-            "semantic_memory_refs": ["table:DeviceNetworkEvents"],
-            "procedural_memory_refs": ["skill:network-activity-investigation"],
-        },
-    )
-    context = MemoryContextService().executor_view().build(event, node=node)
-
-    assert context["allowed_memory_types"] == ["semantic", "episodic"]
-    assert "procedural_memory" not in context
-    assert context["semantic_memory"]["tables"][0]["name"] == "DeviceNetworkEvents"
-    assert context["episodic_memory"]["episodes"]
-    assert all(
-        episode["source_split"] == "train"
-        for episode in context["episodic_memory"]["episodes"]
-    )
+    node = TTTNode(node_id="1-1-1", title="查询告警名称", metadata={"candidate_tables": ["SecurityAlert"]})
+    view = MemoryContextService(procedure_selector=choose_procedure).executor_view()
+    initial = view.build(event, node=node)
+    assert "episodic_memory" not in initial
+    context = view.build(event, node=node, include_episodic=True,
+        episodic_query="ProgrammingError: Unknown column 'Title' in 'where clause'",
+        episodic_background="SELECT * FROM SecurityAlert WHERE Title = 'current-value'")
+    assert context["allowed_memory_types"] == ["semantic", "procedural", "episodic"]
+    assert context["episodic_memory"]["recoveries"]
+    assert all(set(e) == {"background", "error", "repair"} for e in context["episodic_memory"]["recoveries"])
+    assert "episodic_memory" not in view.build(event, node=node, include_episodic=True)
+    assert "episodic_memory" not in view.build(event, node=node, include_episodic=True, episodic_query="[]")
 
 
 def test_manual_investigation_semantics_retrieve_security_alert() -> None:
@@ -97,9 +107,7 @@ def test_exact_field_name_promotes_owning_semantic_table() -> None:
     )
 
     assert semantic["tables"][0]["name"] == "DeviceInfo"
-    assert "AadDeviceId" in {
-        field["name"] for field in semantic["tables"][0]["field"]
-    }
+    assert "AadDeviceId" in {field["name"] for field in semantic["tables"][0]["field"]}
 
 
 def test_no_profile_preserves_existing_non_ltm_workflow() -> None:
@@ -120,36 +128,39 @@ def test_planner_prompt_contains_workflow_filtered_context() -> None:
             return {
                 "enabled": True,
                 "allowed_memory_types": ["procedural", "semantic"],
-                "procedural_memory": {"marker": "planner-pm"},
+                "procedural_memory": {"procedures": [{"purpose": "planner-pm"}]},
                 "semantic_memory": {"marker": "planner-sm"},
             }
 
     response = """
-response_type: TTT_PLAN
-ttt:
-  root_nodes:
-    - title: Investigate the alert
+- id: G1
+  objective: Investigate the alert
+  status: todo
+  children:
+    - id: F1
+      objective: Validate the network evidence
       status: todo
       children:
-        - title: Validate the network hypothesis
+        - id: T1
+          objective: Query the alert evidence
           status: todo
-          children:
-            - title: Collect network evidence
-              status: todo
-              children: []
+          semantic_refs: []
+          execution_code: ""
+          execution_result: ""
 """
     runtime = PlannerRuntime(context_provider=FakePlannerContext())
     with patch("src.agent.planner.call_llm", return_value=response) as mocked:
         tree = runtime._generate_initial_ttt(excytin_event())
 
     user_prompt = mocked.call_args.args[1]
-    assert "planner-pm" in user_prompt
-    assert "planner-sm" in user_prompt
+    assert "planner-pm" in mocked.call_args.args[0]
+    assert "planner-sm" not in "".join(mocked.call_args.args)
+    assert set(json.loads(user_prompt)) == {"context", "question"}
     assert "episodic_memory" not in user_prompt
-    assert tree.root_nodes[0].children[0].children[0].node_id == "1-1-1"
+    assert tree.root_nodes[0].children[0].children[0].node_id == "T1"
 
 
-def test_executor_tool_intent_includes_only_its_scoped_context() -> None:
+def test_executor_tool_intent_contains_only_current_task() -> None:
     context = {
         "allowed_memory_types": ["semantic", "episodic"],
         "semantic_memory": {"marker": "executor-sm"},
@@ -160,8 +171,8 @@ def test_executor_tool_intent_includes_only_its_scoped_context() -> None:
         TTTNode(node_id="1-1-1", title="Collect network evidence"),
         workflow_context=context,
     )
-    assert "executor-sm" in intent
-    assert "executor-em" in intent
+    assert "executor-sm" not in intent
+    assert "executor-em" not in intent
     assert "procedural_memory" not in intent
 
 
@@ -177,11 +188,11 @@ def test_orchestrator_wires_shared_state_and_scoped_views() -> None:
         )
         assert (
             workflow.executor.context_provider.__class__.__name__
-            == "ExecutorMemoryView"
+            == "NullExecutorContextProvider"
         )
         assert (
             workflow.reviewer.context_provider.__class__.__name__
-            == "ReviewerMemoryView"
+            == "NullReviewerContextProvider"
         )
 
 
@@ -260,15 +271,7 @@ def test_executor_hands_off_after_one_l3_per_round() -> None:
             == 1
         )
 
-        review_response = """
-response_type: ROUND_REVIEW
-findings:
-  - The first query returned one row.
-gaps:
-  - The second evidence goal remains open.
-recommendations:
-  - Preserve the remaining TTT branch for replanning.
-"""
+        review_response = 'summary: The first query returned one row.\nsuggestion: Preserve the remaining TTT branch for replanning.\n'
         with patch("src.agent.reviewer.call_llm", return_value=review_response):
             assert workflow.reviewer.process_event(updated_event)
         replanning_event = workflow.storage.get_event(event.event_id)

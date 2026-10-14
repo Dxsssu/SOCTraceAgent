@@ -1,0 +1,3002 @@
+[
+  {
+    "case_id": "incident_34-q0001",
+    "holdout": false,
+    "input": {
+      "context": "A user (u141@ash.alpineskihouse.co) initiated an automated investigation to review threat artifacts for possible remediation.",
+      "question": "What is the name of the host where the automated investigation was started manually on 2024-07-04?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4850,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_166-q0030",
+    "holdout": false,
+    "input": {
+      "context": "As part of a security incident, a suspicious inbox rule was created in a risky Azure Active Directory session by an account with the name `Jordan P` and email `Jordan P@vnevado.alpineskihouse.co`, indicating a potential business email compromise (BEC) for financial fraud. The IP address associated with this activity was `255.246.85.58`.",
+      "question": "What is the IP address from which the password spray attack was detected?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4893,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_38-q0003",
+    "holdout": false,
+    "input": {
+      "context": "A security incident involving suspicious activities was reported on 2024-07-04. During this incident, two Powershell processes were identified on the device, potentially indicating an attacker gathering information about the target device or network for later attacks. The activity was flagged as Suspicious Application Window Discovery. In addition, there were abnormal process injection activities observed, which could lead to unexpected code running within a trusted process.",
+      "question": "In relation to the suspicious process injection observed on 2024-07-04, can you provide the URL associated with this suspicious activity?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据告警名称、描述线索查证安全告警",
+        "根据描述线索、标题线索查证安全事件",
+        "根据告警类别、标题线索查证告警证据"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据告警名称、描述线索查证安全告警",
+            "decision": "reject",
+            "target_question": "In relation to the suspicious process injection observed on 2024-07-04, can you provide the URL associated with this suspicious activity?",
+            "bindings": {
+              "告警名称": {
+                "value": "Suspicious Application Window Discovery",
+                "source": "/context",
+                "quote": "The activity was flagged as Suspicious Application Window Discovery.",
+                "role": "已知被标记的活动名称，仅对应窗口发现行为，而非问题所指的进程注入活动。"
+              },
+              "描述线索": {
+                "value": "abnormal process injection activities",
+                "source": "/context",
+                "quote": "there were abnormal process injection activities observed",
+                "role": "问题相关可疑活动的描述，但该值仅为行为描述，不是告警名称或筛选字段的原值。"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回与窗口发现活动名称匹配的安全告警记录，可能包含实体、扩展属性等字段。",
+            "output_refs": [],
+            "contribution": "该操作使用窗口发现活动名称作为筛选条件，可能得到与进程注入无关的告警，不能推进对进程注入相关URL的查找。",
+            "next_step": "拒绝：不执行该查询。窗口发现活动与进程注入活动语义不同，用前者名称检索不能定位后者的URL。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "无法证明所查询告警与进程注入活动是同一事件。",
+              "该表字段不保证包含URL。"
+            ],
+            "reason": "拒绝：候选依赖的告警名称是 Suspicious Application Window Discovery，但问题问的是 suspicious process injection 的URL。两者是不同的活动描述，将前者作为后者筛选条件会造成语义角色错配，且没有证据表明该告警包含进程注入的URL。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据描述线索、标题线索查证安全事件",
+            "decision": "reject",
+            "target_question": "In relation to the suspicious process injection observed on 2024-07-04, can you provide the URL associated with this suspicious activity?",
+            "bindings": {
+              "描述线索": {
+                "value": "abnormal process injection activities",
+                "source": "/context",
+                "quote": "there were abnormal process injection activities observed",
+                "role": "问题相关可疑活动的描述，可能用于筛选安全事件描述，但未确认事件标题或描述中存在该原值。"
+              },
+              "标题线索": {
+                "value": "",
+                "source": "/question",
+                "quote": "In relation to the suspicious process injection observed on 2024-07-04, can you provide the URL associated with this suspicious activity?",
+                "role": "问题中未给出安全事件标题，不能作为标题线索。"
+              }
+            },
+            "missing": [
+              "标题线索"
+            ],
+            "expected_observation": "如果找到匹配的安全事件，将返回事件标题、描述等字段。",
+            "output_refs": [],
+            "contribution": "缺少有效标题线索，操作无法执行；即使执行也只返回事件元数据，不能回答进程注入活动关联的URL。",
+            "next_step": "拒绝：未提供可用的安全事件标题，且该表不含URL字段。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "没有安全事件标题线索。",
+              "该表输出字段不包含URL。"
+            ],
+            "reason": "拒绝：标题线索槽缺失，操作无法按计划执行；且 SecurityIncident 表所列字段不含URL，不能直接回答目标问题。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据告警类别、标题线索查证告警证据",
+            "decision": "reject",
+            "target_question": "In relation to the suspicious process injection observed on 2024-07-04, can you provide the URL associated with this suspicious activity?",
+            "bindings": {
+              "告警类别": {
+                "value": "Suspicious Application Window Discovery",
+                "source": "/context",
+                "quote": "The activity was flagged as Suspicious Application Window Discovery.",
+                "role": "已知的告警类别，但对应窗口发现活动，不是进程注入。"
+              },
+              "标题线索": {
+                "value": "",
+                "source": "/question",
+                "quote": "In relation to the suspicious process injection observed on 2024-07-04, can you provide the URL associated with this suspicious activity?",
+                "role": "问题中未给出告警标题。"
+              }
+            },
+            "missing": [
+              "标题线索"
+            ],
+            "expected_observation": "返回与窗口发现告警类别匹配的告警证据记录，可能包含进程命令行、远程IP等实体信息。",
+            "output_refs": [],
+            "contribution": "该操作按窗口发现类别筛选，不能定位进程注入活动；且缺少标题线索，无法执行。",
+            "next_step": "拒绝：告警类别与问题所指活动不匹配，且缺少标题线索，不能用于查找进程注入URL。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "告警类别并非进程注入类别。",
+              "标题线索缺失。",
+              "AlertEvidence 字段不含URL字段，无法直接回答URL。"
+            ],
+            "reason": "拒绝：候选使用 Suspicious Application Window Discovery 作为告警类别，与问题中的 suspicious process injection 不同一；标题线索缺失；且字段列表不含URL。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": null,
+      "status": "no_applicable_candidate"
+    },
+    "usage": {
+      "calls": 2,
+      "input_tokens": 6550,
+      "output_tokens": 1393
+    }
+  },
+  {
+    "case_id": "incident_55-q0077",
+    "holdout": false,
+    "input": {
+      "context": "On 2024-07-04, there was a security incident involving the host `mb-winclient` where a process (`powershell.exe`) running the script `contosoadfsblatempcreds.ps1` was injected with potentially malicious code. Code injection can lead to abnormal behaviors such as network communications to external servers.",
+      "question": "A few days later, on 2024-07-07, an alert was triggered for the unusual addition of credentials to an OAuth app by a user named Luciano Herrera. Can you provide the name and instance of the cloud application affected?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4920,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_39-q0089",
+    "holdout": false,
+    "input": {
+      "context": "A security incident involving the execution of a credential theft tool was detected. The malicious tool identified as `mimikatz.exe` was executed using this command line: `mimikatz.exe privilege::debug sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\"powershell.exe dir \\vnevado-win10b\\$\" exit`. This tool was executed on the host `vnevado-win10v` and might have been used to dump users' credentials, keys, plain-text passwords, and more. Additionally, it was noted that multiple dual-purpose tools were dropped on a device, which could also be leveraged for malicious activities such as credential theft, privilege escalation, and lateral movement.",
+      "question": "The suspicious file \\"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据文件名称查证进程活动",
+        "根据文件名称查证文件活动",
+        "根据目标进程命令内容查证进程活动"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据文件名称查证进程活动",
+            "decision": "reject",
+            "target_question": "The suspicious file \\",
+            "bindings": {},
+            "missing": [
+              "文件名称"
+            ],
+            "expected_observation": "无法确定要筛选的文件名称，操作无法获得可验证证据。",
+            "output_refs": [],
+            "contribution": "未提供具体文件名称，无法推进 question。",
+            "next_step": "无法执行，缺少文件名称。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "question 文本被截断，文件名称缺失。"
+            ],
+            "reason": "input_slots 中的文件名称没有来源或值，missing 非空，无法执行。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据文件名称查证文件活动",
+            "decision": "reject",
+            "target_question": "The suspicious file \\",
+            "bindings": {},
+            "missing": [
+              "文件名称"
+            ],
+            "expected_observation": "无法确定要筛选的文件名称，操作无法获得可验证证据。",
+            "output_refs": [],
+            "contribution": "未提供具体文件名称，无法推进 question。",
+            "next_step": "无法执行，缺少文件名称。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "question 文本被截断，文件名称缺失。"
+            ],
+            "reason": "input_slots 中的文件名称没有来源或值，missing 非空，无法执行。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据目标进程命令内容查证进程活动",
+            "decision": "reject",
+            "target_question": "The suspicious file \\",
+            "bindings": {},
+            "missing": [
+              "目标进程命令内容"
+            ],
+            "expected_observation": "无法确定要筛选的命令内容，操作无法获得可验证证据。",
+            "output_refs": [],
+            "contribution": "未提供具体目标进程命令内容，无法推进 question。",
+            "next_step": "无法执行，缺少目标进程命令内容。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "question 文本被截断，目标进程命令内容缺失。"
+            ],
+            "reason": "input_slots 中的目标进程命令内容没有来源或值，missing 非空，无法执行。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": null,
+      "status": "no_applicable_candidate"
+    },
+    "usage": {
+      "calls": 2,
+      "input_tokens": 6729,
+      "output_tokens": 659
+    }
+  },
+  {
+    "case_id": "incident_322-q0014",
+    "holdout": false,
+    "input": {
+      "context": "In a recent incident, a user (`alyssat@vnevado.alpineskihouse.co`) clicked on a potentially malicious URL. Following this, emails containing malicious URLs were detected and removed. A malicious URL click was later detected on a device. The connection was made from the host `vnevado-win11h.vnevado.alpineskihouse.co` to the suspicious URL, which was reported in our proxy logs. Specific actions include investigating the URL connection from the proxy logs.",
+      "question": "Can you retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`?"
+    },
+    "procedures": [
+      {
+        "name": "根据设备名称查证网络连接",
+        "status": "active",
+        "goal": "根据已知的设备名称，调查设备网络连接的远端地址、端口和发起进程。",
+        "input_slots": {
+          "设备名称": "本次调查已提供或已查得设备名称的具体内容。"
+        },
+        "operations": "用已知的设备名称筛选网络连接，在当前调查范围内读取问题所需的信息。",
+        "semantic_refs": [
+          {
+            "table": "DeviceNetworkEvents",
+            "fields": [
+              "DeviceId",
+              "DeviceName",
+              "InitiatingProcessCommandLine",
+              "InitiatingProcessId",
+              "RemoteIP",
+              "RemotePort",
+              "RemoteUrl",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": {
+      "candidates": [
+        "根据设备名称查证网络连接",
+        "通过设备名称从进程活动关联网络连接",
+        "根据网址查证链接点击"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据设备名称查证网络连接",
+            "decision": "use",
+            "target_question": "Can you retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`?",
+            "bindings": {
+              "设备名称": {
+                "value": "vnevado-win11h.vnevado.alpineskihouse.co",
+                "source": "/question",
+                "quote": "originating from `vnevado-win11h.vnevado.alpineskihouse.co`?",
+                "role": "网络连接来源主机，用于筛选DeviceNetworkEvents中的DeviceName字段"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回来自该设备的网络连接记录，包含RemoteUrl、RemoteIP、RemotePort及发起进程等字段，其中可能包含问题所问的代理日志中记录的恶意URL。",
+            "output_refs": [
+              {
+                "table": "DeviceNetworkEvents",
+                "fields": [
+                  "DeviceName",
+                  "RemoteUrl",
+                  "RemoteIP",
+                  "RemotePort",
+                  "InitiatingProcessCommandLine",
+                  "InitiatingProcessId",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "本操作以问题明确给出的来源主机为锚点，直接查询该主机的网络连接记录，可能取得其中被代理日志记录为恶意的RemoteUrl，从而直接回答检索恶意URL的问题；该值并非背景中已给出的值，而是待检索的目标事实。",
+            "next_step": "在DeviceNetworkEvents中以DeviceName为`vnevado-win11h.vnevado.alpineskihouse.co`筛选网络连接记录，检查RemoteUrl及其他远程端点字段，定位代理日志中记录的恶意URL。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "返回的RemoteUrl需要结合代理日志或威胁情报确认其确为恶意URL，不能仅凭查询结果断言。",
+              "若设备未上报网络事件或RemoteUrl为空，则无法取得该字段。"
+            ],
+            "reason": "该候选以问题明确给出的来源主机为筛选条件，直接查询该主机的网络连接，可能取得待求的恶意URL，且绑定有据、不预设答案，符合全部检查。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "通过设备名称从进程活动关联网络连接",
+            "decision": "use",
+            "target_question": "Can you retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`?",
+            "bindings": {
+              "设备名称": {
+                "value": "vnevado-win11h.vnevado.alpineskihouse.co",
+                "source": "/question",
+                "quote": "originating from `vnevado-win11h.vnevado.alpineskihouse.co`?",
+                "role": "网络连接来源主机，用于在DeviceNetworkEvents与DeviceProcessEvents中按DeviceName关联查询"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回该设备的网络连接记录及关联的进程创建记录，可得到RemoteUrl、RemoteIP、RemotePort及发起进程命令行，从而定位代理日志中记录的恶意URL。",
+            "output_refs": [
+              {
+                "table": "DeviceNetworkEvents",
+                "fields": [
+                  "DeviceName",
+                  "RemoteUrl",
+                  "RemoteIP",
+                  "RemotePort",
+                  "InitiatingProcessId",
+                  "InitiatingProcessCommandLine",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              },
+              {
+                "table": "DeviceProcessEvents",
+                "fields": [
+                  "DeviceName",
+                  "ProcessCommandLine",
+                  "InitiatingProcessId",
+                  "ProcessCreationTime",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "本操作以问题明确给出的来源主机为锚点，除直接查询网络连接外还通过进程活动关联，可取得该主机网络连接的RemoteUrl等待求事实，证据路径更完整，能进一步缩小问题的不确定性。",
+            "next_step": "以DeviceName为`vnevado-win11h.vnevado.alpineskihouse.co`从DeviceProcessEvents与DeviceNetworkEvents做关联查询，核对发起进程与时间，取得该主机的RemoteUrl等网络连接字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "RemoteUrl是否确为恶意URL仍需代理日志或威胁情报验证。",
+              "进程与网络事件的关联依赖InitiatingProcessId及时间窗口，可能不完整。"
+            ],
+            "reason": "该候选同样以问题明确给出的来源主机为筛选条件，并额外通过进程活动关联，能够取得待求的恶意URL，绑定有据且未预设答案，符合全部检查。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据网址查证链接点击",
+            "decision": "reject",
+            "target_question": "Can you retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`?",
+            "bindings": {},
+            "missing": [
+              "网址"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "缺少网址槽位，无法执行该筛选。",
+              "该操作查询UrlClickEvents，与问题要求的代理日志中来源主机的网络连接不是同一证据来源。"
+            ],
+            "reason": "该候选需要已知网址作为筛选条件，而问题恰恰要求检索未知的恶意URL，缺少操作真正需要的参数；且其查询链接点击记录，不能直接回答代理日志中来自指定主机的恶意URL，故拒绝。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": {
+        "name": "根据设备名称查证网络连接",
+        "decision": "use",
+        "target_question": "Can you retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`?",
+        "bindings": {
+          "设备名称": {
+            "value": "vnevado-win11h.vnevado.alpineskihouse.co",
+            "source": "/question",
+            "quote": "originating from `vnevado-win11h.vnevado.alpineskihouse.co`?",
+            "role": "网络连接来源主机，用于筛选DeviceNetworkEvents中的DeviceName字段"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回来自该设备的网络连接记录，包含RemoteUrl、RemoteIP、RemotePort及发起进程等字段，其中可能包含问题所问的代理日志中记录的恶意URL。",
+        "output_refs": [
+          {
+            "table": "DeviceNetworkEvents",
+            "fields": [
+              "DeviceName",
+              "RemoteUrl",
+              "RemoteIP",
+              "RemotePort",
+              "InitiatingProcessCommandLine",
+              "InitiatingProcessId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ],
+        "contribution": "本操作以问题明确给出的来源主机为锚点，直接查询该主机的网络连接记录，可能取得其中被代理日志记录为恶意的RemoteUrl，从而直接回答检索恶意URL的问题；该值并非背景中已给出的值，而是待检索的目标事实。",
+        "next_step": "在DeviceNetworkEvents中以DeviceName为`vnevado-win11h.vnevado.alpineskihouse.co`筛选网络连接记录，检查RemoteUrl及其他远程端点字段，定位代理日志中记录的恶意URL。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "返回的RemoteUrl需要结合代理日志或威胁情报确认其确为恶意URL，不能仅凭查询结果断言。",
+          "若设备未上报网络事件或RemoteUrl为空，则无法取得该字段。"
+        ],
+        "reason": "该候选以问题明确给出的来源主机为筛选条件，直接查询该主机的网络连接，可能取得待求的恶意URL，且绑定有据、不预设答案，符合全部检查。",
+        "independent_review": "问题要求检索的是从主机 vnevado-win11h.vnevado.alpineskihouse.co 发起、并记录在代理日志中的恶意 URL。该候选直接将问题中明确给出的来源主机绑定为 DeviceNetworkEvents 的 DeviceName，属于目标实体的稳定关联键，操作是查询该主机的网络连接记录并读取 RemoteUrl 等字段，证据路径最短且假设最少，能够在不预设答案的情况下获得待求的 URL 候选值。第二个候选额外引入 DeviceProcessEvents 进行进程关联，并依赖 InitiatingProcessId 与时间窗口，步骤更多且可能因关联不完整而偏离目标记录，非必要复杂度较高；在两者都能推进问题时，应优先选择更贴近所求事实且假设更少的路径。两个候选中对 RemoteUrl 是否确为恶意仍留有代理日志/威胁情报验证的后续限制，不影响选择直接查询网络连接的候选。"
+      },
+      "guard": {
+        "selected": "根据设备名称查证网络连接",
+        "reason": "问题要求检索的是从主机 vnevado-win11h.vnevado.alpineskihouse.co 发起、并记录在代理日志中的恶意 URL。该候选直接将问题中明确给出的来源主机绑定为 DeviceNetworkEvents 的 DeviceName，属于目标实体的稳定关联键，操作是查询该主机的网络连接记录并读取 RemoteUrl 等字段，证据路径最短且假设最少，能够在不预设答案的情况下获得待求的 URL 候选值。第二个候选额外引入 DeviceProcessEvents 进行进程关联，并依赖 InitiatingProcessId 与时间窗口，步骤更多且可能因关联不完整而偏离目标记录，非必要复杂度较高；在两者都能推进问题时，应优先选择更贴近所求事实且假设更少的路径。两个候选中对 RemoteUrl 是否确为恶意仍留有代理日志/威胁情报验证的后续限制，不影响选择直接查询网络连接的候选。"
+      },
+      "status": "selected"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 8701,
+      "output_tokens": 1608
+    }
+  },
+  {
+    "case_id": "incident_134-q0045",
+    "holdout": false,
+    "input": {
+      "context": "A user's account was compromised following a password-spray attack. The account belonged to Nina Park, whose email is Nina Park@vnevado.alpineskihouse.co, and the security incident occurred on 2024-07-18 14:54:18.741032+00:00. The attacker possibly gained unauthorized access to the network by signing in from an unusual location and browser.",
+      "question": "Can you identify the AadUserId associated with the account that signed in from an anonymous IP address on 2024-07-17 11:01:27.633644+00:00?"
+    },
+    "procedures": [
+      {
+        "name": "根据用户登录账号查证账号登录",
+        "status": "active",
+        "goal": "根据已知的用户登录账号，调查账号登录、登录来源地址及登录结果。",
+        "input_slots": {
+          "用户登录账号": "本次调查已提供或已查得用户登录账号的具体内容。"
+        },
+        "operations": "用已知的用户登录账号筛选账号登录，在当前调查范围内读取问题所需的信息。",
+        "semantic_refs": [
+          {
+            "table": "SigninLogs",
+            "fields": [
+              "IPAddress",
+              "ResultDescription",
+              "ResultType",
+              "TenantId",
+              "TimeGenerated",
+              "UserPrincipalName"
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": {
+      "candidates": [
+        "根据登录来源地址查证账号登录",
+        "根据用户登录账号查证账号登录",
+        "根据用户显示名称、用户登录账号查证账号登录"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据用户登录账号查证账号登录",
+            "decision": "use",
+            "target_question": "Can you identify the AadUserId associated with the account that signed in from an anonymous IP address on 2024-07-17 11:01:27.633644+00:00?",
+            "bindings": {
+              "用户登录账号": {
+                "value": "Nina Park@vnevado.alpineskihouse.co",
+                "source": "/context",
+                "quote": "The account belonged to Nina Park, whose email is Nina Park@vnevado.alpineskihouse.co, and the security incident occurred on 2024-07-18 14:54:18.741032+00:00.",
+                "role": "被调查账号的用户登录账号/邮箱，用作筛选 SigninLogs 的相关登录记录"
+              }
+            },
+            "missing": [],
+            "expected_observation": "取得 Nina Park@vnevado.alpineskihouse.co 的 SigninLogs 记录，包含 IPAddress、TimeGenerated、UserPrincipalName、ResultDescription、ResultType、TenantId 等字段；需从中筛选或关联出 2024-07-17 11:01:27.633644+00:00 的匿名 IP 登录并进一步取得 AadUserId。",
+            "output_refs": [
+              {
+                "table": "SigninLogs",
+                "fields": [
+                  "IPAddress",
+                  "ResultDescription",
+                  "ResultType",
+                  "TenantId",
+                  "TimeGenerated",
+                  "UserPrincipalName"
+                ]
+              }
+            ],
+            "contribution": "问题需要定位 2024-07-17 11:01:27.633644+00:00 从匿名 IP 登录的账号及其 AadUserId。使用已知受攻击账号 Nina Park@vnevado.alpineskihouse.co 过滤 SigninLogs，可取得该账号的相关登录候选记录；后续需检查其中是否包含目标时间的匿名 IP 登录，并提取对应 AadUserId。该操作以已确认账号为调查锚点，不是用待求 AadUserId 作筛选，也不把背景时间直接当作答案。",
+            "next_step": "在 SigninLogs 中筛选 UserPrincipalName 为 Nina Park@vnevado.alpineskihouse.co 的登录记录，读取 IPAddress、TimeGenerated、UserPrincipalName、ResultDescription、ResultType、TenantId 等字段，并查找 2024-07-17 11:01:27.633644+00:00 附近的匿名 IP 登录；若命中，再取得该记录中的 AadUserId。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "当前候选输出字段未直接列出 AadUserId，需在命中记录后补充读取该字段或通过关联键进一步关联。",
+              "不能仅凭背景已知 Nina Park 的账号被攻击就断定 2024-07-17 11:01:27.633644+00:00 的匿名 IP 登录一定属于该账号，需用登录记录显式验证。",
+              "匿名 IP 的具体判定方式未在候选中定义，需通过 SigninLogs 中相应 IP 属性或威胁情报标记确认。"
+            ],
+            "reason": "接受。该候选使用上下文中明确给出的用户登录账号 Nina Park@vnevado.alpineskihouse.co 作为调查锚点，筛选 SigninLogs，符合问题要求的先定位账号再识别 AadUserId 的路径；虽然输出字段未直接包含 AadUserId，但可作为中间步骤取得候选登录记录并暴露后续验证需求，且未跳过决定性定位或把背景值当作答案。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据登录来源地址查证账号登录",
+            "decision": "reject",
+            "target_question": "Can you identify the AadUserId associated with the account that signed in from an anonymous IP address on 2024-07-17 11:01:27.633644+00:00?",
+            "bindings": {},
+            "missing": [
+              "登录来源地址"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": false,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [],
+            "reason": "拒绝。input_slots 要求“登录来源地址”，但 sources 中未提供可用的具体 IP 地址；“anonymous IP address”是问题中的目标行为描述，并非已给出的实际登录来源地址。缺少操作真正需要的筛选参数，无法执行该候选。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据用户显示名称、用户登录账号查证账号登录",
+            "decision": "reject",
+            "target_question": "Can you identify the AadUserId associated with the account that signed in from an anonymous IP address on 2024-07-17 11:01:27.633644+00:00?",
+            "bindings": {
+              "用户登录账号": {
+                "value": "Nina Park@vnevado.alpineskihouse.co",
+                "source": "/context",
+                "quote": "The account belonged to Nina Park, whose email is Nina Park@vnevado.alpineskihouse.co, and the security incident occurred on 2024-07-18 14:54:18.741032+00:00.",
+                "role": "被调查账号的用户登录账号/邮箱，用作筛选 SigninLogs 的相关登录记录"
+              }
+            },
+            "missing": [
+              "用户显示名称"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [],
+            "reason": "拒绝。候选要求“用户显示名称”和“用户登录账号”两个槽；sources 中只明确给出邮箱 Nina Park@vnevado.alpineskihouse.co，未提供可验证的用户显示名称。虽然“Nina Park”可能为姓名，但未说明其是 SigninLogs 中的 UserDisplayName，不能将姓名直接当作显示名称槽值。缺少必要参数，应拒绝。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": {
+        "name": "根据用户登录账号查证账号登录",
+        "decision": "use",
+        "target_question": "Can you identify the AadUserId associated with the account that signed in from an anonymous IP address on 2024-07-17 11:01:27.633644+00:00?",
+        "bindings": {
+          "用户登录账号": {
+            "value": "Nina Park@vnevado.alpineskihouse.co",
+            "source": "/context",
+            "quote": "The account belonged to Nina Park, whose email is Nina Park@vnevado.alpineskihouse.co, and the security incident occurred on 2024-07-18 14:54:18.741032+00:00.",
+            "role": "被调查账号的用户登录账号/邮箱，用作筛选 SigninLogs 的相关登录记录"
+          }
+        },
+        "missing": [],
+        "expected_observation": "取得 Nina Park@vnevado.alpineskihouse.co 的 SigninLogs 记录，包含 IPAddress、TimeGenerated、UserPrincipalName、ResultDescription、ResultType、TenantId 等字段；需从中筛选或关联出 2024-07-17 11:01:27.633644+00:00 的匿名 IP 登录并进一步取得 AadUserId。",
+        "output_refs": [
+          {
+            "table": "SigninLogs",
+            "fields": [
+              "IPAddress",
+              "ResultDescription",
+              "ResultType",
+              "TenantId",
+              "TimeGenerated",
+              "UserPrincipalName"
+            ]
+          }
+        ],
+        "contribution": "问题需要定位 2024-07-17 11:01:27.633644+00:00 从匿名 IP 登录的账号及其 AadUserId。使用已知受攻击账号 Nina Park@vnevado.alpineskihouse.co 过滤 SigninLogs，可取得该账号的相关登录候选记录；后续需检查其中是否包含目标时间的匿名 IP 登录，并提取对应 AadUserId。该操作以已确认账号为调查锚点，不是用待求 AadUserId 作筛选，也不把背景时间直接当作答案。",
+        "next_step": "在 SigninLogs 中筛选 UserPrincipalName 为 Nina Park@vnevado.alpineskihouse.co 的登录记录，读取 IPAddress、TimeGenerated、UserPrincipalName、ResultDescription、ResultType、TenantId 等字段，并查找 2024-07-17 11:01:27.633644+00:00 附近的匿名 IP 登录；若命中，再取得该记录中的 AadUserId。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "当前候选输出字段未直接列出 AadUserId，需在命中记录后补充读取该字段或通过关联键进一步关联。",
+          "不能仅凭背景已知 Nina Park 的账号被攻击就断定 2024-07-17 11:01:27.633644+00:00 的匿名 IP 登录一定属于该账号，需用登录记录显式验证。",
+          "匿名 IP 的具体判定方式未在候选中定义，需通过 SigninLogs 中相应 IP 属性或威胁情报标记确认。"
+        ],
+        "reason": "接受。该候选使用上下文中明确给出的用户登录账号 Nina Park@vnevado.alpineskihouse.co 作为调查锚点，筛选 SigninLogs，符合问题要求的先定位账号再识别 AadUserId 的路径；虽然输出字段未直接包含 AadUserId，但可作为中间步骤取得候选登录记录并暴露后续验证需求，且未跳过决定性定位或把背景值当作答案。",
+        "independent_review": "候选使用上下文中明确给出的登录账号 Nina Park@vnevado.alpineskihouse.co 作为筛选值，角色是 SigninLogs 的 UserPrincipalName，符合 input_slots“用户登录账号”。该路径先定位该账号在 2024-07-17 11:01:27.633644+00:00 附近的匿名 IP 登录记录，再读取或关联 AadUserId，与问题所求实体和时序一致。虽然输出字段未直接含 AadUserId，但作为中间步骤留下明确后续验证路径；没有把背景事件时间或 AadUserId 本身当作过滤条件，也未把相关角色值误当成目标值。因此该候选最能推进问题。"
+      },
+      "guard": {
+        "selected": "根据用户登录账号查证账号登录",
+        "reason": "候选使用上下文中明确给出的登录账号 Nina Park@vnevado.alpineskihouse.co 作为筛选值，角色是 SigninLogs 的 UserPrincipalName，符合 input_slots“用户登录账号”。该路径先定位该账号在 2024-07-17 11:01:27.633644+00:00 附近的匿名 IP 登录记录，再读取或关联 AadUserId，与问题所求实体和时序一致。虽然输出字段未直接含 AadUserId，但作为中间步骤留下明确后续验证路径；没有把背景事件时间或 AadUserId 本身当作过滤条件，也未把相关角色值误当成目标值。因此该候选最能推进问题。"
+      },
+      "status": "selected"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 8126,
+      "output_tokens": 1675
+    }
+  },
+  {
+    "case_id": "incident_166-q0053",
+    "holdout": false,
+    "input": {
+      "context": "A sign-in from an anonymous IP address, `95.202.65.202`, was detected on 2024-07-22 08:45:32.664841+00:00. Anonymous IP addresses are typically used via Tor or VPNs to mask the actual source of the connection. This activity was flagged as suspicious.",
+      "question": "What is the IP address associated with the end alert in the incident?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据远端网络地址查证告警证据",
+        "根据登录来源地址查证账号登录",
+        "根据远端网络地址查证网络连接"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据登录来源地址查证账号登录",
+            "decision": "use",
+            "target_question": "What is the IP address associated with the end alert in the incident?",
+            "bindings": {
+              "登录来源地址": {
+                "value": "95.202.65.202",
+                "source": "/context",
+                "quote": "A sign-in from an anonymous IP address, `95.202.65.202`, was detected on 2024-07-22 08:45:32.664841+00:00.",
+                "role": "被检测到的匿名登录事件的来源 IP 地址，可作为调查锚点检索相关登录记录"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回该来源 IP 对应的登录日志记录，包含 IPAddress、UserPrincipalName、ResultType、ResultDescription、TimeGenerated 等字段。",
+            "output_refs": [
+              {
+                "table": "SigninLogs",
+                "fields": [
+                  "IPAddress",
+                  "ResultDescription",
+                  "ResultType",
+                  "TenantId",
+                  "TimeGenerated",
+                  "UserPrincipalName"
+                ]
+              }
+            ],
+            "contribution": "该操作能取得基于已知登录来源 IP 的登录事件候选记录，可能建立从初始可疑登录到后续告警（尤其是由安全事件触发的 end alert）的关联键（账号、时间、登录结果），从而缩小“end alert 关联 IP”这一未知事实的范围；它不是仅确认背景中已知的登录 IP，而是取得可用于进一步关联告警的候选记录。",
+            "next_step": "使用已知的可疑登录来源 IP `95.202.65.202` 在 SigninLogs 中检索相关账号登录记录，读取 IPAddress、UserPrincipalName、ResultType、ResultDescription、TimeGenerated 字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "返回的登录 IP 是初始可疑登录的来源，尚不能证明它就是 incident 中 end alert 所关联的 IP。",
+              "需要后续与告警/事件数据关联，验证该登录是否产生或对应 end alert。"
+            ],
+            "reason": "登录来源地址是 context 中给出的明确 IP，角色适合作为 SigninLogs 的 IPAddress 过滤条件；操作可取得相关登录候选记录，为定位 end alert 关联 IP 提供关联键，且 không 预设答案。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据远端网络地址查证网络连接",
+            "decision": "use",
+            "target_question": "What is the IP address associated with the end alert in the incident?",
+            "bindings": {
+              "远端网络地址": {
+                "value": "95.202.65.202",
+                "source": "/context",
+                "quote": "A sign-in from an anonymous IP address, `95.202.65.202`, was detected on 2024-07-22 08:45:32.664841+00:00.",
+                "role": "被检测到的匿名登录事件的来源 IP 地址，可作为调查锚点检索相关网络连接中的远端地址"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回该远端 IP 相关的设备网络连接记录，包含 RemoteIP、RemotePort、RemoteUrl、DeviceId、DeviceName、InitiatingProcess*、TimeGenerated 等字段。",
+            "output_refs": [
+              {
+                "table": "DeviceNetworkEvents",
+                "fields": [
+                  "DeviceId",
+                  "DeviceName",
+                  "InitiatingProcessCommandLine",
+                  "InitiatingProcessId",
+                  "RemoteIP",
+                  "RemotePort",
+                  "RemoteUrl",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "该操作能基于已知的匿名 IP 取得相关网络连接候选记录，可能建立该 IP 与具体设备、进程、时间之间的关联，从而缩小“end alert 关联 IP”这一未知事实范围；返回的是候选关联而非确认答案。",
+            "next_step": "使用已知的远端网络地址 `95.202.65.202` 在 DeviceNetworkEvents 中检索相关网络连接记录，读取 RemoteIP、RemotePort、DeviceId、DeviceName、TimeGenerated 等字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "网络连接中出现该 IP 并不直接证明它就是 incident 中 end alert 所关联的 IP。",
+              "需要后续与告警数据关联，验证该网络连接是否对应 end alert。"
+            ],
+            "reason": "远端网络地址是 context 中给出的明确 IP，角色适合作为 DeviceNetworkEvents 的 RemoteIP 过滤条件；操作可取得相关网络连接候选记录，为定位 end alert 关联 IP 提供关联键，且 không 预设答案。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据远端网络地址查证告警证据",
+            "decision": "reject",
+            "target_question": "What is the IP address associated with the end alert in the incident?",
+            "bindings": {},
+            "missing": [
+              "远端网络地址"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": false,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [],
+            "reason": "操作要求用已知远端网络地址筛选告警证据，但候选未将 context 中的 `95.202.65.202` 绑定到该槽，且仅凭该 IP 不能直接限定 incident 中的 end alert；在未提供 incident/alert 标识或 AlertId 的情况下，无法可靠取得与 end alert 关联的证据，属于语义角色和过滤条件未满足。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": {
+        "selected": null,
+        "reason": "全部拒绝。题目所求是“incident 中 end alert 关联的 IP 地址”，这是一个特定告警/事件实体的字段。两个候选都只是用背景中已给出的初始匿名登录来源 IP（95.202.65.202）去过滤 SigninLogs 或 DeviceNetworkEvents，最多返回与该登录锚点相关的候选登录/连接记录，无法定位或证明 incident 中的“end alert”及其关联 IP。其中“根据登录来源地址查证账号登录”仅是确认背景登录自身；“根据远端网络地址查证网络连接”还把登录来源 IP 角色套用为网络连接远端地址的过滤值，并未建立与 end alert 的稳定关联键，也没有后续可直接验证 end alert 的路径。二者均属于背景事件的泛化筛选，不能推进对 end alert 关联 IP 的定位。"
+      },
+      "status": "rejected_by_guard"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 8324,
+      "output_tokens": 1573
+    }
+  },
+  {
+    "case_id": "incident_5-q0028",
+    "holdout": false,
+    "input": {
+      "context": "A security incident raised flags due to suspicious WMI process creation observed on a machine, which is indicative of possible malware activity. This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts. WMI is often utilized by malware to spawn new processes, breaking process trees and further infecting a machine.",
+      "question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?"
+    },
+    "procedures": [
+      {
+        "name": "根据文件名称查证进程活动",
+        "status": "active",
+        "goal": "根据已知的文件名称，调查进程命令行、进程标识、父进程和运行账户。",
+        "input_slots": {
+          "文件名称": "本次调查已提供或已查得文件名称的具体内容。"
+        },
+        "operations": "用已知的文件名称及已有设备、时间线索定位进程，按问题读取目标进程或父进程的信息。",
+        "semantic_refs": [
+          {
+            "table": "DeviceProcessEvents",
+            "fields": [
+              "AccountName",
+              "DeviceId",
+              "DeviceName",
+              "FileName",
+              "InitiatingProcessCommandLine",
+              "InitiatingProcessId",
+              "ProcessCommandLine",
+              "ProcessCreationTime",
+              "ProcessId",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": {
+      "candidates": [
+        "抽样查看进程活动以寻找线索",
+        "根据文件名称查证进程活动",
+        "根据目标进程命令内容查证进程活动"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据文件名称查证进程活动",
+            "decision": "use",
+            "target_question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?",
+            "bindings": {
+              "文件名称": {
+                "value": "get-userprttoken.ps1",
+                "source": "/context",
+                "quote": "This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts.",
+                "role": "与访问 PRT 尝试相关联的文件/进程名称线索"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回 DeviceProcessEvents 中 FileName 为 get-userprttoken.ps1 的进程记录，包含 ProcessCommandLine、InitiatingProcessCommandLine、ProcessId、InitiatingProcessId、AccountName、DeviceName、TimeGenerated 等字段，用于确认与 PRT 访问尝试相关的实际进程信息。",
+            "output_refs": [
+              {
+                "table": "DeviceProcessEvents",
+                "fields": [
+                  "AccountName",
+                  "DeviceId",
+                  "DeviceName",
+                  "FileName",
+                  "InitiatingProcessCommandLine",
+                  "InitiatingProcessId",
+                  "ProcessCommandLine",
+                  "ProcessCreationTime",
+                  "ProcessId",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "问题要求识别与访问 Primary Refresh Token 尝试相关的进程名称。已知上下文明确给出 get-userprttoken.ps1 是与此访问链相关的文件名线索。按该文件名检索 DeviceProcessEvents 可定位到实际进程记录，直接缩小问题的不确定性，而不是仅依赖背景叙述。",
+            "next_step": "在 DeviceProcessEvents 中按 FileName 等于 get-userprttoken.ps1 或 ProcessCommandLine 包含 get-userprttoken.ps1 检索进程记录，读取进程名称、命令行、进程标识、父进程和运行账户，以确认参与该 PRT 访问尝试的进程。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "get-userprttoken.ps1 是上下文给出的关联文件名线索，仍需通过事件确认它确实是执行 PRT 访问尝试的进程或相关进程。",
+              "若 FileName 字段未保存脚本名，需要改查 ProcessCommandLine 或 InitiatingProcessCommandLine 中的脚本文本。"
+            ],
+            "reason": "接受。该候选使用 task.context 中明确给出的关联文件名 get-userprttoken.ps1 作为定位线索，检索与 PRT 访问尝试相关的进程记录，能够产生可验证候选并推进问题，且未把待求答案当作筛选条件。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据目标进程命令内容查证进程活动",
+            "decision": "reject",
+            "target_question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?",
+            "bindings": {},
+            "missing": [
+              "目标进程命令内容"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [],
+            "reason": "拒绝。候选要求提供“目标进程命令内容”，但 sources 中只有 get-userprttoken.ps1 文件名线索和 curl attempts 的泛化描述，没有可逐字引用的具体目标进程命令内容。该槽无法绑定，操作缺少真正需要的定位参数。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "抽样查看进程活动以寻找线索",
+            "decision": "reject",
+            "target_question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?",
+            "bindings": {},
+            "missing": [
+              "缺少定位线索"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [],
+            "reason": "拒绝。该候选以“缺少定位线索”为前提，但 task.context 已明确给出 get-userprttoken.ps1 和 curl 等线索，并非无可直接筛选线索。随机抽样进程活动缺乏通向 PRT 访问尝试的具体路径，不能有效推进问题。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": {
+        "name": "根据文件名称查证进程活动",
+        "decision": "use",
+        "target_question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?",
+        "bindings": {
+          "文件名称": {
+            "value": "get-userprttoken.ps1",
+            "source": "/context",
+            "quote": "This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts.",
+            "role": "与访问 PRT 尝试相关联的文件/进程名称线索"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回 DeviceProcessEvents 中 FileName 为 get-userprttoken.ps1 的进程记录，包含 ProcessCommandLine、InitiatingProcessCommandLine、ProcessId、InitiatingProcessId、AccountName、DeviceName、TimeGenerated 等字段，用于确认与 PRT 访问尝试相关的实际进程信息。",
+        "output_refs": [
+          {
+            "table": "DeviceProcessEvents",
+            "fields": [
+              "AccountName",
+              "DeviceId",
+              "DeviceName",
+              "FileName",
+              "InitiatingProcessCommandLine",
+              "InitiatingProcessId",
+              "ProcessCommandLine",
+              "ProcessCreationTime",
+              "ProcessId",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ],
+        "contribution": "问题要求识别与访问 Primary Refresh Token 尝试相关的进程名称。已知上下文明确给出 get-userprttoken.ps1 是与此访问链相关的文件名线索。按该文件名检索 DeviceProcessEvents 可定位到实际进程记录，直接缩小问题的不确定性，而不是仅依赖背景叙述。",
+        "next_step": "在 DeviceProcessEvents 中按 FileName 等于 get-userprttoken.ps1 或 ProcessCommandLine 包含 get-userprttoken.ps1 检索进程记录，读取进程名称、命令行、进程标识、父进程和运行账户，以确认参与该 PRT 访问尝试的进程。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "get-userprttoken.ps1 是上下文给出的关联文件名线索，仍需通过事件确认它确实是执行 PRT 访问尝试的进程或相关进程。",
+          "若 FileName 字段未保存脚本名，需要改查 ProcessCommandLine 或 InitiatingProcessCommandLine 中的脚本文本。"
+        ],
+        "reason": "接受。该候选使用 task.context 中明确给出的关联文件名 get-userprttoken.ps1 作为定位线索，检索与 PRT 访问尝试相关的进程记录，能够产生可验证候选并推进问题，且未把待求答案当作筛选条件。",
+        "independent_review": "问题的未知目标是“参与 PRT 访问尝试的进程名称”。上下文中唯一可直接作为稳定关联键的值是 `get-userprttoken.ps1`，它是与该 PRT 访问链关联的脚本/文件名线索，可作为 input_slots 的“文件名称”。候选操作按该文件名在 DeviceProcessEvents 中定位进程记录并读取 FileName、ProcessCommandLine、ProcessId、InitiatingProcessId、AccountName 等字段，能够建立从 PRT 访问尝试线索到实际进程名称的证据路径。虽然不能仅凭文件名断言最终答案，但候选没有把答案当作筛选条件，且下一验证路径明确；它比泛泛背景查询更贴近目标实体。因此选择该候选。"
+      },
+      "guard": {
+        "selected": "根据文件名称查证进程活动",
+        "reason": "问题的未知目标是“参与 PRT 访问尝试的进程名称”。上下文中唯一可直接作为稳定关联键的值是 `get-userprttoken.ps1`，它是与该 PRT 访问链关联的脚本/文件名线索，可作为 input_slots 的“文件名称”。候选操作按该文件名在 DeviceProcessEvents 中定位进程记录并读取 FileName、ProcessCommandLine、ProcessId、InitiatingProcessId、AccountName 等字段，能够建立从 PRT 访问尝试线索到实际进程名称的证据路径。虽然不能仅凭文件名断言最终答案，但候选没有把答案当作筛选条件，且下一验证路径明确；它比泛泛背景查询更贴近目标实体。因此选择该候选。"
+      },
+      "status": "selected"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 7892,
+      "output_tokens": 1286
+    }
+  },
+  {
+    "case_id": "incident_38-q0001",
+    "holdout": false,
+    "input": {
+      "context": "During this incident, a tool or technique was used to gather information on the target device or network. What is the command line of the process associated with this information gathering activity?",
+      "question": "During this incident, a tool or technique was used to gather information on the target device or network. What is the command line of the process associated with this information gathering activity?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4870,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_34-q0025",
+    "holdout": false,
+    "input": {
+      "context": "An anomaly was detected in the ASEP registry on host `vnevado-win10e`, which indicated that a process registered a suspicious command or file to run after a reboot. The account associated with this activity has the username `samuelf`, and the IP address involved in this alert is `72.5.72.208`. This might be part of an attacker's strategy to maintain persistence on the machine.",
+      "question": "Can you identify the filename of the process that was registered in the ASEP registry as part of this anomaly?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据受影响实体、描述线索查证安全告警",
+        "根据描述线索、告警实体内容查证安全告警",
+        "根据告警名称、描述线索、攻击战术查证安全告警"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据受影响实体、描述线索查证安全告警",
+            "decision": "reject",
+            "target_question": "Can you identify the filename of the process that was registered in the ASEP registry as part of this anomaly?",
+            "bindings": {
+              "受影响实体": {
+                "value": "vnevado-win10e",
+                "source": "/context",
+                "quote": "An anomaly was detected in the ASEP registry on host `vnevado-win10e`",
+                "role": "受影响主机"
+              },
+              "描述线索": {
+                "value": "ASEP registry",
+                "source": "/context",
+                "quote": "An anomaly was detected in the ASEP registry on host `vnevado-win10e`",
+                "role": "异常所在注册表区域/持久化机制"
+              }
+            },
+            "missing": [],
+            "expected_observation": "包含 CompromisedEntity=vnevado-win10e 且描述涉及 ASEP 注册表异常的 SecurityAlert 记录，可能返回告警实体、扩展属性等。",
+            "output_refs": [
+              {
+                "table": "SecurityAlert",
+                "fields": [
+                  "AlertName",
+                  "CompromisedEntity",
+                  "Description",
+                  "Entities",
+                  "ExtendedProperties",
+                  "TenantId",
+                  "TimeGenerated"
+                ]
+              }
+            ],
+            "contribution": "该操作可按主机和 ASEP 注册表异常线索定位相关安全告警，并读取告警详细实体与扩展属性，从而可能获得被注册进程文件名这一目标事实。",
+            "next_step": "使用已知受影响实体 `vnevado-win10e` 和描述线索 `ASEP registry` 筛选 SecurityAlert，读取 AlertName、CompromisedEntity、Description、Entities、ExtendedProperties 等字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "需要验证返回的安全告警是否确为本次调查中的 ASEP 注册表持久化异常。",
+              "扩展属性或实体中不一定直接包含进程文件名，可能仍需进一步关联进程或文件实体。",
+              "IP 地址 `72.5.72.208` 和用户名 `samuelf` 未作为筛选条件，若告警较多可能引入无关记录。"
+            ],
+            "reason": "拒绝。该候选在逻辑上可用于按主机和 ASEP 注册表异常线索查询安全告警，但当前提供的 sources 仅包含任务上下文和问题，没有实际可执行的查询结果或可绑定输入中的告警实体内容；操作描述过于笼统，未给出具体表名、筛选字段与查询语句，且 input_slots 的绑定依赖对上下文线索的再解释而非可逐字核实的实际输入。对于本轮前提核对，应视为未满足可执行操作所需参数。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据描述线索、告警实体内容查证安全告警",
+            "decision": "reject",
+            "target_question": "Can you identify the filename of the process that was registered in the ASEP registry as part of this anomaly?",
+            "bindings": {},
+            "missing": [
+              "告警实体内容"
+            ],
+            "expected_observation": "根据描述线索和告警实体内容筛选到的 SecurityAlert 记录。",
+            "output_refs": [
+              {
+                "table": "SecurityAlert",
+                "fields": [
+                  "AlertName",
+                  "CompromisedEntity",
+                  "Description",
+                  "Entities",
+                  "ExtendedProperties",
+                  "TenantId",
+                  "TimeGenerated"
+                ]
+              }
+            ],
+            "contribution": "若已有告警实体内容，可进一步查询告警详情，可能获得进程文件名。",
+            "next_step": "需要先取得或明确告警实体内容，再用其与描述线索筛选 SecurityAlert。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "当前 sources 中没有告警实体内容，无法绑定该输入槽。",
+              "未提供实际查询时间范围、告警名称或其他可执行筛选条件。"
+            ],
+            "reason": "拒绝。候选要求“告警实体内容”作为输入，但当前 sources 未提供该内容，无法从给定材料中逐字绑定；缺少操作真正需要的参数，不能执行。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据告警名称、描述线索、攻击战术查证安全告警",
+            "decision": "reject",
+            "target_question": "Can you identify the filename of the process that was registered in the ASEP registry as part of this anomaly?",
+            "bindings": {},
+            "missing": [
+              "告警名称",
+              "攻击战术"
+            ],
+            "expected_observation": "按告警名称、描述线索和攻击战术筛选到的 SecurityAlert 记录。",
+            "output_refs": [
+              {
+                "table": "SecurityAlert",
+                "fields": [
+                  "AlertName",
+                  "CompromisedEntity",
+                  "Description",
+                  "Entities",
+                  "ExtendedProperties",
+                  "Tactics",
+                  "TenantId",
+                  "TimeGenerated"
+                ]
+              }
+            ],
+            "contribution": "若已有告警名称和攻击战术，可缩小安全告警范围并读取进程相关信息。",
+            "next_step": "需要先取得告警名称和攻击战术，再按这些条件筛选 SecurityAlert。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "当前 sources 未提供告警名称，也未提供具体攻击战术。",
+              "缺少可绑定输入，不能执行该查询。"
+            ],
+            "reason": "拒绝。候选需要“告警名称”和“攻击战术”两个输入，当前 sources 均未提供；缺少实际操作所需参数，无法执行，也不能从任务上下文中可靠补齐。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": null,
+      "status": "no_applicable_candidate"
+    },
+    "usage": {
+      "calls": 2,
+      "input_tokens": 6561,
+      "output_tokens": 1392
+    }
+  },
+  {
+    "case_id": "incident_322-q0016",
+    "holdout": false,
+    "input": {
+      "context": "A security incident was reported where a malicious URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` was clicked on a device with the hostname `vnevado-win11h`. The msedge.exe process was used for this activity, with Process ID 4256. This has triggered multiple alerts including one indicating email messages containing the malicious URL being removed after delivery.",
+      "question": "Can you determine the email address of the recipient who received the email containing the malicious URL which was later clicked on?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "invalid_selection"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4912,
+      "output_tokens": 145
+    }
+  },
+  {
+    "case_id": "incident_134-q0023",
+    "holdout": false,
+    "input": {
+      "context": "A user account was potentially compromised following a password-spray attack. The attacker signed in from an unusual location with IP `170.54.121.63`. This attack raises the risk of unauthorized access to the network.",
+      "question": "Regarding a related alert about a potentially malicious URL click, can you identify the sender IP address of the suspicious mail message?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "invalid_selection"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4868,
+      "output_tokens": 322
+    }
+  },
+  {
+    "case_id": "incident_55-q0060",
+    "holdout": false,
+    "input": {
+      "context": "During a security investigation, it was observed that on host `mb-adfs`, a known public tool with the filename `iy2orr1e.rrg.exe` was executed with hidden window style using the command line `iy2orr1e.rrg.exe -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa=`. This might be an attempt to hide the usage of the tool for malicious purposes.",
+      "question": "Who is the user that read the DKM key of the ADFS object id 4cac49d3-29d3-407e-8c9b-b7ebb21541b2?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4978,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_39-q0007",
+    "holdout": false,
+    "input": {
+      "context": "A security incident was detected involving a user named Ethan Brooks, who accessed a potentially malicious link in an email that was quarantined by zero-hour auto purge (ZAP). The accessed link was `https://ac27145722.livelygrass-8d4c4013.eastus2.azurecontainerapps.io/`. This alert was triggered based on a Microsoft Defender for Office 365 alert.",
+      "question": "Given the recent incident, there was also an attempt to disable Microsoft Defender Antivirus service. Can you identify the account name associated with this suspicious activity?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据网址查证链接点击",
+        "根据目标进程命令内容查证告警证据",
+        "抽样查看进程活动以寻找线索"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据网址查证链接点击",
+            "decision": "reject",
+            "target_question": "Given the recent incident, there was also an attempt to disable Microsoft Defender Antivirus service. Can you identify the account name associated with this suspicious activity?",
+            "bindings": {
+              "网址": {
+                "value": "https://ac27145722.livelygrass-8d4c4013.eastus2.azurecontainerapps.io/",
+                "source": "/context",
+                "quote": "The accessed link was `https://ac27145722.livelygrass-8d4c4013.eastus2.azurecontainerapps.io/`.",
+                "role": "被隔离邮件中被访问的恶意链接，用于查询点击事件"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回 UrlClickEvents 中对该 URL 的点击记录，包含 AccountUpn、ActionType、IPAddress 等字段。",
+            "output_refs": [
+              {
+                "table": "UrlClickEvents",
+                "fields": [
+                  "AccountUpn",
+                  "ActionType",
+                  "IPAddress",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp",
+                  "Url"
+                ]
+              }
+            ],
+            "contribution": "该操作只能确认哪些账户点击了该恶意链接（很可能就是已知用户 Ethan Brooks），不能缩小“尝试禁用 Defender 防病毒服务的账户名”这一目标问题的不确定性；点击链接与禁用杀毒服务是不同行为，无证据表明同一账户。",
+            "next_step": "用已知 URL 筛选 UrlClickEvents 的点击记录，读取 AccountUpn、IPAddress 等字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "无法从结果推导出禁用 Microsoft Defender Antivirus 服务的账户名",
+              "点击链接的账户与执行禁用服务的账户之间的关系未经证实"
+            ],
+            "reason": "拒绝：该候选查询的是链接点击事件，与问题要求的“尝试禁用 Microsoft Defender Antivirus 服务”的行为属于不同事件，证据路径无法推进目标问题，且其字段不含 Defender 服务禁用相关信息。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据目标进程命令内容查证告警证据",
+            "decision": "reject",
+            "target_question": "Given the recent incident, there was also an attempt to disable Microsoft Defender Antivirus service. Can you identify the account name associated with this suspicious activity?",
+            "bindings": {
+              "目标进程命令内容": {
+                "value": "未提供",
+                "source": "/question",
+                "quote": "there was also an attempt to disable Microsoft Defender Antivirus service",
+                "role": "行为描述，被误当作可绑定的进程命令字面值"
+              }
+            },
+            "missing": [
+              "目标进程命令内容"
+            ],
+            "expected_observation": "返回 AlertEvidence 中 ProcessCommandLine 匹配给定命令内容的告警证据记录。",
+            "output_refs": [
+              {
+                "table": "AlertEvidence",
+                "fields": [
+                  "AccountUpn",
+                  "AlertId",
+                  "EntityType",
+                  "ProcessCommandLine",
+                  "TimeGenerated"
+                ]
+              }
+            ],
+            "contribution": "若存在具体命令行字面值，可按命令行筛选出禁用服务的进程告警并取得 AccountUpn；但当前输入槽没有可用的命令内容值。",
+            "next_step": "用目标进程命令内容筛选 AlertEvidence 的 ProcessCommandLine 字段。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "问题只描述了“尝试禁用 Microsoft Defender Antivirus 服务”这一行为，并未给出具体进程命令行字符串",
+              "无法从计划或问题本身获得实际过滤参数"
+            ],
+            "reason": "拒绝：input_slots 中“目标进程命令内容”在 sources 中并无逐字值可绑定，问题仅给出行为描述而非命令行字面值，缺少操作真正需要的过滤参数，因此不能执行。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "抽样查看进程活动以寻找线索",
+            "decision": "reject",
+            "target_question": "Given the recent incident, there was also an attempt to disable Microsoft Defender Antivirus service. Can you identify the account name associated with this suspicious activity?",
+            "bindings": {
+              "调查对象": {
+                "value": "尝试禁用 Microsoft Defender Antivirus 服务",
+                "source": "/question",
+                "quote": "there was also an attempt to disable Microsoft Defender Antivirus service",
+                "role": "问题要求调查的可疑行为"
+              },
+              "缺少定位线索": {
+                "value": "缺少定位线索",
+                "source": "/question",
+                "quote": "Can you identify the account name associated with this suspicious activity?",
+                "role": "当前尚未有可筛选目标进程的具体线索"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回 DeviceProcessEvents 的少量进程记录样本，含 AccountName、ProcessCommandLine 等字段。",
+            "output_refs": [
+              {
+                "table": "DeviceProcessEvents",
+                "fields": [
+                  "AccountName",
+                  "DeviceId",
+                  "DeviceName",
+                  "ProcessCommandLine",
+                  "ProcessCreationTime",
+                  "TenantId",
+                  "TimeGenerated"
+                ]
+              }
+            ],
+            "contribution": "仅随机抽样进程活动，不能保证覆盖禁用 Defender 服务的进程，也不是按已知线索检索，缺乏通向目标账户名的确定性路径。",
+            "next_step": "任意读取少量 DeviceProcessEvents 样本查看命令行与账户字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "样本可能完全不包含与禁用 Defender 服务相关的进程",
+              "无时间、设备或账户限定，无法关联到本事件"
+            ],
+            "reason": "拒绝：该操作为无筛选条件的随意抽样，缺乏从已知线索（Ethan Brooks、恶意链接事件、Defender 服务禁用行为）到目标账户名的确定性路径，不能有效推进问题。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": null,
+      "status": "no_applicable_candidate"
+    },
+    "usage": {
+      "calls": 2,
+      "input_tokens": 6510,
+      "output_tokens": 1301
+    }
+  },
+  {
+    "case_id": "incident_5-q0050",
+    "holdout": false,
+    "input": {
+      "context": "A security incident involving suspected tampering with system recovery settings using various commands and processes, including `vssblatemp.exe` to delete all volume shadow copies, was observed on device `vnevado-win11t` (AAD Device ID: `e5799261-6720-4297-961e-bd9ca4275033`). During the incident, the process `vssblatemp.exe` was executed with command: `vssblatemp.exe delete shadows /all`. This is part of an adversarial attempt to prevent the recovery of corrupted systems by deleting built-in operating system data or turning off recovery services. The incident was detected on 2024-07-04. This tampering could deny access to available backups and recovery options, augmenting the effects of data destruction or data encryption.",
+      "question": "Can you identify the executable file name of the process that attempted to access the Primary Refresh Token (PRT) as part of the related alerts?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4998,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_34-q0078",
+    "holdout": false,
+    "input": {
+      "context": "An anomalous scheduled task was created on 2024-07-04 at 22:35:01.260626+00:00 using `schtasks.exe`. This may indicate that an attacker is trying to obtain persistence on the device. Further investigation is required to understand the extent of the threat. An associated report can be read for more information: https://security.microsoft.com/threatanalytics3/c9709a39-ac8d-493d-9a63-71da3ca1e745/analystreport.",
+      "question": "Following the creation of the anomalous scheduled task, whose account was used for a suspicious PowerShell download or encoded command execution?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "invalid_selection"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4932,
+      "output_tokens": 283
+    }
+  },
+  {
+    "case_id": "incident_322-q0053",
+    "holdout": false,
+    "input": {
+      "context": "As part of a recent security incident, a user named Alyssa from Vnevado Alpha Ski House clicked on a potentially malicious URL. This was detected on 2024-08-01 at 12:44:53.271124+00:00 and was addressed in subsequent alerts about email messages containing malicious URLs being removed after delivery as well as a suspicious Azure Resource Manager operation from a proxy IP address.",
+      "question": "What command was executed using `powershell.exe` in the final alert related to Ntdsutil collecting Active Directory information?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4909,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_166-q0079",
+    "holdout": false,
+    "input": {
+      "context": "A suspicious inbox rule that hides incoming email messages was created in a risky Azure Active Directory session, which raises concerns of possible business email compromise (BEC) aimed at financial fraud. This activity was associated with an IP address `255.246.85.58`.",
+      "question": "A BEC-related user later signed in to SAP in a suspicious manner. Can you identify the cloud application ID used by the user when this suspicious SAP sign-in occurred?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4888,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_38-q0000",
+    "holdout": false,
+    "input": {
+      "context": "A security incident involving a suspicious process injection was observed on host `vnevado-win11a`. A file `notepad.exe` was executed with process ID 8932 on this host. It was reported that a process injected code into another process, which might be an attempt to hide malicious code execution within a trusted process.",
+      "question": "Can you identify the name of the account associated with this suspicious activity?"
+    },
+    "procedures": [
+      {
+        "name": "根据设备名称查证告警证据",
+        "status": "active",
+        "goal": "根据已知的设备名称，确认告警涉及的设备、账号、进程、文件或网络实体。",
+        "input_slots": {
+          "设备名称": "本次调查已提供或已查得设备名称的具体内容。"
+        },
+        "operations": "用已知的设备名称筛选告警证据，在当前调查范围内读取问题所需的信息。",
+        "semantic_refs": [
+          {
+            "table": "AlertEvidence",
+            "fields": [
+              "AccountUpn",
+              "AlertId",
+              "DeviceId",
+              "DeviceName",
+              "EntityType",
+              "EvidenceRole",
+              "FileName",
+              "NetworkMessageId",
+              "ProcessCommandLine",
+              "RemoteIP",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": {
+      "candidates": [
+        "根据设备名称查证告警证据",
+        "根据告警名称、描述线索查证安全告警",
+        "根据描述线索、告警实体内容查证安全告警"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据设备名称查证告警证据",
+            "decision": "use",
+            "target_question": "Can you identify the name of the account associated with this suspicious activity?",
+            "bindings": {
+              "设备名称": {
+                "value": "vnevado-win11a",
+                "source": "/context",
+                "quote": "host `vnevado-win11a`",
+                "role": "告警证据中的 DeviceName，用于筛选该主机上的告警记录以获取账号等实体信息。"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回该主机相关的告警证据记录，包括 AccountUpn 等字段，可能包含与可疑活动关联的账号名称。",
+            "output_refs": [
+              {
+                "table": "AlertEvidence",
+                "fields": [
+                  "AccountUpn",
+                  "AlertId",
+                  "DeviceId",
+                  "DeviceName",
+                  "EntityType",
+                  "EvidenceRole",
+                  "FileName",
+                  "NetworkMessageId",
+                  "ProcessCommandLine",
+                  "RemoteIP",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "问题要求找到与可疑活动关联的账号名称。已知该活动发生在主机 vnevado-win11a 上。通过设备名称筛选 AlertEvidence，可以直接获取该主机上告警涉及的账号实体（如 AccountUpn），从而回答账号名称，而不是仅依赖背景中未给出的账号信息。",
+            "next_step": "使用已知主机名 vnevado-win11a 作为 DeviceName 过滤条件，查询 AlertEvidence 表，提取 AccountUpn 及其他相关实体字段，检查是否存在与 notepad.exe（PID 8932）进程注入相关的账号信息。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "返回的 AccountUpn 可能对应多个账号或非目标账号，需结合进程注入事件（如 notepad.exe PID 8932）进一步验证关联性。",
+              "AlertEvidence 中的账号可能与注入事件无直接关联，需检查其他证据表（如 DeviceProcessEvents）确认。"
+            ],
+            "reason": "接受：设备名称是明确给出的背景值，用于筛选告警证据是合理锚点；操作直接输出 AccountUpn，可能回答目标问题，且不假设答案。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据告警名称、描述线索查证安全告警",
+            "decision": "reject",
+            "target_question": "Can you identify the name of the account associated with this suspicious activity?",
+            "bindings": {
+              "描述线索": {
+                "value": "suspicious process injection",
+                "source": "/context",
+                "quote": "A security incident involving a suspicious process injection was observed on host `vnevado-win11a`.",
+                "role": "事件描述线索，可能用于筛选安全告警。"
+              }
+            },
+            "missing": [
+              "告警名称"
+            ],
+            "expected_observation": "无：缺少告警名称无法有效筛选安全告警。",
+            "output_refs": [],
+            "contribution": "无法进行：缺少告警名称槽位，操作无法按预期执行。即使执行，SecurityAlert 实体字段中账号关联不明确，不一定能回答账号名称。",
+            "next_step": "无可用步骤：需要先获得告警名称。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "缺少告警名称，无法过滤。"
+            ],
+            "reason": "拒绝：input_slots 中告警名称缺失，操作要求必须的筛选参数未满足。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据描述线索、告警实体内容查证安全告警",
+            "decision": "reject",
+            "target_question": "Can you identify the name of the account associated with this suspicious activity?",
+            "bindings": {
+              "描述线索": {
+                "value": "suspicious process injection",
+                "source": "/context",
+                "quote": "A security incident involving a suspicious process injection was observed on host `vnevado-win11a`.",
+                "role": "事件描述线索，可能用于筛选安全告警。"
+              }
+            },
+            "missing": [
+              "告警实体内容"
+            ],
+            "expected_observation": "无：缺少告警实体内容无法有效筛选安全告警。",
+            "output_refs": [],
+            "contribution": "无法进行：缺少告警实体内容槽位，操作无法按预期执行。",
+            "next_step": "无可用步骤：需要先获得告警实体内容。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "缺少告警实体内容，无法过滤。"
+            ],
+            "reason": "拒绝：input_slots 中告警实体内容缺失，操作要求必须的筛选参数未满足，且未明确该操作能输出账号名称。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": {
+        "name": "根据设备名称查证告警证据",
+        "decision": "use",
+        "target_question": "Can you identify the name of the account associated with this suspicious activity?",
+        "bindings": {
+          "设备名称": {
+            "value": "vnevado-win11a",
+            "source": "/context",
+            "quote": "host `vnevado-win11a`",
+            "role": "告警证据中的 DeviceName，用于筛选该主机上的告警记录以获取账号等实体信息。"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回该主机相关的告警证据记录，包括 AccountUpn 等字段，可能包含与可疑活动关联的账号名称。",
+        "output_refs": [
+          {
+            "table": "AlertEvidence",
+            "fields": [
+              "AccountUpn",
+              "AlertId",
+              "DeviceId",
+              "DeviceName",
+              "EntityType",
+              "EvidenceRole",
+              "FileName",
+              "NetworkMessageId",
+              "ProcessCommandLine",
+              "RemoteIP",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ],
+        "contribution": "问题要求找到与可疑活动关联的账号名称。已知该活动发生在主机 vnevado-win11a 上。通过设备名称筛选 AlertEvidence，可以直接获取该主机上告警涉及的账号实体（如 AccountUpn），从而回答账号名称，而不是仅依赖背景中未给出的账号信息。",
+        "next_step": "使用已知主机名 vnevado-win11a 作为 DeviceName 过滤条件，查询 AlertEvidence 表，提取 AccountUpn 及其他相关实体字段，检查是否存在与 notepad.exe（PID 8932）进程注入相关的账号信息。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "返回的 AccountUpn 可能对应多个账号或非目标账号，需结合进程注入事件（如 notepad.exe PID 8932）进一步验证关联性。",
+          "AlertEvidence 中的账号可能与注入事件无直接关联，需检查其他证据表（如 DeviceProcessEvents）确认。"
+        ],
+        "reason": "接受：设备名称是明确给出的背景值，用于筛选告警证据是合理锚点；操作直接输出 AccountUpn，可能回答目标问题，且不假设答案。",
+        "independent_review": "该候选的唯一输入槽“设备名称”被绑定为 /context 中明确给出的主机名 vnevado-win11a，其角色与 input_slots 要求一致，是问题背景中可验证的目标实体锚点，而非相邻角色或推测值。操作以该 DeviceName 筛选 AlertEvidence，并输出 AccountUpn 等实体字段，能够形成“主机—告警证据—账号实体”的合理证据路径；问题所需的时序/范围未被扩大：仍是同一告警范围内的可疑活动，且没有把 FileName、进程名或 PID 误当作账号。中间步骤允许先获得候选记录，后续可结合 notepad.exe PID 8932 与进程注入事件验证 AccountUpn 的关联性，存在明确验证路径。未发现角色互换、虚构字段或把背景事件值替代目标答案的问题；虽然结果可能需要二次确认，但该路径最贴近所求账号实体且假设最少。"
+      },
+      "guard": {
+        "selected": "根据设备名称查证告警证据",
+        "reason": "该候选的唯一输入槽“设备名称”被绑定为 /context 中明确给出的主机名 vnevado-win11a，其角色与 input_slots 要求一致，是问题背景中可验证的目标实体锚点，而非相邻角色或推测值。操作以该 DeviceName 筛选 AlertEvidence，并输出 AccountUpn 等实体字段，能够形成“主机—告警证据—账号实体”的合理证据路径；问题所需的时序/范围未被扩大：仍是同一告警范围内的可疑活动，且没有把 FileName、进程名或 PID 误当作账号。中间步骤允许先获得候选记录，后续可结合 notepad.exe PID 8932 与进程注入事件验证 AccountUpn 的关联性，存在明确验证路径。未发现角色互换、虚构字段或把背景事件值替代目标答案的问题；虽然结果可能需要二次确认，但该路径最贴近所求账号实体且假设最少。"
+      },
+      "status": "selected"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 7683,
+      "output_tokens": 1428
+    }
+  },
+  {
+    "case_id": "incident_34-q0007",
+    "holdout": true,
+    "input": {
+      "context": "During an investigation of suspicious PowerShell activity, it was revealed that a suspicious command line was executed. Suspicious activities involving PowerShell often indicate that attackers use PowerShell to bypass security protection mechanisms by executing their payload in memory without leaving any trace. Initially, Word file `rs4_winatp-intro-invoice.docm` was opened using `winword.exe`, which subsequently created and ran a scheduled task targeting a backdoor executable.",
+      "question": "What is the AadUserId of the account that executed the suspicious PowerShell command?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据发起进程命令内容、目标进程命令内容查证进程活动",
+        "根据文件名称、目标进程命令内容查证进程活动",
+        "根据文件名称查证进程活动"
+      ],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "invalid_assessment_names"
+    },
+    "usage": {
+      "calls": 2,
+      "input_tokens": 6593,
+      "output_tokens": 1383
+    }
+  },
+  {
+    "case_id": "incident_39-q0057",
+    "holdout": true,
+    "input": {
+      "context": "A security incident has been detected involving malicious activities across multiple alerts. Initially, an email containing a malicious URL `https://ac27145722.livelygrass-8d4c4013.eastus2.azurecontainerapps.io/` was sent from `k1pt7ez@vnevado.alpineskihouse.co` to `tgs2z@vnevado.alpineskihouse.co`, and later removed due to its malicious nature. Later, an alert indicated that PsExec was used to launch a command on a remote device, suggesting potential lateral movements by an attacker. This alert was followed by an indication of possible use of the Rubeus kerberoasting tool, which compromises Kerberos tickets to obtain credentials or use them directly for authentication.",
+      "question": "What is the command line of the process that was dropped and launched from a remote location during the incident?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据受影响实体、描述线索查证安全告警",
+        "根据告警实体内容查证安全告警",
+        "抽样查看进程活动以寻找线索"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据受影响实体、描述线索查证安全告警",
+            "decision": "reject",
+            "target_question": "What is the command line of the process that was dropped and launched from a remote location during the incident?",
+            "bindings": {
+              "受影响实体": {
+                "value": "未提供具体实体值",
+                "source": "/context",
+                "quote": "A security incident has been detected involving malicious activities across multiple alerts.",
+                "role": "仅说明存在多告警事件，未给出可绑定到 SecurityAlert 过滤字段的具体实体"
+              },
+              "描述线索": {
+                "value": "未提供可执行过滤的具体线索值",
+                "source": "/context",
+                "quote": "Initially, an email containing a malicious URL `https://ac27145722.livelygrass-8d4c4013.eastus2.azurecontainerapps.io/` was sent from `k1pt7ez@vnevado.alpineskihouse.co` to `tgs2z@vnevado.alpineskihouse.co`, and later removed due to its malicious nature.",
+                "role": "仅提供邮件相关背景，未给出目标进程命令行调查所需的实体或告警筛选值"
+              }
+            },
+            "missing": [
+              "受影响实体",
+              "描述线索"
+            ],
+            "expected_observation": "可能返回与事件相关的安全告警记录，但无法确定这些告警中是否包含被远程投放并启动的进程命令行。",
+            "output_refs": [
+              {
+                "table": "SecurityAlert",
+                "fields": [
+                  "AlertName",
+                  "CompromisedEntity",
+                  "Description",
+                  "Entities",
+                  "ExtendedProperties",
+                  "TenantId",
+                  "TimeGenerated"
+                ]
+              }
+            ],
+            "contribution": "该操作未绑定任何可验证的受影响实体或具体线索，无法缩小目标进程命令行的不确定性。",
+            "next_step": "不得直接执行；应先从已知邮件、PsExec 或 Rubeus 线索中形成一个可验证的告警筛选值。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "未绑定具体受影响实体或可执行过滤的描述线索，无法定位相关 SecurityAlert。",
+              "即使返回告警，也不一定包含被远程投放进程的命令行。"
+            ],
+            "reason": "拒绝：input_slots 中的受影响实体和描述线索均未从 sources 中取得可绑定值，操作缺少实际过滤参数，无法推进目标问题。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据告警实体内容查证安全告警",
+            "decision": "reject",
+            "target_question": "What is the command line of the process that was dropped and launched from a remote location during the incident?",
+            "bindings": {
+              "告警实体内容": {
+                "value": "未提供具体告警实体内容",
+                "source": "/context",
+                "quote": "Later, an alert indicated that PsExec was used to launch a command on a remote device, suggesting potential lateral movements by an attacker.",
+                "role": "仅说明存在 PsExec 远程启动命令的告警背景，未给出可绑定到 SecurityAlert 过滤字段的具体实体值"
+              }
+            },
+            "missing": [
+              "告警实体内容"
+            ],
+            "expected_observation": "可能返回与 PsExec 或横向移动相关的告警，但无法确认其中是否存在被远程投放并启动的进程命令行。",
+            "output_refs": [
+              {
+                "table": "SecurityAlert",
+                "fields": [
+                  "AlertName",
+                  "CompromisedEntity",
+                  "Description",
+                  "Entities",
+                  "ExtendedProperties",
+                  "TenantId",
+                  "TimeGenerated"
+                ]
+              }
+            ],
+            "contribution": "该操作缺少可验证的告警实体内容作为过滤条件，不能有效缩小目标问题的不确定性。",
+            "next_step": "不得直接执行；应先从 sources 中提取具体告警实体、设备或进程标识，再查询对应告警。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "未绑定具体告警实体内容，无法定位相关 SecurityAlert。",
+              "告警实体内容若只是背景描述，不能自动等同于目标进程命令行。"
+            ],
+            "reason": "拒绝：告警实体内容槽没有可验证的 source、quote、value 和角色绑定，操作无法实际筛选安全告警。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "抽样查看进程活动以寻找线索",
+            "decision": "reject",
+            "target_question": "What is the command line of the process that was dropped and launched from a remote location during the incident?",
+            "bindings": {
+              "调查对象": {
+                "value": "the process that was dropped and launched from a remote location during the incident",
+                "source": "/question",
+                "quote": "What is the command line of the process that was dropped and launched from a remote location during the incident?",
+                "role": "调查目标是被远程投放并启动的进程，需查其命令行"
+              },
+              "缺少定位线索": {
+                "value": "未提供可用于定位目标进程的具体线索",
+                "source": "/context",
+                "quote": "Later, an alert indicated that PsExec was used to launch a command on a remote device, suggesting potential lateral movements by an attacker.",
+                "role": "背景提及 PsExec 远程启动命令，但未给出目标进程名称、设备、时间或命令行筛选值"
+              }
+            },
+            "missing": [],
+            "expected_observation": "读取少量 DeviceProcessEvents 样本，可能看到若干进程命令行，但未必包含与本次事件相关的远程投放进程。",
+            "output_refs": [
+              {
+                "table": "DeviceProcessEvents",
+                "fields": [
+                  "AccountName",
+                  "DeviceId",
+                  "DeviceName",
+                  "InitiatingProcessCommandLine",
+                  "InitiatingProcessId",
+                  "ProcessCommandLine",
+                  "ProcessCreationTime",
+                  "ProcessId",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "该操作只是随机抽样进程活动，没有按 PsExec、远程设备、时间或告警实体等线索过滤，无法可靠缩小目标进程命令行的不确定性。",
+            "next_step": "不得直接执行；应先用 PsExec、远程设备或相关告警实体形成过滤条件，再查询 DeviceProcessEvents。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "缺少设备、进程、时间或父进程等可验证定位线索。",
+              "样本查询不能证明返回记录与远程投放进程相关。",
+              "仍需后续关联告警、设备与进程创建事件。"
+            ],
+            "reason": "拒绝：操作是泛泛抽样进程活动，没有使用 sources 中可验证的定位线索，无法形成通向目标命令行的证据路径。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": null,
+      "status": "no_applicable_candidate"
+    },
+    "usage": {
+      "calls": 2,
+      "input_tokens": 6728,
+      "output_tokens": 1674
+    }
+  },
+  {
+    "case_id": "incident_5-q0095",
+    "holdout": true,
+    "input": {
+      "context": "A security incident involving potentially compromised assets exhibiting ransomware-like behavior was detected, with the malicious presence identified through specific files `get-userprttoken.ps1`, `characterical.zip`, and `characterical.zip.lockbit` from IP address `99.83.111.100` and user account `S-0-6-5`. This activity may allow attackers to move laterally across the network and infect multiple devices with ransomware. Automated remediation action might be taken to disable the account or device the attacker used related to this incident. There is also an indication of a possible attempt to access a Primary Refresh Token (PRT) reported.",
+      "question": "What is the process ID and command line of the process that was used in the possible attempt to access the Primary Refresh Token (PRT)?"
+    },
+    "procedures": [
+      {
+        "name": "根据文件名称查证进程活动",
+        "status": "active",
+        "goal": "根据已知的文件名称，调查进程命令行、进程标识、父进程和运行账户。",
+        "input_slots": {
+          "文件名称": "本次调查已提供或已查得文件名称的具体内容。"
+        },
+        "operations": "用已知的文件名称及已有设备、时间线索定位进程，按问题读取目标进程或父进程的信息。",
+        "semantic_refs": [
+          {
+            "table": "DeviceProcessEvents",
+            "fields": [
+              "AccountName",
+              "DeviceId",
+              "DeviceName",
+              "FileName",
+              "InitiatingProcessCommandLine",
+              "InitiatingProcessId",
+              "ProcessCommandLine",
+              "ProcessCreationTime",
+              "ProcessId",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": {
+      "candidates": [
+        "根据文件名称查证进程活动",
+        "根据告警名称、描述线索查证安全告警",
+        "根据描述线索、告警实体内容查证安全告警"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据文件名称查证进程活动",
+            "decision": "use",
+            "target_question": "What is the process ID and command line of the process that was used in the possible attempt to access the Primary Refresh Token (PRT)?",
+            "bindings": {
+              "文件名称": {
+                "value": "get-userprttoken.ps1",
+                "source": "/context",
+                "quote": "specific files `get-userprttoken.ps1`, `characterical.zip`, and `characterical.zip.lockbit`",
+                "role": "问卷明确给出的、与可能的 PRT 访问尝试相关的脚本文件名，是定位对应进程的检索线索"
+              }
+            },
+            "missing": [],
+            "expected_observation": "在DeviceProcessEvents中，按脚本文件名/设备/时间范围检索到的进程记录，包含ProcessId与ProcessCommandLine（以及AccountName、DeviceName等上下文），可用于识别执行该PRT访问尝试脚本的进程。",
+            "output_refs": [
+              {
+                "table": "DeviceProcessEvents",
+                "fields": [
+                  "ProcessId",
+                  "ProcessCommandLine",
+                  "FileName",
+                  "AccountName",
+                  "DeviceName",
+                  "ProcessCreationTime"
+                ]
+              }
+            ],
+            "contribution": "问题要求得到执行PRT访问尝试的进程ID和命令行。脚本名get-userprttoken.ps1是问题域内明确给出的行为线索，可直接作为检索锚点在DeviceProcessEvents中定位执行该脚本的进程记录，从而读取其ProcessId和ProcessCommandLine，直接缩小问题的不确定性；这不是用已知答案做等值查询，而是由已知线索取得候选记录后再核对命令行内容。",
+            "next_step": "在DeviceProcessEvents中，以FileName或CommandLine包含“get-userprttoken.ps1”为条件（结合设备DeviceName/DeviceId与用户账户S-0-6-5及告警时间窗口过滤），检索进程创建事件，输出ProcessId、ProcessCommandLine、FileName、AccountName、DeviceName、ProcessCreationTime。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "FileName字段不一定等于脚本名，实际脚本名可能出现在ProcessCommandLine中，需两处都验证；检索到的进程是否为该PRT访问尝试的执行进程需通过命令行内容与时间/账户关联确认；CommandLine中可能不存在直接PRT字样，需结合告警证据交叉验证。"
+            ],
+            "reason": "文件名称是问题域给定的直接行为线索，可作为实体检索锚点，操作确实能从DeviceProcessEvents取得ProcessId与ProcessCommandLine这两项问题所要求的输出；未将待求答案作为筛选条件，属于有效推进。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据描述线索、告警实体内容查证安全告警",
+            "decision": "reject",
+            "target_question": "What is the process ID and command line of the process that was used in the possible attempt to access the Primary Refresh Token (PRT)?",
+            "bindings": {
+              "描述线索": {
+                "value": "possible attempt to access a Primary Refresh Token (PRT)",
+                "source": "/context",
+                "quote": "There is also an indication of a possible attempt to access a Primary Refresh Token (PRT) reported.",
+                "role": "问题背景中给出的告警描述线索"
+              },
+              "告警实体内容": {
+                "value": "",
+                "source": "",
+                "quote": "",
+                "role": ""
+              }
+            },
+            "missing": [
+              "告警实体内容"
+            ],
+            "expected_observation": "SecurityAlert中匹配描述线索的告警记录及其Entities/ExtendedProperties，可能包含受损实体信息，但不一定包含进程ID与命令行。",
+            "output_refs": [],
+            "contribution": "可能定位到相关告警，但告警表字段（AlertName/Entities/ExtendedProperties）不保证包含进程ID和命令行，无法直接或确定性地产出问题所要求的证据。",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "告警实体内容槽无任何来源支持，属于缺失参数；SecurityAlert不直接承载进程ID/命令行。"
+            ],
+            "reason": "input_slots中“告警实体内容”无任何source可支撑，value与quote均为空，缺失必要参数；且该操作输出无法可靠覆盖问题要求的进程ID与命令行，证据路径不成立，故拒绝。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据告警名称、描述线索查证安全告警",
+            "decision": "reject",
+            "target_question": "What is the process ID and command line of the process that was used in the possible attempt to access the Primary Refresh Token (PRT)?",
+            "bindings": {
+              "告警名称": {
+                "value": "",
+                "source": "",
+                "quote": "",
+                "role": ""
+              },
+              "描述线索": {
+                "value": "possible attempt to access a Primary Refresh Token (PRT)",
+                "source": "/context",
+                "quote": "There is also an indication of a possible attempt to access a Primary Refresh Token (PRT) reported.",
+                "role": "问题背景中给出的告警描述线索"
+              }
+            },
+            "missing": [
+              "告警名称"
+            ],
+            "expected_observation": "SecurityAlert中按告警名称与描述线索筛选出的告警记录及其实体/扩展属性，可能间接指向相关设备或账户，但通常不含进程ID与命令行。",
+            "output_refs": [],
+            "contribution": "能定位相关安全告警，但告警表字段不直接提供进程ID与命令行，无法确定性地回答问题，仅可能提供后续联接线索。",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "告警名称槽无来源支持，属于缺失参数；即使查出告警，也需再关联DeviceProcessEvents才能得到进程ID与命令行。"
+            ],
+            "reason": "input_slots中“告警名称”无任何source可支撑，缺失必要过滤参数；且安全告警表不含问题所需的进程ID与命令行，证据路径不充分，故拒绝。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": {
+        "name": "根据文件名称查证进程活动",
+        "decision": "use",
+        "target_question": "What is the process ID and command line of the process that was used in the possible attempt to access the Primary Refresh Token (PRT)?",
+        "bindings": {
+          "文件名称": {
+            "value": "get-userprttoken.ps1",
+            "source": "/context",
+            "quote": "specific files `get-userprttoken.ps1`, `characterical.zip`, and `characterical.zip.lockbit`",
+            "role": "问卷明确给出的、与可能的 PRT 访问尝试相关的脚本文件名，是定位对应进程的检索线索"
+          }
+        },
+        "missing": [],
+        "expected_observation": "在DeviceProcessEvents中，按脚本文件名/设备/时间范围检索到的进程记录，包含ProcessId与ProcessCommandLine（以及AccountName、DeviceName等上下文），可用于识别执行该PRT访问尝试脚本的进程。",
+        "output_refs": [
+          {
+            "table": "DeviceProcessEvents",
+            "fields": [
+              "ProcessId",
+              "ProcessCommandLine",
+              "FileName",
+              "AccountName",
+              "DeviceName",
+              "ProcessCreationTime"
+            ]
+          }
+        ],
+        "contribution": "问题要求得到执行PRT访问尝试的进程ID和命令行。脚本名get-userprttoken.ps1是问题域内明确给出的行为线索，可直接作为检索锚点在DeviceProcessEvents中定位执行该脚本的进程记录，从而读取其ProcessId和ProcessCommandLine，直接缩小问题的不确定性；这不是用已知答案做等值查询，而是由已知线索取得候选记录后再核对命令行内容。",
+        "next_step": "在DeviceProcessEvents中，以FileName或CommandLine包含“get-userprttoken.ps1”为条件（结合设备DeviceName/DeviceId与用户账户S-0-6-5及告警时间窗口过滤），检索进程创建事件，输出ProcessId、ProcessCommandLine、FileName、AccountName、DeviceName、ProcessCreationTime。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "FileName字段不一定等于脚本名，实际脚本名可能出现在ProcessCommandLine中，需两处都验证；检索到的进程是否为该PRT访问尝试的执行进程需通过命令行内容与时间/账户关联确认；CommandLine中可能不存在直接PRT字样，需结合告警证据交叉验证。"
+        ],
+        "reason": "文件名称是问题域给定的直接行为线索，可作为实体检索锚点，操作确实能从DeviceProcessEvents取得ProcessId与ProcessCommandLine这两项问题所要求的输出；未将待求答案作为筛选条件，属于有效推进。",
+        "independent_review": "独立从 question 推导：目标是“执行/参与可能的 PRT 访问尝试的进程”的 ProcessId 与 CommandLine。候选 input_slots 只有一个“文件名称”，绑定值为 context 明确列出的 get-userprttoken.ps1，该值不是答案本身，而是与 PRT 访问尝试描述直接对应的行为线索；候选操作是在 DeviceProcessEvents 中按该文件名/命令行锚点定位进程，并读取 ProcessCommandLine、ProcessId 等字段，证据路径合理，且保留了后续用账户、设备、时间窗口确认的验证路径。其他两个文件名与 PRT 尝试的具体关系较弱，未绑定更贴近目标。限制在于 FileName 字段未必等于脚本名，需同时在 ProcessCommandLine 中检索，并凭命令行内容与时间/账户关联确认目标进程，但这属于可核验风险而非错误放行。"
+      },
+      "guard": {
+        "selected": "根据文件名称查证进程活动",
+        "reason": "独立从 question 推导：目标是“执行/参与可能的 PRT 访问尝试的进程”的 ProcessId 与 CommandLine。候选 input_slots 只有一个“文件名称”，绑定值为 context 明确列出的 get-userprttoken.ps1，该值不是答案本身，而是与 PRT 访问尝试描述直接对应的行为线索；候选操作是在 DeviceProcessEvents 中按该文件名/命令行锚点定位进程，并读取 ProcessCommandLine、ProcessId 等字段，证据路径合理，且保留了后续用账户、设备、时间窗口确认的验证路径。其他两个文件名与 PRT 尝试的具体关系较弱，未绑定更贴近目标。限制在于 FileName 字段未必等于脚本名，需同时在 ProcessCommandLine 中检索，并凭命令行内容与时间/账户关联确认目标进程，但这属于可核验风险而非错误放行。"
+      },
+      "status": "selected"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 8171,
+      "output_tokens": 1474
+    }
+  },
+  {
+    "case_id": "incident_5-q0051",
+    "holdout": true,
+    "input": {
+      "context": "A Mimikatz credential theft tool was detected on a device. Mimikatz is a credential theft tool that can harvest plaintext passwords, password hashes, smartcard PINs, and Kerberos tickets. Attackers may use this tool to harvest credentials to log into this or other devices on the network by impersonating a valid user. The detection of Mimikatz is part of a broader security investigation. Additionally, there was later evidence of lateral movement to the jump server `Vnevado-jump` using PSExec.",
+      "question": "A related alert indicated a possible compromised user account dropping ransomware-related files. Can you identify the name of the specific file associated with the ransomware activity?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4936,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_55-q0013",
+    "holdout": true,
+    "input": {
+      "context": "In a recent case of suspicious remote activity observed on a machine named `mb-adfs`, there were several processes involved including `lsass.exe`, `cmd.exe`, and `powershell.exe`. This activity was flagged due to the potential initiation of interactive sessions, modification of files, WMI commands, or creating scheduled tasks which could be malicious. The observed processes were linked with different Process IDs and timestamps.",
+      "question": "Can you identify the SID of the account that executed the suspicious LDAP query?"
+    },
+    "procedures": [
+      {
+        "name": "根据设备名称查证告警证据",
+        "status": "active",
+        "goal": "根据已知的设备名称，确认告警涉及的设备、账号、进程、文件或网络实体。",
+        "input_slots": {
+          "设备名称": "本次调查已提供或已查得设备名称的具体内容。"
+        },
+        "operations": "用已知的设备名称筛选告警证据，在当前调查范围内读取问题所需的信息。",
+        "semantic_refs": [
+          {
+            "table": "AlertEvidence",
+            "fields": [
+              "AccountUpn",
+              "AlertId",
+              "DeviceId",
+              "DeviceName",
+              "EntityType",
+              "EvidenceRole",
+              "FileName",
+              "NetworkMessageId",
+              "ProcessCommandLine",
+              "RemoteIP",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": {
+      "candidates": [
+        "确认调查所需的记录结构",
+        "抽样查看进程活动以寻找线索",
+        "根据设备名称查证告警证据"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "确认调查所需的记录结构",
+            "decision": "reject",
+            "target_question": "Can you identify the SID of the account that executed the suspicious LDAP query?",
+            "bindings": {
+              "调查目标": {
+                "value": "Can you identify the SID of the account that executed the suspicious LDAP query?",
+                "source": "/question",
+                "quote": "Can you identify the SID of the account that executed the suspicious LDAP query?",
+                "role": "用户要求查明的未知事实"
+              },
+              "结构未知": {
+                "value": "当前缺少相关记录的可靠结构说明。",
+                "source": "candidates",
+                "quote": "当前缺少相关记录的可靠结构说明。",
+                "role": "候选自身陈述的元信息，不是源数据中的事实槽"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回若干候选表的字段列表，但不会产生任何与可疑 LDAP 查询执行账户 SID 相关的记录。",
+            "output_refs": [],
+            "contribution": "只查看表结构不能缩小“哪个账户执行了可疑 LDAP 查询”的不确定性；没有把 SID 与 LDAP 查询事件关联起来。",
+            "next_step": "无具体可执行的数据查询步骤，仅描述表结构。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "表结构不是目标事实，不能据此确认执行 LDAP 查询的账户 SID"
+            ],
+            "reason": "拒绝：该候选只泛泛查看记录结构，未针对设备、LDAP 查询事件或账户 SID 构造可执行查询，无法产生通向目标的证据。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "抽样查看进程活动以寻找线索",
+            "decision": "reject",
+            "target_question": "Can you identify the SID of the account that executed the suspicious LDAP query?",
+            "bindings": {
+              "调查对象": {
+                "value": "Can you identify the SID of the account that executed the suspicious LDAP query?",
+                "source": "/question",
+                "quote": "Can you identify the SID of the account that executed the suspicious LDAP query?",
+                "role": "用户要求查明的未知事实"
+              },
+              "缺少定位线索": {
+                "value": "当前尚无可直接筛选目标记录的具体线索。",
+                "source": "candidates",
+                "quote": "当前尚无可直接筛选目标记录的具体线索。",
+                "role": "候选自身陈述的元信息，不是源数据中的事实槽"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回少量 DeviceProcessEvents 样本，可能包含 AccountName、进程命令行等，但不保证包含 LDAP 查询或账户 SID。",
+            "output_refs": [],
+            "contribution": "随意抽样进程活动不能定位与 LDAP 查询相关的账户，且 DeviceProcessEvents 本身不提供账户 SID 字段。",
+            "next_step": "读取少量 DeviceProcessEvents 样本。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "抽样结果与可疑 LDAP 查询之间无已验证关联",
+              "DeviceProcessEvents 不直接输出账户 SID"
+            ],
+            "reason": "拒绝：该候选明确缺少定位线索，只是无目标抽样进程活动，无法形成通向“执行 LDAP 查询的账户 SID”的证据路径。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据设备名称查证告警证据",
+            "decision": "use",
+            "target_question": "Can you identify the SID of the account that executed the suspicious LDAP query?",
+            "bindings": {
+              "设备名称": {
+                "value": "mb-adfs",
+                "source": "/context",
+                "quote": "suspicious remote activity observed on a machine named `mb-adfs`",
+                "role": "本次调查中发生可疑远程活动的目标设备名称"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回与设备 mb-adfs 相关的告警证据记录，可能包含 AccountUpn、ProcessCommandLine 等实体信息，可用于继续定位执行 LDAP 查询的账户及其 SID。",
+            "output_refs": [
+              {
+                "table": "AlertEvidence",
+                "fields": [
+                  "AccountUpn",
+                  "AlertId",
+                  "DeviceId",
+                  "DeviceName",
+                  "EntityType",
+                  "EvidenceRole",
+                  "FileName",
+                  "NetworkMessageId",
+                  "ProcessCommandLine",
+                  "RemoteIP",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "该操作以已确认的设备名 mb-adfs 为锚点取得告警证据候选记录，可能暴露与可疑活动关联的账户或进程线索，从而缩小查找执行 LDAP 查询账户 SID 的范围；它不是直接确认背景值，而是验证设备相关告警中是否存在可关联的账户实体。",
+            "next_step": "用设备名 mb-adfs 筛选 AlertEvidence 表，读取 DeviceName、AccountUpn、ProcessCommandLine、EvidenceRole、TimeGenerated 等字段以查找可疑 LDAP 查询相关账户线索。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "AlertEvidence 输出 AccountUpn 而非 AccountSid，需要后续通过 IdentityLogonEvents 或 AccountSid 字段关联验证 SID",
+              "该操作本身不会直接返回 SID，仅提供可能关联账户的候选证据",
+              "需要进一步验证返回账户是否确实执行了可疑 LDAP 查询"
+            ],
+            "reason": "接受：设备名 mb-adfs 是 context 中明确给出的调查锚点，按该设备筛选 AlertEvidence 可产生与可疑活动关联的候选实体，且明确记录后续仍需验证账户与 LDAP 查询及 SID 的关联。"
+          },
+          "validation_error": null
+        }
+      ],
+      "application": {
+        "name": "根据设备名称查证告警证据",
+        "decision": "use",
+        "target_question": "Can you identify the SID of the account that executed the suspicious LDAP query?",
+        "bindings": {
+          "设备名称": {
+            "value": "mb-adfs",
+            "source": "/context",
+            "quote": "suspicious remote activity observed on a machine named `mb-adfs`",
+            "role": "本次调查中发生可疑远程活动的目标设备名称"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回与设备 mb-adfs 相关的告警证据记录，可能包含 AccountUpn、ProcessCommandLine 等实体信息，可用于继续定位执行 LDAP 查询的账户及其 SID。",
+        "output_refs": [
+          {
+            "table": "AlertEvidence",
+            "fields": [
+              "AccountUpn",
+              "AlertId",
+              "DeviceId",
+              "DeviceName",
+              "EntityType",
+              "EvidenceRole",
+              "FileName",
+              "NetworkMessageId",
+              "ProcessCommandLine",
+              "RemoteIP",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ],
+        "contribution": "该操作以已确认的设备名 mb-adfs 为锚点取得告警证据候选记录，可能暴露与可疑活动关联的账户或进程线索，从而缩小查找执行 LDAP 查询账户 SID 的范围；它不是直接确认背景值，而是验证设备相关告警中是否存在可关联的账户实体。",
+        "next_step": "用设备名 mb-adfs 筛选 AlertEvidence 表，读取 DeviceName、AccountUpn、ProcessCommandLine、EvidenceRole、TimeGenerated 等字段以查找可疑 LDAP 查询相关账户线索。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "AlertEvidence 输出 AccountUpn 而非 AccountSid，需要后续通过 IdentityLogonEvents 或 AccountSid 字段关联验证 SID",
+          "该操作本身不会直接返回 SID，仅提供可能关联账户的候选证据",
+          "需要进一步验证返回账户是否确实执行了可疑 LDAP 查询"
+        ],
+        "reason": "接受：设备名 mb-adfs 是 context 中明确给出的调查锚点，按该设备筛选 AlertEvidence 可产生与可疑活动关联的候选实体，且明确记录后续仍需验证账户与 LDAP 查询及 SID 的关联。",
+        "independent_review": "输入槽“设备名称”由 /context 中明确给出的目标设备 mb-adfs 填充，角色匹配且未与相邻实体混淆。该操作以该设备名为过滤键查询 AlertEvidence，属于围绕目标机器建立告警证据路径的合理起点；其语义引用包含 AccountUpn、ProcessCommandLine、EvidenceRole 等字段，可产生与可疑活动相关的账户/进程候选线索。虽然它不直接返回 SID，也未覆盖 AccountSid，但 applications 已明确说明这一限制并给出后续通过账户标识关联 SID 的验证路径，因此可作为推进定位执行可疑 LDAP 查询账户 SID 的最贴近证据步骤，且未把背景值当作答案。"
+      },
+      "guard": {
+        "selected": "根据设备名称查证告警证据",
+        "reason": "输入槽“设备名称”由 /context 中明确给出的目标设备 mb-adfs 填充，角色匹配且未与相邻实体混淆。该操作以该设备名为过滤键查询 AlertEvidence，属于围绕目标机器建立告警证据路径的合理起点；其语义引用包含 AccountUpn、ProcessCommandLine、EvidenceRole 等字段，可产生与可疑活动相关的账户/进程候选线索。虽然它不直接返回 SID，也未覆盖 AccountSid，但 applications 已明确说明这一限制并给出后续通过账户标识关联 SID 的验证路径，因此可作为推进定位执行可疑 LDAP 查询账户 SID 的最贴近证据步骤，且未把背景值当作答案。"
+      },
+      "status": "selected"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 8796,
+      "output_tokens": 1612
+    }
+  },
+  {
+    "case_id": "incident_134-q0056",
+    "holdout": true,
+    "input": {
+      "context": "A security incident was reported on 2024-07-18 indicating that the account `Nina Park` with email `Nina Park@vnevado.alpineskihouse.co` was potentially compromised following a password-spray attack. This incident involved an unusual sign-in from a location and browser, suggesting unauthorized access to the network. Immediate investigation is recommended to mitigate security risks.",
+      "question": "Can you determine the malicious IP address associated with this account sign-in activity during the time of the compromise?"
+    },
+    "procedures": [
+      {
+        "name": "根据用户登录账号查证账号登录",
+        "status": "active",
+        "goal": "根据已知的用户登录账号，调查账号登录、登录来源地址及登录结果。",
+        "input_slots": {
+          "用户登录账号": "本次调查已提供或已查得用户登录账号的具体内容。"
+        },
+        "operations": "用已知的用户登录账号筛选账号登录，在当前调查范围内读取问题所需的信息。",
+        "semantic_refs": [
+          {
+            "table": "SigninLogs",
+            "fields": [
+              "IPAddress",
+              "ResultDescription",
+              "ResultType",
+              "TenantId",
+              "TimeGenerated",
+              "UserPrincipalName"
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": {
+      "candidates": [
+        "根据用户登录账号查证账号登录"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据用户登录账号查证账号登录",
+            "decision": "use",
+            "target_question": "Can you determine the malicious IP address associated with this account sign-in activity during the time of the compromise?",
+            "bindings": {
+              "用户登录账号": {
+                "value": "Nina Park@vnevado.alpineskihouse.co",
+                "source": "/context",
+                "quote": "the account `Nina Park` with email `Nina Park@vnevado.alpineskihouse.co` was potentially compromised",
+                "role": "被入侵的账户登录名（UserPrincipalName），作为筛选账号登录记录的过滤条件"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回该用户账户在 SigninLogs 中的登录记录，包含 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName 等字段，可从中筛选 2024-07-18 前后的异常登录来源 IP。",
+            "output_refs": [
+              {
+                "table": "SigninLogs",
+                "fields": [
+                  "IPAddress",
+                  "ResultDescription",
+                  "ResultType",
+                  "TenantId",
+                  "TimeGenerated",
+                  "UserPrincipalName"
+                ]
+              }
+            ],
+            "contribution": "以已确认的被入侵账户登录名为锚点，从 SigninLogs 中取得该账户的登录记录，包含登录来源 IP 和登录时间，从而定位到 2024-07-18 密码喷洒后异常登录所涉及的可疑 IP 地址，缩小问题的不确定性。不是用待求答案作筛选，而是用已知账户标识获取候选记录。",
+            "next_step": "用 UserPrincipalName 等于 'Nina Park@vnevado.alpineskihouse.co' 筛选 SigninLogs，读取 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName，并重点查看 2024-07-18 前后与该账户相关的异常登录记录。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "返回的记录可能包含多个登录 IP，需通过时间（2024-07-18）、登录结果和与密码喷洒事件的相关性进一步确认恶意 IP。",
+              "本操作无法直接证明哪个 IP 是恶意 IP，仅能提供候选记录供后续验证。"
+            ],
+            "reason": "接受：问题要求确定该账户入侵期间关联的恶意 IP，该候选以已知被入侵账户登录名为过滤条件查询 SigninLogs，可取得登录来源 IP 等证据，是通往答案的合理中间步骤；绑定有 /context 逐字支持，槽位完整，未预设答案。"
+          },
+          "validation_error": null
+        }
+      ],
+      "application": {
+        "name": "根据用户登录账号查证账号登录",
+        "decision": "use",
+        "target_question": "Can you determine the malicious IP address associated with this account sign-in activity during the time of the compromise?",
+        "bindings": {
+          "用户登录账号": {
+            "value": "Nina Park@vnevado.alpineskihouse.co",
+            "source": "/context",
+            "quote": "the account `Nina Park` with email `Nina Park@vnevado.alpineskihouse.co` was potentially compromised",
+            "role": "被入侵的账户登录名（UserPrincipalName），作为筛选账号登录记录的过滤条件"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回该用户账户在 SigninLogs 中的登录记录，包含 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName 等字段，可从中筛选 2024-07-18 前后的异常登录来源 IP。",
+        "output_refs": [
+          {
+            "table": "SigninLogs",
+            "fields": [
+              "IPAddress",
+              "ResultDescription",
+              "ResultType",
+              "TenantId",
+              "TimeGenerated",
+              "UserPrincipalName"
+            ]
+          }
+        ],
+        "contribution": "以已确认的被入侵账户登录名为锚点，从 SigninLogs 中取得该账户的登录记录，包含登录来源 IP 和登录时间，从而定位到 2024-07-18 密码喷洒后异常登录所涉及的可疑 IP 地址，缩小问题的不确定性。不是用待求答案作筛选，而是用已知账户标识获取候选记录。",
+        "next_step": "用 UserPrincipalName 等于 'Nina Park@vnevado.alpineskihouse.co' 筛选 SigninLogs，读取 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName，并重点查看 2024-07-18 前后与该账户相关的异常登录记录。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "返回的记录可能包含多个登录 IP，需通过时间（2024-07-18）、登录结果和与密码喷洒事件的相关性进一步确认恶意 IP。",
+          "本操作无法直接证明哪个 IP 是恶意 IP，仅能提供候选记录供后续验证。"
+        ],
+        "reason": "接受：问题要求确定该账户入侵期间关联的恶意 IP，该候选以已知被入侵账户登录名为过滤条件查询 SigninLogs，可取得登录来源 IP 等证据，是通往答案的合理中间步骤；绑定有 /context 逐字支持，槽位完整，未预设答案。",
+        "independent_review": "未知目标是该账户在 2024-07-18 密码喷洒/异常登录期间所关联的恶意来源 IP。候选以题面明确给出的被入侵账户登录名 Nina Park@vnevado.alpineskihouse.co 作为 UserPrincipalName 过滤值查询 SigninLogs，属于目标账户本身的稳定关联键，而非相邻角色或背景字段；返回的 IPAddress、TimeGenerated、ResultType 等字段构成定位该账户异常登录来源 IP 的直接证据路径。绑定角色正确（该邮箱是账户登录标识，不是来源/产品/类别），过滤值来自 /context 逐字引用，未以待求 IP 作筛选，也未把背景事件值或同类字段混入目标事件；时序可通过返回记录的 TimeGenerated 对照 2024-07-18 验证，问题范围（该账户、入侵期间、恶意 IP）得以保留。因此该候选最能推进问题且假设最少。"
+      },
+      "guard": {
+        "selected": "根据用户登录账号查证账号登录",
+        "reason": "未知目标是该账户在 2024-07-18 密码喷洒/异常登录期间所关联的恶意来源 IP。候选以题面明确给出的被入侵账户登录名 Nina Park@vnevado.alpineskihouse.co 作为 UserPrincipalName 过滤值查询 SigninLogs，属于目标账户本身的稳定关联键，而非相邻角色或背景字段；返回的 IPAddress、TimeGenerated、ResultType 等字段构成定位该账户异常登录来源 IP 的直接证据路径。绑定角色正确（该邮箱是账户登录标识，不是来源/产品/类别），过滤值来自 /context 逐字引用，未以待求 IP 作筛选，也未把背景事件值或同类字段混入目标事件；时序可通过返回记录的 TimeGenerated 对照 2024-07-18 验证，问题范围（该账户、入侵期间、恶意 IP）得以保留。因此该候选最能推进问题且假设最少。"
+      },
+      "status": "selected"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 7472,
+      "output_tokens": 858
+    }
+  },
+  {
+    "case_id": "incident_34-q0052",
+    "holdout": true,
+    "input": {
+      "context": "During an investigation of a security incident where a suspicious PowerShell command was executed, it was found that attackers often use PowerShell to bypass security protection mechanisms by executing their payload in memory. As part of this incident, a PowerShell command was observed creating and executing a file named `winatp-intro-backdoor.exe`. The specific process `powershell.exe` was involved in this activity.",
+      "question": "Following this PowerShell activity, there was a suspicious LDAP query. Can you identify the file name of the process used to execute this LDAP query?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据文件名称、发起进程文件名称查证进程活动",
+        "根据文件名称查证进程活动",
+        "根据目标进程命令内容查证进程活动"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据文件名称、发起进程文件名称查证进程活动",
+            "decision": "use",
+            "target_question": "Following this PowerShell activity, there was a suspicious LDAP query. Can you identify the file name of the process used to execute this LDAP query?",
+            "bindings": {
+              "文件名称": {
+                "value": "winatp-intro-backdoor.exe",
+                "source": "/context",
+                "quote": "a PowerShell command was observed creating and executing a file named `winatp-intro-backdoor.exe`.",
+                "role": "已知被 PowerShell 创建并执行的可疑文件名，可作为定位 PowerShell 相关进程活动的锚点"
+              },
+              "发起进程文件名称": {
+                "value": "powershell.exe",
+                "source": "/context",
+                "quote": "The specific process `powershell.exe` was involved in this activity.",
+                "role": "已知执行可疑活动的发起进程文件名，可用于过滤/关联由该进程发起的设备进程事件"
+              }
+            },
+            "missing": [],
+            "expected_observation": "取得与 powershell.exe 发起或执行 winatp-intro-backdoor.exe 相关的进程记录，包括 FileName、ProcessCommandLine、InitiatingProcessFileName 等字段；并可观察同一设备/时间线索下是否存在后续 LDAP 查询相关进程线索。",
+            "output_refs": [
+              {
+                "table": "DeviceProcessEvents",
+                "fields": [
+                  "AccountName",
+                  "DeviceId",
+                  "DeviceName",
+                  "FileName",
+                  "InitiatingProcessCommandLine",
+                  "InitiatingProcessFileName",
+                  "InitiatingProcessId",
+                  "ProcessCommandLine",
+                  "ProcessCreationTime",
+                  "ProcessId",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "该操作利用已知 PowerShell 发起进程及可疑文件名定位相关进程记录，可缩小 PowerShell 活动的事件范围、获得设备、时间、进程标识等关联键，为后续按同一设备或时间窗口查找 LDAP 查询进程提供基础；不是直接确认背景中已知的 powershell.exe。",
+            "next_step": "在 DeviceProcessEvents 中，以 FileName 包含 'winatp-intro-backdoor.exe' 且 InitiatingProcessFileName 或父进程链涉及 'powershell.exe' 为条件检索相关进程事件，读取 FileName、ProcessCommandLine、InitiatingProcessFileName、ProcessId、InitiatingProcessId、DeviceId、TimeGenerated 等字段，并保留设备与时间线索供后续关联 LDAP 查询进程。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "本操作本身不直接查询 LDAP 查询事件，可能只返回 PowerShell 活动进程记录",
+              "DeviceProcessEvents 中未必直接包含 LDAP 查询字段，仍需后续在相关日志或设备事件中验证 LDAP 查询与某进程的关联",
+              "winatp-intro-backdoor.exe 是 PowerShell 创建并执行的文件名，不能假定它等同于执行 LDAP 查询的进程文件名"
+            ],
+            "reason": "接受。该候选使用 context 中明确给出的两个已知值作为锚点，槽位角色与 DeviceProcessEvents 的过滤/关联字段相匹配，能取得可验证的相关进程候选及设备/时间/进程标识等关联键，未以待求答案作为筛选条件，也未把已知背景值直接当作答案。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据文件名称查证进程活动",
+            "decision": "reject",
+            "target_question": "Following this PowerShell activity, there was a suspicious LDAP query. Can you identify the file name of the process used to execute this LDAP query?",
+            "bindings": {
+              "文件名称": {
+                "value": "winatp-intro-backdoor.exe",
+                "source": "/context",
+                "quote": "a PowerShell command was observed creating and executing a file named `winatp-intro-backdoor.exe`.",
+                "role": "已知被 PowerShell 创建并执行的可疑文件名"
+              }
+            },
+            "missing": [],
+            "expected_observation": "取得 FileName 与 winatp-intro-backdoor.exe 相关的进程记录。",
+            "output_refs": [
+              {
+                "table": "DeviceProcessEvents",
+                "fields": [
+                  "AccountName",
+                  "DeviceId",
+                  "DeviceName",
+                  "FileName",
+                  "InitiatingProcessCommandLine",
+                  "InitiatingProcessId",
+                  "ProcessCommandLine",
+                  "ProcessCreationTime",
+                  "ProcessId",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp"
+                ]
+              }
+            ],
+            "contribution": "可能定位已知可疑文件相关进程，但缺少 powershell.exe 这一已知发起进程过滤条件，无法有效限定本次 PowerShell 活动后的进程链。",
+            "next_step": "在 DeviceProcessEvents 中仅按 FileName 包含 'winatp-intro-backdoor.exe' 检索进程活动。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "未利用已知的 powershell.exe 发起进程线索，定位范围过宽",
+              "仍不能直接回答 LDAP 查询由哪个进程文件名执行"
+            ],
+            "reason": "拒绝。虽然槽位有证据，但该候选舍弃了 context 中明确给出的 powershell.exe 发起进程线索，仅按文件名称检索会扩大候选范围并降低与本次 PowerShell 活动后的 LDAP 查询事件路径的可验证关联性；相对第一候选证据路径较弱。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据目标进程命令内容查证进程活动",
+            "decision": "reject",
+            "target_question": "Following this PowerShell activity, there was a suspicious LDAP query. Can you identify the file name of the process used to execute this LDAP query?",
+            "bindings": {},
+            "missing": [
+              "目标进程命令内容"
+            ],
+            "expected_observation": "若已知目标进程命令内容，可取得匹配的进程记录。",
+            "output_refs": [],
+            "contribution": "无可用输入，无法缩小本次调查的不确定性。",
+            "next_step": "需要先获得目标 LDAP 查询进程的命令内容，当前 sources 未提供。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "sources 中没有任何具体的目标进程命令内容",
+              "不能从计划或问题中编造命令内容参数"
+            ],
+            "reason": "拒绝。操作所需的“目标进程命令内容”在 sources 中没有对应 quote，属于未满足的必填槽，缺少真正需要的过滤参数，无法执行。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": {
+        "selected": null,
+        "reason": "候选操作的输入槽位虽在字面上可由 context 填充，但其证据路径无法回答目标问题。目标需要的是“执行 LDAP 查询的进程文件名”，而候选的绑定值是 PowerShell 相关活动中的文件名 winatp-intro-backdoor.exe 与发起进程 powershell.exe，二者均来自明确背景事件。候选操作只检索 DeviceProcessEvents 中与 powershell.exe/winatp-intro-backdoor.exe 相关的进程记录，expected_observation 也仅承认可能得到 PowerShell 活动进程及其设备、时间、进程标识，并明确指出 DeviceProcessEvents 未必包含 LDAP 查询字段、winatp-intro-backdoor.exe 不能等同于执行 LDAP 查询的进程名。它并未建立“LDAP 查询进程”与目标实体（执行该 LDAP 查询的进程文件）之间的稳定关联键，也没有给出能实际定位执行 LDAP 查询进程的过滤条件（如 LDAP 查询事件表、查询内容、时间窗口与其他日志的关联方式）。因此该路径只能得到相邻/PowerShell 背景实体，不能推进确认目标答案，属于牵强放行，应全部拒绝。"
+      },
+      "status": "rejected_by_guard"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 8146,
+      "output_tokens": 1832
+    }
+  },
+  {
+    "case_id": "incident_166-q0045",
+    "holdout": true,
+    "input": {
+      "context": "A security incident involving a possible BEC financial fraud was detected where suspicious events with business email compromise characteristics were observed. This was linked to an account with the name `Jordan P` and email `Jordan P@vnevado.alpineskihouse.co`. The incidents might involve someone attempting to conduct a fraud attack against your organization.",
+      "question": "There was also a sign-in from an anonymous IP address connected to this incident. Can you provide the IP address that was used?"
+    },
+    "procedures": [
+      {
+        "name": "根据用户登录账号查证账号登录",
+        "status": "active",
+        "goal": "根据已知的用户登录账号，调查账号登录、登录来源地址及登录结果。",
+        "input_slots": {
+          "用户登录账号": "本次调查已提供或已查得用户登录账号的具体内容。"
+        },
+        "operations": "用已知的用户登录账号筛选账号登录，在当前调查范围内读取问题所需的信息。",
+        "semantic_refs": [
+          {
+            "table": "SigninLogs",
+            "fields": [
+              "IPAddress",
+              "ResultDescription",
+              "ResultType",
+              "TenantId",
+              "TimeGenerated",
+              "UserPrincipalName"
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": {
+      "candidates": [
+        "根据用户显示名称、用户登录账号查证账号登录",
+        "根据用户登录账号查证账号登录",
+        "根据描述线索、标题线索查证安全事件"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据用户显示名称、用户登录账号查证账号登录",
+            "decision": "use",
+            "target_question": "There was also a sign-in from an anonymous IP address connected to this incident. Can you provide the IP address that was used?",
+            "bindings": {
+              "用户显示名称": {
+                "value": "Jordan P",
+                "source": "/context",
+                "quote": "This was linked to an account with the name `Jordan P` and email `Jordan P@vnevado.alpineskihouse.co`.",
+                "role": "与此次 BEC 事件关联的账户显示名称"
+              },
+              "用户登录账号": {
+                "value": "Jordan P@vnevado.alpineskihouse.co",
+                "source": "/context",
+                "quote": "This was linked to an account with the name `Jordan P` and email `Jordan P@vnevado.alpineskihouse.co`.",
+                "role": "与此次 BEC 事件关联的账户登录账号"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回该用户账号的登录日志记录，包括 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserDisplayName、UserPrincipalName 等字段，用于进一步识别匿名 IP 登录。",
+            "output_refs": [
+              {
+                "table": "SigninLogs",
+                "fields": [
+                  "IPAddress",
+                  "ResultDescription",
+                  "ResultType",
+                  "TenantId",
+                  "TimeGenerated",
+                  "UserDisplayName",
+                  "UserPrincipalName"
+                ]
+              }
+            ],
+            "contribution": "该操作以已知的事件关联账户为锚点，获取其登录来源 IP 记录，从而缩小到可能由匿名 IP 发起的登录事件，进而回答问题所要求的 IP 地址。",
+            "next_step": "在 SigninLogs 中按 UserDisplayName = \"Jordan P\" 且 UserPrincipalName = \"Jordan P@vnevado.alpineskihouse.co\" 筛选该账户的登录记录，并读取 IPAddress、ResultDescription、ResultType、TimeGenerated 等字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "本操作只能取得该账户的登录记录，尚不能确认哪条记录对应匿名 IP 地址。",
+              "匿名 IP 的判断可能需要结合后续字段或外部情报，不能仅凭单次查询直接确认。"
+            ],
+            "reason": "接受。账户显示名称和登录账号均直接来自 context，角色与 SigninLogs 的 UserDisplayName、UserPrincipalName 过滤字段匹配；该操作产生可验证的登录候选记录，是定位匿名 IP 地址的必要中间步骤。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据用户登录账号查证账号登录",
+            "decision": "use",
+            "target_question": "There was also a sign-in from an anonymous IP address connected to this incident. Can you provide the IP address that was used?",
+            "bindings": {
+              "用户登录账号": {
+                "value": "Jordan P@vnevado.alpineskihouse.co",
+                "source": "/context",
+                "quote": "This was linked to an account with the name `Jordan P` and email `Jordan P@vnevado.alpineskihouse.co`.",
+                "role": "与此次 BEC 事件关联的账户登录账号"
+              }
+            },
+            "missing": [],
+            "expected_observation": "返回该登录账号的登录日志记录，包括 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName 等字段，用于识别匿名 IP 登录。",
+            "output_refs": [
+              {
+                "table": "SigninLogs",
+                "fields": [
+                  "IPAddress",
+                  "ResultDescription",
+                  "ResultType",
+                  "TenantId",
+                  "TimeGenerated",
+                  "UserPrincipalName"
+                ]
+              }
+            ],
+            "contribution": "该操作以事件关联账户的登录账号为锚点，查询登录记录中的 IP 地址，为回答问题提供直接候选证据。",
+            "next_step": "在 SigninLogs 中按 UserPrincipalName = \"Jordan P@vnevado.alpineskihouse.co\" 筛选登录记录，并读取 IPAddress、ResultDescription、ResultType、TimeGenerated 等字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "仅凭登录账号筛选不能直接确定哪条记录来自匿名 IP。",
+              "是否需要结合显示名称或其他事件字段进一步验证匿名 IP 关联尚未确认。"
+            ],
+            "reason": "接受。登录账号直接来自 context，且是 SigninLogs 的有效过滤字段；该操作能产生账号登录及来源 IP 候选，推进匿名 IP 地址定位。"
+          },
+          "validation_error": null
+        },
+        {
+          "assessment": {
+            "name": "根据描述线索、标题线索查证安全事件",
+            "decision": "reject",
+            "target_question": "There was also a sign-in from an anonymous IP address connected to this incident. Can you provide the IP address that was used?",
+            "bindings": {},
+            "missing": [
+              "描述线索",
+              "标题线索"
+            ],
+            "expected_observation": "返回符合描述或标题线索的安全事件记录，包括 Description、IncidentNumber、TenantId、TimeGenerated、Title 等字段。",
+            "output_refs": [],
+            "contribution": "该操作可能帮助重新定位安全事件，但不能直接提供问题所需的匿名 IP 登录地址。",
+            "next_step": "在 SecurityIncident 中按描述线索或标题线索筛选安全事件。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "未提供可用的描述线索或标题线索值。",
+              "即使返回安全事件，也不直接包含该匿名 IP 的登录地址。"
+            ],
+            "reason": "拒绝。缺少描述线索和标题线索的具体值，且该操作针对 SecurityIncident，不能直接产生登录 IP 证据，对回答匿名 IP 地址问题路径不足。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": {
+        "name": "根据用户登录账号查证账号登录",
+        "decision": "use",
+        "target_question": "There was also a sign-in from an anonymous IP address connected to this incident. Can you provide the IP address that was used?",
+        "bindings": {
+          "用户登录账号": {
+            "value": "Jordan P@vnevado.alpineskihouse.co",
+            "source": "/context",
+            "quote": "This was linked to an account with the name `Jordan P` and email `Jordan P@vnevado.alpineskihouse.co`.",
+            "role": "与此次 BEC 事件关联的账户登录账号"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回该登录账号的登录日志记录，包括 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName 等字段，用于识别匿名 IP 登录。",
+        "output_refs": [
+          {
+            "table": "SigninLogs",
+            "fields": [
+              "IPAddress",
+              "ResultDescription",
+              "ResultType",
+              "TenantId",
+              "TimeGenerated",
+              "UserPrincipalName"
+            ]
+          }
+        ],
+        "contribution": "该操作以事件关联账户的登录账号为锚点，查询登录记录中的 IP 地址，为回答问题提供直接候选证据。",
+        "next_step": "在 SigninLogs 中按 UserPrincipalName = \"Jordan P@vnevado.alpineskihouse.co\" 筛选登录记录，并读取 IPAddress、ResultDescription、ResultType、TimeGenerated 等字段。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "仅凭登录账号筛选不能直接确定哪条记录来自匿名 IP。",
+          "是否需要结合显示名称或其他事件字段进一步验证匿名 IP 关联尚未确认。"
+        ],
+        "reason": "接受。登录账号直接来自 context，且是 SigninLogs 的有效过滤字段；该操作能产生账号登录及来源 IP 候选，推进匿名 IP 地址定位。",
+        "independent_review": "问题要求定位与本次 BEC 事件关联账户的匿名 IP 登录记录中的 IPAddress，最直接的证据路径是用该账户的登录账号过滤 SigninLogs。候选二仅使用 /context 明确给出的 UserPrincipalName（Jordan P@vnevado.alpineskihouse.co），角色与 SigninLogs.UserPrincipalName 匹配，且字段中包含 IPAddress，可形成合理后续验证路径。候选一额外绑定 UserDisplayName，但 /context 给出的“name `Jordan P`”本身与邮箱前缀重复，是否为 UserDisplayName 并不明确，输入角色存在假设，且不增加定位目标登录记录的稳定性；因此选择假设最少、绑定最直接的候选二。"
+      },
+      "guard": {
+        "selected": "根据用户登录账号查证账号登录",
+        "reason": "问题要求定位与本次 BEC 事件关联账户的匿名 IP 登录记录中的 IPAddress，最直接的证据路径是用该账户的登录账号过滤 SigninLogs。候选二仅使用 /context 明确给出的 UserPrincipalName（Jordan P@vnevado.alpineskihouse.co），角色与 SigninLogs.UserPrincipalName 匹配，且字段中包含 IPAddress，可形成合理后续验证路径。候选一额外绑定 UserDisplayName，但 /context 给出的“name `Jordan P`”本身与邮箱前缀重复，是否为 UserDisplayName 并不明确，输入角色存在假设，且不增加定位目标登录记录的稳定性；因此选择假设最少、绑定最直接的候选二。"
+      },
+      "status": "selected"
+    },
+    "usage": {
+      "calls": 3,
+      "input_tokens": 8380,
+      "output_tokens": 1632
+    }
+  }
+]

@@ -1,0 +1,120 @@
+{
+  "case_id": "incident_134-q0056",
+  "retrieval_source": "outputs/planner_checks/question-led-pm-final/cases/incident_134-q0056.json",
+  "memory": {
+    "procedural_memory": {
+      "procedures": [
+        {
+          "name": "根据用户登录账号查证账号登录",
+          "status": "active",
+          "goal": "根据已知的用户登录账号，调查账号登录、登录来源地址及登录结果。",
+          "input_slots": {
+            "用户登录账号": "本次调查已提供或已查得用户登录账号的具体内容。"
+          },
+          "operations": "用已知的用户登录账号筛选账号登录，在当前调查范围内读取问题所需的信息。",
+          "semantic_refs": [
+            {
+              "table": "SigninLogs",
+              "fields": [
+                "IPAddress",
+                "ResultDescription",
+                "ResultType",
+                "TenantId",
+                "TimeGenerated",
+                "UserPrincipalName"
+              ]
+            }
+          ]
+        }
+      ],
+      "application": {
+        "name": "根据用户登录账号查证账号登录",
+        "decision": "use",
+        "target_question": "Can you determine the malicious IP address associated with this account sign-in activity during the time of the compromise?",
+        "bindings": {
+          "用户登录账号": {
+            "value": "Nina Park@vnevado.alpineskihouse.co",
+            "source": "/context",
+            "quote": "the account `Nina Park` with email `Nina Park@vnevado.alpineskihouse.co` was potentially compromised",
+            "role": "被入侵的账户登录名（UserPrincipalName），作为筛选账号登录记录的过滤条件"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回该用户账户在 SigninLogs 中的登录记录，包含 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName 等字段，可从中筛选 2024-07-18 前后的异常登录来源 IP。",
+        "output_refs": [
+          {
+            "table": "SigninLogs",
+            "fields": [
+              "IPAddress",
+              "ResultDescription",
+              "ResultType",
+              "TenantId",
+              "TimeGenerated",
+              "UserPrincipalName"
+            ]
+          }
+        ],
+        "contribution": "以已确认的被入侵账户登录名为锚点，从 SigninLogs 中取得该账户的登录记录，包含登录来源 IP 和登录时间，从而定位到 2024-07-18 密码喷洒后异常登录所涉及的可疑 IP 地址，缩小问题的不确定性。不是用待求答案作筛选，而是用已知账户标识获取候选记录。",
+        "next_step": "用 UserPrincipalName 等于 'Nina Park@vnevado.alpineskihouse.co' 筛选 SigninLogs，读取 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName，并重点查看 2024-07-18 前后与该账户相关的异常登录记录。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "返回的记录可能包含多个登录 IP，需通过时间（2024-07-18）、登录结果和与密码喷洒事件的相关性进一步确认恶意 IP。",
+          "本操作无法直接证明哪个 IP 是恶意 IP，仅能提供候选记录供后续验证。"
+        ],
+        "reason": "接受：问题要求确定该账户入侵期间关联的恶意 IP，该候选以已知被入侵账户登录名为过滤条件查询 SigninLogs，可取得登录来源 IP 等证据，是通往答案的合理中间步骤；绑定有 /context 逐字支持，槽位完整，未预设答案。",
+        "independent_review": "未知目标是该账户在 2024-07-18 密码喷洒/异常登录期间所关联的恶意来源 IP。候选以题面明确给出的被入侵账户登录名 Nina Park@vnevado.alpineskihouse.co 作为 UserPrincipalName 过滤值查询 SigninLogs，属于目标账户本身的稳定关联键，而非相邻角色或背景字段；返回的 IPAddress、TimeGenerated、ResultType 等字段构成定位该账户异常登录来源 IP 的直接证据路径。绑定角色正确（该邮箱是账户登录标识，不是来源/产品/类别），过滤值来自 /context 逐字引用，未以待求 IP 作筛选，也未把背景事件值或同类字段混入目标事件；时序可通过返回记录的 TimeGenerated 对照 2024-07-18 验证，问题范围（该账户、入侵期间、恶意 IP）得以保留。因此该候选最能推进问题且假设最少。"
+      }
+    }
+  },
+  "input": {
+    "context": "A security incident was reported on 2024-07-18 indicating that the account `Nina Park` with email `Nina Park@vnevado.alpineskihouse.co` was potentially compromised following a password-spray attack. This incident involved an unusual sign-in from a location and browser, suggesting unauthorized access to the network. Immediate investigation is recommended to mitigate security risks.",
+    "question": "Can you determine the malicious IP address associated with this account sign-in activity during the time of the compromise?"
+  },
+  "success": true,
+  "itt": [
+    {
+      "id": "G1",
+      "objective": "确定在账户 Nina Park（Nina Park@vnevado.alpineskihouse.co）被入侵期间，与该账户登录活动关联的恶意 IP 地址是什么？",
+      "status": "todo",
+      "children": [
+        {
+          "id": "F1",
+          "objective": "沿账户登录线索，查清 Nina Park@vnevado.alpineskihouse.co 在 2024-07-18 前后的登录记录及其登录来源 IP、登录结果与时间，定位可疑的异常登录来源 IP。",
+          "status": "todo",
+          "children": [
+            {
+              "id": "T1",
+              "objective": "使用 UserPrincipalName 等于 'Nina Park@vnevado.alpineskihouse.co' 筛选 SigninLogs，读取 IPAddress、ResultDescription、ResultType、TenantId、TimeGenerated、UserPrincipalName，重点查看 2024-07-18 前后的异常登录记录。",
+              "status": "todo",
+              "semantic_refs": [
+                {
+                  "table": "SigninLogs",
+                  "fields": [
+                    "IPAddress",
+                    "ResultDescription",
+                    "ResultType",
+                    "TenantId",
+                    "TimeGenerated",
+                    "UserPrincipalName"
+                  ]
+                }
+              ],
+              "execution_code": "",
+              "execution_result": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "calls": 1,
+    "input_tokens": 2346,
+    "output_tokens": 267
+  }
+}

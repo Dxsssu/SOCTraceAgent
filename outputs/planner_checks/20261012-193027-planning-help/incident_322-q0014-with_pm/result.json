@@ -1,0 +1,81 @@
+{
+  "case_id": "incident_322-q0014",
+  "mode": "with_pm",
+  "input": {
+    "context": "In a recent incident, a user (`alyssat@vnevado.alpineskihouse.co`) clicked on a potentially malicious URL. Following this, emails containing malicious URLs were detected and removed. A malicious URL click was later detected on a device. The connection was made from the host `vnevado-win11h.vnevado.alpineskihouse.co` to the suspicious URL, which was reported in our proxy logs. Specific actions include investigating the URL connection from the proxy logs.",
+    "question": "Can you retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`?"
+  },
+  "pm": [
+    {
+      "name": "根据设备名称查证网络连接",
+      "status": "active",
+      "goal": "根据已知的设备名称，调查设备网络连接的远端地址、端口和发起进程。",
+      "input_slots": {
+        "设备名称": "本次调查已提供或已查得设备名称的具体内容。"
+      },
+      "operations": "用已知的设备名称筛选网络连接，在当前调查范围内读取问题所需的信息。",
+      "semantic_refs": [
+        {
+          "table": "DeviceNetworkEvents",
+          "fields": [
+            "DeviceId",
+            "DeviceName",
+            "InitiatingProcessCommandLine",
+            "InitiatingProcessId",
+            "RemoteIP",
+            "RemotePort",
+            "RemoteUrl",
+            "TenantId",
+            "TimeGenerated",
+            "Timestamp"
+          ]
+        }
+      ]
+    }
+  ],
+  "success": true,
+  "itt": [
+    {
+      "id": "G1",
+      "objective": "Retrieve the malicious URL detected in the proxy logs originating from `vnevado-win11h.vnevado.alpineskihouse.co`.",
+      "status": "todo",
+      "children": [
+        {
+          "id": "F1",
+          "objective": "沿 Host 线索调查 `vnevado-win11h.vnevado.alpineskihouse.co` 的网络连接，确定其连接的远端地址、端口和发起进程，以识别恶意 URL。",
+          "status": "todo",
+          "children": [
+            {
+              "id": "T1",
+              "objective": "根据设备名称 `vnevado-win11h.vnevado.alpineskihouse.co` 筛选网络连接记录，读取远端 URL 信息。",
+              "status": "todo",
+              "semantic_refs": [
+                {
+                  "table": "DeviceNetworkEvents",
+                  "fields": [
+                    "DeviceName",
+                    "RemoteUrl",
+                    "RemoteIP",
+                    "RemotePort",
+                    "InitiatingProcessCommandLine",
+                    "InitiatingProcessId",
+                    "TimeGenerated"
+                  ]
+                }
+              ],
+              "execution_code": "",
+              "execution_result": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "next_task_id": "T1",
+  "usage": {
+    "calls": 1,
+    "input_tokens": 1464,
+    "output_tokens": 228
+  },
+  "attempts": 1
+}

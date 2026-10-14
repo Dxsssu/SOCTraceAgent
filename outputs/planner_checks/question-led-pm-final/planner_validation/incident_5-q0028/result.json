@@ -1,0 +1,138 @@
+{
+  "case_id": "incident_5-q0028",
+  "retrieval_source": "outputs/planner_checks/question-led-pm-final/cases/incident_5-q0028.json",
+  "memory": {
+    "procedural_memory": {
+      "procedures": [
+        {
+          "name": "根据文件名称查证进程活动",
+          "status": "active",
+          "goal": "根据已知的文件名称，调查进程命令行、进程标识、父进程和运行账户。",
+          "input_slots": {
+            "文件名称": "本次调查已提供或已查得文件名称的具体内容。"
+          },
+          "operations": "用已知的文件名称及已有设备、时间线索定位进程，按问题读取目标进程或父进程的信息。",
+          "semantic_refs": [
+            {
+              "table": "DeviceProcessEvents",
+              "fields": [
+                "AccountName",
+                "DeviceId",
+                "DeviceName",
+                "FileName",
+                "InitiatingProcessCommandLine",
+                "InitiatingProcessId",
+                "ProcessCommandLine",
+                "ProcessCreationTime",
+                "ProcessId",
+                "TenantId",
+                "TimeGenerated",
+                "Timestamp"
+              ]
+            }
+          ]
+        }
+      ],
+      "application": {
+        "name": "根据文件名称查证进程活动",
+        "decision": "use",
+        "target_question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?",
+        "bindings": {
+          "文件名称": {
+            "value": "get-userprttoken.ps1",
+            "source": "/context",
+            "quote": "This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts.",
+            "role": "与访问 PRT 尝试相关联的文件/进程名称线索"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回 DeviceProcessEvents 中 FileName 为 get-userprttoken.ps1 的进程记录，包含 ProcessCommandLine、InitiatingProcessCommandLine、ProcessId、InitiatingProcessId、AccountName、DeviceName、TimeGenerated 等字段，用于确认与 PRT 访问尝试相关的实际进程信息。",
+        "output_refs": [
+          {
+            "table": "DeviceProcessEvents",
+            "fields": [
+              "AccountName",
+              "DeviceId",
+              "DeviceName",
+              "FileName",
+              "InitiatingProcessCommandLine",
+              "InitiatingProcessId",
+              "ProcessCommandLine",
+              "ProcessCreationTime",
+              "ProcessId",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp"
+            ]
+          }
+        ],
+        "contribution": "问题要求识别与访问 Primary Refresh Token 尝试相关的进程名称。已知上下文明确给出 get-userprttoken.ps1 是与此访问链相关的文件名线索。按该文件名检索 DeviceProcessEvents 可定位到实际进程记录，直接缩小问题的不确定性，而不是仅依赖背景叙述。",
+        "next_step": "在 DeviceProcessEvents 中按 FileName 等于 get-userprttoken.ps1 或 ProcessCommandLine 包含 get-userprttoken.ps1 检索进程记录，读取进程名称、命令行、进程标识、父进程和运行账户，以确认参与该 PRT 访问尝试的进程。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "get-userprttoken.ps1 是上下文给出的关联文件名线索，仍需通过事件确认它确实是执行 PRT 访问尝试的进程或相关进程。",
+          "若 FileName 字段未保存脚本名，需要改查 ProcessCommandLine 或 InitiatingProcessCommandLine 中的脚本文本。"
+        ],
+        "reason": "接受。该候选使用 task.context 中明确给出的关联文件名 get-userprttoken.ps1 作为定位线索，检索与 PRT 访问尝试相关的进程记录，能够产生可验证候选并推进问题，且未把待求答案当作筛选条件。",
+        "independent_review": "问题的未知目标是“参与 PRT 访问尝试的进程名称”。上下文中唯一可直接作为稳定关联键的值是 `get-userprttoken.ps1`，它是与该 PRT 访问链关联的脚本/文件名线索，可作为 input_slots 的“文件名称”。候选操作按该文件名在 DeviceProcessEvents 中定位进程记录并读取 FileName、ProcessCommandLine、ProcessId、InitiatingProcessId、AccountName 等字段，能够建立从 PRT 访问尝试线索到实际进程名称的证据路径。虽然不能仅凭文件名断言最终答案，但候选没有把答案当作筛选条件，且下一验证路径明确；它比泛泛背景查询更贴近目标实体。因此选择该候选。"
+      }
+    }
+  },
+  "input": {
+    "context": "A security incident raised flags due to suspicious WMI process creation observed on a machine, which is indicative of possible malware activity. This was connected to a chain of processes including `get-userprttoken.ps1` and `curl` attempts. WMI is often utilized by malware to spawn new processes, breaking process trees and further infecting a machine.",
+    "question": "In relation to the attempt to access Primary Refresh Token (PRT), can you identify the name of the process involved in this activity?"
+  },
+  "success": true,
+  "itt": [
+    {
+      "id": "G1",
+      "objective": "识别参与访问 Primary Refresh Token (PRT) 尝试的进程名称是什么？",
+      "status": "todo",
+      "children": [
+        {
+          "id": "F1",
+          "objective": "沿 get-userprttoken.ps1 文件/进程线索，在相关设备上定位与 PRT 访问尝试相关联的进程记录，以确定实际参与该活动的进程名称。",
+          "status": "todo",
+          "children": [
+            {
+              "id": "T1",
+              "objective": "在 DeviceProcessEvents 中按 FileName 等于 get-userprttoken.ps1 或 ProcessCommandLine 包含 get-userprttoken.ps1 检索进程记录，读取 FileName、ProcessCommandLine、InitiatingProcessCommandLine、ProcessId、InitiatingProcessId、AccountName、DeviceName、TimeGenerated 等字段，确认参与 PRT 访问尝试的进程。",
+              "status": "todo",
+              "semantic_refs": [
+                {
+                  "table": "DeviceProcessEvents",
+                  "fields": [
+                    "AccountName",
+                    "DeviceId",
+                    "DeviceName",
+                    "FileName",
+                    "InitiatingProcessCommandLine",
+                    "InitiatingProcessId",
+                    "ProcessCommandLine",
+                    "ProcessCreationTime",
+                    "ProcessId",
+                    "TenantId",
+                    "TimeGenerated",
+                    "Timestamp"
+                  ]
+                }
+              ],
+              "execution_code": "",
+              "execution_result": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "calls": 1,
+    "input_tokens": 2356,
+    "output_tokens": 267
+  }
+}

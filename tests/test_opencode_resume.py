@@ -19,7 +19,8 @@ def result(case, status='submitted', scored=True):
     return row
 
 
-def test_cli_retries_failures_and_missing_but_skips_finished(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize('agent_name', ['opencode', 'qwen-code'])
+def test_cli_retries_failures_and_missing_but_skips_finished(tmp_path, monkeypatch, capsys, agent_name):
     cases = [BenchmarkCase('incident_5', i, {'question': str(i)}) for i in range(6)]
     config = LLMConfig('fake', 'https://example.invalid/v1', 'DeepSeek-V4.1-Flash')
     monkeypatch.setattr(resume, 'load_dotenv', lambda *a: None)
@@ -29,23 +30,27 @@ def test_cli_retries_failures_and_missing_but_skips_finished(tmp_path, monkeypat
     monkeypatch.setattr(resume, 'protocol_manifest', lambda *a, **k: {'version': 'test'})
     calls = []
     def run(agent, case, output, **kwargs):
+        assert agent == agent_name
         calls.append(case.qid)
         row = result(case, 'error' if case.qid == 0 else 'submitted', case.qid != 0)
+        row['agent'] = agent
         resume.write_json(kwargs['case_dir']/'result.json', row)
         return row
     monkeypatch.setattr(resume, 'run_case', run)
-    args = ['--output', str(tmp_path), '--workers', '1']
+    args = ['--agent', agent_name, '--output', str(tmp_path), '--workers', '1']
     assert resume.main(args) == 1
     assert sorted(calls) == list(range(6))
     # Different interrupted conditions after the first invocation.
     for qid, status in [(2, 'skipped'), (3, 'running')]:
-        resume.write_json(tmp_path/'cases'/cases[qid].case_id/'result.json', result(cases[qid], status, False))
+        resume.write_json(tmp_path/'cases'/cases[qid].case_id/'result.json', dict(result(cases[qid], status, False), agent=agent_name))
     (tmp_path/'cases'/cases[4].case_id/'result.json').write_text('{broken')
     (tmp_path/'cases'/cases[5].case_id/'result.json').unlink()
     calls.clear()
     def succeed(agent, case, output, **kwargs):
+        assert agent == agent_name
         calls.append(case.qid)
         row = result(case)
+        row['agent'] = agent
         resume.write_json(kwargs['case_dir']/'result.json', row)
         return row
     monkeypatch.setattr(resume, 'run_case', succeed)
@@ -56,8 +61,8 @@ def test_cli_retries_failures_and_missing_but_skips_finished(tmp_path, monkeypat
     assert resume.main(args) == 0
     assert calls == []
     summary = json.loads((tmp_path/'summary.json').read_text())
-    assert summary['overall']['opencode']['judged'] == 6
-    assert summary['overall']['opencode']['accuracy'] == 0
+    assert summary['overall'][agent_name]['judged'] == 6
+    assert summary['overall'][agent_name]['accuracy'] == 0
     assert '6/6' in capsys.readouterr().err
 
 
@@ -111,6 +116,7 @@ def test_live_scores_include_resumed_partial_credit_and_exclude_failures(tmp_pat
         row = result(case, 'submitted' if case.qid == 1 else 'error', case.qid == 1)
         if case.qid == 1:
             row['llm_evaluation']['llm_judge_reward'] = .4
+        row['agent'] = agent
         resume.write_json(kwargs['case_dir']/'result.json', row)
         return row
     monkeypatch.setattr(resume, 'run_case', run)
@@ -140,6 +146,7 @@ def test_pi_cli_default_path_and_resume(tmp_path, monkeypatch):
     def run(agent, case, output, **kwargs):
         calls.append(agent)
         row = result(case)
+        row['agent'] = agent
         row['agent'] = agent
         resume.write_json(kwargs['case_dir']/'result.json', row)
         return row
@@ -176,6 +183,7 @@ def test_paper_baseline_runs_scores_and_resumes(tmp_path, monkeypatch):
         assert agent == 'paper_baseline' and Baseline is object
         calls.append(case.case_id)
         row = result(case, scored=False)
+        row['agent'] = agent
         row['agent'] = agent
         resume.write_json(kwargs['case_dir']/'result.json', row)
         return row

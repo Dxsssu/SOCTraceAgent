@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from src.agent.llm import call_llm, parse_yaml_response
+from src.agent.llm import call_llm
 from src.memory.working_memory import TTTStore
 from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageBus
 from src.schema import (
@@ -14,11 +14,11 @@ from src.schema import (
     EventStatus,
     RoundReview,
     TracebackTaskTree,
-    TTTNode,
-    TTTNodeStatus,
 )
 from src.schema.event import utc_now
-from src.schema.ttt_updates import apply_updates, parse_initial, next_task, resolved
+from src.schema.ttt_updates import next_task, resolved
+from src.schema.investigation import task_input
+from src.schema.itt import parse_itt, parse_itt_response, itt_payload, planner_prompt
 from src.storage import SQLiteStorage
 from src.workflow.context import NullPlannerContextProvider, PlannerContextProvider
 
@@ -27,44 +27,28 @@ logger = logging.getLogger(__name__)
 
 PLANNER_SYSTEM_PROMPT = """
 # 角色定位
-你是多智能体驱动的 SOC 智能溯源系统中的 Planner，负责根据安全告警上下文和调查进展，对整体溯源路径进行规划，并维护 Investigation Task Tree（ITT）。
-ITT 是面向调查线索推进的三级树状结构：
-- G（Goal）：目标节点，记录此次溯源需要完成的最终任务。一次调查可以包含一个或多个 G 节点。
-- F（Frontier）：调查前沿节点，表示为完成某个 G 当前值得独立推进的调查方向，例如 User、Host、IP、Process、Alert 等。一个 G 可以包含多个 F。
-- T（Task）：具体任务节点，表示针对某个 F 下一步需要执行的调查任务。一个 F 可以包含多个 T。T 节点同时记录具体的工具执行代码及执行结果。
-ITT 用于记录“为了完成目标，目前有哪些调查方向，以及每个方向需要执行哪些任务”。你只负责规划和更新调查路径，不直接执行查询，也不能将未经证据验证的推测视为事实。
+你是多智能体驱动的 SOC 智能溯源系统中的 Planner，负责根据输入告警和调查进展维护 Investigation Task Tree（ITT），规划本轮需要执行的调查任务。
+ITT 是目标、实体、任务组成的三级树状结构：
+- G（Goal）：调查目标节点，表示输入中给出的总体调查任务，例如定位某个恶意进程的文件位置。输入包含几个需要独立完成的调查子任务，就建立几个 G，不按实体数量或执行步骤拆分目标。
+- E（Entity）：调查实体节点，表示与所属 G 相关的单个具体实体，例如某个进程、脚本、IP、用户或主机。objective 只写简短的实体类型和名称或标识，例如“可疑脚本 get-userprttoken.ps1”“进程 evil.exe”“IP 10.0.0.1”；不要写整句描述，不混合多个实体，不附加背景、关系或调查线索。必要的上下文写入 T 的 objective。一个 G 可以挂载多个 E，同一 G 下已有的实体复用原 E。
+- T（Task）：具体任务节点，表示针对所属 E 实体、由 Executor 通过一次 SQL 交互即可获取结果的单步查询任务，并记录实际执行代码和返回结果。一个 T 只对应一条 SQL，可一次返回多个相关字段，也可使用已知表结构构造 JOIN 或子查询，但不能要求先获取结果、再据此发起另一条查询。不得把查表结构后查询数据、先定位进程再追踪其子进程等多步骤问题合并为一个 T；证据分析和结论判断交给 Expert。首轮每个 E 只创建一个 T，选择当前最优先的调查任务；后续根据执行结果逐轮追加 T，保留历史任务，不预先展开整条调查链。
+只规划输入要求的调查目标，不直接执行查询，不将推测或计划当作已验证的实体信息。
 # 工作内容
-## 初始化 ITT
-当没有现有 ITT 时：
-1. 根据调查问题构建一个或多个 G 节点，明确此次溯源需要完成的最终任务。
-2. 根据 Seed Alert 中的实体、关系和上下文，为每个 G 选择具有调查价值的线索并构建 F 节点。F 应表示能够独立推进的调查方向，不要为每个原始实体机械创建 F。
-3. 为每个 F 创建至少一个初始化 T，明确下一步需要完成的具体调查任务。
-4. 尚未执行的 T，其 execution_code 和 execution_result 保持为空。
-## 更新 ITT
-当已有 ITT 时，根据 Expert 返回的分析结果更新 ITT：
-1. 如果发现新的有效调查方向，在对应 G 下创建新的 F。
-2. 如果现有 F 仍需要继续调查，在该 F 下创建新的 T。
-3. 根据调查进展更新节点状态：todo、done、failed。
-4. 根据当前证据选择最值得继续推进的调查方向。
-5. 将实际执行的工具代码及返回结果记录到对应 T 的 execution_code 和 execution_result 中。
-6. 保留失败、未完成和已完成的调查路径，避免重复调查。
-7. 更新已有节点时保持原有节点 ID 不变，新建节点使用新的唯一 ID。
-# 输出格式
-仅输出合法 YAML，不要输出任何额外解释。输出必须是一个 YAML 列表。
-参考格式如下：
+首轮调查：根据输入告警初始化总体目标 G 节点与初始实体 E 节点，并为每个 E 仅创建一个待执行的 T，不一次生成多个任务，后续步骤留待执行结果返回后再规划。仅使用输入中的已知实体信息；实体标识未知时明确标注待确认，并安排识别任务。T 的 objective 应自包含，写清具体实体、已知查询条件、必要范围及一次查询所需返回的字段。若缺少必要实体标识或表结构，当前 T 只负责查询该前置信息，等待真实结果后再创建后续 T，不把依赖未知结果的步骤写入同一任务；尚未执行的 execution_code 和 execution_result 为空。
+后续轮次：依据上一轮 Expert 总结和实际执行记录，更新已执行 T 节点相关的字段及任务状态；如需继续调查，使用已获得的真实结果作为明确查询条件，在对应 E 下生成本轮待执行的单步 T；如发现新的可疑实体，提取其已知信息并在对应 G 下创建 E 和调查任务。保留已有节点的 ID、objective、父子关系与历史路径，已结束任务不重开；实际执行代码和结果原样保留，不编造或改写。按执行优先级排列待执行任务；证据尚不足以回答目标时继续安排调查任务。
+# 输出格式模板
+严格按照以下模板输出完整 ITT，仅输出合法 YAML 列表，不添加解释或模板以外的字段。模板中的目标和实体仅为示例，须替换为本次输入的实际信息。id 全树唯一；仅 T 有 status 字段，实际输出从 todo、done、error 中选择一个值，新建任务为 todo；G 和 E 不输出 status。每个 G 至少包含一个 E；首轮每个 E 恰好包含一个 T，后续可追加 T 并保留历史任务，不增加其他层级。
 - id: G1
-  objective: ""       # 此次溯源需要完成的最终目标，例如确定攻击使用的 C2 IP、识别受影响主机或定位攻击账号
-  status: todo | done | failed
+  objective: "定位告警中恶意进程 evil.exe 的文件位置"
   children:
-    - id: F1
-      objective: ""   # 为完成对应 G 当前需要独立推进的调查方向及需要解决的问题，例如沿 Host、User、IP、Process 或 Alert 等线索继续调查
-      status: todo | done | failed
+    - id: E1
+      objective: "可疑进程 evil.exe"
       children:
         - id: T1
-          objective: ""   # 为推进当前 F 需要执行的具体调查任务
-          status: todo | done | failed
-          execution_code: ""   # 具体工具的执行代码，例如 SQL 查询语句、API 调用参数或其他工具指令
-          execution_result: "" # 工具实际执行后返回的结果；未执行时保持为空
+          objective: "以已知主机名 host-01 和进程名 evil.exe 为条件，一次查询匹配的进程记录，返回可执行文件完整路径、进程 ID 和时间"
+          status: todo｜done｜error
+          execution_code: ""   # 由其他角色补充实际执行代码；Planner 创建任务时只需置空
+          execution_result: "" # 由其他角色补充实际执行结果；Planner 创建任务时只需置空
 """.strip()
 
 @dataclass(frozen=True, slots=True)
@@ -76,7 +60,7 @@ class PlannerAgent:
     description: str = "负责告警的初始分析、TTT 初始化，以及每一轮结束后的 TTT 更新。"
     responsibilities: tuple[str, ...] = (
         "分析初始告警上下文并建立溯源目标。",
-        "初始化最小 TTT，后续输出经 Workflow 校验的局部更新。",
+        "初始化并更新 G/E/T 调查树，由 Workflow 校验后保存。",
         "根据 Reviewer 的轮次总结更新节点状态、结构和下一步重点。",
     )
     allowed_response_types: tuple[str, ...] = (
@@ -249,80 +233,30 @@ class PlannerRuntime:
         return updated_event
 
     def _generate_initial_ttt(self, event: Event) -> TracebackTaskTree:
-        memory_context = self.context_provider.build(event)
-        user_prompt = "\n".join(
-            [
-                "请根据以下安全告警初始化 TTT，并只返回 YAML。",
-                "以下 workflow_memory_context 已经过角色权限过滤；你只能使用其中提供的 Procedural Memory 和 Semantic Memory。",
-                json.dumps(
-                    {"workflow_memory_context": memory_context},
-                    ensure_ascii=False,
-                    indent=2,
-                ),
-                json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
-            ]
+        memory = self.context_provider.build(event)
+        response = call_llm(
+            planner_prompt(self.agent.system_prompt, memory),
+            json.dumps(task_input(event), ensure_ascii=False, indent=2),
         )
-        response_text = call_llm(
-            self.agent.system_prompt,
-            user_prompt,
-        )
-        parsed = parse_yaml_response(response_text)
-        if not parsed:
-            raise ValueError("Planner returned empty or non-YAML content")
-        ttt_payload = parsed.get("ttt") or parsed.get("tree")
-        if not isinstance(ttt_payload, dict):
-            raise ValueError("Planner response missing `ttt`/`tree` object")
-        return self._normalize_ttt_payload(
-            event_id=event.event_id,
-            round_id=event.current_round,
-            ttt_payload=ttt_payload,
-        )
+        return parse_itt(parse_itt_response(response), event.event_id, event.current_round,
+                         procedures=memory.get("procedural_memory", {}).get("procedures", []))
 
     def _generate_updated_ttt(
-        self,
-        *,
-        event: Event,
-        latest_review: RoundReview,
-        latest_ttt: TracebackTaskTree,
-        next_round: int,
+        self, *, event: Event, latest_review: RoundReview,
+        latest_ttt: TracebackTaskTree, next_round: int,
     ) -> TracebackTaskTree:
-        memory_context = self.context_provider.build(
-            event,
-            review=latest_review,
-            ttt=latest_ttt,
+        executions = self.storage.list_executions(event.event_id)
+        memory = self.context_provider.build(
+            event, review=latest_review, ttt=latest_ttt, executions=executions,
         )
-        user_prompt = "\n".join(
-            [
-                "请根据以下事件、上一轮 TTT 和 Reviewer 总结，更新下一轮 TTT，并只返回 YAML。",
-                "以下 workflow_memory_context 已经过角色权限过滤；你只能使用其中提供的 Procedural Memory 和 Semantic Memory。",
-                json.dumps(
-                    {"workflow_memory_context": memory_context},
-                    ensure_ascii=False,
-                    indent=2,
-                ),
-                json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
-                json.dumps(latest_ttt.to_dict(), ensure_ascii=False, indent=2),
-                json.dumps(latest_review.to_dict(), ensure_ascii=False, indent=2),
-                json.dumps({"executions": [e.to_dict() for e in self.storage.list_executions(event.event_id)]}, ensure_ascii=False),
-            ]
-        )
-        response_text = call_llm(
-            self.agent.system_prompt,
-            user_prompt,
-        )
-        parsed = parse_yaml_response(response_text)
-        if not parsed:
-            raise ValueError("Planner returned empty or non-YAML content")
-        return apply_updates(
-            latest_ttt, parsed, round_id=next_round,
-            known_evidence=[e.execution_id for e in self.storage.list_executions(event.event_id)],
-        )
-
-    def _normalize_ttt_payload(self, *, event_id: str, round_id: int, ttt_payload: dict[str, Any]) -> TracebackTaskTree:
-        tree = parse_initial(ttt_payload, event_id, round_id)
-        if next_task(tree) is None:
-            raise ValueError("Initial TTT needs an actionable L3 task")
-        return tree
+        payload = dict(task_input(event), itt=itt_payload(latest_ttt, executions, planner_view=True),
+                       review={"summary": "；".join((*latest_review.findings, *latest_review.gaps)),
+                               "suggestion": "；".join(latest_review.recommendations)})
+        response = call_llm(planner_prompt(self.agent.system_prompt, memory),
+                            json.dumps(payload, ensure_ascii=False, indent=2))
+        return parse_itt(parse_itt_response(response), event.event_id, next_round,
+                         previous=latest_ttt, executions=executions,
+                         procedures=memory.get("procedural_memory", {}).get("procedures", []))
 
     def _fail_event(self, event: Event, reason: str) -> Event:
         failed_event = Event(

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 import logging
 import os
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from enum import StrEnum
@@ -19,12 +20,23 @@ from src.memory.longterm_memory.episodic_memory.excytin_bench import (
 from src.memory.longterm_memory.procedural_memory.excytin_bench import (
     DEFAULT_KNOWLEDGE_PATH as EXCYTIN_PROCEDURAL_PATH,
 )
+from src.memory.longterm_memory.procedural_memory.excytin_bench.retrieval import (
+    catalog as procedure_catalog,
+    evidence_sources,
+)
+from src.memory.longterm_memory.procedural_memory.excytin_bench.retrieval import (
+    retrieve as retrieve_operations,
+)
 from src.memory.longterm_memory.semantic_memory.excytin_bench import (
     DEFAULT_KNOWLEDGE_PATH as EXCYTIN_SEMANTIC_PATH,
 )
-from src.memory.longterm_memory.semantic_memory.excytin_bench.runtime_view import retrieval_view
+from src.memory.longterm_memory.semantic_memory.excytin_bench.runtime_view import (
+    retrieval_view,
+)
 from src.messaging import RoleName
 from src.schema import Event, RoundReview, TracebackTaskTree
+from src.schema.investigation import task_input
+from src.schema.itt import itt_payload
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +48,12 @@ class MemoryType(StrEnum):
 
 
 DEFAULT_ROLE_MEMORY_POLICY: Mapping[RoleName, frozenset[MemoryType]] = {
-    RoleName.PLANNER: frozenset({MemoryType.SEMANTIC, MemoryType.PROCEDURAL}),
-    RoleName.EXECUTOR: frozenset({MemoryType.SEMANTIC, MemoryType.EPISODIC}),
-    RoleName.REVIEWER: frozenset({MemoryType.SEMANTIC}),
+    RoleName.PLANNER: frozenset({MemoryType.PROCEDURAL, MemoryType.SEMANTIC}),
+    RoleName.VERIFIER: frozenset(),
+    RoleName.EXECUTOR: frozenset(
+        {MemoryType.SEMANTIC, MemoryType.EPISODIC, MemoryType.PROCEDURAL}
+    ),
+    RoleName.REVIEWER: frozenset({MemoryType.SEMANTIC, MemoryType.PROCEDURAL}),
 }
 
 
@@ -66,6 +81,7 @@ class PlannerContextProvider(Protocol):
         *,
         review: RoundReview | None = None,
         ttt: TracebackTaskTree | None = None,
+        executions: Sequence[Any] = (),
     ) -> dict[str, Any]: ...
 
 
@@ -76,8 +92,9 @@ class ExecutorContextProvider(Protocol):
         *,
         node: Any,
         executions: Sequence[Any] = (),
-        include_episodic: bool = True,
+        include_episodic: bool = False,
         episodic_query: str | None = None,
+        episodic_background: str | None = None,
     ) -> dict[str, Any]: ...
 
 
@@ -98,6 +115,7 @@ class NullPlannerContextProvider:
         *,
         review: RoundReview | None = None,
         ttt: TracebackTaskTree | None = None,
+        executions: Sequence[Any] = (),
     ) -> dict[str, Any]:
         return {"enabled": False, "reason": "no_memory_profile"}
 
@@ -109,8 +127,9 @@ class NullExecutorContextProvider:
         *,
         node: Any,
         executions: Sequence[Any] = (),
-        include_episodic: bool = True,
+        include_episodic: bool = False,
         episodic_query: str | None = None,
+        episodic_background: str | None = None,
     ) -> dict[str, Any]:
         return {"enabled": False, "reason": "no_memory_profile"}
 
@@ -150,60 +169,6 @@ _ENTITY_HINTS: Mapping[str, tuple[str, ...]] = {
     "ACCOUNT_ID": ("account", "user", "identity", "sid", "账户", "用户", "身份"),
     "TIMESTAMP": ("time", "date", "window", "时间", "日期"),
 }
-_DOMAIN_HINTS: Mapping[str, tuple[str, ...]] = {
-    "email-threat-investigation": (
-        "email",
-        "mail",
-        "url",
-        "message",
-        "邮件",
-        "链接",
-        "发件",
-        "收件",
-    ),
-    "endpoint-process-investigation": (
-        "endpoint",
-        "device",
-        "host",
-        "process",
-        "command",
-        "file",
-        "hash",
-        "终端",
-        "设备",
-        "主机",
-        "进程",
-        "命令",
-        "文件",
-    ),
-    "identity-signin-investigation": (
-        "identity",
-        "account",
-        "user",
-        "signin",
-        "login",
-        "authentication",
-        "身份",
-        "账户",
-        "用户",
-        "登录",
-        "认证",
-    ),
-    "network-activity-investigation": (
-        "network",
-        "ip",
-        "domain",
-        "dns",
-        "port",
-        "protocol",
-        "connection",
-        "网络",
-        "域名",
-        "端口",
-        "协议",
-        "连接",
-    ),
-}
 
 
 def _tokens(value: str) -> set[str]:
@@ -216,7 +181,11 @@ def _contains_hint(text: str, hint: str) -> bool:
 
 def _contains_identifier(text: str, identifier: str) -> bool:
     """Match a schema identifier, not e.g. Id inside Identify or OS inside host."""
-    return bool(re.search(r"(?<![\w])" + re.escape(identifier) + r"(?![\w])", text, re.IGNORECASE))
+    return bool(
+        re.search(
+            r"(?<![\w])" + re.escape(identifier) + r"(?![\w])", text, re.IGNORECASE
+        )
+    )
 
 
 def _infer_semantic_types(text: str) -> set[str]:
@@ -233,16 +202,32 @@ def _event_text(
     review: RoundReview | None = None,
     ttt: TracebackTaskTree | None = None,
 ) -> str:
-    parts = [
-        event.event_name,
-        event.message,
-        json.dumps(event.context, ensure_ascii=False),
-    ]
+    parts = [json.dumps(task_input(event), ensure_ascii=False)]
     if review is not None:
         parts.append(json.dumps(review.to_dict(), ensure_ascii=False))
     if ttt is not None:
-        parts.append(json.dumps(ttt.to_dict(), ensure_ascii=False))
+        parts.append(json.dumps(itt_payload(ttt), ensure_ascii=False))
     return "\n".join(part for part in parts if part)
+
+
+def _retrieval_task(event, *, review=None, ttt=None, executions=(), node=None):
+    task = task_input(event)
+    if review is not None:
+        task["review"] = {k: list(getattr(review, k)) for k in ("findings", "gaps", "recommendations")}
+    if ttt is not None:
+        task["itt"] = itt_payload(ttt)
+    if node is not None:
+        task["current_task"] = {"id": node.node_id, "objective": node.title}
+    task["executions"] = [e.to_dict() if hasattr(e, "to_dict") else e for e in executions]
+    return task
+
+
+def _procedure_context(repository, task, *, role, selector):
+    report = {}
+    procedures = repository.retrieve_procedures(task, role=role, selector=selector, limit=1, diagnostics=report)
+    result = {"procedures": procedures}
+    result["retrieval"] = report
+    return result
 
 
 def _normalize_profile(value: Any) -> str | None:
@@ -276,6 +261,8 @@ class _ExcytinBenchRepositoryBase:
         self._initialize_indexes()
 
     def _initialize_indexes(self) -> None:
+        from src.memory.longterm_memory.episodic_memory.excytin_bench.retrieval import RecoveryIndex
+        self.recovery_index = RecoveryIndex(self.episodic)
         self.semantic = retrieval_view(self.semantic)
         self._tables_by_id = {
             table["table_id"]: table for table in self.semantic["tables"]
@@ -287,42 +274,15 @@ class _ExcytinBenchRepositoryBase:
             join_key["join_key_id"]: join_key for join_key in self.semantic["join_keys"]
         }
 
-    def retrieve_procedures(self, text: str, *, limit: int = 3) -> list[dict[str, Any]]:
-        semantic_types = _infer_semantic_types(text)
-        query_tokens = _tokens(text)
-        scored: list[tuple[float, dict[str, Any]]] = []
-        base: dict[str, Any] | None = None
-        for procedure in self.procedural["procedures"]:
-            if (
-                not procedure.get("retrieval_eligible", True)
-                or procedure.get("status") != "active"
-            ):
-                continue
-            if procedure.get("category") == "base_workflow":
-                base = procedure
-                continue
-            score = 4.0 * len(
-                semantic_types.intersection(procedure.get("entry_entity_types", []))
-            )
-            score += float(
-                len(
-                    query_tokens.intersection(
-                        _tokens(procedure.get("retrieval_text", ""))
-                    )
-                )
-            )
-            score += 3.0 * sum(
-                1
-                for hint in _DOMAIN_HINTS.get(procedure.get("skill_id", ""), ())
-                if _contains_hint(text, hint)
-            )
-            if score > 0:
-                scored.append((score, procedure))
-        scored.sort(key=lambda item: (-item[0], item[1]["skill_id"]))
-        selected = ([base] if base is not None else []) + [
-            item[1] for item in scored[: max(0, limit - 1)]
-        ]
-        return [self._planner_procedure_view(procedure) for procedure in selected]
+    def procedure_catalog(self) -> list[dict[str, str]]:
+        return procedure_catalog(self.procedural)
+
+    def retrieve_procedures(
+        self, text: str | Mapping[str, Any], *, limit: int = 3, role="planner", selector=None, diagnostics=None
+    ) -> list[dict[str, Any]]:
+        return retrieve_operations(
+            self.procedural, text, role=role, selector=selector, limit=limit, diagnostics=diagnostics
+        )
 
     def retrieve_semantic(
         self,
@@ -337,12 +297,16 @@ class _ExcytinBenchRepositoryBase:
         referenced_table_ids: set[str] = set()
         referenced_join_key_ids: set[str] = set()
         required_log_types: set[str] = set()
+        referenced_fields: dict[str, set[str]] = {}
+        # Explicit links load schema only after PM selection and prerequisite checks.
         for procedure in procedures:
-            required_log_types.update(procedure.get("applicable_log_types", []))
-            for phase in procedure.get("phases", []):
-                referenced_table_ids.update(phase.get("semantic_table_ids", []))
-                referenced_join_key_ids.update(phase.get("semantic_join_key_ids", []))
-                semantic_types.update(phase.get("required_semantic_types", []))
+            for ref in procedure.get("semantic_refs", []):
+                table = self._tables_by_name.get(ref["table"].lower())
+                if table is not None:
+                    referenced_table_ids.add(table["table_id"])
+                    referenced_fields.setdefault(table["table_id"], set()).update(
+                        ref["fields"]
+                    )
 
         hinted_ids: set[str] = set()
         for hint in table_hints:
@@ -380,12 +344,17 @@ class _ExcytinBenchRepositoryBase:
                 for field in table.get("fields", [])
             )
             score += 12.0 * sum(
-                _contains_hint(text, hint)
-                for hint in table.get("retrieval_hints", [])
+                _contains_hint(text, hint) for hint in table.get("retrieval_hints", [])
             )
             if score > 0:
                 scored_tables.append((score, table))
-        scored_tables.sort(key=lambda item: (-item[0], item[1]["name"]))
+        scored_tables.sort(
+            key=lambda item: (
+                item[1]["table_id"] not in (referenced_table_ids | hinted_ids),
+                -item[0],
+                item[1]["name"],
+            )
+        )
         selected_tables = [item[1] for item in scored_tables[:table_limit]]
 
         selected_field_ids: set[str] = set()
@@ -393,7 +362,11 @@ class _ExcytinBenchRepositoryBase:
         for table in selected_tables:
             scored_fields: list[tuple[float, dict[str, Any]]] = []
             for field in table.get("fields", []):
-                score = 0.0
+                score = (
+                    100.0
+                    if field["name"] in referenced_fields.get(table["table_id"], set())
+                    else 0.0
+                )
                 if _contains_identifier(text, field["name"]):
                     score += 24.0
                 if field.get("semantic_type") in semantic_types:
@@ -463,7 +436,7 @@ class _ExcytinBenchRepositoryBase:
         }
 
 
-class _ExcytinBenchRepositoryWithEpisodes(_ExcytinBenchRepositoryBase):
+class _ExcytinBenchGraphRepository(_ExcytinBenchRepositoryBase):
     """Load the same read model from the imported Neo4j knowledge graph."""
 
     def __init__(
@@ -531,242 +504,45 @@ class _ExcytinBenchRepositoryWithEpisodes(_ExcytinBenchRepositoryBase):
 
     @staticmethod
     def _load_procedural_graph(session: Any) -> dict[str, Any]:
-        procedure_records = session.run(
-            """
-            MATCH (:ProcedureCatalog {procedural_catalog_id: 'excytin-procedures-v1'})
-                  -[:CONTAINS_PROCEDURE]->(procedure:InvestigationProcedure)
-            RETURN properties(procedure) AS procedure
-            ORDER BY procedure.skill_id
-            """
+        record = session.run(
+            "MATCH (catalog:ProcedureCatalog {procedural_catalog_id: 'excytin-query-templates-v5'}) "
+            "RETURN catalog.snapshot_json AS snapshot_json"
+        ).single()
+        if record is None:
+            raise ValueError("Neo4j is missing Procedural v5; rebuild and import it")
+        from src.memory.longterm_memory.procedural_memory.excytin_bench.import_neo4j import (
+            validate_knowledge,
         )
-        procedures = [dict(record["procedure"]) for record in procedure_records]
-        if not procedures:
-            raise ValueError(
-                "Neo4j is missing Procedural catalog excytin-procedures-v1"
-            )
-        by_id = {procedure["procedure_id"]: procedure for procedure in procedures}
-        for procedure in procedures:
-            procedure["phases"] = []
-        phase_records = session.run(
-            """
-            MATCH (procedure:InvestigationProcedure)-[:HAS_PHASE]->(phase:ProcedurePhase)
-            WHERE procedure.procedural_catalog_id = 'excytin-procedures-v1'
-            OPTIONAL MATCH (phase)-[:REQUIRES_TABLE]->(table:LogTable)
-            WITH procedure, phase, collect(DISTINCT table.table_id) AS table_ids
-            OPTIONAL MATCH (phase)-[:REQUIRES_JOIN_KEY]->(join_key:JoinKey)
-            RETURN procedure.procedure_id AS procedure_id,
-                   properties(phase) AS phase,
-                   [item IN table_ids WHERE item IS NOT NULL] AS table_ids,
-                   [item IN collect(DISTINCT join_key.join_key_id) WHERE item IS NOT NULL] AS join_key_ids
-            ORDER BY procedure.procedure_id, phase.sequence_no
-            """
-        )
-        for record in phase_records:
-            phase = dict(record["phase"])
-            phase["semantic_table_ids"] = list(record["table_ids"])
-            phase["semantic_join_key_ids"] = list(record["join_key_ids"])
-            by_id[record["procedure_id"]]["phases"].append(phase)
-        return {"procedures": procedures}
+
+        knowledge = json.loads(record["snapshot_json"])
+        validate_knowledge(knowledge)
+        return knowledge
 
     @staticmethod
     def _load_episodic_graph(session: Any) -> dict[str, Any]:
-        episode_records = session.run(
-            """
-            MATCH (:EpisodeCatalog {episodic_catalog_id: 'excytin-episodes-v1'})
-                  -[:CONTAINS_EPISODE]->(episode:InvestigationEpisode)
-            RETURN properties(episode) AS episode
-            ORDER BY episode.episode_id
-            """
+        from src.memory.longterm_memory.episodic_memory.excytin_bench.build_knowledge import CATALOG_ID
+        records = session.run(
+            "MATCH (:EpisodeCatalog {episodic_catalog_id: $catalog_id})"
+            "-[:CONTAINS_RECOVERY]->(r:FailureRecovery) "
+            "RETURN r.background AS background, r.error AS error, r.repair AS repair "
+            "ORDER BY r.position", catalog_id=CATALOG_ID,
         )
-        episodes = [dict(record["episode"]) for record in episode_records]
-        if not episodes:
-            raise ValueError("Neo4j is missing Episodic catalog excytin-episodes-v1")
-        by_id = {episode["episode_id"]: episode for episode in episodes}
-        for episode in episodes:
-            episode["attempts"] = []
-            episode["transitions"] = []
-        attempt_records = session.run(
-            """
-            MATCH (episode:InvestigationEpisode)-[:HAS_ATTEMPT]->(attempt:QueryAttempt)
-            WHERE episode.episodic_catalog_id = 'excytin-episodes-v1'
-            OPTIONAL MATCH (attempt)-[target:TARGETS_TABLE]->(table:LogTable)
-            RETURN episode.episode_id AS episode_id,
-                   properties(attempt) AS attempt,
-                   collect(DISTINCT {
-                       table_id: table.table_id,
-                       roles: target.roles
-                   }) AS table_refs
-            ORDER BY episode.episode_id, attempt.sequence_no
-            """
-        )
-        for record in attempt_records:
-            attempt = dict(record["attempt"])
-            attempt["table_refs"] = [
-                dict(reference)
-                for reference in record["table_refs"]
-                if reference.get("table_id") is not None
-            ]
-            by_id[record["episode_id"]]["attempts"].append(attempt)
-        transition_records = session.run(
-            """
-            MATCH (source:QueryAttempt)-[:REPAIRED_BY]->(target:QueryAttempt)
-            WHERE source.episodic_catalog_id = 'excytin-episodes-v1'
-            RETURN source.episode_id AS episode_id,
-                   source.attempt_id AS from_attempt_id,
-                   target.attempt_id AS to_attempt_id
-            """
-        )
-        for record in transition_records:
-            by_id[record["episode_id"]]["transitions"].append(
-                {
-                    "from_attempt_id": record["from_attempt_id"],
-                    "to_attempt_id": record["to_attempt_id"],
-                    "relation_type": "REPAIRED_BY",
-                }
-            )
-        return {"episodes": episodes}
+        entries = [dict(r) for r in records]
+        if not entries:
+            raise ValueError("Neo4j is missing failure-recovery EM v2; reimport memory")
+        return {"format_version": "2.0", "entries": entries}
 
-    def retrieve_episodes(
-        self,
-        text: str,
-        *,
-        table_hints: Sequence[str] = (),
-        episode_limit: int = 3,
-        attempt_limit: int = 5,
-    ) -> list[dict[str, Any]]:
-        query_tokens = _tokens(text)
-        hinted_names = {
-            self._tables_by_id[hint]["name"]
-            if hint in self._tables_by_id
-            else str(hint)
-            for hint in table_hints
-        }
-        scored: list[tuple[float, dict[str, Any]]] = []
-        for episode in self.episodic["episodes"]:
-            if episode.get("source_split") != "train" or not episode.get(
-                "retrieval_eligible"
-            ):
-                continue
-            episode_tables = {
-                reference["table_id"].split(":", 1)[-1]
-                for attempt in episode.get("attempts", [])
-                for reference in attempt.get("table_refs", [])
-            }
-            score = float(
-                len(
-                    query_tokens.intersection(
-                        _tokens(episode.get("retrieval_text", ""))
-                    )
-                )
-            )
-            score += 8.0 * len(hinted_names.intersection(episode_tables))
-            if episode.get("outcome") == "success":
-                score += 0.5
-            if score > 0:
-                scored.append((score, episode))
-        scored.sort(key=lambda item: (-item[0], item[1]["episode_id"]))
-        return [
-            self._executor_episode_view(
-                episode, query_tokens, hinted_names, attempt_limit
-            )
-            for _, episode in scored[:episode_limit]
-        ]
-
-    @staticmethod
-    def _planner_procedure_view(procedure: Mapping[str, Any]) -> dict[str, Any]:
-        return {
-            "procedure_id": procedure["procedure_id"],
-            "skill_id": procedure["skill_id"],
-            "name": procedure["name"],
-            "category": procedure.get("category"),
-            "goal": procedure.get("goal"),
-            "description": procedure.get("description"),
-            "entry_entity_types": list(procedure.get("entry_entity_types", [])),
-            "applicable_log_types": list(procedure.get("applicable_log_types", [])),
-            "phases": [
-                {
-                    "phase_id": phase["phase_id"],
-                    "sequence_no": phase["sequence_no"],
-                    "name": phase["name"],
-                    "goal": phase.get("goal"),
-                    "required_log_types": list(phase.get("required_log_types", [])),
-                    "required_semantic_types": list(
-                        phase.get("required_semantic_types", [])
-                    ),
-                    "semantic_table_ids": list(phase.get("semantic_table_ids", [])),
-                    "semantic_join_key_ids": list(
-                        phase.get("semantic_join_key_ids", [])
-                    ),
-                    "success_condition": phase.get("success_condition"),
-                }
-                for phase in procedure.get("phases", [])
-            ],
-        }
-
-    @staticmethod
-    def _executor_episode_view(
-        episode: Mapping[str, Any],
-        query_tokens: set[str],
-        hinted_names: set[str],
-        attempt_limit: int,
-    ) -> dict[str, Any]:
-        attempts = list(episode.get("attempts", []))
-
-        def attempt_score(attempt: Mapping[str, Any]) -> tuple[float, int]:
-            attempt_tables = {
-                reference["table_id"].split(":", 1)[-1]
-                for reference in attempt.get("table_refs", [])
-            }
-            score = float(
-                len(
-                    query_tokens.intersection(
-                        _tokens(attempt.get("retrieval_text", ""))
-                    )
-                )
-            )
-            score += 8.0 * len(hinted_names.intersection(attempt_tables))
-            if attempt.get("result_status") in {"rows_returned", "error"}:
-                score += 1.0
-            return score, -int(attempt.get("sequence_no", 0))
-
-        ranked = sorted(attempts, key=attempt_score, reverse=True)[:attempt_limit]
-        ranked.sort(key=lambda item: item.get("sequence_no", 0))
-        return {
-            "episode_id": episode["episode_id"],
-            "source_split": episode.get("source_split"),
-            "task_template": episode.get("task_template"),
-            "outcome": episode.get("outcome"),
-            "attempts": [
-                {
-                    key: attempt.get(key)
-                    for key in (
-                        "attempt_id",
-                        "sequence_no",
-                        "query_kind",
-                        "sql_template",
-                        "parameter_types",
-                        "execution_status",
-                        "result_status",
-                        "unresolved_field_names",
-                        "error_detail",
-                    )
-                    if attempt.get(key) is not None
-                }
-                for attempt in ranked
-            ],
-            "transitions": [
-                transition
-                for transition in episode.get("transitions", [])
-                if transition.get("relation_type") == "REPAIRED_BY"
-            ],
-        }
+    def retrieve_recoveries(self, error: str, *, background: str = "",
+                            table_hints: Sequence[str] = (), limit: int = 3):
+        return self.recovery_index.retrieve(error, background=background,
+            table_hints=table_hints, limit=limit)
 
 
-class ExcytinBenchNeo4jRepository(_ExcytinBenchRepositoryWithEpisodes):
+class ExcytinBenchNeo4jRepository(_ExcytinBenchGraphRepository):
     """Public Neo4j-backed ExCyTIn repository."""
 
 
-class ExcytinBenchSnapshotRepository(_ExcytinBenchRepositoryWithEpisodes):
+class ExcytinBenchSnapshotRepository(_ExcytinBenchGraphRepository):
     """Load the ExCyTIn read model from committed JSON snapshots."""
 
     def __init__(
@@ -824,8 +600,11 @@ class PlannerMemoryView:
         *,
         review: RoundReview | None = None,
         ttt: TracebackTaskTree | None = None,
+        executions: Sequence[Any] = (),
     ) -> dict[str, Any]:
-        return self.__service._build_planner(event, review=review, ttt=ttt)
+        return self.__service._build_planner(
+            event, review=review, ttt=ttt, executions=executions
+        )
 
 
 class ExecutorMemoryView:
@@ -838,8 +617,9 @@ class ExecutorMemoryView:
         *,
         node: Any,
         executions: Sequence[Any] = (),
-        include_episodic: bool = True,
+        include_episodic: bool = False,
         episodic_query: str | None = None,
+        episodic_background: str | None = None,
     ) -> dict[str, Any]:
         return self.__service._build_executor(
             event,
@@ -847,6 +627,7 @@ class ExecutorMemoryView:
             executions=executions,
             include_episodic=include_episodic,
             episodic_query=episodic_query,
+            episodic_background=episodic_background,
         )
 
 
@@ -872,7 +653,11 @@ class MemoryContextService:
         *,
         policy: MemoryAccessPolicy | None = None,
         repositories: Mapping[str, _ExcytinBenchRepositoryBase] | None = None,
+        procedure_selector: Callable[[str, str], str] | None = None,
     ) -> None:
+        self._planner_pm_cache = {}
+        self._planner_sm_cache = {}
+        self.procedure_selector = procedure_selector
         self.policy = policy or MemoryAccessPolicy()
         self.repositories = dict(
             build_default_repositories() if repositories is None else repositories
@@ -891,63 +676,78 @@ class MemoryContextService:
         profile = resolve_memory_profile(event)
         return self.repositories.get(profile or "")
 
+    def executor_recoveries(self, event: Event, *, error: str, sql: str) -> list[dict[str, Any]]:
+        """Error-only EM access; never builds SM or PM context."""
+        self.policy.require(RoleName.EXECUTOR, MemoryType.EPISODIC)
+        repository = self._repository(event)
+        if repository is None:
+            return []
+        return repository.retrieve_recoveries(error, background=sql, limit=1)
+
     def _build_planner(
         self,
         event: Event,
         *,
         review: RoundReview | None,
         ttt: TracebackTaskTree | None,
+        executions: Sequence[Any] = (),
     ) -> dict[str, Any]:
         self.policy.require(
-            RoleName.PLANNER, MemoryType.PROCEDURAL, MemoryType.SEMANTIC
+            RoleName.PLANNER, MemoryType.PROCEDURAL
         )
         repository = self._repository(event)
         if repository is None:
             return {"enabled": False, "reason": "no_memory_profile"}
-        text = _event_text(event, review=review, ttt=ttt)
-        procedures = repository.retrieve_procedures(text)
-        semantic = repository.retrieve_semantic(text, procedures=procedures)
-        prompt_procedures = self._compact_planner_procedures(procedures, semantic)
+        from src.schema.ttt_updates import walk
+        nodes = [n for n, depth in walk(ttt) if depth == 3] if ttt else []
+        failed = bool(executions and not getattr(executions[-1], "query_success", True))
+        verifier_gap = bool(review and any("Verifier" in g for g in review.gaps))
+        pending_without_refs = any(n.status.value == "todo" and not n.metadata.get("semantic_refs") for n in nodes)
+        retained = any(n.metadata.get("semantic_refs") for n in nodes)
+        if retained and not failed and not verifier_gap and not pending_without_refs:
+            procedural = {"procedures": [], "reuse": "retained_itt_knowledge"}
+        else:
+            task = _retrieval_task(event, review=review, ttt=ttt, executions=executions)
+            # New plans and repeated errors are not new binding evidence. Cache
+            # negative results until facts, question, knowledge or verifier gap changes.
+            cache_task = {**task_input(event), "sources": evidence_sources(task),
+                          "verifier_gap": list(review.gaps) if verifier_gap else []}
+            key = (event.event_id, repository.profile,
+                   json.dumps(repository.procedural, sort_keys=True, ensure_ascii=False),
+                   json.dumps(cache_task, sort_keys=True, ensure_ascii=False))
+            if key in self._planner_pm_cache:
+                procedural = deepcopy(self._planner_pm_cache[key])
+                procedural["reuse"] = "unchanged_evidence"
+            else:
+                procedural = _procedure_context(repository, task,
+                    role="planner", selector=self.procedure_selector)
+                if len(self._planner_pm_cache) >= 128:
+                    self._planner_pm_cache.pop(next(iter(self._planner_pm_cache)))
+                self._planner_pm_cache[key] = deepcopy(procedural)
+        semantic = None
+        if not procedural.get("procedures") and procedural.get("reuse") != "retained_itt_knowledge":
+            self.policy.require(RoleName.PLANNER, MemoryType.SEMANTIC)
+            from src.memory.longterm_memory.semantic_memory.excytin_bench.fallback import retrieve
+            sm_task = task_input(event)
+            sm_key = (event.event_id, repository.profile,
+                      json.dumps(repository.semantic, sort_keys=True, ensure_ascii=False),
+                      json.dumps(sm_task, sort_keys=True, ensure_ascii=False))
+            if sm_key not in self._planner_sm_cache:
+                if len(self._planner_sm_cache) >= 128:
+                    self._planner_sm_cache.pop(next(iter(self._planner_sm_cache)))
+                self._planner_sm_cache[sm_key] = retrieve(repository, sm_task, self.procedure_selector)
+            else:
+                semantic = {**deepcopy(self._planner_sm_cache[sm_key]), "reuse": "unchanged_query"}
+            if semantic is None:
+                semantic = deepcopy(self._planner_sm_cache[sm_key])
         return {
             "enabled": True,
             "profile": repository.profile,
             "role": RoleName.PLANNER.value,
-            "allowed_memory_types": [
-                MemoryType.PROCEDURAL.value,
-                MemoryType.SEMANTIC.value,
-            ],
-            "procedural_memory": {"procedures": prompt_procedures},
-            "semantic_memory": semantic,
+            "allowed_memory_types": [MemoryType.PROCEDURAL.value] + ([MemoryType.SEMANTIC.value] if semantic is not None else []),
+            "procedural_memory": procedural,
+            **({"semantic_memory": semantic} if semantic is not None else {}),
         }
-
-    @staticmethod
-    def _compact_planner_procedures(
-        procedures: Sequence[Mapping[str, Any]],
-        semantic: Mapping[str, Any],
-    ) -> list[dict[str, Any]]:
-        selected_tables = {
-            table["table_id"]: table["name"] for table in semantic.get("tables", [])
-        }
-        compact: list[dict[str, Any]] = []
-        for procedure in procedures:
-            procedure_view = {
-                key: value for key, value in procedure.items() if key != "phases"
-            }
-            procedure_view["phases"] = []
-            for phase in procedure.get("phases", []):
-                phase_view = {
-                    key: value
-                    for key, value in phase.items()
-                    if key != "semantic_table_ids"
-                }
-                phase_view["candidate_tables"] = [
-                    selected_tables[table_id]
-                    for table_id in phase.get("semantic_table_ids", [])
-                    if table_id in selected_tables
-                ]
-                procedure_view["phases"].append(phase_view)
-            compact.append(procedure_view)
-        return compact
 
     def _build_executor(
         self,
@@ -957,8 +757,11 @@ class MemoryContextService:
         executions: Sequence[Any],
         include_episodic: bool,
         episodic_query: str | None,
+        episodic_background: str | None,
     ) -> dict[str, Any]:
-        required = [MemoryType.SEMANTIC]
+        required = [MemoryType.SEMANTIC, MemoryType.PROCEDURAL]
+        from src.memory.longterm_memory.episodic_memory.excytin_bench.sql_parser import classify_error
+        include_episodic = include_episodic and classify_error(episodic_query or "")[0] is not None
         if include_episodic:
             required.append(MemoryType.EPISODIC)
         self.policy.require(RoleName.EXECUTOR, *required)
@@ -983,13 +786,22 @@ class MemoryContextService:
                 json.dumps(previous, ensure_ascii=False),
             ]
         )
-        semantic = repository.retrieve_semantic(
-            text, table_hints=table_hints, table_limit=8
+        task_text = str(getattr(node, "title", ""))
+        task_semantic = repository.retrieve_semantic(
+            task_text, table_hints=table_hints, table_limit=3
         )
         resolved_table_hints = table_hints or [
-            table["name"] for table in semantic["tables"][:4]
+            table["name"] for table in task_semantic["tables"]
         ]
+        procedural = _procedure_context(repository,
+            _retrieval_task(event, node=node, executions=executions[-5:]),
+            role="executor", selector=self.procedure_selector)
+        procedures = procedural["procedures"]
+        semantic = repository.retrieve_semantic(
+            text, procedures=procedures, table_hints=resolved_table_hints, table_limit=8
+        )
         result = {
+            "procedural_memory": procedural,
             "enabled": True,
             "profile": repository.profile,
             "role": RoleName.EXECUTOR.value,
@@ -997,11 +809,11 @@ class MemoryContextService:
             "semantic_memory": semantic,
         }
         if include_episodic:
-            episodes = repository.retrieve_episodes(
-                episodic_query or text,
+            recoveries = repository.retrieve_recoveries(
+                episodic_query or "", background=episodic_background or task_text,
                 table_hints=resolved_table_hints,
             )
-            result["episodic_memory"] = {"episodes": episodes}
+            result["episodic_memory"] = {"recoveries": recoveries}
         return result
 
     def _build_reviewer(
@@ -1011,7 +823,9 @@ class MemoryContextService:
         ttt: TracebackTaskTree,
         executions: Sequence[Any],
     ) -> dict[str, Any]:
-        self.policy.require(RoleName.REVIEWER, MemoryType.SEMANTIC)
+        self.policy.require(
+            RoleName.REVIEWER, MemoryType.SEMANTIC, MemoryType.PROCEDURAL
+        )
         repository = self._repository(event)
         if repository is None:
             return {"enabled": False, "reason": "no_memory_profile"}
@@ -1027,12 +841,23 @@ class MemoryContextService:
                 ),
             ]
         )
+        procedural = _procedure_context(repository,
+            _retrieval_task(event, ttt=ttt, executions=executions),
+            role="reviewer", selector=self.procedure_selector)
+        procedures = procedural["procedures"]
+        semantic = repository.retrieve_semantic(
+            text, procedures=procedures, table_limit=8
+        )
         return {
             "enabled": True,
             "profile": repository.profile,
             "role": RoleName.REVIEWER.value,
-            "allowed_memory_types": [MemoryType.SEMANTIC.value],
-            "semantic_memory": repository.retrieve_semantic(text, table_limit=8),
+            "allowed_memory_types": [
+                MemoryType.SEMANTIC.value,
+                MemoryType.PROCEDURAL.value,
+            ],
+            "semantic_memory": semantic,
+            "procedural_memory": procedural,
         }
 
 

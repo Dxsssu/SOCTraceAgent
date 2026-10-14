@@ -67,13 +67,13 @@ def is_submit(message: str) -> bool:
 
 
 def classify_error(observation: str) -> tuple[str | None, str | None]:
-    if not SQL_ERROR_RE.search(observation):
-        return None, None
     if UNKNOWN_COLUMN_RE.search(observation):
         return "unknown_column", UNKNOWN_COLUMN_RE.search(observation).group(1)
     if UNKNOWN_TABLE_RE.search(observation):
         table_name = UNKNOWN_TABLE_RE.search(observation).group(1).rsplit(".", 1)[-1]
         return "unknown_table", table_name
+    if not SQL_ERROR_RE.search(observation):
+        return None, None
     if "syntax" in observation.lower():
         return "syntax_error", None
     return "other_sql_error", None

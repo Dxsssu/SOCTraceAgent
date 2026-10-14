@@ -1,0 +1,271 @@
+[
+  {
+    "case_id": "incident_134-q0023",
+    "holdout": false,
+    "input": {
+      "context": "A user account was potentially compromised following a password-spray attack. The attacker signed in from an unusual location with IP `170.54.121.63`. This attack raises the risk of unauthorized access to the network.",
+      "question": "Regarding a related alert about a potentially malicious URL click, can you identify the sender IP address of the suspicious mail message?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [],
+      "assessments": [],
+      "application": null,
+      "guard": null,
+      "status": "no_candidate"
+    },
+    "usage": {
+      "calls": 1,
+      "input_tokens": 4868,
+      "output_tokens": 1
+    }
+  },
+  {
+    "case_id": "incident_34-q0078",
+    "holdout": false,
+    "input": {
+      "context": "An anomalous scheduled task was created on 2024-07-04 at 22:35:01.260626+00:00 using `schtasks.exe`. This may indicate that an attacker is trying to obtain persistence on the device. Further investigation is required to understand the extent of the threat. An associated report can be read for more information: https://security.microsoft.com/threatanalytics3/c9709a39-ac8d-493d-9a63-71da3ca1e745/analystreport.",
+      "question": "Following the creation of the anomalous scheduled task, whose account was used for a suspicious PowerShell download or encoded command execution?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "抽样查看进程活动以寻找线索",
+        "根据目标进程命令内容查证进程活动",
+        "根据文件名称查证进程活动"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "抽样查看进程活动以寻找线索",
+            "decision": "reject",
+            "target_question": "Following the creation of the anomalous scheduled task, whose account was used for a suspicious PowerShell download or encoded command execution?",
+            "bindings": {},
+            "missing": [
+              "调查对象",
+              "缺少定位线索"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [],
+            "reason": "该候选仅随机抽样进程活动且无具体筛选线索，缺少槽位证据，无法定位与异常计划任务相关的 PowerShell 下载或编码命令执行记录，不能缩小问题不确定性，属于泛泛查结构，拒绝。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据目标进程命令内容查证进程活动",
+            "decision": "reject",
+            "target_question": "Following the creation of the anomalous scheduled task, whose account was used for a suspicious PowerShell download or encoded command execution?",
+            "bindings": {},
+            "missing": [
+              "目标进程命令内容"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [],
+            "reason": "候选依赖“目标进程命令内容”，但 sources 中未提供任何具体 PowerShell 下载或编码命令的原文，无法绑定该槽位；缺少实际操作所需的过滤参数，拒绝。"
+          },
+          "validation_error": "rejected_by_assessor"
+        },
+        {
+          "assessment": {
+            "name": "根据文件名称查证进程活动",
+            "decision": "reject",
+            "target_question": "Following the creation of the anomalous scheduled task, whose account was used for a suspicious PowerShell download or encoded command execution?",
+            "bindings": {},
+            "missing": [
+              "文件名称"
+            ],
+            "expected_observation": "",
+            "output_refs": [],
+            "contribution": "",
+            "next_step": "",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_scope": false,
+              "evidence_path_supported": false
+            },
+            "limitations": [],
+            "reason": "sources 仅给出 schtasks.exe 相关的计划任务创建背景，未提供可绑定“文件名称”的具体 PowerShell 下载或编码命令文件名；以未证实的文件名为过滤条件属于编造操作参数，拒绝。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": null,
+      "status": "no_applicable_candidate"
+    },
+    "usage": {
+      "calls": 2,
+      "input_tokens": 6609,
+      "output_tokens": 645
+    }
+  },
+  {
+    "case_id": "incident_322-q0016",
+    "holdout": false,
+    "input": {
+      "context": "A security incident was reported where a malicious URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` was clicked on a device with the hostname `vnevado-win11h`. The msedge.exe process was used for this activity, with Process ID 4256. This has triggered multiple alerts including one indicating email messages containing the malicious URL being removed after delivery.",
+      "question": "Can you determine the email address of the recipient who received the email containing the malicious URL which was later clicked on?"
+    },
+    "procedures": [],
+    "diagnostics": {
+      "candidates": [
+        "根据网址查证邮件链接",
+        "根据网址查证链接点击",
+        "通过邮件系统分配的消息标识从邮件链接关联邮件详情"
+      ],
+      "assessments": [
+        {
+          "assessment": {
+            "name": "根据网址查证邮件链接",
+            "decision": "use",
+            "target_question": "Can you determine the email address of the recipient who received the email containing the malicious URL which was later clicked on?",
+            "bindings": {
+              "网址": {
+                "value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+                "source": "/context",
+                "quote": "A security incident was reported where a malicious URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` was clicked on a device with the hostname `vnevado-win11h`.",
+                "role": "恶意 URL，即待查邮件中所包含的网址；用作邮件链接过滤值"
+              }
+            },
+            "missing": [],
+            "expected_observation": "在 EmailUrlInfo 中匹配该 URL 的记录，并取得其 NetworkMessageId、UrlDomain 等字段；若存在，则可获得关联邮件的事件标识。",
+            "output_refs": [
+              {
+                "table": "EmailUrlInfo",
+                "fields": [
+                  "NetworkMessageId",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp",
+                  "Url",
+                  "UrlDomain"
+                ]
+              }
+            ],
+            "contribution": "该操作以已知恶意 URL 为锚点，从邮件链接信息中取得 NetworkMessageId，从而把“邮件中含此 URL”这一线索转为可进一步查询邮件详情的事件键；它并不把背景 URL 当作答案，而是获取通向收件人邮箱的关键关联键。",
+            "next_step": "以 URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` 过滤 EmailUrlInfo 表，读取匹配记录的 NetworkMessageId、UrlDomain、TimeGenerated 等字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_structure": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "可能返回多条 NetworkMessageId，需结合时间或点击事件进一步筛选。",
+              "本操作不能直接给出收件人邮箱，必须后续用 NetworkMessageId 查询 EmailEvents 的 RecipientEmailAddress。"
+            ],
+            "reason": "输入槽“网址”可从 context 中逐字绑定为已知恶意 URL；EmailUrlInfo 正是以 URL 关联邮件链接的表，输出 NetworkMessageId 是后续定位收件人的必要关联键。该操作不假设答案，输出可验证候选，因此接受。"
+          },
+          "validation_error": "failed_suitability_checks"
+        },
+        {
+          "assessment": {
+            "name": "根据网址查证链接点击",
+            "decision": "use",
+            "target_question": "Can you determine the email address of the recipient who received the email containing the malicious URL which was later clicked on?",
+            "bindings": {
+              "网址": {
+                "value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+                "source": "/context",
+                "quote": "A security incident was reported where a malicious URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` was clicked on a device with the hostname `vnevado-win11h`.",
+                "role": "被点击的恶意 URL；用作 UrlClickEvents 的过滤值"
+              }
+            },
+            "missing": [],
+            "expected_observation": "在 UrlClickEvents 中匹配该 URL 的点击记录，返回 AccountUpn、IPAddress、ActionType、TimeGenerated 等字段。",
+            "output_refs": [
+              {
+                "table": "UrlClickEvents",
+                "fields": [
+                  "AccountUpn",
+                  "ActionType",
+                  "IPAddress",
+                  "TenantId",
+                  "TimeGenerated",
+                  "Timestamp",
+                  "Url"
+                ]
+              }
+            ],
+            "contribution": "该操作验证“该 URL 被点击”这一事件，并产生 AccountUpn 等账户线索。AccountUpn 可能与邮件收件人邮箱相同或高度相关，从而缩小目标收件人范围；即便需要后续与 EmailEvents 交叉验证，它也能提供可查询的候选账户。",
+            "next_step": "以 URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` 过滤 UrlClickEvents 表，读取匹配记录的 AccountUpn、ActionType、IPAddress、TimeGenerated 等字段。",
+            "checks": {
+              "input_roles_supported": true,
+              "no_answer_assumption": true,
+              "preserves_question_structure": true,
+              "evidence_path_supported": true
+            },
+            "limitations": [
+              "AccountUpn 不是最终收件人邮箱的充分证明，需结合邮件事件或消息标识验证同一收件人。",
+              "点击事件可能有多条或包含非目标账户，需结合主机、进程 ID 或时间进一步筛选。"
+            ],
+            "reason": "输入槽“网址”有 context 逐字支持；UrlClickEvents 表包含 URL 与 AccountUpn，可直接产生点击账户候选，推进收件人定位。该操作不把已知 URL 当作答案，而是取得关联账户线索，因此接受。"
+          },
+          "validation_error": "failed_suitability_checks"
+        },
+        {
+          "assessment": {
+            "name": "通过邮件系统分配的消息标识从邮件链接关联邮件详情",
+            "decision": "reject",
+            "target_question": "Can you determine the email address of the recipient who received the email containing the malicious URL which was later clicked on?",
+            "bindings": {
+              "邮件系统分配的消息标识": {
+                "value": "",
+                "source": "/context",
+                "quote": "A security incident was reported where a malicious URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` was clicked on a device with the hostname `vnevado-win11h`. The msedge.exe process was used for this activity, with Process ID 4256. This has triggered multiple alerts including one indicating email messages containing the malicious URL being removed after delivery.",
+                "role": "未在已知输入中出现；该操作用它作为查询 EmailEvents 的过滤键"
+              }
+            },
+            "missing": [
+              "邮件系统分配的消息标识"
+            ],
+            "expected_observation": "如果提供有效 NetworkMessageId，可在 EmailEvents 中读取 RecipientEmailAddress、SenderFromAddress、DeliveryAction 等字段。",
+            "output_refs": [],
+            "contribution": "本操作本身是定位收件人的关键后续步骤，但当前缺少消息标识，无法执行；只有先由上一步从 EmailUrlInfo 取得 NetworkMessageId 后，才能使用该操作。",
+            "next_step": "暂不执行，等待从 EmailUrlInfo 取得具体的 NetworkMessageId 后，再以该标识过滤 EmailEvents 并读取 RecipientEmailAddress。",
+            "checks": {
+              "input_roles_supported": false,
+              "no_answer_assumption": true,
+              "preserves_question_structure": true,
+              "evidence_path_supported": false
+            },
+            "limitations": [
+              "缺少实际 NetworkMessageId 值，不能作为当前一步执行。",
+              "需要先通过 URL 在 EmailUrlInfo 中取得消息标识，才能关联 EmailEvents。"
+            ],
+            "reason": "输入槽“邮件系统分配的消息标识”在 sources 中没有具体值，context 仅描述事件而未提供 NetworkMessageId；缺少操作真正需要的参数，因此拒绝此候选。"
+          },
+          "validation_error": "rejected_by_assessor"
+        }
+      ],
+      "application": null,
+      "guard": null,
+      "status": "no_applicable_candidate"
+    },
+    "usage": {
+      "calls": 2,
+      "input_tokens": 6502,
+      "output_tokens": 1699
+    }
+  }
+]

@@ -89,7 +89,7 @@ def retry_case(case, output, args, judge, stop_event):
         archive.parent.mkdir(parents=True, exist_ok=True)
         directory.rename(archive)
     try:
-        if agent == 'paper_baseline':
+        if agent in {'paper_baseline', 'prompt_sauce', 'react', 'expel'}:
             from .batch import run_internal
             result = run_internal(agent, case, output, args.baseline_class,
                                   case_dir=directory, max_steps=args.max_steps,
@@ -200,8 +200,9 @@ def execute(args, output, cases, manifest, judge):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--agent', choices=['opencode', 'pi', 'paper_baseline'], default='opencode')
-    parser.add_argument('--model', default='DeepSeek-V4.1-Flash')
+    parser.add_argument('--agent', choices=['opencode', 'qwen-code', 'pi', 'paper_baseline', 'prompt_sauce', 'react', 'expel'], default='opencode')
+    parser.add_argument('--provider', choices=['paratera', 'fancybag', 'xty'], help='Override SOCAGENT_LLM_PROVIDER for this run')
+    parser.add_argument('--model', default=None, help='Default: selected provider model from .env')
     parser.add_argument('--output', type=Path, help='Exact persistent directory; default results/AGENT/MODEL')
     parser.add_argument('--sample-size', type=int, help='Default: all 589 test questions')
     parser.add_argument('--seed', type=int, default=42)
@@ -215,8 +216,13 @@ def main(argv=None):
         parser.error('workers/max-steps/sample-size must be positive; timeout/max-llm-calls >= 0')
     load_dotenv(PROJECT_ROOT/'.env')
     load_dotenv(PROJECT_ROOT/'docker/excytin-mysql/.env')
-    os.environ['PARATERA_MODEL'] = args.model
+    if args.provider:
+        os.environ['SOCAGENT_LLM_PROVIDER'] = args.provider
+    provider = os.environ.get('SOCAGENT_LLM_PROVIDER', 'paratera').strip().lower()
+    if args.model:
+        os.environ[f'{provider.upper()}_MODEL'] = args.model
     config = LLMConfig.from_env()
+    args.model = config.model
     judge = judge_config(args.model)
     cases = load_test_cases()
     if args.sample_size is not None:
@@ -230,7 +236,8 @@ def main(argv=None):
         'agents': [args.agent], 'cases': [c.manifest_view() for c in cases],
         'protocol': protocol_manifest(cases, max_steps=args.max_steps, judge=judge,
                                      timeout=args.timeout, max_llm_calls=args.max_llm_calls),
-        'versions': json.loads((AGENT_ROOT/'versions.json').read_text()),
+        'versions': (json.loads((AGENT_ROOT/'versions.json').read_text())
+                     if args.agent not in {'prompt_sauce', 'react', 'expel'} else {}),
         'instruction_sha256': hashlib.sha256(INSTRUCTION.encode()).hexdigest(),
         'retry_policy': 'Retry incomplete cases on next invocation; retain all previous attempts',
     }
@@ -241,6 +248,64 @@ def main(argv=None):
         manifest['baseline_source_sha256'] = hashlib.sha256(
             (UPSTREAM/'secgym/agents/baseline_agent.py').read_bytes()).hexdigest()
         manifest['baseline_initialization'] = 'reset; cache_seed=41; original prompt and action parser'
+    elif args.agent == 'prompt_sauce':
+        from .batch import prompt_sauce_class, UPSTREAM
+        args.baseline_class = prompt_sauce_class()
+        manifest.pop('instruction_sha256')
+        # This Python agent does not depend on installed external CLI versions.
+        manifest.pop('versions')
+        manifest['provider'] = provider
+        manifest['paper_agent_class'] = 'PromptSauceAgent'
+        manifest['paper_agent_sources'] = {
+            name: hashlib.sha256((UPSTREAM/'secgym/agents'/name).read_bytes()).hexdigest()
+            for name in ('prompt_sauce_agent.py', 'agent_utils.py')
+        }
+        manifest['paper_agent_initialization'] = 'reset; cache_seed=41; original prompt and action parser'
+        manifest['adapter_revision'] = 'prompt-sauce-v1-submit-summary-false'
+        manifest['memory'] = 'none'
+    elif args.agent == 'react':
+        from .batch import react_class, UPSTREAM
+        args.baseline_class = react_class()
+        manifest.pop('instruction_sha256')
+        manifest.pop('versions')
+        manifest['provider'] = provider
+        manifest['paper_agent_class'] = 'ReActAgent'
+        root = UPSTREAM/'secgym/agents'
+        sources = [root/'react_agent.py', root/'agent_utils.py']
+        examples = list((root/'react_examples').iterdir())
+        sources.extend(examples)
+        manifest['paper_agent_sources'] = {
+            str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sources
+        }
+        manifest['example_order'] = [p.name for p in examples]
+        manifest['paper_agent_initialization'] = 'reset; cache_seed=41; original prompt and three demonstrations; local single-step parser'
+        manifest['adapter_revision'] = 'react-v2-single-step'
+        manifest['memory'] = 'fixed upstream demonstrations; no project SM/PM/EM'
+    elif args.agent == 'expel':
+        from .batch import UPSTREAM
+        from .expel import prepare_assets, configured_class
+        insights, experiences, metadata = prepare_assets(
+            UPSTREAM, PROJECT_ROOT/'runtime/expel',
+            PROJECT_ROOT/'data/excytin-bench/huggingface/questions/train')
+        manifest.pop('instruction_sha256')
+        manifest.pop('versions')
+        manifest.update(provider=provider, paper_agent_class='ExpelAgent',
+                        adapter_revision='expel-v2-single-step-aligned-train',
+                        memory=metadata)
+        manifest['adapter_sha256'] = hashlib.sha256(
+            Path(__file__).with_name('expel.py').read_bytes()).hexdigest()
+        print(f"ExpeL: loading {metadata['trajectory_count']} training experiences and embedding model...", flush=True)
+        args.baseline_class = configured_class(insights, experiences)
+    if args.agent in {'react', 'expel'}:
+        from .single_step import REVISION
+        manifest['action_protocol'] = {
+            'revision': REVISION,
+            'sha256': hashlib.sha256(Path(__file__).with_name('single_step.py').read_bytes()).hexdigest(),
+            'transport_sha256': hashlib.sha256(Path(__file__).with_name('batch.py').read_bytes()).hexdigest(),
+            'repair_attempts': 1,
+            'require_successful_sql_before_submit': True,
+        }
     try:
         with output_lock(output):
             return execute(args, output, cases, manifest, judge)

@@ -1,0 +1,2954 @@
+{
+  "audited_at": "2026-10-11T14:40:21.467682+00:00",
+  "catalog_sha256": "38eb1dc0789816b161b6b7c46ab331cba911426ab6c0549c744f821822d7333a",
+  "scope": "完整检查65条，覆盖结构、语义引用存在性、源训练谓词、操作与前提一致性、重复和运行时加载。",
+  "production_memory_modified": false,
+  "summary": {
+    "total": 65,
+    "active": 54,
+    "candidate": 11,
+    "verdict_counts": {
+      "需要优化或合并": 31,
+      "需要优先修正": 23,
+      "未发现条目级明显问题": 11
+    },
+    "active_verdict_counts": {
+      "需要优化或合并": 26,
+      "需要优先修正": 19,
+      "未发现条目级明显问题": 9
+    },
+    "table_references": 135,
+    "field_references": 1211,
+    "invalid_references": 0,
+    "training_attempts_verified": 1605,
+    "deterministic_rebuild_matches": true,
+    "neo4j_matches_snapshot": true
+  },
+  "issue_counts": {
+    "broad_refs": 4,
+    "sample_scope": 3,
+    "goal_operation_gap": 4,
+    "predicate_logic": 19,
+    "parent_scope_refs": 8,
+    "structured_payload": 8,
+    "duplicate": 13,
+    "presence_not_value": 2,
+    "mixed_nonempty": 2,
+    "action_outcome": 4,
+    "negative_vs_positive": 1,
+    "scope_ref_gap": 1,
+    "pid_scope": 1,
+    "schema_routing": 1,
+    "process_network_scope": 1,
+    "unnecessary_chain": 1
+  },
+  "overlapping_groups": [
+    [
+      17,
+      57
+    ],
+    [
+      38,
+      58
+    ],
+    [
+      52,
+      60
+    ],
+    [
+      54,
+      61,
+      65
+    ],
+    [
+      55,
+      62
+    ],
+    [
+      53,
+      64
+    ]
+  ],
+  "runtime_reproduction": {
+    "input": "查询 DeviceEvents 中的当前设备活动",
+    "selected_procedure": "确认调查所需的记录结构",
+    "table_limit": 8,
+    "explicit_table_hints": [],
+    "actual_tables": [
+      "AlertEvidence",
+      "DeviceFileEvents",
+      "DeviceInfo",
+      "DeviceNetworkEvents",
+      "DeviceProcessEvents",
+      "DeviceRegistryEvents",
+      "OfficeActivity",
+      "SecurityAlert"
+    ],
+    "expected_table_exists_in_SM": "DeviceEvents",
+    "finding": "目标表存在但被历史引用表优先级挤出；显式传入目标表提示可以改变结果。"
+  },
+  "cross_cutting_findings": [
+    {
+      "code": "source_semantics_lost",
+      "finding": "矿工按筛选字段集合归并；OR/NOT/IS NOT NULL、正向和排除查找可能被合并，历史重复频次不等于当前操作语义的重复频次。"
+    },
+    {
+      "code": "metadata_not_full_correctness",
+      "finding": "active目前只代表至少2个incident支持，不代表逻辑正确或通过独立效果评估。"
+    },
+    {
+      "code": "gate_observability",
+      "finding": "核对失败时直接返回空列表，缺失前提和核对理由没有进入主Agent上下文或报告；不能区分无匹配与前提不足。"
+    },
+    {
+      "code": "sm_not_supplied_to_gate",
+      "finding": "核对助手只收到任务和执行历史，未直接收到SM；结构未知的负向前提可能与后续已加载的SM不一致。"
+    },
+    {
+      "code": "test_scope",
+      "finding": "155项离线测试主要覆盖结构和路径，先前4个真实模型场景未逐条覆盖65条记忆；通过不等于条目语义全部正确。"
+    }
+  ],
+  "offline_tests": {
+    "passed": 155,
+    "excluded": "tests/test_splunk_ttt_integration.py"
+  },
+  "entries": [
+    {
+      "index": 1,
+      "name": "修正查询中不存在的信息项",
+      "status": "active",
+      "family": "error_repair",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 63,
+        "incidents": 8
+      },
+      "source_pattern": "字段不存在：核对 schema 后修正查询",
+      "source_predicate_audit": {
+        "name": "修正查询中不存在的信息项",
+        "source_pattern": "字段不存在：核对 schema 后修正查询",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 13,
+        "fields": 112
+      },
+      "findings": [
+        {
+          "code": "broad_refs",
+          "severity": "P2",
+          "finding": "通用修复条目聚合历史涉及的7至13张表，并非当前操作实际需要的表；扩大上下文且可能挤占目标表。",
+          "recommendation": "将当前查询对象作为使用前提，运行时只加载相关表和字段。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 2,
+      "name": "抽样查看进程活动以寻找线索",
+      "status": "active",
+      "family": "sample",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 3,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceProcessEvents：缺少筛选线索时检查少量样本",
+      "source_predicate_audit": {
+        "name": "抽样查看进程活动以寻找线索",
+        "source_pattern": "DeviceProcessEvents：缺少筛选线索时检查少量样本",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 11
+      },
+      "findings": [
+        {
+          "code": "sample_scope",
+          "severity": "P2",
+          "finding": "抽样前提只有记录类型且缺少定位线索，未要求调查时间/设备/租户范围，也没有明确样本不是全量结论。",
+          "recommendation": "在操作中限定当前事件范围并明确样本用于发现线索，不用于排除事件。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 3,
+      "name": "抽样查看邮件链接以寻找线索",
+      "status": "active",
+      "family": "sample",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 3,
+        "incidents": 2
+      },
+      "source_pattern": "EmailUrlInfo：缺少筛选线索时检查少量样本",
+      "source_predicate_audit": {
+        "name": "抽样查看邮件链接以寻找线索",
+        "source_pattern": "EmailUrlInfo：缺少筛选线索时检查少量样本",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 6
+      },
+      "findings": [
+        {
+          "code": "sample_scope",
+          "severity": "P2",
+          "finding": "抽样前提只有记录类型且缺少定位线索，未要求调查时间/设备/租户范围，也没有明确样本不是全量结论。",
+          "recommendation": "在操作中限定当前事件范围并明确样本用于发现线索，不用于排除事件。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 4,
+      "name": "抽样查看链接点击以寻找线索",
+      "status": "candidate",
+      "family": "sample",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "UrlClickEvents：缺少筛选线索时检查少量样本",
+      "source_predicate_audit": {
+        "name": "抽样查看链接点击以寻找线索",
+        "source_pattern": "UrlClickEvents：缺少筛选线索时检查少量样本",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "sample_scope",
+          "severity": "P2",
+          "finding": "抽样前提只有记录类型且缺少定位线索，未要求调查时间/设备/租户范围，也没有明确样本不是全量结论。",
+          "recommendation": "在操作中限定当前事件范围并明确样本用于发现线索，不用于排除事件。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 5,
+      "name": "查询无结果时核查不适用的筛选条件",
+      "status": "active",
+      "family": "empty_repair",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 26,
+        "incidents": 7
+      },
+      "source_pattern": "空结果：逐项核查过度约束",
+      "source_predicate_audit": {
+        "name": "查询无结果时核查不适用的筛选条件",
+        "source_pattern": "空结果：逐项核查过度约束",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 12,
+        "fields": 104
+      },
+      "findings": [
+        {
+          "code": "broad_refs",
+          "severity": "P2",
+          "finding": "通用修复条目聚合历史涉及的7至13张表，并非当前操作实际需要的表；扩大上下文且可能挤占目标表。",
+          "recommendation": "将当前查询对象作为使用前提，运行时只加载相关表和字段。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 6,
+      "name": "查询无结果时核查线索与记录信息的对应关系",
+      "status": "active",
+      "family": "empty_repair",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 52,
+        "incidents": 7
+      },
+      "source_pattern": "空结果：检查筛选字段映射",
+      "source_predicate_audit": {
+        "name": "查询无结果时核查线索与记录信息的对应关系",
+        "source_pattern": "空结果：检查筛选字段映射",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 11,
+        "fields": 111
+      },
+      "findings": [
+        {
+          "code": "broad_refs",
+          "severity": "P2",
+          "finding": "通用修复条目聚合历史涉及的7至13张表，并非当前操作实际需要的表；扩大上下文且可能挤占目标表。",
+          "recommendation": "将当前查询对象作为使用前提，运行时只加载相关表和字段。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 7,
+      "name": "查询无结果时核查线索内容和匹配方式",
+      "status": "active",
+      "family": "empty_repair",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 10,
+        "incidents": 6
+      },
+      "source_pattern": "空结果：核对值与匹配方式",
+      "source_predicate_audit": {
+        "name": "查询无结果时核查线索内容和匹配方式",
+        "source_pattern": "空结果：核对值与匹配方式",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 7,
+        "fields": 60
+      },
+      "findings": [
+        {
+          "code": "broad_refs",
+          "severity": "P2",
+          "finding": "通用修复条目聚合历史涉及的7至13张表，并非当前操作实际需要的表；扩大上下文且可能挤占目标表。",
+          "recommendation": "将当前查询对象作为使用前提，运行时只加载相关表和字段。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 8,
+      "name": "根据发件人地址查证邮件详情",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 3,
+        "incidents": 3
+      },
+      "source_pattern": "EmailEvents：按 SenderFromAddress 查证",
+      "source_predicate_audit": {
+        "name": "根据发件人地址查证邮件详情",
+        "source_pattern": "EmailEvents：按 SenderFromAddress 查证",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 10
+      },
+      "findings": [
+        {
+          "code": "goal_operation_gap",
+          "severity": "P2",
+          "finding": "目标包括威胁判定，但操作枚举发件人、收件人、投递情况，未包含威胁判定。",
+          "recommendation": "统一操作与目标范围，或拆分为更具体目标。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 9,
+      "name": "根据发起进程命令内容、目标进程命令内容查证进程活动",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 4,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceProcessEvents：按 InitiatingProcessCommandLine、ProcessCommandLine 查证",
+      "source_predicate_audit": {
+        "name": "根据发起进程命令内容、目标进程命令内容查证进程活动",
+        "source_pattern": "DeviceProcessEvents：按 InitiatingProcessCommandLine、ProcessCommandLine 查证",
+        "operators": {
+          "OR": 4,
+          "LIKE": 4
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:5b9944818fe97bbcc3e0:attempt:02",
+          "LIKE": "excytin-episodes-v1:episode:5b9944818fe97bbcc3e0:attempt:02"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 11
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "parent_scope_refs",
+          "severity": "P2",
+          "finding": "目标进程和父/发起进程共用泛化读信息操作；涉及运行账户时引用仅有目标账户，缺少父/发起进程账户与创建时间。",
+          "recommendation": "按待查目标明确对象，补充必要引用或收窄目标，避免字段角色混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 10,
+      "name": "根据受影响实体、描述线索查证安全告警",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 4,
+        "incidents": 3
+      },
+      "source_pattern": "SecurityAlert：按 CompromisedEntity、Description 查证",
+      "source_predicate_audit": {
+        "name": "根据受影响实体、描述线索查证安全告警",
+        "source_pattern": "SecurityAlert：按 CompromisedEntity、Description 查证",
+        "operators": {
+          "OR": 4,
+          "LIKE": 4
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:58afb3d10a35c1594ed2:attempt:05",
+          "LIKE": "excytin-episodes-v1:episode:58afb3d10a35c1594ed2:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "structured_payload",
+          "severity": "P2",
+          "finding": "操作只说读取所需信息，未表达对结构化告警实体/扩展属性进行解析以及检查实际存在的键。",
+          "recommendation": "用一句具体操作明确解析实际键或实体对象；涉及人工调查、处置信息时区分已执行动作和建议。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 11,
+      "name": "根据告警名称、受影响实体、描述线索查证安全告警",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 4,
+        "incidents": 3
+      },
+      "source_pattern": "SecurityAlert：按 AlertName、CompromisedEntity、Description 查证",
+      "source_predicate_audit": {
+        "name": "根据告警名称、受影响实体、描述线索查证安全告警",
+        "source_pattern": "SecurityAlert：按 AlertName、CompromisedEntity、Description 查证",
+        "operators": {
+          "OR": 4,
+          "LIKE": 4
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:4558e269bc4e6cb3fa20:attempt:03",
+          "LIKE": "excytin-episodes-v1:episode:4558e269bc4e6cb3fa20:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "structured_payload",
+          "severity": "P2",
+          "finding": "操作只说读取所需信息，未表达对结构化告警实体/扩展属性进行解析以及检查实际存在的键。",
+          "recommendation": "用一句具体操作明确解析实际键或实体对象；涉及人工调查、处置信息时区分已执行动作和建议。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 12,
+      "name": "根据告警名称、描述线索、攻击战术查证安全告警",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "SecurityAlert：按 AlertName、Description、Tactics 查证",
+      "source_predicate_audit": {
+        "name": "根据告警名称、描述线索、攻击战术查证安全告警",
+        "source_pattern": "SecurityAlert：按 AlertName、Description、Tactics 查证",
+        "operators": {
+          "OR": 2,
+          "LIKE": 2
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:58b1e8c58a37a80e93c3:attempt:03",
+          "LIKE": "excytin-episodes-v1:episode:58b1e8c58a37a80e93c3:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 8
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "structured_payload",
+          "severity": "P2",
+          "finding": "操作只说读取所需信息，未表达对结构化告警实体/扩展属性进行解析以及检查实际存在的键。",
+          "recommendation": "用一句具体操作明确解析实际键或实体对象；涉及人工调查、处置信息时区分已执行动作和建议。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 13,
+      "name": "根据告警名称、描述线索、显示名称查证安全告警",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 6,
+        "incidents": 3
+      },
+      "source_pattern": "SecurityAlert：按 AlertName、Description、DisplayName 查证",
+      "source_predicate_audit": {
+        "name": "根据告警名称、描述线索、显示名称查证安全告警",
+        "source_pattern": "SecurityAlert：按 AlertName、Description、DisplayName 查证",
+        "operators": {
+          "OR": 6,
+          "LIKE": 6
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:b91dd3dac06b88858185:attempt:05",
+          "LIKE": "excytin-episodes-v1:episode:b91dd3dac06b88858185:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 8
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "structured_payload",
+          "severity": "P2",
+          "finding": "操作只说读取所需信息，未表达对结构化告警实体/扩展属性进行解析以及检查实际存在的键。",
+          "recommendation": "用一句具体操作明确解析实际键或实体对象；涉及人工调查、处置信息时区分已执行动作和建议。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 14,
+      "name": "根据告警名称、描述线索查证安全告警",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 12,
+        "incidents": 4
+      },
+      "source_pattern": "SecurityAlert：按 AlertName、Description 查证",
+      "source_predicate_audit": {
+        "name": "根据告警名称、描述线索查证安全告警",
+        "source_pattern": "SecurityAlert：按 AlertName、Description 查证",
+        "operators": {
+          "OR": 14,
+          "LIKE": 15
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:b56cb68c72429691b468:attempt:05",
+          "LIKE": "excytin-episodes-v1:episode:b56cb68c72429691b468:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "structured_payload",
+          "severity": "P2",
+          "finding": "操作只说读取所需信息，未表达对结构化告警实体/扩展属性进行解析以及检查实际存在的键。",
+          "recommendation": "用一句具体操作明确解析实际键或实体对象；涉及人工调查、处置信息时区分已执行动作和建议。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 15,
+      "name": "根据告警名称查证安全告警",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 3,
+        "incidents": 2
+      },
+      "source_pattern": "SecurityAlert：按 AlertName 查证",
+      "source_predicate_audit": {
+        "name": "根据告警名称查证安全告警",
+        "source_pattern": "SecurityAlert：按 AlertName 查证",
+        "operators": {
+          "LIKE": 2
+        },
+        "examples": {
+          "LIKE": "excytin-episodes-v1:episode:6e836428f4a91b499575:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "structured_payload",
+          "severity": "P2",
+          "finding": "操作只说读取所需信息，未表达对结构化告警实体/扩展属性进行解析以及检查实际存在的键。",
+          "recommendation": "用一句具体操作明确解析实际键或实体对象；涉及人工调查、处置信息时区分已执行动作和建议。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 16,
+      "name": "根据告警实体内容查证安全告警",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "SecurityAlert：按 Entities 查证",
+      "source_predicate_audit": {
+        "name": "根据告警实体内容查证安全告警",
+        "source_pattern": "SecurityAlert：按 Entities 查证",
+        "operators": {
+          "LIKE": 2
+        },
+        "examples": {
+          "LIKE": "excytin-episodes-v1:episode:39a91ac90fac354bc594:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "structured_payload",
+          "severity": "P2",
+          "finding": "操作只说读取所需信息，未表达对结构化告警实体/扩展属性进行解析以及检查实际存在的键。",
+          "recommendation": "用一句具体操作明确解析实际键或实体对象；涉及人工调查、处置信息时区分已执行动作和建议。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 17,
+      "name": "根据告警标识查证告警证据",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 70,
+        "incidents": 8
+      },
+      "source_pattern": "AlertEvidence：按 AlertId 查证",
+      "source_predicate_audit": {
+        "name": "根据告警标识查证告警证据",
+        "source_pattern": "AlertEvidence：按 AlertId 查证",
+        "operators": {
+          "IN": 48
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:5c36cc90fcd812c34484:attempt:04"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 13
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 18,
+      "name": "根据告警类别、标题线索查证告警概要",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 40,
+        "incidents": 8
+      },
+      "source_pattern": "AlertInfo：按 Category、Title 查证",
+      "source_predicate_audit": {
+        "name": "根据告警类别、标题线索查证告警概要",
+        "source_pattern": "AlertInfo：按 Category、Title 查证",
+        "operators": {
+          "OR": 41,
+          "LIKE": 41
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:5c36cc90fcd812c34484:attempt:03",
+          "LIKE": "excytin-episodes-v1:episode:5c36cc90fcd812c34484:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 19,
+      "name": "根据告警类别、标题线索查证告警证据",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 9,
+        "incidents": 5
+      },
+      "source_pattern": "AlertEvidence：按 Categories、Title 查证",
+      "source_predicate_audit": {
+        "name": "根据告警类别、标题线索查证告警证据",
+        "source_pattern": "AlertEvidence：按 Categories、Title 查证",
+        "operators": {
+          "OR": 9,
+          "LIKE": 9
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:a847e32ebdbc72aa9edb:attempt:14",
+          "LIKE": "excytin-episodes-v1:episode:a847e32ebdbc72aa9edb:attempt:14"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 15
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 20,
+      "name": "根据威胁名称、威胁类型查证邮件详情",
+      "status": "candidate",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "EmailEvents：按 ThreatNames、ThreatTypes 查证",
+      "source_predicate_audit": {
+        "name": "根据威胁名称、威胁类型查证邮件详情",
+        "source_pattern": "EmailEvents：按 ThreatNames、ThreatTypes 查证",
+        "operators": {
+          "OR": 2,
+          "NOT": 2
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:f3486a55130050991067:attempt:02",
+          "NOT": "excytin-episodes-v1:episode:f3486a55130050991067:attempt:02"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 10
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "presence_not_value",
+          "severity": "P1",
+          "finding": "历史支持包含非空探查，当前却要求预先知道待发现的信息值，混淆发现与已知值筛选。",
+          "recommendation": "将非空探查与已知值匹配拆开，重新统计各自训练支持，必要时降为候选。"
+        },
+        {
+          "code": "goal_operation_gap",
+          "severity": "P2",
+          "finding": "目标包括威胁判定，但操作枚举发件人、收件人、投递情况，未包含威胁判定。",
+          "recommendation": "统一操作与目标范围，或拆分为更具体目标。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 21,
+      "name": "根据威胁家族查证告警证据",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "AlertEvidence：按 ThreatFamily 查证",
+      "source_predicate_audit": {
+        "name": "根据威胁家族查证告警证据",
+        "source_pattern": "AlertEvidence：按 ThreatFamily 查证",
+        "operators": {
+          "NOT": 1
+        },
+        "examples": {
+          "NOT": "excytin-episodes-v1:episode:1cf0707b3de32348ecb3:attempt:06"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 14
+      },
+      "findings": [
+        {
+          "code": "mixed_nonempty",
+          "severity": "P2",
+          "finding": "该模式的来源中也有非空或否定谓词；现有输入说明仅覆盖已知值查证，支持次数不能全部解释为同一语义的重复。",
+          "recommendation": "回查谓词后拆分来源，保留真正匹配当前目标的支持记录。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 22,
+      "name": "根据投递后处置动作查证邮件投递后处置",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 20,
+        "incidents": 4
+      },
+      "source_pattern": "EmailPostDeliveryEvents：按 Action 查证",
+      "source_predicate_audit": {
+        "name": "根据投递后处置动作查证邮件投递后处置",
+        "source_pattern": "EmailPostDeliveryEvents：按 Action 查证",
+        "operators": {
+          "OR": 20,
+          "LIKE": 20
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:ce0a451218ea0a15decf:attempt:03",
+          "LIKE": "excytin-episodes-v1:episode:ce0a451218ea0a15decf:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 8
+      },
+      "findings": [
+        {
+          "code": "action_outcome",
+          "severity": "P2",
+          "finding": "目标涉及投递后处置，但语义引用遗漏 ActionResult；SM 的 Action 说明要求结合该字段区分尝试动作和实际生效。",
+          "recommendation": "补充 ActionResult 引用，说明何时核对动作结果与目标收件人。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 23,
+      "name": "根据描述线索、告警实体内容查证安全告警",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "SecurityAlert：按 Description、Entities 查证",
+      "source_predicate_audit": {
+        "name": "根据描述线索、告警实体内容查证安全告警",
+        "source_pattern": "SecurityAlert：按 Description、Entities 查证",
+        "operators": {
+          "OR": 2,
+          "LIKE": 2
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:30122a96e7d75b177b03:attempt:12",
+          "LIKE": "excytin-episodes-v1:episode:30122a96e7d75b177b03:attempt:12"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "structured_payload",
+          "severity": "P2",
+          "finding": "操作只说读取所需信息，未表达对结构化告警实体/扩展属性进行解析以及检查实际存在的键。",
+          "recommendation": "用一句具体操作明确解析实际键或实体对象；涉及人工调查、处置信息时区分已执行动作和建议。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 24,
+      "name": "根据描述线索、标题线索查证安全事件",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 3,
+        "incidents": 2
+      },
+      "source_pattern": "SecurityIncident：按 Description、Title 查证",
+      "source_predicate_audit": {
+        "name": "根据描述线索、标题线索查证安全事件",
+        "source_pattern": "SecurityIncident：按 Description、Title 查证",
+        "operators": {
+          "OR": 3,
+          "LIKE": 3
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:d64478bab0282fb9df08:attempt:03",
+          "LIKE": "excytin-episodes-v1:episode:d64478bab0282fb9df08:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 5
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 25,
+      "name": "根据攻击技术、告警类别、标题线索查证告警概要",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 17,
+        "incidents": 4
+      },
+      "source_pattern": "AlertInfo：按 AttackTechniques、Category、Title 查证",
+      "source_predicate_audit": {
+        "name": "根据攻击技术、告警类别、标题线索查证告警概要",
+        "source_pattern": "AlertInfo：按 AttackTechniques、Category、Title 查证",
+        "operators": {
+          "OR": 17,
+          "LIKE": 17
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:4a7f33b1209c6465cb4b:attempt:03",
+          "LIKE": "excytin-episodes-v1:episode:4a7f33b1209c6465cb4b:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 26,
+      "name": "根据文件名称、发起进程文件名称查证进程活动",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 5,
+        "incidents": 3
+      },
+      "source_pattern": "DeviceProcessEvents：按 FileName、InitiatingProcessFileName 查证",
+      "source_predicate_audit": {
+        "name": "根据文件名称、发起进程文件名称查证进程活动",
+        "source_pattern": "DeviceProcessEvents：按 FileName、InitiatingProcessFileName 查证",
+        "operators": {
+          "OR": 5,
+          "LIKE": 6
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:7f4d525d2c3ae13f8459:attempt:04",
+          "LIKE": "excytin-episodes-v1:episode:7f4d525d2c3ae13f8459:attempt:04"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 13
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "parent_scope_refs",
+          "severity": "P2",
+          "finding": "目标进程和父/发起进程共用泛化读信息操作；涉及运行账户时引用仅有目标账户，缺少父/发起进程账户与创建时间。",
+          "recommendation": "按待查目标明确对象，补充必要引用或收窄目标，避免字段角色混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 27,
+      "name": "根据文件名称、标题线索查证告警证据",
+      "status": "candidate",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "AlertEvidence：按 FileName、Title 查证",
+      "source_predicate_audit": {
+        "name": "根据文件名称、标题线索查证告警证据",
+        "source_pattern": "AlertEvidence：按 FileName、Title 查证",
+        "operators": {
+          "OR": 2,
+          "LIKE": 2
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:dcfc375ca2ce3d4afa4c:attempt:07",
+          "LIKE": "excytin-episodes-v1:episode:dcfc375ca2ce3d4afa4c:attempt:07"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 14
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 28,
+      "name": "根据文件名称、目标进程命令内容查证告警证据",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "AlertEvidence：按 FileName、ProcessCommandLine 查证",
+      "source_predicate_audit": {
+        "name": "根据文件名称、目标进程命令内容查证告警证据",
+        "source_pattern": "AlertEvidence：按 FileName、ProcessCommandLine 查证",
+        "operators": {
+          "OR": 2,
+          "LIKE": 2
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9:attempt:06",
+          "LIKE": "excytin-episodes-v1:episode:05e9dc11808ceaf83fc9:attempt:06"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 13
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 29,
+      "name": "根据文件名称、目标进程命令内容查证进程活动",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 6,
+        "incidents": 4
+      },
+      "source_pattern": "DeviceProcessEvents：按 FileName、ProcessCommandLine 查证",
+      "source_predicate_audit": {
+        "name": "根据文件名称、目标进程命令内容查证进程活动",
+        "source_pattern": "DeviceProcessEvents：按 FileName、ProcessCommandLine 查证",
+        "operators": {
+          "LIKE": 6,
+          "OR": 5
+        },
+        "examples": {
+          "LIKE": "excytin-episodes-v1:episode:e6d28969c08998abf69d:attempt:04",
+          "OR": "excytin-episodes-v1:episode:e1e26a70c6e7854555c4:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 12
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "parent_scope_refs",
+          "severity": "P2",
+          "finding": "目标进程和父/发起进程共用泛化读信息操作；涉及运行账户时引用仅有目标账户，缺少父/发起进程账户与创建时间。",
+          "recommendation": "按待查目标明确对象，补充必要引用或收窄目标，避免字段角色混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 30,
+      "name": "根据文件名称、进程创建时间、目标进程编号查证进程活动",
+      "status": "candidate",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "DeviceProcessEvents：按 FileName、ProcessCreationTime、ProcessId 查证",
+      "source_predicate_audit": {
+        "name": "根据文件名称、进程创建时间、目标进程编号查证进程活动",
+        "source_pattern": "DeviceProcessEvents：按 FileName、ProcessCreationTime、ProcessId 查证",
+        "operators": {
+          "NOT": 1,
+          "LIKE": 1
+        },
+        "examples": {
+          "NOT": "excytin-episodes-v1:episode:7e36a8ab81999463ca16:attempt:02",
+          "LIKE": "excytin-episodes-v1:episode:6a25720da5972e181cff:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 12
+      },
+      "findings": [
+        {
+          "code": "negative_vs_positive",
+          "severity": "P1",
+          "finding": "相同字段集合中混合了排除已知进程实例与匹配该实例两种相反操作，当前只有正向定位描述。",
+          "recommendation": "保留否定条件和时间排序语义，拆分寻找其他实例与定位已知实例，重新计算支持。"
+        },
+        {
+          "code": "parent_scope_refs",
+          "severity": "P2",
+          "finding": "目标进程和父/发起进程共用泛化读信息操作；涉及运行账户时引用仅有目标账户，缺少父/发起进程账户与创建时间。",
+          "recommendation": "按待查目标明确对象，补充必要引用或收窄目标，避免字段角色混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 31,
+      "name": "根据文件名称查证告警证据",
+      "status": "candidate",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "AlertEvidence：按 FileName 查证",
+      "source_predicate_audit": {
+        "name": "根据文件名称查证告警证据",
+        "source_pattern": "AlertEvidence：按 FileName 查证",
+        "operators": {
+          "IN": 1,
+          "OR": 1,
+          "LIKE": 1
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:3ffcbb0abf86bd75ffd4:attempt:08",
+          "OR": "excytin-episodes-v1:episode:8b1d899e980ef43ba58d:attempt:08",
+          "LIKE": "excytin-episodes-v1:episode:8b1d899e980ef43ba58d:attempt:08"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 13
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 32,
+      "name": "根据文件名称查证文件活动",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 5,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceFileEvents：按 FileName 查证",
+      "source_predicate_audit": {
+        "name": "根据文件名称查证文件活动",
+        "source_pattern": "DeviceFileEvents：按 FileName 查证",
+        "operators": {
+          "IN": 2,
+          "OR": 1,
+          "LIKE": 1
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:9e5b6d176eb032d0033c:attempt:02",
+          "OR": "excytin-episodes-v1:episode:cdde85841b9bcfe1856f:attempt:03",
+          "LIKE": "excytin-episodes-v1:episode:cdde85841b9bcfe1856f:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 8
+      },
+      "findings": [
+        {
+          "code": "scope_ref_gap",
+          "severity": "P2",
+          "finding": "文件活动操作要求保留调查范围，但引用没有设备标识或设备名称。",
+          "recommendation": "补充设备范围字段，避免同名文件跨设备混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 33,
+      "name": "根据文件名称查证进程活动",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 10,
+        "incidents": 4
+      },
+      "source_pattern": "DeviceProcessEvents：按 FileName 查证",
+      "source_predicate_audit": {
+        "name": "根据文件名称查证进程活动",
+        "source_pattern": "DeviceProcessEvents：按 FileName 查证",
+        "operators": {
+          "IN": 1
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:4a75af4ad6d009bdb086:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 12
+      },
+      "findings": [
+        {
+          "code": "parent_scope_refs",
+          "severity": "P2",
+          "finding": "目标进程和父/发起进程共用泛化读信息操作；涉及运行账户时引用仅有目标账户，缺少父/发起进程账户与创建时间。",
+          "recommendation": "按待查目标明确对象，补充必要引用或收窄目标，避免字段角色混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 34,
+      "name": "根据标题线索查证告警概要",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 12,
+        "incidents": 5
+      },
+      "source_pattern": "AlertInfo：按 Title 查证",
+      "source_predicate_audit": {
+        "name": "根据标题线索查证告警概要",
+        "source_pattern": "AlertInfo：按 Title 查证",
+        "operators": {
+          "LIKE": 12,
+          "OR": 7
+        },
+        "examples": {
+          "LIKE": "excytin-episodes-v1:episode:567c7c34551b271fb8cd:attempt:02",
+          "OR": "excytin-episodes-v1:episode:d7200fbccd676eda3509:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 35,
+      "name": "根据标题线索查证告警证据",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "AlertEvidence：按 Title 查证",
+      "source_predicate_audit": {
+        "name": "根据标题线索查证告警证据",
+        "source_pattern": "AlertEvidence：按 Title 查证",
+        "operators": {
+          "OR": 1,
+          "LIKE": 1
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:3fdcd8a2f3369e6ed4b8:attempt:11",
+          "LIKE": "excytin-episodes-v1:episode:3fdcd8a2f3369e6ed4b8:attempt:11"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 14
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 36,
+      "name": "根据活动类型、目标进程命令内容查证进程活动",
+      "status": "candidate",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "DeviceProcessEvents：按 ActionType、ProcessCommandLine 查证",
+      "source_predicate_audit": {
+        "name": "根据活动类型、目标进程命令内容查证进程活动",
+        "source_pattern": "DeviceProcessEvents：按 ActionType、ProcessCommandLine 查证",
+        "operators": {
+          "OR": 2,
+          "LIKE": 2
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:4822c34d5a2e9be58747:attempt:05",
+          "LIKE": "excytin-episodes-v1:episode:4822c34d5a2e9be58747:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 12
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "parent_scope_refs",
+          "severity": "P2",
+          "finding": "目标进程和父/发起进程共用泛化读信息操作；涉及运行账户时引用仅有目标账户，缺少父/发起进程账户与创建时间。",
+          "recommendation": "按待查目标明确对象，补充必要引用或收窄目标，避免字段角色混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 37,
+      "name": "根据用户显示名称、用户登录账号查证账号登录",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "SigninLogs：按 UserDisplayName、UserPrincipalName 查证",
+      "source_predicate_audit": {
+        "name": "根据用户显示名称、用户登录账号查证账号登录",
+        "source_pattern": "SigninLogs：按 UserDisplayName、UserPrincipalName 查证",
+        "operators": {
+          "OR": 2,
+          "LIKE": 1
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:531896415e67e87a2e8b:attempt:08",
+          "LIKE": "excytin-episodes-v1:episode:531896415e67e87a2e8b:attempt:08"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 38,
+      "name": "根据用户登录账号查证账号登录",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "SigninLogs：按 UserPrincipalName 查证",
+      "source_predicate_audit": {
+        "name": "根据用户登录账号查证账号登录",
+        "source_pattern": "SigninLogs：按 UserPrincipalName 查证",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 6
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 39,
+      "name": "根据登录来源地址查证账号登录",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 9,
+        "incidents": 2
+      },
+      "source_pattern": "SigninLogs：按 IPAddress 查证",
+      "source_predicate_audit": {
+        "name": "根据登录来源地址查证账号登录",
+        "source_pattern": "SigninLogs：按 IPAddress 查证",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 6
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 40,
+      "name": "根据目标进程命令内容查证告警证据",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "AlertEvidence：按 ProcessCommandLine 查证",
+      "source_predicate_audit": {
+        "name": "根据目标进程命令内容查证告警证据",
+        "source_pattern": "AlertEvidence：按 ProcessCommandLine 查证",
+        "operators": {
+          "LIKE": 2
+        },
+        "examples": {
+          "LIKE": "excytin-episodes-v1:episode:8d93ddc59c1695c9c5ef:attempt:13"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 13
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 41,
+      "name": "根据目标进程命令内容查证进程活动",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 6,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceProcessEvents：按 ProcessCommandLine 查证",
+      "source_predicate_audit": {
+        "name": "根据目标进程命令内容查证进程活动",
+        "source_pattern": "DeviceProcessEvents：按 ProcessCommandLine 查证",
+        "operators": {
+          "LIKE": 6,
+          "OR": 2
+        },
+        "examples": {
+          "LIKE": "excytin-episodes-v1:episode:a5862babde2ac9271d86:attempt:03",
+          "OR": "excytin-episodes-v1:episode:d22c442c4b3f6fba66b4:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 11
+      },
+      "findings": [
+        {
+          "code": "parent_scope_refs",
+          "severity": "P2",
+          "finding": "目标进程和父/发起进程共用泛化读信息操作；涉及运行账户时引用仅有目标账户，缺少父/发起进程账户与创建时间。",
+          "recommendation": "按待查目标明确对象，补充必要引用或收窄目标，避免字段角色混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 42,
+      "name": "根据目标进程编号查证进程活动",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceProcessEvents：按 ProcessId 查证",
+      "source_predicate_audit": {
+        "name": "根据目标进程编号查证进程活动",
+        "source_pattern": "DeviceProcessEvents：按 ProcessId 查证",
+        "operators": {
+          "IN": 1
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:ebdab368fd2b8e06aab4:attempt:02"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 11
+      },
+      "findings": [
+        {
+          "code": "pid_scope",
+          "severity": "P1",
+          "finding": "仅要求已知进程编号即可通过前提核对，但语义记忆要求设备和创建时间限定进程实例；未规定多候选时只返回候选。",
+          "recommendation": "明确设备与时间范围或先消歧；缺少范围时只允许候选检索，不做唯一归因。"
+        },
+        {
+          "code": "parent_scope_refs",
+          "severity": "P2",
+          "finding": "目标进程和父/发起进程共用泛化读信息操作；涉及运行账户时引用仅有目标账户，缺少父/发起进程账户与创建时间。",
+          "recommendation": "按待查目标明确对象，补充必要引用或收窄目标，避免字段角色混淆。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 43,
+      "name": "根据网址查证邮件链接",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 5,
+        "incidents": 2
+      },
+      "source_pattern": "EmailUrlInfo：按 Url 查证",
+      "source_predicate_audit": {
+        "name": "根据网址查证邮件链接",
+        "source_pattern": "EmailUrlInfo：按 Url 查证",
+        "operators": {
+          "IN": 1
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:990bd5315b316b9a319e:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 6
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 44,
+      "name": "根据网址查证链接点击",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 7,
+        "incidents": 3
+      },
+      "source_pattern": "UrlClickEvents：按 Url 查证",
+      "source_predicate_audit": {
+        "name": "根据网址查证链接点击",
+        "source_pattern": "UrlClickEvents：按 Url 查证",
+        "operators": {
+          "LIKE": 2
+        },
+        "examples": {
+          "LIKE": "excytin-episodes-v1:episode:eb28c655c1177a182c9f:attempt:03"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 7
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 45,
+      "name": "根据设备名称查证告警证据",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "AlertEvidence：按 DeviceName 查证",
+      "source_predicate_audit": {
+        "name": "根据设备名称查证告警证据",
+        "source_pattern": "AlertEvidence：按 DeviceName 查证",
+        "operators": {
+          "LIKE": 1
+        },
+        "examples": {
+          "LIKE": "excytin-episodes-v1:episode:bc7237ef6b084e1f42bb:attempt:08"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 13
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 46,
+      "name": "根据设备名称查证网络连接",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceNetworkEvents：按 DeviceName 查证",
+      "source_predicate_audit": {
+        "name": "根据设备名称查证网络连接",
+        "source_pattern": "DeviceNetworkEvents：按 DeviceName 查证",
+        "operators": {
+          "IN": 1
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:4a75af4ad6d009bdb086:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 10
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 47,
+      "name": "根据设备标识查证设备信息",
+      "status": "candidate",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "DeviceInfo：按 DeviceId 查证",
+      "source_predicate_audit": {
+        "name": "根据设备标识查证设备信息",
+        "source_pattern": "DeviceInfo：按 DeviceId 查证",
+        "operators": {
+          "IN": 2
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:7f4d525d2c3ae13f8459:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 6
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 48,
+      "name": "根据远端网络地址、远端网址查证网络连接",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceNetworkEvents：按 RemoteIP、RemoteUrl 查证",
+      "source_predicate_audit": {
+        "name": "根据远端网络地址、远端网址查证网络连接",
+        "source_pattern": "DeviceNetworkEvents：按 RemoteIP、RemoteUrl 查证",
+        "operators": {
+          "OR": 2,
+          "NOT": 1
+        },
+        "examples": {
+          "OR": "excytin-episodes-v1:episode:484d2ae9ed3adcf68932:attempt:05",
+          "NOT": "excytin-episodes-v1:episode:484d2ae9ed3adcf68932:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 10
+      },
+      "findings": [
+        {
+          "code": "predicate_logic",
+          "severity": "P1",
+          "finding": "历史查询含跨字段 OR，但当前将所有列名翻译为必须已知的独立输入，丢失共享线索、备选匹配的语义。",
+          "recommendation": "按谓词和调查意图重建：共同关键词作为输入，明确在多个候选位置搜索；不能仅按字段集合生成前提。"
+        },
+        {
+          "code": "presence_not_value",
+          "severity": "P1",
+          "finding": "历史支持包含非空探查，当前却要求预先知道待发现的信息值，混淆发现与已知值筛选。",
+          "recommendation": "将非空探查与已知值匹配拆开，重新统计各自训练支持，必要时降为候选。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 49,
+      "name": "根据远端网络地址查证告警证据",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 6,
+        "incidents": 4
+      },
+      "source_pattern": "AlertEvidence：按 RemoteIP 查证",
+      "source_predicate_audit": {
+        "name": "根据远端网络地址查证告警证据",
+        "source_pattern": "AlertEvidence：按 RemoteIP 查证",
+        "operators": {
+          "NOT": 1,
+          "IN": 1
+        },
+        "examples": {
+          "NOT": "excytin-episodes-v1:episode:5385db06cb7ed4a86783:attempt:12",
+          "IN": "excytin-episodes-v1:episode:e66d4dcc9d5c20e2d1ad:attempt:08"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 13
+      },
+      "findings": [
+        {
+          "code": "mixed_nonempty",
+          "severity": "P2",
+          "finding": "该模式的来源中也有非空或否定谓词；现有输入说明仅覆盖已知值查证，支持次数不能全部解释为同一语义的重复。",
+          "recommendation": "回查谓词后拆分来源，保留真正匹配当前目标的支持记录。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 50,
+      "name": "根据远端网络地址查证网络连接",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "未发现条目级明显问题",
+      "severity": "none",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 3,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceNetworkEvents：按 RemoteIP 查证",
+      "source_predicate_audit": {
+        "name": "根据远端网络地址查证网络连接",
+        "source_pattern": "DeviceNetworkEvents：按 RemoteIP 查证",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 10
+      },
+      "findings": [],
+      "note": "未发现明显问题不等于实测正确率保证；是否唯一定位取决于本次范围和结果。"
+    },
+    {
+      "index": 51,
+      "name": "根据邮件头中的消息标识查证邮件投递后处置",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 5,
+        "incidents": 2
+      },
+      "source_pattern": "EmailPostDeliveryEvents：按 InternetMessageId 查证",
+      "source_predicate_audit": {
+        "name": "根据邮件头中的消息标识查证邮件投递后处置",
+        "source_pattern": "EmailPostDeliveryEvents：按 InternetMessageId 查证",
+        "operators": {
+          "IN": 2
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:c3fe59ba408ea50ae156:attempt:05"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 8
+      },
+      "findings": [
+        {
+          "code": "action_outcome",
+          "severity": "P2",
+          "finding": "目标涉及投递后处置，但语义引用遗漏 ActionResult；SM 的 Action 说明要求结合该字段区分尝试动作和实际生效。",
+          "recommendation": "补充 ActionResult 引用，说明何时核对动作结果与目标收件人。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 52,
+      "name": "根据邮件头中的消息标识查证邮件详情",
+      "status": "candidate",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "EmailEvents：按 InternetMessageId 查证",
+      "source_predicate_audit": {
+        "name": "根据邮件头中的消息标识查证邮件详情",
+        "source_pattern": "EmailEvents：按 InternetMessageId 查证",
+        "operators": {
+          "IN": 2
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:ca7d41f83fdb790c399a:attempt:07"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 11
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        },
+        {
+          "code": "goal_operation_gap",
+          "severity": "P2",
+          "finding": "目标包括威胁判定，但操作枚举发件人、收件人、投递情况，未包含威胁判定。",
+          "recommendation": "统一操作与目标范围，或拆分为更具体目标。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 53,
+      "name": "根据邮件系统分配的消息标识查证邮件投递后处置",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 3,
+        "incidents": 2
+      },
+      "source_pattern": "EmailPostDeliveryEvents：按 NetworkMessageId 查证",
+      "source_predicate_audit": {
+        "name": "根据邮件系统分配的消息标识查证邮件投递后处置",
+        "source_pattern": "EmailPostDeliveryEvents：按 NetworkMessageId 查证",
+        "operators": {
+          "IN": 2
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:222236c5dccd68647462:attempt:08"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 8
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        },
+        {
+          "code": "action_outcome",
+          "severity": "P2",
+          "finding": "目标涉及投递后处置，但语义引用遗漏 ActionResult；SM 的 Action 说明要求结合该字段区分尝试动作和实际生效。",
+          "recommendation": "补充 ActionResult 引用，说明何时核对动作结果与目标收件人。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 54,
+      "name": "根据邮件系统分配的消息标识查证邮件详情",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 7,
+        "incidents": 2
+      },
+      "source_pattern": "EmailEvents：按 NetworkMessageId 查证",
+      "source_predicate_audit": {
+        "name": "根据邮件系统分配的消息标识查证邮件详情",
+        "source_pattern": "EmailEvents：按 NetworkMessageId 查证",
+        "operators": {
+          "IN": 3
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:c3fe59ba408ea50ae156:attempt:09"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 10
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        },
+        {
+          "code": "goal_operation_gap",
+          "severity": "P2",
+          "finding": "目标包括威胁判定，但操作枚举发件人、收件人、投递情况，未包含威胁判定。",
+          "recommendation": "统一操作与目标范围，或拆分为更具体目标。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 55,
+      "name": "根据邮件系统分配的消息标识查证邮件链接",
+      "status": "active",
+      "family": "lookup",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 12,
+        "incidents": 4
+      },
+      "source_pattern": "EmailUrlInfo：按 NetworkMessageId 查证",
+      "source_predicate_audit": {
+        "name": "根据邮件系统分配的消息标识查证邮件链接",
+        "source_pattern": "EmailUrlInfo：按 NetworkMessageId 查证",
+        "operators": {
+          "IN": 4
+        },
+        "examples": {
+          "IN": "excytin-episodes-v1:episode:c3fe59ba408ea50ae156:attempt:06"
+        }
+      },
+      "semantic_ref_counts": {
+        "tables": 1,
+        "fields": 6
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 56,
+      "name": "确认调查所需的记录结构",
+      "status": "active",
+      "family": "schema",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 215,
+        "incidents": 8
+      },
+      "source_pattern": "陌生日志表：先确认字段再查询",
+      "source_predicate_audit": {
+        "name": "确认调查所需的记录结构",
+        "source_pattern": "陌生日志表：先确认字段再查询",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 22,
+        "fields": 183
+      },
+      "findings": [
+        {
+          "code": "schema_routing",
+          "severity": "P1",
+          "finding": "通用结构确认绑定历史出现的22张表；在没有显式表提示时，引用表被优先截取，可能排除当前任务明确要求但未列入引用的表。",
+          "recommendation": "根据当前问题/失败查询确定目标表，再加载其结构；通用条目不绑定历史表全集。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 57,
+      "name": "通过告警标识从告警概要关联告警证据",
+      "status": "active",
+      "family": "pivot",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 72,
+        "incidents": 8
+      },
+      "source_pattern": "AlertInfo → AlertEvidence (alert_id)",
+      "source_predicate_audit": {
+        "name": "通过告警标识从告警概要关联告警证据",
+        "source_pattern": "AlertInfo → AlertEvidence (alert_id)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 2,
+        "fields": 20
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 58,
+      "name": "通过用户登录账号从风险账号关联账号登录",
+      "status": "candidate",
+      "family": "pivot",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "AADRiskyUsers → SigninLogs (account_upn)",
+      "source_predicate_audit": {
+        "name": "通过用户登录账号从风险账号关联账号登录",
+        "source_pattern": "AADRiskyUsers → SigninLogs (account_upn)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 2,
+        "fields": 11
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 59,
+      "name": "通过设备名称从进程活动关联网络连接",
+      "status": "active",
+      "family": "pivot",
+      "verdict": "需要优先修正",
+      "severity": "P1",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 2
+      },
+      "source_pattern": "DeviceProcessEvents → DeviceNetworkEvents (device_name)",
+      "source_predicate_audit": {
+        "name": "通过设备名称从进程活动关联网络连接",
+        "source_pattern": "DeviceProcessEvents → DeviceNetworkEvents (device_name)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 2,
+        "fields": 21
+      },
+      "findings": [
+        {
+          "code": "process_network_scope",
+          "severity": "P1",
+          "finding": "输入只要求设备名称，操作却要求判断哪些连接属于目标进程；缺少目标进程身份。网络引用还遗漏发起进程创建时间。",
+          "recommendation": "补足目标进程、设备和时间前提及关联字段；否则将目标收窄为设备连接枚举。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 60,
+      "name": "通过邮件头中的消息标识从邮件投递后处置关联邮件详情",
+      "status": "candidate",
+      "family": "pivot",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "EmailPostDeliveryEvents → EmailEvents (internet_message_id)",
+      "source_predicate_audit": {
+        "name": "通过邮件头中的消息标识从邮件投递后处置关联邮件详情",
+        "source_pattern": "EmailPostDeliveryEvents → EmailEvents (internet_message_id)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 2,
+        "fields": 19
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 61,
+      "name": "通过邮件系统分配的消息标识从邮件投递后处置关联邮件详情",
+      "status": "active",
+      "family": "pivot",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 4,
+        "incidents": 2
+      },
+      "source_pattern": "EmailPostDeliveryEvents → EmailEvents (network_message_id)",
+      "source_predicate_audit": {
+        "name": "通过邮件系统分配的消息标识从邮件投递后处置关联邮件详情",
+        "source_pattern": "EmailPostDeliveryEvents → EmailEvents (network_message_id)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 2,
+        "fields": 18
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 62,
+      "name": "通过邮件系统分配的消息标识从邮件投递后处置关联邮件链接",
+      "status": "active",
+      "family": "pivot",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 11,
+        "incidents": 4
+      },
+      "source_pattern": "EmailPostDeliveryEvents → EmailUrlInfo (network_message_id)",
+      "source_predicate_audit": {
+        "name": "通过邮件系统分配的消息标识从邮件投递后处置关联邮件链接",
+        "source_pattern": "EmailPostDeliveryEvents → EmailUrlInfo (network_message_id)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 2,
+        "fields": 14
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 63,
+      "name": "通过邮件系统分配的消息标识从邮件投递后处置关联邮件链接关联邮件详情",
+      "status": "candidate",
+      "family": "chain",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 2,
+        "incidents": 1
+      },
+      "source_pattern": "EmailPostDeliveryEvents → EmailUrlInfo → EmailEvents (network_message_id / network_message_id)",
+      "source_predicate_audit": {
+        "name": "通过邮件系统分配的消息标识从邮件投递后处置关联邮件链接关联邮件详情",
+        "source_pattern": "EmailPostDeliveryEvents → EmailUrlInfo → EmailEvents (network_message_id / network_message_id)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 3,
+        "fields": 24
+      },
+      "findings": [
+        {
+          "code": "unnecessary_chain",
+          "severity": "P2",
+          "finding": "已经知道同一邮件标识即可直接查询邮件详情，片段仍要求经过链接；没有链接的邮件可能被不必要的关联排除。",
+          "recommendation": "并入直接邮件查证；仅当当前目标确实需要链接证据时保留链接操作。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 64,
+      "name": "通过邮件系统分配的消息标识从邮件链接关联邮件投递后处置",
+      "status": "active",
+      "family": "pivot",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 3,
+        "incidents": 2
+      },
+      "source_pattern": "EmailUrlInfo → EmailPostDeliveryEvents (network_message_id)",
+      "source_predicate_audit": {
+        "name": "通过邮件系统分配的消息标识从邮件链接关联邮件投递后处置",
+        "source_pattern": "EmailUrlInfo → EmailPostDeliveryEvents (network_message_id)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 2,
+        "fields": 14
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        },
+        {
+          "code": "action_outcome",
+          "severity": "P2",
+          "finding": "目标涉及投递后处置，但语义引用遗漏 ActionResult；SM 的 Action 说明要求结合该字段区分尝试动作和实际生效。",
+          "recommendation": "补充 ActionResult 引用，说明何时核对动作结果与目标收件人。"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "index": 65,
+      "name": "通过邮件系统分配的消息标识从邮件链接关联邮件详情",
+      "status": "active",
+      "family": "pivot",
+      "verdict": "需要优化或合并",
+      "severity": "P2",
+      "checks": {
+        "six_fields_and_types": "pass",
+        "natural_language_name_goal_operation": "pass",
+        "semantic_reference_existence": "pass",
+        "source_attempt_and_counts": "pass",
+        "activation_support_threshold": "pass"
+      },
+      "support": {
+        "episodes": 5,
+        "incidents": 2
+      },
+      "source_pattern": "EmailUrlInfo → EmailEvents (network_message_id)",
+      "source_predicate_audit": {
+        "name": "通过邮件系统分配的消息标识从邮件链接关联邮件详情",
+        "source_pattern": "EmailUrlInfo → EmailEvents (network_message_id)",
+        "operators": {},
+        "examples": {}
+      },
+      "semantic_ref_counts": {
+        "tables": 2,
+        "fields": 16
+      },
+      "findings": [
+        {
+          "code": "duplicate",
+          "severity": "P2",
+          "finding": "已有同一关联值时，来源不同的关联片段与直接查证片段提供基本相同的剩余操作；目录多条竞争且重复引用源表。",
+          "recommendation": "按目标操作和实际前提合并，历史来源保留在独立审计；合并时对来源去重重新统计支持。"
+        }
+      ],
+      "note": ""
+    }
+  ],
+  "source_examples_redacted": [
+    {
+      "source_pattern": "EmailEvents：按 ThreatNames、ThreatTypes 查证",
+      "predicate": "ThreatTypes IS NOT NULL OR ThreatNames IS NOT NULL",
+      "finding": "查询具有威胁信息的邮件，并不需要事先知道具体威胁名称或类型。"
+    },
+    {
+      "source_pattern": "DeviceNetworkEvents：按 RemoteIP、RemoteUrl 查证",
+      "predicates": [
+        "RemoteIP IS NOT NULL OR RemoteUrl IS NOT NULL",
+        "RemoteIP = '<地址线索>' OR RemoteUrl = '<网址线索>'"
+      ],
+      "finding": "非空探查和已知值匹配被归为同一操作。"
+    },
+    {
+      "source_pattern": "DeviceProcessEvents：按 FileName、ProcessCreationTime、ProcessId 查证",
+      "predicate": "FileName = '<文件名>' AND NOT (ProcessId = '<进程编号>' AND ProcessCreationTime = '<创建时间>')",
+      "finding": "此来源排除一个已知实例，不是定位该实例。"
+    },
+    {
+      "source_pattern": "AlertInfo：按 Category、Title 查证",
+      "predicate": "Title LIKE '<线索>' OR Category LIKE '<线索>'",
+      "finding": "跨两个候选位置搜索线索，不要求同时已知目标标题和类别。"
+    },
+    {
+      "source_pattern": "DeviceProcessEvents：按 InitiatingProcessCommandLine、ProcessCommandLine 查证",
+      "predicate": "ProcessCommandLine LIKE '<线索>' OR InitiatingProcessCommandLine LIKE '<线索>'",
+      "finding": "可在目标/发起进程命令中搜索线索，不要求已掌握两者命令内容。"
+    }
+  ]
+}

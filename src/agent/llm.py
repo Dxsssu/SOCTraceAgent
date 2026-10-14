@@ -18,7 +18,7 @@ load_dotenv()
 class LLMConfig:
     """LLM 配置。
 
-    当前通过 OpenAI Python SDK 调用 ParaTera 的兼容接口。
+    通过 OpenAI Python SDK 调用 ParaTera、Fancybag 或 XTY 的兼容接口。
     """
 
     api_key: str
@@ -32,33 +32,32 @@ class LLMConfig:
 
     @classmethod
     def from_env(cls) -> LLMConfig:
-        api_key = os.environ.get("PARATERA_API_KEY", "").strip()
+        provider = os.environ.get("SOCAGENT_LLM_PROVIDER", "paratera").strip().lower()
+        defaults = {
+            "paratera": ("https://ai.paratera.com/v1/", "DeepSeek-V4.1-Flash", "GLM-Embedding-3"),
+            "fancybag": ("https://sub.fancybag.cn/v1", "deepseek-v4.1-flash", ""),
+            "xty": ("https://api.xty.app/v1", "deepseek-v4.1-flash", ""),
+        }
+        if provider not in defaults:
+            raise ValueError("SOCAGENT_LLM_PROVIDER must be paratera, fancybag or xty")
+        prefix = provider.upper()
+        base_url, model, embedding_model = defaults[provider]
+        api_key = os.environ.get(f"{prefix}_API_KEY", "").strip()
         if not api_key:
-            raise ValueError("缺少环境变量 PARATERA_API_KEY")
+            raise ValueError(f"缺少环境变量 {prefix}_API_KEY")
 
         return cls(
             api_key=api_key,
-            base_url=os.environ.get(
-                "PARATERA_BASE_URL", "https://ai.paratera.com/v1/"
-            ).strip(),
-            model=os.environ.get(
-                "PARATERA_MODEL", "DeepSeek-V4.1-Flash"
-            ).strip(),
-            reasoning_effort=os.environ.get(
-                "PARATERA_REASONING_EFFORT", "low"
-            ).strip(),
-            thinking_enabled=os.environ.get(
-                "PARATERA_THINKING_ENABLED", "false"
-            ).strip().lower()
+            base_url=os.environ.get(f"{prefix}_BASE_URL", base_url).strip(),
+            model=os.environ.get(f"{prefix}_MODEL", model).strip(),
+            reasoning_effort=os.environ.get(f"{prefix}_REASONING_EFFORT", "low").strip(),
+            thinking_enabled=os.environ.get(f"{prefix}_THINKING_ENABLED", "false").strip().lower()
             in {"1", "true", "yes", "on"},
-            request_timeout_seconds=float(
-                os.environ.get("PARATERA_REQUEST_TIMEOUT_SECONDS", "120")
-            ),
-            max_retries=max(0, int(os.environ.get("PARATERA_MAX_RETRIES", "0"))),
-            embedding_model=os.environ.get(
-                "PARATERA_EMBEDDING_MODEL", "GLM-Embedding-3"
-            ).strip(),
+            request_timeout_seconds=float(os.environ.get(f"{prefix}_REQUEST_TIMEOUT_SECONDS", "120")),
+            max_retries=max(0, int(os.environ.get(f"{prefix}_MAX_RETRIES", "0"))),
+            embedding_model=os.environ.get(f"{prefix}_EMBEDDING_MODEL", embedding_model).strip(),
         )
+
 
 
 class LLMClient:
@@ -77,8 +76,11 @@ class LLMClient:
         """使用共享接口和凭据生成向量，按输入顺序返回；空批次不发送请求。"""
         if not texts:
             return []
+        embedding_model = model or self.config.embedding_model
+        if not embedding_model:
+            raise ValueError("当前接口未配置 embedding 模型，请设置对应的 *_EMBEDDING_MODEL 或显式传入 model")
         response = self.client.embeddings.create(
-            model=model or self.config.embedding_model,
+            model=embedding_model,
             input=texts,
         )
         return [item.embedding for item in sorted(response.data, key=lambda item: item.index)]
@@ -113,10 +115,16 @@ class LLMClient:
             {"type": "enabled" if self.config.thinking_enabled else "disabled"},
         )
         request["extra_body"] = payload_extra_body
+        from src.agent.request_limits import memory_output_limit
+        memory_limit = memory_output_limit(system_prompt)
+        if memory_limit:
+            request["max_tokens"] = memory_limit
+            payload_extra_body["thinking"] = {"type": "disabled"}
         limiter = get_rate_limiter()
         output_reserve = int(os.environ.get("PARATERA_OUTPUT_TOKEN_RESERVE", "16384"))
         if output_reserve <= 0:
             raise ValueError("PARATERA_OUTPUT_TOKEN_RESERVE must be positive")
+        output_reserve = request.get("max_tokens", output_reserve)
         estimate = sum(len(message["content"].encode("utf-8")) + 16 for message in messages) + output_reserve
         reservation = limiter.acquire(estimate)
         actual_tokens = None

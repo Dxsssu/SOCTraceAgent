@@ -4,6 +4,7 @@ import threading
 from typing import Any
 
 from src.agent.executor import ExecutorRuntime
+from src.agent.llm import call_llm
 from src.agent.planner import PlannerRuntime
 from src.agent.reviewer import ReviewerRuntime
 from src.memory.working_memory import TTTStore
@@ -26,7 +27,9 @@ class SOCTraceWorkflow:
         self.storage = SQLiteStorage(db_path)
         self.ttt_store = TTTStore(db_path)
         self.bus = SQLiteMessageBus(db_path)
-        self.memory_contexts = memory_contexts or MemoryContextService()
+        self.memory_contexts = memory_contexts or MemoryContextService(
+            procedure_selector=call_llm
+        )
         shared: dict[str, Any] = {
             "storage": self.storage,
             "ttt_store": self.ttt_store,
@@ -39,11 +42,9 @@ class SOCTraceWorkflow:
         )
         self.executor = ExecutorRuntime(
             **shared,
-            context_provider=self.memory_contexts.executor_view(),
         )
         self.reviewer = ReviewerRuntime(
             **shared,
-            context_provider=self.memory_contexts.reviewer_view(),
         )
         self._runtimes = {
             RoleName.PLANNER: self.planner,

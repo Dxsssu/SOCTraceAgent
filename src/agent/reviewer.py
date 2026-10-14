@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from src.schema.investigation import task_input
+from src.schema.itt import review_payload
+from src.schema.reviewer_output import parse_review
+from src.schema import TracebackTaskTree
+
 import json
 import logging
 import time
@@ -18,47 +23,16 @@ logger = logging.getLogger(__name__)
 
 
 REVIEWER_SYSTEM_PROMPT = """
-你是多智能体驱动的 SOC 智能溯源系统中的 Reviewer。
-
-## 角色定位
-审查当前 L3 的执行结果，对照原始问题判断证据是否足以作答，并向 Planner 提供事实、缺口和后续建议。
-
-## 输入信息
-- 原始事件的 context 和 question。
-- 当前 TTT、真实执行记录及其 execution_id、查询状态和结果限制。
-- Workflow 按角色权限提供的 Semantic Memory。
-
-## 工作流程
-1. 区分执行错误、空结果和有效记录，提取有真实结果支持的事实。
-2. 核对原始问题要求的实体、属性及关联关系，说明缺失信息、冲突和截断限制。
-3. 判断应继续调查、提交答案，还是因无可行调查方向而停止，并给出理由。
-
-## 约束条件
-- Semantic Memory 只用于解释表和字段，不是案件证据；不使用 Procedural Memory 或 Episodic Memory。
-- 不编造记录、实体值或证据引用；只引用输入中真实 execution_id。
-- L3 done 不等于问题解决；查询成功不等于结论正确；空结果不能直接否定假设。
-- 不修改 TTT，不生成 SQL 或工具参数。后续建议描述需要查明的事实，由 Planner 安排任务。
-- ready_to_submit 需要原始问题已有充分证据且无未解释的关键冲突；continue 表示仍有缺口且存在调查方向；cannot_continue 表示仍缺证据但已无可行方向。
-
-## 输出格式
-只输出一个合法 YAML 对象，不使用 Markdown 代码围栏或额外说明；解释写入指定字段。
-response_type 固定为 ROUND_REVIEW。
-decision 为 ready_to_submit、continue 或 cannot_continue。
-reasonings 为简短字符串；findings、gaps、recommendations、answer_facts 均为顶层字符串列表，无内容时用 []。
-不要把 findings/gaps/recommendations 的 YAML 文本嵌入 reasonings 字符串。
-findings 记录已确认事实；gaps 记录缺失或冲突；recommendations 记录后续方向；answer_facts 记录可用于最终答案的已确认内容。
-
-## 输出示例
-response_type: ROUND_REVIEW
-decision: continue
-reasonings: 已定位相关进程，但尚缺原始问题要求的创建时间
-findings:
-  - E1 提供了相关进程的标识和命令行
-gaps:
-  - 尚无进程创建时间的证据
-recommendations:
-  - 查询该进程的创建记录并核对设备与时间范围
-answer_facts: []
+# 角色定位
+你是 Reviewer，总结当前任务的执行结果，并给出后续建议。
+# 工作内容
+依据真实执行记录概括结果、缺口或截断限制，引用 execution_id，不编造事实。空结果不等于问题解决。
+对照 question 和已有证据提出下一步；证据足够回答问题时，建议只填“提交答案”；证据不足且无可行方向时，只填“停止调查”。不生成 SQL。
+# 输出格式
+仅输出以下两个 YAML 字符串字段，不加围栏、列表或其他字段。
+summary 最多 80 字符，suggestion 最多 60 字符；汉字、字母、数字、标点和空格均计数。
+summary: "当前执行结果总结"
+suggestion: "具体后续建议、提交答案或停止调查"
 """.strip()
 
 
@@ -139,12 +113,6 @@ class ReviewerRuntime:
         latest_ttt = self.ttt_store.get_latest_ttt(event.event_id)
         if latest_ttt is None:
             return False
-        workflow_context = self.context_provider.build(
-            event,
-            ttt=latest_ttt,
-            executions=executions,
-        )
-
         self._publish(
             event_id=event.event_id,
             round_id=event.current_round,
@@ -156,7 +124,6 @@ class ReviewerRuntime:
                 event,
                 latest_ttt.to_dict(),
                 executions,
-                workflow_context=workflow_context,
             )
         except Exception as exc:
             logger.exception("Reviewer round review generation failed")
@@ -200,46 +167,20 @@ class ReviewerRuntime:
         *,
         workflow_context: dict[str, Any] | None = None,
     ) -> RoundReview:
-        execution_payload = [execution.to_dict() for execution in executions]
-        user_prompt = "\n".join(
-            [
-                "请根据以下事件、TTT 和本轮执行记录，输出 YAML 形式的轮次总结。",
-                "Workflow 仅提供 Semantic Memory 用于解释表字段含义；不得将 Schema 描述当作当前事件证据。",
-                json.dumps(
-                    {"workflow_memory_context": workflow_context or {}},
-                    ensure_ascii=False,
-                    indent=2,
-                ),
-                json.dumps(event.to_dict(), ensure_ascii=False, indent=2),
-                json.dumps(ttt_payload, ensure_ascii=False, indent=2),
-                json.dumps(execution_payload, ensure_ascii=False, indent=2),
-            ]
-        )
+        user_prompt = json.dumps({
+            **task_input(event),
+            **review_payload(TracebackTaskTree.from_dict(ttt_payload), executions),
+        }, ensure_ascii=False)
         response_text = call_llm(
             self.agent.system_prompt,
             user_prompt,
         )
-        parsed = parse_yaml_response(response_text)
-        if not parsed:
-            raise ValueError("Reviewer returned empty or non-YAML content")
-        findings = tuple(str(item) for item in (parsed.get("findings") or []))
-        gaps = tuple(str(item) for item in (parsed.get("gaps") or []))
-        recommendations = tuple(
-            str(item) for item in (parsed.get("recommendations") or [])
-        )
-        reasonings = str(parsed.get("reasonings") or "").strip()
-        if reasonings and not (findings or gaps or recommendations):
-            findings = (reasonings,)
-        if not (findings or gaps or recommendations):
-            raise ValueError(
-                "Reviewer response missing reasonings or legacy review fields"
-            )
+        review = parse_review(parse_yaml_response(response_text))
         return RoundReview(
             event_id=event.event_id,
             round_id=event.current_round,
-            findings=findings,
-            gaps=gaps,
-            recommendations=recommendations,
+            findings=(review["summary"],),
+            recommendations=(review["suggestion"],),
             created_by=self.agent.role_name,
             created_at=utc_now(),
             updated_at=utc_now(),

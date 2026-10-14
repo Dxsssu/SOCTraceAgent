@@ -1,0 +1,135 @@
+{
+  "case_id": "incident_322-q0016",
+  "retrieval_source": "outputs/planner_checks/question-led-pm-protocol-repair/cases/incident_322-q0016.json",
+  "memory": {
+    "procedural_memory": {
+      "procedures": [
+        {
+          "name": "根据网址查证邮件链接",
+          "status": "active",
+          "goal": "根据已知的网址，定位邮件中的 网址 和对应消息标识。",
+          "input_slots": {
+            "网址": "本次调查已提供或已查得网址的具体内容。"
+          },
+          "operations": "用已知的网址筛选邮件链接，在当前调查范围内读取问题所需的信息。",
+          "semantic_refs": [
+            {
+              "table": "EmailUrlInfo",
+              "fields": [
+                "NetworkMessageId",
+                "TenantId",
+                "TimeGenerated",
+                "Timestamp",
+                "Url",
+                "UrlDomain"
+              ]
+            }
+          ]
+        }
+      ],
+      "application": {
+        "name": "根据网址查证邮件链接",
+        "decision": "use",
+        "target_question": "Can you determine the email address of the recipient who received the email containing the malicious URL which was later clicked on?",
+        "bindings": {
+          "网址": {
+            "value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+            "source": "/context",
+            "quote": "A security incident was reported where a malicious URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` was clicked on a device with the hostname `vnevado-win11h`.",
+            "role": "被点击的恶意邮件链接，作为筛选 EmailUrlInfo 的 URL 值"
+          }
+        },
+        "missing": [],
+        "expected_observation": "返回 EmailUrlInfo 中 URL 等于该恶意 URL 的记录，包含 NetworkMessageId 等字段，作为后续关联 EmailEvents 获取收件人邮箱的键。",
+        "output_refs": [
+          {
+            "table": "EmailUrlInfo",
+            "fields": [
+              "NetworkMessageId",
+              "TenantId",
+              "TimeGenerated",
+              "Timestamp",
+              "Url",
+              "UrlDomain"
+            ]
+          }
+        ],
+        "contribution": "该操作用已明确给出的恶意 URL 在 EmailUrlInfo 中定位对应邮件的 NetworkMessageId，得到可验证的关联键，从而缩小到包含该 URL 的邮件，再可进一步查询收件人邮箱。不是用背景值证明答案，而是取得通向目标邮箱的中间键。",
+        "next_step": "在 EmailUrlInfo 表中用 Url = `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` 筛选，读取并记录对应的 NetworkMessageId。",
+        "checks": {
+          "input_roles_supported": true,
+          "no_answer_assumption": true,
+          "preserves_question_scope": true,
+          "evidence_path_supported": true
+        },
+        "limitations": [
+          "本操作只取得 NetworkMessageId，尚不能直接给出收件人邮箱；需用该 NetworkMessageId 关联 EmailEvents 的 RecipientEmailAddress 才能回答目标问题。",
+          "需验证返回的 NetworkMessageId 是否与本次点击事件对应的邮件一致，避免多个邮件共享同一 URL。"
+        ],
+        "reason": "接受：URL 槽有 question/context 的逐字证据，操作能在 EmailUrlInfo 中产生与恶意 URL 相关的候选邮件标识，是通向收件人邮箱的必要中间步骤。",
+        "independent_review": "候选的唯一输入槽“网址”直接取自 context 中逐字给出的恶意 URL，角色是被点击的邮件链接，符合 EmailUrlInfo.Url 的筛选语义。操作在 EmailUrlInfo 中按该 URL 过滤并读取 NetworkMessageId 等字段，能产生一条合理的中间关联键：目标问题要求“收到含恶意 URL 邮件并稍后被点击”的收件人邮箱，而 EmailUrlInfo 正是连接 URL 与 NetworkMessageId 的稳定表，后续可用该 NetworkMessageId 关联 EmailEvents.RecipientEmailAddress。该路径未把背景设备主机名或进程等相邻角色当成答案，也未直接假设收件人值；证据链保留“该 URL 所在邮件”的范围，且局限已注明可能存在多封邮件共享同一 URL，需要后续验证。因此这是当前候选中假设最少、最贴近目标实体且能推进定位收件人邮箱的步骤。"
+      }
+    }
+  },
+  "input": {
+    "context": "A security incident was reported where a malicious URL `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` was clicked on a device with the hostname `vnevado-win11h`. The msedge.exe process was used for this activity, with Process ID 4256. This has triggered multiple alerts including one indicating email messages containing the malicious URL being removed after delivery.",
+    "question": "Can you determine the email address of the recipient who received the email containing the malicious URL which was later clicked on?"
+  },
+  "success": true,
+  "itt": [
+    {
+      "id": "G1",
+      "objective": "Who is the email address of the recipient who received the email containing the malicious URL that was later clicked on?",
+      "status": "todo",
+      "children": [
+        {
+          "id": "F1",
+          "objective": "沿恶意 URL 线索定位包含该 URL 的邮件，查清邮件的 NetworkMessageId，以便关联收件人邮箱",
+          "status": "todo",
+          "children": [
+            {
+              "id": "T1",
+              "objective": "在 EmailUrlInfo 中用恶意 URL 筛选，读取对应的 NetworkMessageId 等字段，得到包含该 URL 的邮件标识",
+              "status": "todo",
+              "semantic_refs": [
+                {
+                  "table": "EmailUrlInfo",
+                  "fields": [
+                    "NetworkMessageId",
+                    "TenantId",
+                    "TimeGenerated",
+                    "Timestamp",
+                    "Url",
+                    "UrlDomain"
+                  ]
+                }
+              ],
+              "execution_code": "",
+              "execution_result": ""
+            }
+          ]
+        },
+        {
+          "id": "F2",
+          "objective": "沿 NetworkMessageId 线索关联邮件事件，查清收到该邮件的收件人邮箱地址",
+          "status": "todo",
+          "children": [
+            {
+              "id": "T2",
+              "objective": "根据 T1 取得的 NetworkMessageId 关联 EmailEvents，读取 RecipientEmailAddress 等字段，确定收到含恶意 URL 邮件的收件人邮箱",
+              "status": "todo",
+              "semantic_refs": [],
+              "execution_code": "",
+              "execution_result": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "calls": 1,
+    "input_tokens": 2303,
+    "output_tokens": 296
+  }
+}

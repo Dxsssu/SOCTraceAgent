@@ -29,17 +29,35 @@ ALL_AGENTS = (*AGENTS, 'paper_baseline', 'ours')
 UPSTREAM = PROJECT_ROOT/'data/excytin-bench/github'
 
 
-def baseline_class():
+def paper_agent_class(module_name, class_name):
     sys.path.insert(0, str(UPSTREAM))
     package = types.ModuleType('secgym.agents')
     package.__path__ = [str(UPSTREAM/'secgym/agents')]
     sys.modules['secgym.agents'] = package
-    module = importlib.import_module('secgym.agents.baseline_agent')
+    module = importlib.import_module(f'secgym.agents.{module_name}')
     # Silence only upstream diagnostic prints. Do not redirect process stdout:
     # concurrent cases and the progress display share it. Full messages remain
     # available through get_logging() in per-case progress/result files.
     module.print = lambda *args, **kwargs: None
-    return module.BaselineAgent
+    return getattr(module, class_name)
+
+
+def baseline_class():
+    return paper_agent_class('baseline_agent', 'BaselineAgent')
+
+
+def prompt_sauce_class():
+    return paper_agent_class('prompt_sauce_agent', 'PromptSauceAgent')
+
+
+def react_class():
+    # Upstream imports an untracked Azure credential module even for OpenAI.
+    # Our transport uses LLMConfig; no Azure client is instantiated.
+    if 'secgym.config_key' not in sys.modules and not (UPSTREAM/'secgym/config_key.py').exists():
+        stub = types.ModuleType('secgym.config_key')
+        stub.api_key = ''
+        sys.modules['secgym.config_key'] = stub
+    return paper_agent_class('react_agent', 'ReActAgent')
 
 
 def select_cases(cases, n=None, seed=20260914):
@@ -52,10 +70,15 @@ def select_cases(cases, n=None, seed=20260914):
     return chosen
 
 
-def model_call(bridge, messages):
+def model_call(bridge, messages, *, stop=None):
     # Bridge performs the one shared quota reservation; do not double-reserve.
+    from src.agent.request_limits import memory_output_limit
+    limit = next((memory_output_limit(m.get('content')) for m in messages if m.get('role') == 'system' and memory_output_limit(m.get('content'))), None)
+    limits = {"max_tokens": limit, "extra_body": {"thinking": {"type": "disabled"}}} if limit else {}
+    if stop is not None:
+        limits["stop"] = stop
     with OpenAI(api_key=bridge.token, base_url=bridge.url+'/v1', timeout=180, max_retries=0) as client:
-        response = client.chat.completions.create(model=bridge.config.model, messages=messages)
+        response = client.chat.completions.create(model=bridge.config.model, messages=messages, **limits)
     return response.choices[0].message.content or ''
 
 
@@ -87,13 +110,35 @@ def run_internal(name, case, output, Baseline, *, max_steps=25, timeout=0, max_l
                             raise InterruptedError('Investigation interrupted')
                         if timeout and time.monotonic()-started > timeout:
                             raise TimeoutError('Investigation exceeded configured timeout')
-                        value = model_call(bridge, messages)
+                        value = (model_call(bridge, messages, stop=["Observation:", "observation:"])
+                                 if name in {"react", "expel"} else model_call(bridge, messages))
                         write_json(path/'usage.json', {'usage': bridge.usage})
                         return value
+                    def act(self, observation):
+                        if name not in {'react', 'expel'}:
+                            return super().act(observation)
+                        from .single_step import act
+                        return act(self, observation, can_submit=any(
+                            a.get('type') == 'execute_sql' and a.get('success')
+                            for a in bridge.actions))
+
+                    def get_logging(self):
+                        result = super().get_logging()
+                        if name in {'react', 'expel'}:
+                            result['boundary_events'] = getattr(self, 'boundary_events', [])
+                        return result
                 workflow = TransportBaseline(config_list=[{'model': config.model, 'api_key': bridge.token,
                     'base_url': bridge.url+'/v1', 'api_type': 'openai'}], cache_seed=41,
                     max_steps=max_steps, temperature=0, retry_num=1)
-                workflow.reset()
+                # Upstream PromptSauce references this attribute at the final step
+                # but never initializes it. Disable forced summaries explicitly;
+                # preserve its prompt/parser and the shared action budget.
+                if name == 'prompt_sauce':
+                    workflow.submit_summary = False
+                if name == "expel":
+                    workflow.reset(question_dict=case.question)
+                else:
+                    workflow.reset()
             client = bridge.app.test_client()
             headers = {'Authorization': 'Bearer '+bridge.token}
             try:

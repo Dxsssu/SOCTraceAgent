@@ -115,6 +115,11 @@ class Bridge:
         body['model'] = self.config.model
         body['temperature'] = 0
         body.update(thinking_parameters(self.config, force_thinking=self.force_thinking))
+        from src.agent.request_limits import memory_output_limit
+        limit = next((memory_output_limit(m.get('content')) for m in body.get('messages', []) if m.get('role') == 'system' and memory_output_limit(m.get('content'))), None)
+        if limit:
+            body['max_tokens'] = limit
+            body['thinking'] = {'type': 'disabled'}
         # Restrict exposed model tools to the benchmark MCP interface. Cline
         # uses a generic MCP dispatcher; Qwen may need tool_search discovery.
         if 'tools' in body:
