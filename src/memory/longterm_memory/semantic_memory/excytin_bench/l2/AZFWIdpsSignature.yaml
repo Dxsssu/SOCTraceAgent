@@ -1,0 +1,47 @@
+table_name: AZFWIdpsSignature
+core_columns:
+- name: Action
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。数据包命中 IDPS 签名后防火墙采取的处理动作（如允许/告警/阻止，取决于配置模式）；用于区分仅检测到的事件与被实际阻断的流量。
+- name: Category
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该数据包记录中所命中 IDPS 签名的类别标签，按威胁类型对检测进行分组；便于在研判时跨签名汇总命中情况。
+- name: Description
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该次命中对应 IDPS 签名的人类可读描述，说明该签名检测的内容；应与 SignatureId 一起理解告警，但不能作为已遭入侵的证据。
+- name: DestinationIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发 IDPS 签名的数据包的目标 IP 地址；可据此排查哪些内网或外部主机接收了匹配某签名的流量。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。被标记数据包的目标端口，标识 DestinationIp 上被访问的服务或监听端口；结合 Protocol 与 Action 可刻画所尝试的活动。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。命中 IDPS 签名的数据包所用网络协议，如 TCP 或 UDP；有助于按传输层区分扫描或漏洞利用类流量模式。
+- name: Severity
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。所命中 IDPS 签名被赋予的严重性等级；用于确定优先排查哪些签名命中，但注意该等级由签名给定，并不代表已确认的影响。
+- name: SignatureId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。匹配到该数据包的 IDPS 签名标识符；可用于关联重复命中、跨源与目标追踪特定检测，并查询该签名的上下文信息。
+- name: SourceIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。命中 IDPS 签名的数据包的源 IP 地址，通常是发起方或外部对端；可据此识别哪些主机产生了被标记的流量。
+- name: SourcePort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。被标记数据包的源端口，通常为临时客户端端口；结合 SourceIp 与 TimeGenerated 可将同一短连接的数据包归为一组。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该记录的代理或采集通道（例如 Azure 诊断类采集）；用于确认日志的接入方式，而非识别防火墙或攻击者。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属的 Log Analytics 工作区 ID；用于将查询限定到正确的工作区，而不是作为 Entra 目录租户标识使用。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙数据平面日志记录创建时的 UTC 时间戳；用于限定查询时间范围、排列命中顺序，并与同期其他日志进行关联。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属日志表的名称；用于过滤或跨表合并查询，而非描述检测本身。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Azure 资源的唯一标识，通常为记录该命中的防火墙；可据此比较不同防火墙资源的 IDPS 活动。

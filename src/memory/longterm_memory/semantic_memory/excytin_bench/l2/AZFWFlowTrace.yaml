@@ -1,0 +1,42 @@
+table_name: AZFWFlowTrace
+core_columns:
+- name: Action
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙对该流执行的操作（如允许或拒绝）；此为名称推断，schema 未列出枚举值。结合 ActionReason 可区分被放行流量与被阻止尝试。
+- name: ActionReason
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。解释防火墙为何记录或处理该流的可读原因，例如附加日志条件。需结合 Action 与资源上下文，以区分日志触发条件与实际执行决策。
+- name: DestinationIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该流目标端点的 IP 地址。可用于发现被重复访问的内部或外部目标、可疑基础设施或数据外泄目的地；应结合 DestinationPort 与 TimeGenerated
+    解读。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该流的目标端口数值。可用于分析服务被访问情况、发现非常用或管理端口访问，并与 DestinationIp、Protocol 配合还原连接尝试。
+- name: Flag
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。连接中观测到的 TCP 标志，如 SYN、FIN、RST 或 INVALID；依据文档示例推断。可在限定时段内识别扫描模式、连接重置或畸形流量。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该流使用的网络协议，例如 TCP 或 UDP；取值依据文档示例推断。结合端口可刻画流量类型，并在调查中过滤非服务协议。
+- name: SourceIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该流发起端点的 IP 地址。可用于追踪主机外联活动、发现内部源、重复失败连接或意外外部发起方；应结合 TimeGenerated 限定。
+- name: SourcePort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该流的源端口数值，发起方通常为临时端口。可结合 SourceIp 与 TimeGenerated 归并同一主机的相关连接，但不宜将其视为稳定标识。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该记录的代理或采集通道，文档示例包括 Azure Diagnostics 的 Azure。用于确认采集路径并在跨源关联时筛选记录，不代表攻击来源。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。文档说明为与该记录关联的 Log Analytics 工作区 ID。用于将查询限定到正确工作区；不应将其视为 Azure 目录租户标识。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该流数据平面日志创建时的 UTC 时间戳。可作为主要时间过滤条件，用于排序流序列、建立连接时间线并衡量特定调查窗口内的活动。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录所属表的 schema 字段，此处为 AZFWFlowTrace。在联合或跨表查询中用于区分流跟踪行与其他 Azure 防火墙或诊断表。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该流记录关联的防火墙实例的 Azure 资源唯一标识符。可将调查限定到特定防火墙，并在多环境中将流量归属到正确资源。

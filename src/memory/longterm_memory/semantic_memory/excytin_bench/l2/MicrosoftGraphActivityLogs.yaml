@@ -1,0 +1,97 @@
+table_name: MicrosoftGraphActivityLogs
+core_columns:
+- name: ATContent
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据文档由 Microsoft 保留以备将来使用；在 Microsoft 后续给出说明前应视为不支持调查使用。不要据其名称推断为访问令牌内容（基于名称的推测）；依赖前请结合资源/类别上下文核查。
+- name: ATContentH
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据文档由 Microsoft 保留以备将来使用；基于名称的解读仅为推测。查询中不要将其当作请求头或哈希值；若需实际语义，请结合资源与类别上下文核查。
+- name: ATContentP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据文档由 Microsoft 保留以备将来使用；其名称不能确立负载或参数含义。不要将其解析为令牌内容；在调查查询中使用前请核对资源/提供程序与类别上下文。
+- name: AadTenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与请求授权上下文关联的 Azure AD 租户标识符。可用它确认该 Graph 调用作用于哪个目录租户，并与身份对象关联；与工作区范围的 TenantId
+    列不同。
+- name: ApiVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次请求使用的 Microsoft Graph API 版本（例如 v1.0 或 beta）。在排查端点行为差异、以及对比同一身份或应用在不同版本下的活动模式时有用。
+- name: AppId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该 Graph 请求的应用程序标识符，可能是客户端应用或资源应用。可据此查看哪些应用访问某资源、对比预期与意外应用，并与服务主体活动关联。
+- name: ClientAuthMethod
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。指示本次请求的客户端认证方式的整数：0 为公共客户端，1 为客户端 ID 加密码，2 为客户端证书。在限定应用活动范围时，可区分机密客户端或证书客户端与公共客户端。
+- name: ClientRequestId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。可选的客户端提供的请求标识符；调用方未提供时等于 OperationId。可用它与调用方日志关联或对重试分组，但需注意缺失表示回退为操作标识符。
+- name: DurationMs
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该 Graph 请求的服务端耗时，单位为毫秒。可用于分析缓慢调用、发现特定身份或端点的异常，并在排查限流或异常延迟时对比响应时间。
+- name: IPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该 Graph 请求的客户端 IP 地址。可用于地理定位或网络范围限定，并在审查某身份或应用的活动时与已知企业或可疑网段对比。
+- name: IdentityProvider
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。对本次请求所用令牌主体进行身份验证的标识提供者，例如联合提供程序。可用它确认对该调用身份进行代理认证的是哪个 IdP。
+- name: Location
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。为该 Graph 请求提供服务的 Azure 区域名称。可用于查看活动的地理分布、发现异常的提供区域，或与服务部署和延迟模式关联。
+- name: OperationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用于标识批次；非批处理请求中每次请求唯一，批处理请求中同一批次的所有请求共享。可用它对批量 Graph 调用分组，并沿组成请求追踪一次操作。
+- name: RequestId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。代表这条特定 Graph 请求记录的标识符。可将其用作关联请求与其他遥测、支持工单的连接键，或用于对描述同一调用的条目去重。
+- name: RequestMethod
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该 Graph 请求的 HTTP 方法，例如 GET、POST、PATCH 或 DELETE。在调查某身份或应用执行了哪些操作时，可用它区分读取类活动与写入类更改。
+- name: RequestUri
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该 Graph 请求的 URI，指示所针对的资源与路径。可用它识别被访问资源、与预期应用权限对比，并发现某身份对异常端点的调用。
+- name: ResponseSizeBytes
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该 Graph 响应的字节大小。可用于发现与某身份或应用相关的大规模数据导出或异常大的响应，在剖析潜在批量读取活动时补充请求计数。
+- name: ResponseStatusCode
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该 Graph 请求返回的 HTTP 状态码。可用于区分成功调用与失败调用（如授权拒绝或限流），并凸显某身份或端点的重复错误。
+- name: Roles
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次请求令牌声明中存在的角色。可用于了解调用方持有的基于角色的权限，并在审查特权或意外访问时将所请求操作与该角色集合对比。
+- name: Scopes
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次请求令牌声明中存在的作用域。可用于查看调用方实际行使的委派或应用权限，并将实际作用域与该身份或应用预期的最小权限授予对比。
+- name: ServicePrincipalId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该 Graph 请求的服务主体标识符，在调用方为应用身份而非用户时存在。可用它归属于仅应用的活动，并在服务主体与应用上下文之间进行透视。
+- name: SignInActivityId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。代表与该 Graph 请求关联的登录活动的标识符。可用它把请求活动链接回登录记录，并了解该调用属于哪个身份验证会话。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。收集该事件的代理，例如 OpsManager、Linux 或 Azure 诊断。可用它了解数据摄取来源，并在该表通过多个收集路径接收数据时限定查询范围。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档所述，拥有此记录的 Log Analytics 工作区标识符。可用它将查询限定到正确的工作区；不要将其解释为 Azure AD 目录租户，后者由
+    AadTenantId 表示。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档说明为 Graph 请求的接收时间；用于限定调查时间窗、排列事件顺序，并与登录或资源日志关联。
+- name: TokenIssuedAt
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。本次请求所用访问令牌的签发时间；与 TimeGenerated 对比可评估令牌年龄，发现异常长久或过期的令牌。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。每行导出数据上标记的表名；此处应标识 MicrosoftGraphActivityLogs，在联合多表查询时用于区分 Graph 请求记录。
+- name: UserAgent
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次请求中调用客户端提供的用户代理字符串；有助于识别客户端应用或脚本，并发现异常或攻击者控制的工具。
+- name: UserId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档说明为发起本次 Graph 请求的用户标识符；可据此追踪某用户的 Graph 活动，但与其他表比较前需确认标识符类型。
+- name: Wids
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档说明为授予发起请求用户的租户级角色标识符；用于判断该请求背后的管理权限，但不能据此推断恶意意图。
+- name: rn
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。导出数据中的行编号字段，不是安全事件标识。源架构未说明其排序规则；构建调查时间线应使用事件时间和实体标识。

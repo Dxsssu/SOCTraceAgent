@@ -1,0 +1,144 @@
+table_name: IntuneDevices
+core_columns:
+- name: AADTenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。拥有该 Intune 设备记录的 Microsoft Entra 租户标识。用于将设备清单限定到特定租户；与标识 Log Analytics 工作区的
+    TenantId 不同。
+- name: AndroidPatchLevel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Intune 清单中 Android 设备报告的安全补丁级别。可用于发现缺少最新补丁的设备；仅对 Android 行有意义，比较前应先确认 OS。
+- name: BatchId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该行的 Intune 导出报表批次标识。用于按一次清单采集分组或筛选设备；它不是设备标识，也不保证每台设备唯一。
+- name: CategoryName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。分配给该托管设备的 Intune 设备类别标签。可用于在排查时按组织类别分组清单；类别由管理员定义，因此应将其视为环境特定值。
+- name: CompliantState
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Intune 记录的该设备合规状态。可用于查找不合规设备并安排修复；不合规标签表示策略状态，并不能证明设备已被攻陷。
+- name: CreatedDate
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该设备条目在 Intune 中创建的日期和时间。可用于判断注册时长并发现新注册设备；字段为字符串，时间比较前需先规范化。
+- name: DeviceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Intune 上报的设备标识。用于跟踪同一标识命名空间内的记录；与 Defender 或登录来源中的同名设备字段关联前，应先验证标识映射。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Intune 记录的托管设备显示名称。用于可读性识别和搜索；名称可能被重命名或重复使用，因此应结合 DeviceId 关联，而不要仅依赖名称。
+- name: DeviceRegistrationState
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备在 Intune 中的注册状态。可用于在审计清单覆盖范围时区分已注册、待处理或其他注册状态的设备；应结合租户的 Intune 注册环境理解取值。
+- name: DeviceState
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该托管设备在 Intune 清单中的状态。可用于在清理和调查时筛选活跃与不活跃或已退役设备；其具体含义应参照当前 Intune 文档核实。
+- name: EasID
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该设备关联的 Exchange ActiveSync 标识。调查移动邮件访问时，可用于将 Intune 设备与其 EAS 合作关系关联；该缩写由名称推断，使用前应检查账户上下文。
+- name: EncryptionStatusString
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述设备是否加密的文本。可用于识别未加密的托管设备这一合规风险；它反映导出时的加密状态，并不表示数据是否被访问。
+- name: GraphDeviceIsManaged
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。指示关联的 Microsoft Graph 设备对象是否受管理的布尔值。可用于将 Intune 管理与目录设备记录核对；真值属于管理元数据，并不代表安全状况良好。
+- name: IMEI
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。移动设备报告的移动设备国际身份码。调查设备时可用来唯一标识蜂窝硬件；属于敏感标识，且只有上报该信息的设备才有值。
+- name: InGracePeriodUntil
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备处于宽限期的截止日期和时间，以字符串存储。可用于查找暂时免于合规强制执行的设备；它表示策略时间安排，并非安全保证。
+- name: IntuneAccountId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。拥有该设备记录的 Intune 账户标识。可用于区分不同 Intune 账户或环境的清单；在多账户数据中与 AADTenantId 配合限定范围。
+- name: JailBroken
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述设备是否已越狱或获取 root 权限的文本。合规审查中可用于标记平台完整性被削弱的设备；取值反映 Intune 的检测结果，并不能证明存在恶意活动。
+- name: JoinType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备的注册或加入类型，例如其加入组织的方式。评估策略覆盖时可据此划分管理模式的清单；应结合自身 Intune 环境理解取值。
+- name: LastContact
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备上次与 Intune 签入的日期和时间，以字符串存储。可用于发现长期未签入或缺失的设备并按签入新旧排序；由于是文本值，比较前需规范化。
+- name: MEID
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。支持 CDMA 的设备报告的移动设备标识。当中没有 IMEI 时可用作硬件替代标识；属于敏感标识，仅在上报该信息的设备上有值。
+- name: ManagedBy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Intune 记录的设备管理方。评估管控覆盖时可用于判断设备处于 MDM、EAS 还是其他管理通道；取值为环境特定值。
+- name: ManagedDeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Intune 的托管设备名称，可能与显示的 DeviceName 不同。可用于将记录与 Intune 门户及策略视图匹配；应将其视为管理标签，而非主机名保证。
+- name: Manufacturer
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备硬件的制造商。可与 Model 一起分析设备群构成并发现清单中异常硬件；它描述物理设备，而非其所有者。
+- name: Model
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Intune 清单中报告的设备硬件型号。可与 Manufacturer 一起在设备群审查中识别设备类型和异常；属于硬件描述，不是设备标识。
+- name: OS
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此清单快照中已注册设备所属的操作系统系列（如 Windows、iOS、Android）；与 OSVersion 一起用于筛选存在漏洞或不受支持的平台。
+- name: OSVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。导出时设备报告的操作系统版本；用于在设备风险排查中识别过时、未修补或低于基线的版本。
+- name: OperationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此 Intune 导出行关联的操作名称；有助于判断是哪项 Intune 报告或导出活动生成了该设备记录。
+- name: Ownership
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按 Intune 标记设备为公司所有还是个人所有；用于在调查与策略缺口排查中区分公司管理资产与 BYOD 终端。
+- name: PhoneNumber
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此清单记录中与设备或其订户关联的电话号码；有助于移动设备归属与联络，但不能证明设备活动。
+- name: PrimaryUser
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据 Intune 分配给设备的主要用户标识；可作为关联设备清单与以用户为中心的登录和活动的透视点。
+- name: ReferenceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。文档说明为托管设备的 Azure AD 设备 ID；用于将 Intune 清单与目录设备对象和登录日志关联。
+- name: Result
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此 Intune 导出行关联的操作结果；表示报告/导出操作成功或失败，而不是设备的合规判定。
+- name: SerialNumber
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。托管设备的硬件序列号；用于物理资产识别、保修或失窃核查，以及在多次导出间去重设备记录。
+- name: SkuFamily
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此清单行中报告的设备 SKU 系列；用于在分析设备群构成时按平台版本对设备型号进行分组。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该记录的收集器或代理，例如 Azure Diagnostics 的 Azure 或 OpsManager；用于了解摄取路径并筛选异构工作区数据。
+- name: Stats
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。有关导出的动态统计信息，包括每次导出的记录数；用于验证导出完整性并发现被截断或不完整的 Intune 清单批次。
+- name: StorageFree
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。此快照中报告的设备可用存储大小；此处未说明单位，比较前需核实；可用于容量与低空间排查。
+- name: StorageTotal
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。此快照中报告的设备总存储大小；此处未说明单位，从此字段与 StorageFree 推导使用率前需核实。
+- name: SubscriberCarrierNetwork
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此清单行中与设备订户关联的移动运营商网络；用于移动设备群归属和按运营商筛选，不能作为网络连接证据。
+- name: SupervisedStatusString
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述设备是否受监督的文本，通常与 Apple 平台相关；用于评估对终端的管理控制级别。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此记录的 Log Analytics 工作区 ID，不是目录租户 ID；用于将查询范围限定到保存 Intune 设备导出的工作区。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。生成该报告行的 UTC 日期和时间；可作为查看特定导出时点设备状态或与其他日志关联时的主要时间限定。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此记录所属表的名称，此处为 IntuneDevices；用于在联合查询或筛选中将 Intune 清单行与其他工作区表区分开。
+- name: UPN
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此清单行中与设备关联用户的用户主体名称；可作为将设备清单关联到基于身份的登录与活动数据的透视点。
+- name: UserEmail
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与设备关联用户的电子邮件地址；有助于归属和联系设备所有者，但其存在并不表示发生过任何电子邮件活动。
+- name: UserName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此行中与设备关联用户的用户名；在设备调查中可与 UPN 或 PrimaryUser 一起用于可读的归属。
+- name: WifiMacAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备报告的 Wi-Fi MAC 地址；注意现代设备可能随机化该地址，因此跨记录关联时应视为弱标识符。

@@ -6,7 +6,7 @@ SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Pla
 
 - **告警调查**：LLM 规划任务、选择 MCP 工具，通过 Splunk REST API 查询真实日志，逐步复盘和重规划。
 - **共享工作记忆**：SQLite 持久化事件、版本化 TTT、执行证据、轮次复盘和审计消息。
-- **长期记忆**：按角色注入 Semantic / Episodic / Procedural Memory，支持仓库 JSON 快照和 Neo4j 后端。
+- **长期记忆**：按角色注入 Semantic / Episodic / Procedural Memory，SM 使用 L1/L2 YAML 文件；PM/EM 支持 JSON 快照和 Neo4j 后端。
 - **Web 作战室**：创建和查看事件，展示任务树、执行记录与复盘，通过 Socket.IO 推送更新。
 - **测评与基线**：ExCyTIn SQL 调查流程、并行测评、结果落盘，以及 OpenCode、Qwen Code、Cline 和论文 BaselineAgent 的配对实验入口。
 
@@ -148,23 +148,23 @@ Web 提供事件列表、详情、执行记录、复盘与层级查询；具体�
 
 | 类型 | 内容与来源 | 详细说明 |
 | --- | --- | --- |
-| Semantic Memory（SM） | 从实际 schema 汇总表、字段、类型和关联键，提供中英文描述 | [构建与导入](src/memory/longterm_memory/semantic_memory/excytin_bench/README.md) |
+| Semantic Memory（SM） | L1 全局表目录（用途、实体）与 L2 单表字典（字段名、MySQL 类型、中文解释） | [构建与读取](src/memory/longterm_memory/semantic_memory/excytin_bench/README.md) |
 | Episodic Memory（EM） | 三字段失败恢复：背景、报错、修复；21 条，覆盖训练历史 70 次错误 | [构建与导入](src/memory/longterm_memory/episodic_memory/excytin_bench/README.md) |
 | Procedural Memory（PM） | 训练轨迹中重复的操作序列；以名称、状态、目标检索，按需读取输入槽和步骤 | [构建与导入](src/memory/longterm_memory/procedural_memory/excytin_bench/README.md) |
 
 普通事件通过 `context.memory_profile` 指定 `excytin_bench`，或设置默认 `SOCAGENT_MEMORY_PROFILE=excytin_bench`，才注入该 Profile 的记忆；事件配置优先。不设置时，普通 Splunk 调查不会注入 ExCyTIn 记忆。指定 Profile 不会把本地 Splunk Executor 切换为 MySQL 测评流程。
 
-后端通过 `SOCAGENT_LTM_BACKEND` 选择：
+SM 固定读取本地 `l1.yaml` 与 `l2/<表名>.yaml`。PM/EM 后端通过 `SOCAGENT_LTM_BACKEND` 选择：
 
 - `snapshot`：读取仓库内的 JSON 快照，无需 Neo4j。
 - `neo4j`：从已导入的 Neo4j 图加载，连接失败会报错。
 - `auto`：存在非空 `NEO4J_PASSWORD` 时尝试 Neo4j，连接失败回退到快照；否则直接读取快照。
 
-`.env.example` 含 Neo4j 占位密码，首次运行建议显式使用 `snapshot`。使用图后端时，按 [Neo4j 部署说明](docker/neo4j/README.md) 启动服务，将连接配置导出到进程或写入根目录 `.env`，再依次导入 **SM → EM → PM**。重建 JSON 不会自动更新 Neo4j。
+`.env.example` 含 Neo4j 占位密码，首次运行建议显式使用 `snapshot`。使用图后端时，按 [Neo4j 部署说明](docker/neo4j/README.md) 启动服务，将连接配置导出到进程或写入根目录 `.env`，再依次导入 **EM → PM**；导入时使用本地 L1/L2 校验 schema，无需 SM 图。重建 PM/EM JSON 不会自动更新 Neo4j。
 
 PM v5 保存可复用查询模板：`id/name/status/purpose/inputs/sql_template/returns/semantic_refs`。从训练成功查询中归纳 46 条模板（34 active、12 candidate），案件具体值参数化，表字段离线校验。在线仅一次有界模型选择（不再前提审核/独立复核），Planner 在 T 中引用 `template_id`，程序装载模板，Executor 只返回参数，程序安全生成 SQL；PM 未命中时检索精简 SM。模板与构建审计详见 `src/memory/longterm_memory/procedural_memory/excytin_bench/README.md`。Reviewer 不检索长期记忆；SQL 报错后仍仅一次 EM 修复。
 
-SM 使用 schema、文本匹配和关联关系；EM v2 先按错误类型与对象查本地倒排索引，再以失败 SQL 的表/别名作用域消歧，优先报错位置并用 TF-IDF 相似度排序，最多取一条供 Executor 修复，未调用 embedding API。PM 使用以问题为目标的候选召回与适用性审查；引用存在不等于语义关联正确，真实执行仍需核实。
+在线 SM 从完整 L1 选择一个精确表名，再读取对应 L2；EM v2 先按错误类型与对象查本地倒排索引，再以失败 SQL 的表/别名作用域消歧，优先报错位置并用 TF-IDF 相似度排序，最多取一条供 Executor 修复，未调用 embedding API。PM 使用以问题为目标的候选召回与适用性审查；引用存在不等于语义关联正确，真实执行仍需核实。
 
 ## ExCyTIn-Bench 测评
 
@@ -332,4 +332,4 @@ SOCTraceAgent/
 - 外部数据、数据库服务和原生 CLI 需要单独准备；`uv sync` 只安装 Python 项目依赖。
 - 原生 CLI 基线使用统一代理、工具和预算约束，比较结果需同时报告这些条件以及各框架是否使用长期记忆。
 
-PM 未命中时使用轻量 SM 兜底：一次模型调用只从精简表目录选择最多两张表，由程序加载真实字段名。代理输入（系统提示词及任务目录）最多 6,000 UTF-8 字节，输出最多 192 token、关闭 thinking、不进行格式重试；选中 schema 最多约 6,000 字节，不传完整 ITT 或执行历史。相同任务和 SM 库复用缓存（含未命中）。SM 也未命中时，Planner 应安排结构查询，不猜字段。
+PM 未命中时使用 L1/L2 SM 兜底：一次模型调用读取完整全局表目录（table、desc、entities），选择一个精确表名，由程序读取对应 L2 卡片。Planner 接收完整字段名、MySQL 类型和中文解释（保留源类型说明），不截断表目录或单表字段。选择助手输出最多 192 token、关闭 thinking、不进行格式重试；不传完整 ITT 或执行历史。相同任务和 SM 库复用缓存（含未命中）。SM 也未命中时，Planner 应安排结构查询，不猜字段。

@@ -1,0 +1,90 @@
+table_name: IdentityQueryEvents
+core_columns:
+- name: AccountDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。在本事件中执行目录查询的账户显示名；当 AccountName 或 AccountUpn 不明确时，可用于将枚举行为归属到具体人员。
+- name: AccountDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起查询账户所属的域，在调查枚举行为时可用于区分本地/联合身份与仅云端身份。
+- name: AccountName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件中执行查询的账户用户名；是主要的操作者标识，用于按账户汇总目录枚举或侦察活动。
+- name: AccountObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按官方说明为发起查询账户在 Azure AD 中的唯一标识；当账户名重复或变更时，可用它将此查询行与其他身份记录关联。
+- name: AccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行查询账户的安全标识符（SID）；在账户改名后仍保持稳定，有助于在多个目录查询事件中追踪同一本地身份。
+- name: AccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起查询账户的用户主体名称（UPN）；便于将此查询事件与登录、邮箱或身份相关表进行关联。
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发此目录查询事件的活动类型；在排查身份侦察行为时，可用于按操作类别筛选或分组查询记录。
+- name: AdditionalFields
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。此查询行的动态附加实体或事件属性集合；可检查其中未提升为顶层列的提供商特有详情，其内容需按名称推断，解析前不宜断言语义。
+- name: Application
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行所记录目录查询操作的应用；有助于区分来自目录工具或服务的查询与来自用户会话的查询。
+- name: DestinationDeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。处理此查询的服务端应用所在设备名称；表明由哪台目录或响应主机处理该请求，便于从服务端视角下钻。
+- name: DestinationIPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。处理此查询的服务端应用所在设备的 IP 地址；用于识别客户端枚举行为背后的响应目录主机。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此查询相关的网络通信目标端口；有助于刻画目录查询期间所联系的服务端点。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此查询事件关联的设备的完全限定域名（FQDN）；用于识别发起该目录查询的终端或主机。
+- name: IPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。分配给终端并在查询相关网络通信中使用的 IP 地址；有助于将目录查询归属到源主机或网络位置。
+- name: Location
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此查询事件关联的城市、国家或其他地理位置；有助于发现相对账户正常活动而言异常的来源地枚举。
+- name: Port
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此查询事件相关的通信中所用 TCP 端口；用于刻画该目录查询的传输方式的连接细节。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此查询通信所使用的协议；在分析对 Active Directory 执行枚举的方式时，可用于区分不同的目录访问方法。
+- name: Query
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用于运行查询的字符串；即目录请求的字面内容，有助于了解操作者究竟尝试枚举哪些对象或属性。
+- name: QueryTarget
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被查询的用户、组、设备、域或其他实体类型的名称；标识该查询事件针对的目录对象，而非被入侵资产。
+- name: QueryType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。查询类别，如 QueryGroup、QueryUser 或 EnumerateUsers（依官方说明）；是识别批量或定向目录枚举模式的关键分类字段。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此事件行的唯一标识符；在与其他 Defender for Identity 遥测关联时，用于引用或去重单条查询记录。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。收集该事件的代理类型，如 Windows 代理的 OpsManager、Linux 或 Azure（依官方说明）；注意本表为 Defender for
+    Identity 数据，使用前应确认其作用域。
+- name: TargetAccountDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录查询操作作用到的账户显示名；即被查询账户的可读标签，适用于 QueryTarget 为账户对象的情形。
+- name: TargetAccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录查询操作作用到的账户的用户主体名称（UPN）；可用于为被查询身份补充登录或身份上下文。
+- name: TargetDeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此表中被查询操作所针对的设备名称或 FQDN；与 DeviceName（发起设备）和 DestinationDeviceName 对比，可追踪被查询的终端。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Log Analytics 工作区 ID；按文档说明并非目录租户 ID。用于在跨租户或跨工作区查询时限定工作区范围。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。生成该记录的 UTC 日期和时间；是排序并将身份查询活动与同一账户或设备的其他事件关联的主要时间轴。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。表名，通常为 'IdentityQueryEvents'；在同一工作区中与其他身份或安全表联合查询时，用它来限定数据集。

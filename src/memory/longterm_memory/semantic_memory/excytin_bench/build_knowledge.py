@@ -14,7 +14,7 @@ from zipfile import ZipFile
 PACKAGE_DIR = Path(__file__).resolve().parent
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 DEFAULT_SOURCE = REPOSITORY_ROOT / "data/excytin-bench/huggingface/data.zip"
-DEFAULT_OUTPUT = PACKAGE_DIR / "semantic_memory.json"
+DEFAULT_OUTPUT = PACKAGE_DIR / "l1.yaml"
 
 ENVIRONMENT_ID = "excytin-azure-mysql"
 CATALOG_ID = "excytin-schema-v1"
@@ -220,6 +220,36 @@ def read_schemas(source: Path) -> tuple[dict[str, list[dict[str, str]]], int]:
     return dict(schemas), source_file_count
 
 
+def read_sql_schemas(source: Path):
+    """Read the actual benchmark DDL, excluding metadata-only tables."""
+    schemas, incidents = {}, {}
+    with ZipFile(source) as archive:
+        for name in sorted(archive.namelist()):
+            if not name.startswith("data/sql_files/") or not name.endswith(".sql"):
+                continue
+            sql = archive.read(name).decode("utf-8")
+            definitions = re.findall(r"CREATE TABLE\s+`?(\w+)`?\s*\((.*?)\);", sql, re.S | re.I)
+            if not definitions:
+                raise ValueError(f"No CREATE TABLE definitions in {name}")
+            incident = PurePosixPath(name).stem
+            incidents[incident] = []
+            for table, body in definitions:
+                columns = {}
+                for column in body.split(','):
+                    match = re.fullmatch(r"\s*`?(\w+)`?\s+(\w+)\s*", column)
+                    if not match:
+                        raise ValueError(f"Unsupported DDL column in {name}: {column}")
+                    columns[match[1]] = match[2].upper()
+                existing = schemas.setdefault(table, {})
+                if any(field in existing and existing[field] != dtype for field, dtype in columns.items()):
+                    raise ValueError(f"Per-incident SQL type conflict: {table}")
+                existing.update(columns)
+                incidents[incident].append(table)
+    if not schemas:
+        raise ValueError("No benchmark SQL schema found")
+    return schemas, incidents
+
+
 def load_descriptions() -> dict[str, Any]:
     return json.loads((PACKAGE_DIR / "descriptions.json").read_text(encoding="utf-8"))["tables"]
 
@@ -331,9 +361,9 @@ def build_knowledge(source: Path) -> dict[str, Any]:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Build ExCyTIn-Bench semantic-memory JSON from actual .meta schemas.")
+    parser = argparse.ArgumentParser(description="Build L1 catalog and L2 table dictionaries from actual ExCyTIn .meta schemas.")
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE, help="Path to the Hugging Face data.zip archive.")
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="Output JSON path.")
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="L1 YAML path; L2 cards are written to sibling l2/.")
     return parser.parse_args()
 
 
@@ -345,11 +375,10 @@ def main() -> None:
         raise FileNotFoundError(f"Schema archive not found: {source}")
     knowledge = build_knowledge(source)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(knowledge, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    catalog = knowledge["catalog"]
+    from .store import write_knowledge
+    write_knowledge(knowledge, output, source=source)
     print(
-        f"Wrote {output} with {catalog['table_count']} tables, "
-        f"{catalog['field_count']} fields, and {catalog['join_key_count']} join keys."
+        f"Wrote {output}; queryable tables/fields and exclusions are recorded in build_manifest.json."
     )
 
 

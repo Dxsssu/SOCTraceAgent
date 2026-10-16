@@ -1,0 +1,53 @@
+table_name: AZFWNetworkRuleAggregation
+core_columns:
+- name: Action
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙对匹配此网络规则的聚合会话所做的决策，通常为允许或拒绝；用于区分放行与阻断流量并审查规则有效性。
+- name: ActionReason
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。当动作来自回退而非显式规则匹配时记录的原因，例如默认丢弃；用于解释没有规则匹配的会话。
+- name: DestinationIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行聚合会话共用的目标 IP 地址；可据此查找哪些防火墙规则和源访问特定主机或子网。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。聚合会话共用的目标端口，用于区分 Web、远程访问等服务；分析出入站流量时应与协议结合。
+- name: IsDefaultRule
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，标记没有网络规则匹配而应用默认动作的行；用于在聚合计数中区分策略缺口与显式规则决策。
+- name: NetworkRuleCount
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。在相同规则与元组下聚合到本行的网络会话数量；应求和以衡量流量规模，切勿将单行视为单个事件。
+- name: Policy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含所触发规则的防火墙策略名称；用于将聚合决策归属到某策略并比较不同策略部署的行为。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。聚合会话共用的网络协议，例如 TCP 或 UDP；可与端口一起筛选，以确定所计流量对应的服务或攻击面。
+- name: Rule
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。匹配这些聚合会话的网络规则名称；可据此在策略分析中查看每条规则管控的源、目标和端口。
+- name: RuleCollection
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含所触发规则的规则集合名称；用于按规则集合对聚合流量分组，并比较相关规则集之间的计数。
+- name: RuleCollectionGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含所触发规则的规则集合组名称；有助于将聚合网络决策汇总到策略层级中的有序分组层。
+- name: SourceIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行聚合会话共用的源 IP 地址；可据此将计数流量归属到某主机或子网，并找出其主要规则和目标。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。收集事件的代理或管道类型，例如 Azure 诊断的 Azure；用于确认采集来源，而非作为安全活动的指标。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录文档标注的 Log Analytics 工作区标识，并非目录租户 ID；在跨资源调查中可用于将查询限定到某工作区。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。聚合数据平面日志记录创建时的 UTC 时间戳；用于按时间范围过滤以及分析网络规则计数流量随时间的变化趋势。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录所属表的名称；在跨工作区联合查询防火墙相关日志时，用于确认返回该行的日志表。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与记录关联的 Azure 资源唯一标识，通常为防火墙；用于将聚合规则数据限定到特定的防火墙资源。

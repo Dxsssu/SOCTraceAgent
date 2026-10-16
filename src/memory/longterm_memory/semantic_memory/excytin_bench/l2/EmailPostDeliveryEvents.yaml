@@ -1,0 +1,50 @@
+table_name: EmailPostDeliveryEvents
+core_columns:
+- name: Action
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该投递后处置记录中对邮件执行的操作（如隔离、删除或移动）。结合 ActionResult 判断尝试了什么以及是否生效。
+- name: ActionResult
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此投递后事件中 Action 的执行结果，表明修复是否成功。结合 Action 与 TimeGenerated 确认邮件是否确实被处置。
+- name: ActionTrigger
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。说明是什么触发了该投递后操作，例如管理员决定或自动机制。用于区分针对此邮件事件的人工干预与自动修复。
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。名称推断：表示此投递后事件所属的活动类别。该解释仅基于字段名，应结合事件的操作上下文判断，不要假定为固定枚举值。
+- name: DeliveryLocation
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。邮件投递后所在的位置，如收件箱、垃圾邮件、隔离区或已删除邮件。用于判断在修复之前收件人是否可能接触到该邮件。
+- name: DetectionMethods
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。过滤堆栈中将该邮件判定为恶意的检测技术。结合 ThreatTypes 理解为何对该邮件执行此投递后操作。
+- name: InternetMessageId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此投递后事件所涉邮件的发送方公开标识符。用于在不同邮件系统及其他安全表之间关联同一封邮件。
+- name: NetworkMessageId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此投递后事件关联邮件的 Office 365 生成唯一标识符。将本表与同一封邮件的投递、威胁或点击遥测关联时的主要关联键。
+- name: RecipientEmailAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此投递后事件中接收该邮件的邮箱（经过通讯组扩展后）。评估收件人是否接触过被处置邮件时，可用它限定到具体用户。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档称其为该投递后事件记录的唯一标识符。用于引用某个具体的修复事件，而非跨表关联。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。采集该记录的代理或收集通道，例如 Operations Manager 或 Azure。属于采集来源元数据，除确认数据来源外调查价值有限。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。文档所述为记录所属的 Log Analytics 工作区 ID，而非 Entra 目录租户 ID。用于限定查询的工作区，不要用它识别目录租户。
+- name: ThreatTypes
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。过滤堆栈对邮件是否含恶意软件、钓鱼或其他威胁的判定。属于可疑判定证据，并非已遭入侵的证明，结论前应交叉验证。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。此投递后事件记录的生成时间（UTC）。用于按顺序排列修复操作，并将查询限定在相关调查时间窗口内。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。存储此记录的表名称。属于构造查询用的信息性元数据，而非调查属性。

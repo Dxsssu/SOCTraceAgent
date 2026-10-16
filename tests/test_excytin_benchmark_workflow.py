@@ -110,7 +110,7 @@ def test_initial_planner_failure_preserves_raw_responses_in_trace() -> None:
 
     workflow = ExcytinBenchWorkflow(
         max_steps=5,
-        llm=lambda _system, _user: "[]" if _system.startswith("你正在为当前 Agent") or "SM 字段选择助手" in _system else next(responses),
+        llm=lambda _system, _user: "[]" if _system.startswith("你正在为当前 Agent") or "SM 表选择助手" in _system else next(responses),
         yaml_response_attempts=2,
     )
 

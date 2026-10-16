@@ -1,0 +1,83 @@
+table_name: IdentityDirectoryEvents
+core_columns:
+- name: AccountDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起所记录身份目录操作账户的显示名或通讯簿名称。当仅知友好名称时，可与 AccountUpn 或 AccountObjectId 一起解析操作者身份；其唯一性需结合来源上下文判断。
+- name: AccountDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起所记录身份目录操作账户的域部分。用于区分不同域中同名账户，并按目录或域限定操作者查询范围。
+- name: AccountName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起所记录身份目录操作账户的用户名。用于按操作身份关联活动，并与 AccountDomain 或 AccountUpn 配合消除歧义。
+- name: AccountObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起所记录身份目录操作账户的目录对象标识符。用于跨事件关联操作者身份时作为稳定关联键，而不是依赖显示名。
+- name: AccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起所记录身份目录操作账户的安全标识符。用于将操作者活动关联到 Windows 安全上下文，尤其在与其它 Windows 遥测关联时。
+- name: AccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起所记录身份目录操作账户的用户主体名称。作为身份目录事件中操作者身份的主要关联键，并将操作者活动链接到登录或目录数据。
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发该事件的身份目录活动类型，例如密码或 UPN 更改。用于在关联操作者、目标、设备或位置之前筛选并归类事件。
+- name: AdditionalFields
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态包，保存未作为顶级列公开的额外事件或实体属性。基于名称推断：查看其内容及资源/类别上下文，不要假定具体键、单位或保证存在的字段，再投影取值。
+- name: Application
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所记录身份目录操作关联的应用程序。用于识别执行或中介该变更的应用，并区分管理或自动化活动与其他来源。
+- name: DestinationDeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。在所记录身份目录操作中作为服务端的目标设备名称。当涉及具名服务器时使用；应视为目标侧上下文，而非操作者端点。
+- name: DestinationIPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。处理所记录身份目录操作的目标设备 IP 地址。用于目标侧网络关联与富化；由于地址分配会变化，应按时间限定范围。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所记录身份目录操作相关的网络通信目标端口。与目标 IP 和协议一起用于刻画目标服务端点。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所记录身份目录操作关联设备的完全限定域名。用于将活动限定到某个端点，并在同时出现时与 TargetDeviceName 区分。
+- name: IPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录身份目录操作相关网络通信中分配给端点的 IP 地址。用于关联网络或登录活动；由于地址会变化，应按时间限定范围。
+- name: ISP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所记录身份目录操作的端点 IP 地址关联的互联网服务提供商。用于在评估活动是否来自预期网络提供商时进行富化。
+- name: Location
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所记录身份目录操作关联的地理位置，例如城市或国家。用于将操作者或目标活动的发生地点与预期用户位置进行比较。
+- name: Port
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所记录身份目录操作相关通信使用的 TCP 端口。与 IPAddress 和 Protocol 一起用于刻画源侧连接。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所记录身份目录操作相关通信所使用的协议。用于识别传输或应用协议，并按环境预期协议筛选事件。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所报告身份目录事件的唯一标识符。用于关联或去重对同一事件的重复引用；按官方文档它对事件唯一，而非对账户或设备。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供该事件的代理或收集来源类型，例如 OpsManager、Linux 或 Azure。用于溯源和筛选，并理解影响字段填充情况的收集路径差异。
+- name: TargetAccountDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录身份目录操作所应用到的账户显示名。用于结合 TargetAccountUpn 识别受影响身份，避免与操作者 Account 字段混淆。
+- name: TargetAccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录身份目录操作所应用到账户的用户主体名称。用于关联受影响身份，并在同一事件中与发起账户区分开。
+- name: TargetDeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录身份目录操作所应用到设备的完全限定域名。用于目标侧设备关联，区别于描述关联端点上下文的 DeviceName。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按官方文档，为与该事件关联的 Log Analytics 工作区标识符。用于查询中的工作区范围限定；不要将其视为目录租户标识符。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。上报管道生成该目录事件记录的 UTC 时间，用于排序和关联身份变更；可与 Timestamp 对比以检查采集延迟。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供该行的表名，用于在同一工作区中与其他表联合查询时限定本目录事件数据的范围。

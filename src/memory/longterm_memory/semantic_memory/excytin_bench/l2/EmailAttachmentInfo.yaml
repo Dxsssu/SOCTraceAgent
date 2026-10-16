@@ -1,0 +1,59 @@
+table_name: EmailAttachmentInfo
+core_columns:
+- name: DetectionMethods
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该附件威胁判定的过滤技术（如特征、信誉或沙箱检测）。用于判断检测置信度以及威胁事件是否由引擎驱动。
+- name: FileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。为该邮件记录的附件文件名。可用它检索携带相同文件名的其他邮件，但该名称可被攻击者控制，并非唯一标识。
+- name: FileSize
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。过滤堆栈报告的该附件大小（字节）。可结合 FileType 和 SHA256 描述或聚类载荷；其本身不能说明是否恶意。
+- name: FileType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。为该邮件记录的附件扩展名或类型。可用于筛选高风险格式并对附件分组；注意扩展名可能被伪造或使用双扩展名。
+- name: NetworkMessageId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Office 365 为附件所属邮件生成的标识符。可用它连接 EmailEvents 和 EmailUrlInfo，并对同一邮件的所有附件分组。
+- name: RecipientEmailAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。携带该附件的邮件收件人电子邮件地址（通讯组列表展开后）。用于将影响范围限定到具体邮箱；同一邮件可能出现多行。
+- name: RecipientObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该邮件收件人邮箱的 Azure AD 对象标识符。可用它与受影响账户的目录或登录数据关联，而非仅依赖地址字符串。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档中该事件记录的唯一标识符。实际使用中用于标识邮件事件；追踪具体附件记录时可与 NetworkMessageId 配合使用。
+- name: SHA256
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。过滤堆栈记录的附件文件 SHA-256 哈希。可用它跨邮件查找同一载荷并检查文件信誉；哈希相同本身不证明文件被执行或系统被入侵。
+- name: SenderDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。携带该附件的邮件发件人的显示名称。该名称由发件人自行设置，不能作为身份凭证；可结合 SenderFromAddress 识别冒用行为。
+- name: SenderFromAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。携带该附件的邮件 From 头中收件人可见的发件人地址。该值可被伪造；可用它对活动分组，并与别处的已认证发件人数据比对。
+- name: SenderObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。过滤堆栈解析出的该邮件发件人对象标识符。可用它关联发件人账户的目录上下文；缺失并不表示发件方为外部。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。将该记录送入工作区的代理或采集通道，例如连接器类型。可用于数据质量范围界定和摄取排查，而非发件人或威胁信息。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据官方文档，接收该记录的 Log Analytics 工作区标识符。可用于将查询范围限定到正确的工作区；它不是 Azure AD 目录租户标识符。
+- name: ThreatNames
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。过滤堆栈为该附件分配的具体威胁或恶意软件家族名称。可用于对相关载荷分组并命名活动；列出名称仅是检测结果，不证明系统已被入侵。
+- name: ThreatTypes
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。电子邮件过滤堆栈对该邮件是否携带恶意软件、钓鱼或其他威胁的判定。可用于对附件分级处置；该判定反映过滤判断，并不代表已确认的入侵。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该附件记录生成的 UTC 日期和时间。可用于按时间范围查询并围绕邮件事件构建时间线；可与别处的邮件投递时间戳关联。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该行的表名称，反映该记录所属的表值。在同一工作区跨多个表查询时可用于筛选。

@@ -33,6 +33,7 @@ from src.memory.longterm_memory.semantic_memory.excytin_bench import (
 from src.memory.longterm_memory.semantic_memory.excytin_bench.runtime_view import (
     retrieval_view,
 )
+from src.memory.longterm_memory.semantic_memory.excytin_bench.store import SemanticMemoryStore, load_knowledge
 from src.messaging import RoleName
 from src.schema import Event, RoundReview, TracebackTaskTree
 from src.schema.investigation import task_input
@@ -255,7 +256,8 @@ class _ExcytinBenchRepositoryBase:
         procedural_path: Path = EXCYTIN_PROCEDURAL_PATH,
         episodic_path: Path = EXCYTIN_EPISODIC_PATH,
     ) -> None:
-        self.semantic = json.loads(semantic_path.read_text(encoding="utf-8"))
+        self.semantic_store = SemanticMemoryStore(semantic_path)
+        self._semantic = None
         self.procedural = json.loads(procedural_path.read_text(encoding="utf-8"))
         self.episodic = json.loads(episodic_path.read_text(encoding="utf-8"))
         self._initialize_indexes()
@@ -263,16 +265,19 @@ class _ExcytinBenchRepositoryBase:
     def _initialize_indexes(self) -> None:
         from src.memory.longterm_memory.episodic_memory.excytin_bench.retrieval import RecoveryIndex
         self.recovery_index = RecoveryIndex(self.episodic)
-        self.semantic = retrieval_view(self.semantic)
-        self._tables_by_id = {
-            table["table_id"]: table for table in self.semantic["tables"]
-        }
-        self._tables_by_name = {
-            table["name"].lower(): table for table in self.semantic["tables"]
-        }
-        self._join_keys_by_id = {
-            join_key["join_key_id"]: join_key for join_key in self.semantic["join_keys"]
-        }
+        self._semantic = None
+
+    @property
+    def semantic(self):
+        # Compatibility for offline/legacy retrieval. Online SM uses L1/L2 directly.
+        if self._semantic is None:
+            self._semantic = retrieval_view(load_knowledge(self.semantic_store.l1_path))
+        return self._semantic
+
+    def _initialize_semantic_indexes(self):
+        self._tables_by_id = {t["table_id"]: t for t in self.semantic["tables"]}
+        self._tables_by_name = {t["name"].lower(): t for t in self.semantic["tables"]}
+        self._join_keys_by_id = {k["join_key_id"]: k for k in self.semantic["join_keys"]}
 
     def procedure_catalog(self) -> list[dict[str, str]]:
         return procedure_catalog(self.procedural)
@@ -292,6 +297,7 @@ class _ExcytinBenchRepositoryBase:
         table_hints: Sequence[str] = (),
         table_limit: int = 12,
     ) -> dict[str, Any]:
+        self._initialize_semantic_indexes()
         semantic_types = _infer_semantic_types(text)
         query_tokens = _tokens(text)
         referenced_table_ids: set[str] = set()
@@ -317,7 +323,10 @@ class _ExcytinBenchRepositoryBase:
                 hinted_ids.add(table["table_id"])
 
         scored_tables: list[tuple[float, dict[str, Any]]] = []
+        queryable = {t["table"] for t in self.semantic_store.catalog()["log_sources"]}
         for table in self.semantic["tables"]:
+            if table["name"] not in queryable:
+                continue
             score = 0.0
             table_name = str(table.get("name") or "")
             if table_name and _contains_identifier(text, table_name):
@@ -437,7 +446,7 @@ class _ExcytinBenchRepositoryBase:
 
 
 class _ExcytinBenchGraphRepository(_ExcytinBenchRepositoryBase):
-    """Load the same read model from the imported Neo4j knowledge graph."""
+    """Load PM/EM from Neo4j; SM always uses local L1/L2 files."""
 
     def __init__(
         self,
@@ -447,60 +456,16 @@ class _ExcytinBenchGraphRepository(_ExcytinBenchRepositoryBase):
         password: str,
         database: str = "neo4j",
     ) -> None:
+        self.semantic_store = SemanticMemoryStore()
         driver = GraphDatabase.driver(uri, auth=(username, password))
         try:
             driver.verify_connectivity()
             with driver.session(database=database) as session:
-                self.semantic = self._load_semantic_graph(session)
                 self.procedural = self._load_procedural_graph(session)
                 self.episodic = self._load_episodic_graph(session)
         finally:
             driver.close()
         self._initialize_indexes()
-
-    @staticmethod
-    def _load_semantic_graph(session: Any) -> dict[str, Any]:
-        catalog_record = session.run(
-            "MATCH (catalog:LogCatalog {catalog_id: 'excytin-schema-v1'}) "
-            "RETURN properties(catalog) AS catalog"
-        ).single()
-        if catalog_record is None:
-            raise ValueError("Neo4j is missing Semantic catalog excytin-schema-v1")
-        table_records = session.run(
-            """
-            MATCH (:LogCatalog {catalog_id: 'excytin-schema-v1'})
-                  -[:CONTAINS_TABLE]->(table:LogTable)
-            OPTIONAL MATCH (table)-[:HAS_FIELD]->(field:Field)
-            RETURN properties(table) AS table,
-                   [item IN collect(field) WHERE item IS NOT NULL | properties(item)] AS fields
-            ORDER BY table.name
-            """
-        )
-        tables = []
-        for record in table_records:
-            table = dict(record["table"])
-            table["fields"] = [dict(field) for field in record["fields"]]
-            tables.append(table)
-        join_records = session.run(
-            """
-            MATCH (:LogCatalog {catalog_id: 'excytin-schema-v1'})
-                  -[:DEFINES_JOIN_KEY]->(join_key:JoinKey)
-            OPTIONAL MATCH (field:Field)-[:MAPS_TO_JOIN_KEY]->(join_key)
-            RETURN properties(join_key) AS join_key,
-                   [item IN collect(field.field_id) WHERE item IS NOT NULL] AS field_ids
-            ORDER BY join_key.name
-            """
-        )
-        join_keys = []
-        for record in join_records:
-            join_key = dict(record["join_key"])
-            join_key["field_ids"] = list(record["field_ids"])
-            join_keys.append(join_key)
-        return {
-            "catalog": dict(catalog_record["catalog"]),
-            "tables": tables,
-            "join_keys": join_keys,
-        }
 
     @staticmethod
     def _load_procedural_graph(session: Any) -> dict[str, Any]:
@@ -543,7 +508,7 @@ class ExcytinBenchNeo4jRepository(_ExcytinBenchGraphRepository):
 
 
 class ExcytinBenchSnapshotRepository(_ExcytinBenchGraphRepository):
-    """Load the ExCyTIn read model from committed JSON snapshots."""
+    """Load PM/EM JSON snapshots and the local L1/L2 semantic store."""
 
     def __init__(
         self,
@@ -552,7 +517,8 @@ class ExcytinBenchSnapshotRepository(_ExcytinBenchGraphRepository):
         procedural_path: Path = EXCYTIN_PROCEDURAL_PATH,
         episodic_path: Path = EXCYTIN_EPISODIC_PATH,
     ) -> None:
-        self.semantic = json.loads(semantic_path.read_text(encoding="utf-8"))
+        self.semantic_store = SemanticMemoryStore(semantic_path)
+        self._semantic = None
         self.procedural = json.loads(procedural_path.read_text(encoding="utf-8"))
         self.episodic = json.loads(episodic_path.read_text(encoding="utf-8"))
         self._initialize_indexes()
@@ -730,7 +696,7 @@ class MemoryContextService:
             from src.memory.longterm_memory.semantic_memory.excytin_bench.fallback import retrieve
             sm_task = task_input(event)
             sm_key = (event.event_id, repository.profile,
-                      json.dumps(repository.semantic, sort_keys=True, ensure_ascii=False),
+                      repository.semantic_store.fingerprint,
                       json.dumps(sm_task, sort_keys=True, ensure_ascii=False))
             if sm_key not in self._planner_sm_cache:
                 if len(self._planner_sm_cache) >= 128:

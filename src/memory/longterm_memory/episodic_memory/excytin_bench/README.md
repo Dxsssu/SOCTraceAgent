@@ -46,14 +46,14 @@ EM 只保存数据库报错的背景、报错情况和修复方法。旧版 epis
 .venv/bin/python -m src.memory.longterm_memory.episodic_memory.excytin_bench.import_neo4j
 ```
 
-导入前需要匹配的 SM。新图为：
+导入时校验本地 SM L1/L2 的 schema 哈希，无需先导入 SM 图。新图为：
 
 ```text
 Environment → EpisodeCatalog → FailureRecovery(background, error, repair)
-                     └─ USES_SCHEMA → LogCatalog
+EpisodeCatalog.semantic_schema_hash 记录本地 L1/L2 的 schema 版本
 ```
 
-节点另带图存储所需的 ID、归属与顺序，Agent 条目仍只含三字段。一次事务删除旧 `excytin-episodes-v1` 与当前 v2 catalog 所属节点并写入新图，失败会回滚，SM/PM 节点不删除。JSON 与 Neo4j 后端使用相同的本地向量检索。
+节点另带图存储所需的 ID、归属与顺序，Agent 条目仍只含三字段。一次事务删除旧 `excytin-episodes-v1` 与当前 v2 catalog 所属节点并写入新图，失败会回滚，既有 SM/PM 节点不删除。JSON 与 Neo4j 后端使用相同的本地向量检索。
 
 PM 的离线挖掘现直接使用 `training_history.py` 解析训练语料，不读取旧 EM 的 episodes。该模块是内部训练解析器，不发布旧记忆文件。EM 重建后重新构建、导入 PM，更新依赖 catalog 和快照哈希；65 条 PM 内容保持不变。
 

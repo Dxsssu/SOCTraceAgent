@@ -1,0 +1,426 @@
+table_name: OfficeActivity
+core_columns:
+- name: AADGroupId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该 Office 活动关联的 Microsoft Entra ID 组标识符，适用于涉及组成员身份或组范围 Teams/SharePoint 权限的审核操作。可与目录组对象关联以归属访问权限。
+- name: AADTarget
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行中被审核 Office 操作所作用的目标目录用户或对象。可与 Actor 对比，区分操作执行者与受影响对象。
+- name: Activity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该 Office 审核事件记录的用户可见活动名称，通常是 Operation 的可读形式。可用它按操作类型分组或筛选记录。
+- name: Actor
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行中被记为执行审核操作的身份，视工作负载可能是用户或服务主体。可与 UserId 和 AADTarget 比较，以确定执行者、主体与目标。
+- name: ActorContextId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该事件中执行者所属组织上下文的 GUID。可用于区分同一工作区内不同组织上下文中的操作。
+- name: ActorContextId_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本表架构中 ActorContextId 的同名派生重复列，可能是备用组织上下文标识。使用前请结合相邻 Actor/ActorContextId 取值以及资源或类别上下文进行核实。
+- name: ActorIpAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该 Office 审核事件执行者记录的 IP 地址，形式为 IPv4 或 IPv6。可作为地理定位、异常位移或与 ClientIP 关联同源的排查线索。
+- name: AddOnGuid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该 Teams/Office 事件的加载项唯一标识符。调查加载项驱动活动时，可据此把同一加载项在不同用户或频道产生的事件关联起来。
+- name: AddOnType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所示产生此事件的加载项类别。可结合 AddonName 与 AddOnGuid 判断是哪类扩展产生了该审核操作。
+- name: AddonName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。对此事件负责的加载项显示名称。可用于在审核记录中按特定扩展跨用户、团队或频道追踪其活动。
+- name: AffectedItems
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行中受组操作或批量操作影响的条目内嵌信息。查看它可列举被审核操作涉及的邮箱或站点条目。
+- name: AppDistributionMode
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本事件相关应用的发布/分发模式记录。在审查与应用相关的 Office 活动时，有助于判断该应用如何触达用户。
+- name: AppId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该 Office 审核事件关联的应用标识符，通常为涉及的客户端或服务应用。可据此关联同一应用在不同用户上的活动。
+- name: AppPoolName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本事件关联的应用程序池名称，主要与服务器托管的工作流相关。追踪服务端 Office 操作时，可作为辅助线索。
+- name: Application
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该审核事件记录的应用名称，表明产生该活动的应用上下文。可与 AppId、UserAgent 结合，以归属所使用的客户端。
+- name: ApplicationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该行活动关联的 SharePoint 应用标识符。调查 SharePoint 审核记录时，可用它限定站点或应用级操作范围。
+- name: AzureADAppId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件涉及的 Teams 应用对应的 Microsoft Entra ID 应用标识符。可据此在租户内追踪同一注册应用的活动。
+- name: AzureActiveDirectory_EventType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行所表示的 Microsoft Entra ID 事件类型，通常用于与身份相关的 Office 操作。可与 RecordType 比较，判断记录是否偏向目录。
+- name: ChannelGuid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被审核的 Teams 频道唯一标识符。追踪特定团队会话空间活动时，可用它按频道范围汇总事件。
+- name: ChannelName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行中被审核的 Teams 频道名称。可与 TeamName、ChannelGuid 配合，定位被审核操作发生的位置。
+- name: ChannelType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被审核的 Teams 频道类型，记录区分标准频道与专用频道。可用于区分受限程度更高的频道空间中的活动。
+- name: ChatName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本事件关联的 Teams 或 Office 聊天名称。有助于识别被审核操作的会话上下文。
+- name: ChatThreadId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件涉及的聊天线程标识符。可据此重建特定 Teams 会话线程内的活动。
+- name: Client
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该审核操作所用客户端设备、设备操作系统和浏览器的详细信息。可与 ClientIP、UserAgent 一起用于刻画用户的连接方式。
+- name: ClientAppId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识执行本行所记录 Office 365 操作的客户端应用程序；可与 ClientIP、UserId 一起比较，将活动归因于特定用户使用的特定应用。
+- name: ClientIP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起本行所审核 Office 365 操作的设备或客户端 IP 地址；可与 TimeGenerated、UserId 结合，追溯活动来源位置。
+- name: ClientIP_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。部分 OfficeActivity 架构中存在的备用或重复客户端 IP 列；名称推断，官方未记录，因此在将其视为客户端地址前应检查该行的工作负载/类别上下文。
+- name: ClientInfoString
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述执行本行 Exchange 邮箱操作所用电子邮件客户端的文本；在调查邮件项访问时可帮助区分客户端软件、机器和用户。
+- name: ClientMachineName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。承载执行本行操作邮件客户端的计算机名称；可与 ClientIP、UserId 配对，将邮箱操作与设备关联。
+- name: ClientProcessName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行本行操作时访问邮箱的电子邮件或客户端进程；有助于区分 Outlook、移动端或 API 驱动访问与其他客户端类型。
+- name: ClientVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行本行操作的电子邮件客户端版本字符串；可与 ClientProcessName、ClientInfoString 一起，用于分析异常的或过时的邮箱客户端访问。
+- name: Client_IPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录本行邮箱操作时所用设备的 IP 地址；适用于以 Exchange 为焦点的关联分析，并应按时间和用户限定范围。
+- name: CommunicationType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行 Teams 或协作活动所涉及通信的类别；名称推断，需检查工作负载和操作上下文以解释具体通信模式。
+- name: CrossMailboxOperations
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。本行布尔值，表示所审核操作是否涉及多个邮箱；为 true 时，应关联 DestMailbox* 字段以识别所涉及的其他邮箱。
+- name: CustomEvent
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。部分 OfficeActivity 记录附带的、针对特定事件的可选自定义数据字符串；在将内容视为有意义前，应结合 OfficeWorkload 和 Operation
+    检查。
+- name: DataCenterSecurityEventType
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。本行数据中心或锁箱 cmdlet 事件的类型整数；名称推断且官方未给出枚举，依赖前应结合操作和提权字段核实。
+- name: DestFolder
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行所记录移动或复制操作的目标邮件文件夹；可与源文件夹类字段及 CrossMailboxOperations 一起还原邮箱操作路径。
+- name: DestMailboxId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行涉及跨邮箱操作时目标邮箱的标识符；在 CrossMailboxOperations 为 true 时出现，有助于追踪邮箱之间的数据移动。
+- name: DestMailboxOwnerMasterAccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。跨邮箱行的目标邮箱所有者的主账户 SID；可与 DestMailboxOwnerSid、DestMailboxOwnerUPN 一起，归属接收方邮箱。
+- name: DestMailboxOwnerSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行记录跨邮箱操作时目标邮箱所有者的 SID；可与 DestMailboxOwnerUPN 配对，解析接收方身份。
+- name: DestMailboxOwnerUPN
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。跨邮箱行中目标邮箱所有者的用户主体名称；有助于识别接收从其他邮箱移动或复制项目的邮箱所有者。
+- name: DestinationFileExtension
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行所记录 SharePoint 或 OneDrive 操作中复制或移动文件的扩展名；可与 DestinationFileName 结合，分析被移动的项目。
+- name: DestinationFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行捕获的文件操作中复制或移动文件的名称；可与 SourceFileName、DestinationRelativeUrl 一起追踪文件移动。
+- name: DestinationRelativeUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行中文件被复制或移动到的目标文件夹 URL；可与 Site_Url、SourceRelativeUrl 配对，还原所经过的路径。
+- name: EffectiveOrganization
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行提权或 cmdlet 活动所针对的租户或组织名称；有助于在多租户审核数据中限定跨组织管理操作的范围。
+- name: ElevationApprovedTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。本行所记录管理提权被批准的时间戳；可与 TimeGenerated、ElevationDuration 比较，评估提权窗口。
+- name: ElevationApprover
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。批准本行提权的 Microsoft 经理姓名；在审查特权访问批准时，可与 ElevationRequestId、ElevationRole 一起使用。
+- name: ElevationDuration
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。按官方描述以小时计的本行管理提权有效持续时间；可与提权时间戳结合，评估暴露时长。
+- name: ElevationRequestId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行所关联提权请求的标识符，用于关联同一特权角色授予的相关提权操作。可用它把某次请求的生命周期分组；但同一值可能横跨审批人与批准事件，需核对。
+- name: ElevationRole
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次提权事件中申请或授予的特权角色。可与同一行的操作者及审批人字段比对，以发现值得复核的异常或长期高权限访问。
+- name: ElevationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。本行所述提权的开始时间，可能与 TimeGenerated 不同。可用两者的时间差判断特权访问实际开始时间与记录写入时间的关系。
+- name: EventSource
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。事件在 SharePoint 侧的来源标记。官方说明称可能取值为 SharePoint 或 ObjectModel，故应视为依据名称的推测，并在实际工作区数据中确认取值后再依赖它。
+- name: Event_Data
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。自定义事件上携带的可选负载，通常是产生该行的操作所特有的类 JSON 内容。当常规 Operation 与对象字段不足以说明发生了什么时，可检查该字段。
+- name: ExtendedProperties
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本表中与 Microsoft Entra 相关事件附带的扩展属性，存放标准列之外的值。调查与目录相关的活动而常规字段无法解释该操作时，可解析该字段。
+- name: ExternalAccess
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标记该 cmdlet 或操作是由组织内用户还是组织外用户执行。在审查租户变更时，可用它区分内部管理活动与外部或联合访问。
+- name: ExtraProperties
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。本事件在标准列之外附带的、因工作负载而异的动态附加属性集合。其结构并不固定，在假设存在哪些键之前，应先查看资源与类别上下文。
+- name: Folder
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行所操作项所在的文件夹，例如涉及的邮箱或站点文件夹。可与操作者、项及操作字段结合，还原操作发生的位置。
+- name: Folders
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行所涉及多文件夹操作的源文件夹汇总信息。当单个 Folder 值无法涵盖一次同时触及多个文件夹的操作时，可使用该字段。
+- name: GenericInfo
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。部分操作附带的自由格式补充信息，用于注释及类似的一般性细节。可读取它获取操作在其他地方缺失的上下文，但不要视其为结构化或必然存在。
+- name: InterSystemsId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。据官方文档，这是在 Office 365 服务内部跨组件追踪操作的 GUID。它有助于关联服务不同部分产生的相关事件，但应在自有数据上确认关联性，不要预设其唯一性。
+- name: InternalLogonType
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档标注为内部使用的整数值，其含义与取值枚举均无文档说明。不要将其解读为标准登录类型，应改为查看事件周边上下文。
+- name: IntraSystemId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。据官方文档，这是 Microsoft Entra ID 为追踪本行所述操作而生成的 GUID，与服务侧的 InterSystemsId 不同。可谨慎地用两者关联相关事件。
+- name: IsManagedDevice
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，表示该操作是否由组织管理的设备执行。可用于设备可信性检查，但仅凭 false 或缺失值并不能证明端点未受管理或属恶意。
+- name: Item
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行操作所针对的项，按相应工作负载记录。可与 ItemType、用户及操作结合，在调查中识别被触及的具体对象。
+- name: ItemName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档称对邮件类行而言，该字段是电子邮件主题字段中的字符串。可用它识别邮件内容上下文，并预期非邮件操作上该字段缺失。
+- name: ItemType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次操作访问或修改的对象种类，参见文档中的 ItemType 参考。可与操作及对象标识符配合，区分各工作负载中的文件、文件夹和邮件活动。
+- name: LoginStatus
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。文档说明取自 OrgIdLogon.LoginStatus 的整数值，不同取值对应不同失败情况。可用它查找与登录失败相关的操作，并在告警前依据自有数据核实各代码含义。
+- name: LogonUserDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行本行所记录操作的用户的可读显示名。调查账户活动时，可与 SID 及用户标识符配合确认操作者身份。
+- name: LogonUserSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行本行操作的用户的安全标识符。由于名称可能变更或被复用，调查中应用 SID 将活动关联到具体账户。
+- name: Logon_Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。表示访问邮箱并执行所记录操作的用户类型。在审查邮箱活动时，可用它区分交互式、委派式或服务式访问。
+- name: MachineDomainInfo
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档称其为有关设备同步操作的信息。可将它用作同步活动周边的上下文，并在下结论前核实其在相应工作负载中的实际内容。
+- name: MachineId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档同样称其为有关设备同步操作的信息，通常用于标识执行同步的设备。可用它将同步活动关联到设备，但应先查看周边上下文。
+- name: MailboxGuid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次操作所涉及邮箱的 Exchange GUID，将邮箱活动定位到具体的邮箱对象而非具名所有者，常与邮箱归属和客户端 IP 字段配合使用。
+- name: MailboxOwnerMasterAccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件中邮箱所有者的主账户 SID；在 Exchange 访问调查中解析别名或链接邮箱时，有助于确定实际归属账户。
+- name: MailboxOwnerSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次活动所涉邮箱所有者的安全标识符；当 UPN 命名含糊或重复时，可用于账户级别的关联分析。
+- name: MailboxOwnerUPN
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件中被访问邮箱所有者的登录名；当活动由代理人或管理员执行时，可借此区分邮箱所有者与实际操作者。
+- name: Members
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。本行中与某个团队关联的用户动态列表，通常出现在成员添加或移除事件中；可与 TargetUserOrGroupName 对比，判断被添加或移除的对象。
+- name: MessageId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本记录所引用聊天或频道消息的标识符；可用于对相关消息操作分组，并将同一条消息在不同事件间关联起来。
+- name: ModifiedObjectResolvedName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录 cmdlet 修改对象的易读名称；当底层对象标识不易理解时，它能让管理员或配置变更更易识别。
+- name: ModifiedProperties
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。管理员事件中被修改属性的结构化描述，例如组成员资格或网站集管理员；可通过它查看具体哪些属性发生了变更及变更内容。
+- name: Name
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。仅在设置事件中出现，表示被更改设置的名称；与 OldValue、NewValue 配合，可显示被修改的是哪项租户或工作负载配置。
+- name: NewValue
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。仅在设置事件中出现，表示设置被赋予的新值；与 OldValue 比较可判断配置变更的方向及影响。
+- name: OfficeId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本表中审核记录的唯一标识符，便于引用以及在不同查询或下游告警间关联同一条导出事件。
+- name: OfficeObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所涉 SharePoint 或 OneDrive for Business 对象的标识符；可用于在一系列相关访问与共享事件中追踪同一文件、项目或站点。
+- name: OfficeTenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件记录的 Office 租户标识符；按它分组可区分共享同一工作区的不同租户活动，然后再对用户和对象进行分析。
+- name: OfficeTenantId_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该附加字段的确切含义未有文档说明；其名称仅为推断，使用前应检查周边资源、工作负载和类别上下文再作判断。
+- name: OfficeWorkload
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。活动发生的 Office 365 服务，例如 Exchange 或 SharePoint；这是主要的范围限定字段，因为许多列仅对特定工作负载存在。
+- name: OldValue
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。仅在设置事件中出现，表示设置变更前的旧值；与 NewValue 对比可还原配置变更前后的内容。
+- name: Operation
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件中用户或管理员执行操作的名称；在工作负载专项调查中，是按活动类型分组和筛选的关键字段。
+- name: OperationProperties
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。承载本次操作附加属性的动态结构；其内容随 Operation 和 OfficeWorkload 变化，应逐类活动查看而不可假定固定结构。
+- name: OperationScope
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录操作执行的范围；有助于判断变更作用于用户、组、站点还是租户级别的对象。
+- name: OrganizationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识本事件所属 Office 365 租户组织的 GUID；对同一组织保持不变，用于将结果限定在一个租户，而非标识目录对象。
+- name: OrganizationId_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。另一个组织标识字段，其语义未有文档说明；应按推断对待，使用前与 OrganizationId 及周边工作负载上下文核对。
+- name: OrganizationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本记录中租户组织的显示名称；当 GUID 不熟悉或有多个租户待调查时，有助于分析人员识别租户。
+- name: OriginatingServer
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行所记录 cmdlet 的服务器名称，通常是客户端或邮箱服务器；有助于将管理操作定位到具体主机。
+- name: Parameters
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与 Operation 中所指 cmdlet 一同使用的全部参数名称和值；查看它可还原管理操作的具体调用方式。
+- name: RecordType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按 OfficeActivity 内的审核记录种类进行分类，例如 Exchange 项、SharePoint 文件或 Teams 操作。调查时可先用它限定某工作负载的记录族，再按
+    Operation 或 UserId 过滤。
+- name: ResultReasonType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。说明该 Office 审核操作在 ResultStatus 中报告的结果原因，例如失败的原因。可与 ResultStatus 配合，解释某用户或客户端的拒绝或失败操作。
+- name: ResultStatus
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。指示本行所描述审核操作是成功还是失败。可与 Operation、UserId 和 TimeGenerated 配合，定位特定主体失败的访问、共享或邮箱操作。
+- name: SRPolicyId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。匹配本 OfficeActivity 行的策略标识符，通常用于内部风险或通信合规场景。可与 SRPolicyName 和 SRRuleMatchDetails
+    配合，将被标记的活动关联到具名策略。
+- name: SRPolicyName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。匹配本 Office 活动的策略可读名称。可按策略分组行，查看哪些用户或操作触发了合规或内部风险策略命中。
+- name: SRRuleMatchDetails
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态结构，承载本 OfficeActivity 行策略匹配的规则级细节。可检查其内容了解触发了哪些条件；具体 JSON 结构因场景而异，需按记录查看。
+- name: Scope
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。名称推断字段，OfficeActivity 未记录其语义，可能用于限定被审核的操作或对象范围。使用前应结合工作负载、记录类型和操作上下文判断。
+- name: SendAsUserMailboxGuid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 记录中用户以他人身份发送邮件时所访问邮箱的 Exchange GUID。可与 SendAsUserSmtp 和 LogonUserSid
+    关联，追踪邮箱模拟发送。
+- name: SendAsUserSmtp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。OfficeActivity 中审核到 SendAs 操作时，被模拟用户的 SMTP 地址。可与 SendAsUserMailboxGuid 及主体字段配合，识别被冒用的邮箱身份。
+- name: SendOnBehalfOfUserSmtp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 行中代表其发送邮件的用户 SMTP 地址。可与实际操作者及 SendOnBehalfOfUserMailboxGuid
+    比较，区分委派发送与直接 SendAs 活动。
+- name: SendonBehalfOfUserMailboxGuid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 记录中代表他人发送邮件时所访问邮箱的 Exchange GUID。调查委派邮箱发送时，可与 SendOnBehalfOfUserSmtp
+    配合使用。
+- name: SharingType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述资源被共享时分配的共享权限级别，对应本 OfficeActivity 记录中的 UserSharedWith 接收者。可用于判断共享是广泛暴露还是范围有限。
+- name: Site_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 行中文件或文件夹所在 SharePoint 或 OneDrive 站点的 GUID。按站点分组用户文件活动，便于调查访问或数据外泄。
+- name: Site_Url
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 行中访问的文件或文件夹所在 SharePoint 或 OneDrive 站点的 URL。可据此查看针对特定站点或文档库的活动。
+- name: Site_Url_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。名称推断字段，官方文档未给出含义，可能是与本 OfficeActivity 行相关的站点 URL 变体。解释前应查看记录的工作负载和站点上下文。
+- name: SourceFileExtension
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 行中用户访问文件的扩展名，例如 docx 或 pdf。在 SharePoint 或 OneDrive 调查中可据此过滤或刻画敏感文件类型。
+- name: SourceFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 记录中用户访问的文件或文件夹名称。可与 Site_Url、UserId 和 Operation 结合，追踪谁在何时触碰了特定文档。
+- name: SourceFileName_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。名称推断字段，OfficeActivity 未记录其语义，可能是本行源文件名变体。使用前应结合相关文件与站点字段核实。
+- name: SourceRecordId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。OfficeActivity 中审核记录的唯一标识符，可用于引用或去重特定事件。它不是导出序号，应与 TimeGenerated 一起用于排序。
+- name: SourceRelativeUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 行中用户访问文件所在文件夹的 URL。可与 Site_Url 和 SourceFileName 配合，还原 SharePoint
+    或 OneDrive 中的文档路径。
+- name: SourceRelativeUrl_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。名称推断字段，官方文档未给出含义，可能是与本 OfficeActivity 行相关的相对 URL 变体。应结合站点和文件夹上下文再下结论。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识将本 OfficeActivity 记录送入工作区的采集代理或管道。合并或比较不同来源记录时，可用它了解摄取来源。
+- name: Source_Name
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 行中触发被审核 SharePoint 操作的实体，官方取值包括 SharePoint 或 ObjectModel。可用于区分用户驱动操作与对象模型或服务驱动变更。
+- name: Start_Time
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。本 OfficeActivity 行中被审核 cmdlet 或操作的执行日期和时间。可与 TimeGenerated 一起对事件排序，为同一活动构建时间线。
+- name: SupportTicketId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。在支持场景中代表用户执行操作时记录的客户支持工单标识符；用于将 Office 365 管理员支持活动与外部工单关联。
+- name: TabType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该事件的 Teams 选项卡类型；在排查 Teams 选项卡添加、更新或删除操作时有用，应结合操作和团队上下文解读。
+- name: TargetContextId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。目标用户所属组织的 GUID；用于确认管理员操作中的跨组织目标，而非工作区或发起用户的租户。
+- name: TargetUserId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被记录操作所针对的目标用户标识符；与操作者字段配合，区分执行动作的人和被影响的人。
+- name: TargetUserOrGroupName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。资源被共享给的用户或组的 UPN 或名称；是调查 SharePoint、OneDrive 或 Teams 共享事件及其接收者的核心字段。
+- name: TargetUserOrGroupType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。将共享目标分类为成员、来宾、组或合作伙伴；可用它评估共享是否跨越组织边界，但应与目录数据相互印证。
+- name: TeamGuid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被审核事件涉及的 Microsoft Teams 团队的唯一标识符；用于按操作聚合相关团队活动，并与团队名称关联。
+- name: TeamName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被审核的 Teams 团队显示名称；便于生成可读报告和关联分析，但名称可能变更，应与 TeamGuid 配合使用。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。存储该记录的 Log Analytics 工作区标识符；查询时应按它限定范围，不要将其视为 Microsoft Entra 目录租户标识符。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。用户操作执行时的 UTC 日期和时间；是限定 Office 365 审核调查范围和构建活动时间线的主要时间过滤字段。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录所在表的名称；在 OfficeActivity 行中标识来源表，有助于编写跨表联合查询或过滤。
+- name: UserAgent
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。操作附带的客户端 User-Agent 字符串；有助于区分浏览器、本机客户端或自动化工具，但可被伪造，不能作为身份证明。
+- name: UserDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行活动的用户所属域部分；可用于按域或组织汇总活动，并识别外部或异常域。
+- name: UserId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行被记录操作的用户的 UPN；是回答“谁做了什么”的主要操作者字段，并用于跨工作负载关联活动。
+- name: UserId_
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。附加用户标识符列，其确切语义由名称推断且未在此记录；依赖它之前应先检查记录上下文和工作负载。
+- name: UserKey
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。UserId 中所指用户的替代标识符；当 UPN 变化或需关联报告不同用户键的服务记录时，可用它进行连接。
+- name: UserSharedWith
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。资源被共享给的用户；用于调查 SharePoint、OneDrive 或文件共享事件，并核实该接收者是否被授权访问该内容。
+- name: UserType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行操作的用户类别，如普通用户、管理员或系统账户；用于在调查中将管理操作与普通用户活动区分开。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Azure 资源的唯一标识符；可用于按资源过滤或联接，并注意部分引入日志中它可能为空。

@@ -208,8 +208,10 @@ def planner_prompt(system_prompt: str, memory: dict) -> str:
     application = memory.get("procedural_memory", {}).get("application")
     if procedures and application:
         prompt += "\n\n# 本次 PM 的使用边界（规划建议，不是已执行证据）\n" + json.dumps({k: application[k] for k in ("target_question", "next_step", "expected_observation", "limitations") if k in application}, ensure_ascii=False)
+    cards = memory.get("semantic_memory", {}).get("table_cards", [])
     tables = memory.get("semantic_memory", {}).get("tables", [])
-    if not procedures and tables:
-        prompt += "\n\n# PM 未命中时的 Semantic Memory（真实表字段，非案件证据）\n" + json.dumps(
-            [{"table": t["name"], "fields": t["field"], **({"fields_truncated": True} if t.get("fields_truncated") else {})} for t in tables], ensure_ascii=False, separators=(",", ":"))
+    if not procedures and cards:
+        prompt += "\n\n# Semantic Memory L2（各场景 schema 并集；type 为 MySQL 类型，实际可用性以当前数据库为准；非案件证据）\n" + json.dumps(cards, ensure_ascii=False, separators=(",", ":"))
+    elif not procedures and tables:
+        prompt += "\n\n# Semantic Memory（真实表字段，非案件证据）\n" + json.dumps(tables, ensure_ascii=False, separators=(",", ":"))
     return "\n".join(line for line in prompt.splitlines() if line.strip())

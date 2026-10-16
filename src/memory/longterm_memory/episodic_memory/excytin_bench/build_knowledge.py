@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from src.memory.longterm_memory.semantic_memory.excytin_bench.store import load_knowledge as load_semantic_knowledge
 from collections import Counter
 from pathlib import Path
 
@@ -39,7 +40,7 @@ def build_bundle(
         questions_dir=Path(questions_dir),
         semantic_path=Path(semantic_path),
     )
-    sm = json.loads(Path(semantic_path).read_text())
+    sm = load_semantic_knowledge(semantic_path)
     fields = {t["name"]: {f["name"] for f in t["field"]} for t in sm["tables"]}
     for (table, _), (target, required, _) in RULES.items():
         if (

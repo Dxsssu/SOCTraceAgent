@@ -1,0 +1,69 @@
+table_name: DeviceNetworkInfo
+core_columns:
+- name: ConnectedNetworks
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。适配器所连接网络的动态数组，包含网络名称、类别（公用/专用/域）、描述及是否面向 Internet 的标志。用于查看设备当时所处的网络环境，配合 TimeGenerated
+    追踪暴露面变化，不能作为活动发生的证据。
+- name: DefaultGateways
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。该适配器的默认网关地址动态数组。有助于识别设备经过的网段或网关，用于横向移动或异常路由的范围界定；应与同一行其他地址字段关联分析。
+- name: DeviceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。服务为设备分配的唯一标识，跨表稳定。是与其他 MDE 表关联、并聚合某设备所有适配器的主要枢纽；查询时应结合 TimeGenerated 使用。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。拥有该适配器记录的设备的完全限定域名。用于可读识别，并与 ReportId 或 Timestamp 组合区分行；跨租户关联时需核实命名规范。
+- name: DnsAddresses
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。该适配器配置的 DNS 服务器地址动态数组。可用于发现可能表明篡改或配置错误的异常 DNS 解析器；应结合同一行的 ConnectedNetworks
+    和网关地址解读。
+- name: IPAddresses
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。分配给该适配器的 IP 地址动态数组，含子网前缀和 IP 类别（RFC 1918/RFC 4291）。用于识别设备寻址与网络类别；同一设备多行，需结合适配器和时间关联。
+- name: IPv4Dhcp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该适配器配置的 DHCP 服务器的 IPv4 地址（如有）。有助于识别可能反映网络重配置的 DHCP 作用域或服务器变更；为空可能表示静态或未使用 DHCP，并非错误。
+- name: IPv6Dhcp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该适配器配置的 DHCP 服务器的 IPv6 地址（如有）。在评估地址分配时补充 IPv4Dhcp；空值可能表示静态配置，而非失陷证据。
+- name: MacAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。网络适配器的 MAC 地址。支持适配器级识别，并与其他设备或网络遥测关联；MAC 可被伪造或更改，应作为标识而非身份证明。
+- name: MachineGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与设备关联的计算机组，用于基于角色的访问控制以确定对设备的访问权限。适用于界定哪些分析员或团队可查看该设备；并非设备本身的安全分级。
+- name: NetworkAdapterName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备上报告的网络适配器名称。用于区分同一设备多行记录中的不同适配器；在跟踪特定接口随时间变化时，应与 DeviceId 和 TimeGenerated
+    组合。
+- name: NetworkAdapterStatus
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。网络适配器的运行状态。有助于判断采集时接口是否启用或断开；应结合适配器名称和时间解读，因为状态反映的是某一时刻，而非保证。
+- name: NetworkAdapterType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。网络适配器类型。为适配器能力或虚拟化提供上下文；应与厂商和名称一起使用，并与预期硬件基线比对，而非视为权威清单。
+- name: NetworkAdapterVendor
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。网络适配器的制造商或厂商。有助于发现可能表明隧道或虚拟化的异常或虚拟适配器；应与同一行的适配器类型、名称和状态一起解读。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。该终端记录的来源报告计数标识，可能重复。识别记录时应结合 DeviceName 和 Timestamp，不应把 ReportId 单独当作全局唯一事件键。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。采集该事件的代理类型，例如 OpsManager 或 Azure。有助于理解采集路径并进行筛选；对于本 MDE 网络清单，通常反映采集器而非设备操作系统本身。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。官方文档中为 Log Analytics 工作区 ID，并非目录租户 ID。用于将查询限定到正确的工作区；在报告或关联中不要将其描述为 Azure AD
+    租户标识符。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。MDE 代理在端点上记录事件的时间和日期。是限定适配器清单快照的主要时间过滤条件；由于同一设备随时间产生多行，查询务必用它限定。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: TunnelType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。当接口用于隧道时使用的隧道协议，例如 6to4、Teredo、ISATAP、PPTP、SSTP、SSH。标记可能需要检查隐蔽信道或远程访问的隧道适配器；应作为线索，而非证据。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。表名，此处为 DeviceNetworkInfo。用于在联合或跨表查询中确认表身份并筛选数据；在 AzureDiagnostics 中用于区分资源类别。

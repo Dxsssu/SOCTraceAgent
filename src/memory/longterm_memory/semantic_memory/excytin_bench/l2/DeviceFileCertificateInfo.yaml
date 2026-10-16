@@ -1,0 +1,71 @@
+table_name: DeviceFileCertificateInfo
+core_columns:
+- name: CertificateCountersignatureTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。签名证书获得副签的时间（UTC），可能表明时间戳机构何时验证了签名。可与证书创建时间和事件时间对比，发现异常的签名流程。
+- name: CertificateCreationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。证书的颁发时间（UTC）。可用于评估证书年龄，发现非常新近创建的签名证书，对于可信软件可能较为可疑。
+- name: CertificateExpirationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。证书的到期时间（UTC）。可与事件时间比较，识别已过期证书仍出现在已签名文件中，暗示陈旧或被篡改的文件。
+- name: CertificateSerialNumber
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。颁发 CA 分配的证书序列号，在该 CA 内唯一。可按序列号分组事件，追踪由同一证书签名的所有文件和设备。
+- name: CrlDistributionPointUrls
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。可获取该证书吊销列表的网络共享或 URL 地址。在验证信任时，注意是否包含异常、仅内部或不可访问的端点。
+- name: DeviceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。证书验证发生端点的服务分配唯一标识。可与 DeviceName 一起将证书发现限定到特定设备，并与其他表关联。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与证书验证事件关联设备的完全限定域名。用于可读的分组与透视，调查哪些端点共享同一签名者。
+- name: IsRootSignerMicrosoft
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，指示根证书签名者是否为 Microsoft。可快速区分 Microsoft 签名的系统文件与第三方或可能不受信任的签名。
+- name: IsSigned
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，指示文件是否已签名。可用于筛选端点上未签名的文件，这些文件更可能可疑或违反策略。
+- name: IsTrusted
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，指示基于未知根、无效签名或吊销等证书验证检查后文件是否受信任。为 false 时值得深入审查，但不单独证明文件恶意。
+- name: Issuer
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。颁发该证书的证书颁发机构的标识信息。可据此分组文件按颁发 CA，识别异常或自签名颁发者。
+- name: IssuerHash
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。唯一标识颁发证书颁发机构的哈希值。可在颁发者字符串不一致时，用于可靠分组和跨事件关联，替代或配合 Issuer 文本使用。
+- name: MachineGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用于基于角色的访问控制以确定设备访问权限的计算机组。可用于按管理或安全边界限定调查范围。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。该终端记录的来源报告计数标识，可能重复。识别记录时应结合 DeviceName 和 Timestamp，不应把 ReportId 单独当作全局唯一事件键。
+- name: SHA1
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被评估签名的文件的 SHA-1 哈希值。可用于从文件哈希关联到该文件涉及的所有设备和证书。
+- name: SignatureType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。指示签名信息是作为文件内嵌内容读取还是从外部目录文件读取。有助于解释信任结果，并发现目录签名与内嵌签名的差异。
+- name: Signer
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。对文件进行签名实体的标识信息。可据此查找由同一发布者或签名者身份签名的所有文件和设备。
+- name: SignerHash
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。唯一标识签名者的哈希值。当签名者显示名称多变或被伪造时，可用于可靠分组和关联。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生记录的代理或收集渠道，例如 OpsManager 或 Azure。可用于了解数据来源并筛选相关采集路径。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录关联的 Log Analytics 工作区 ID（按文档说明）。不要将其视为目录租户标识；可用于将查询限定到某个工作区。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。端点代理记录该事件的时间（UTC）。可作为主要时间筛选条件和证书验证活动时间线分析的轴。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供记录的表的名称，通常为 DeviceFileCertificateInfo。在跨多个表查询时，可用于确认表范围。

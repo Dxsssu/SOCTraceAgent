@@ -1,0 +1,66 @@
+table_name: Usage
+core_columns:
+- name: AvgLatencyInSeconds
+  type: TEXT
+  desc: 源类型 real；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断且官方标注为已弃用：该小时用量记录的平均摄取延迟（秒）。使用前应查阅历史文档；现代分析应优先使用 StartTime 和 TimeGenerated
+    等时间字段。
+- name: BatchesCapped
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断且官方标注为已弃用：本次小时聚合期间被截断的用量批次数。该值为历史遗留，使用需谨慎，不能据此推断当前平台行为。
+- name: BatchesOutsideSla
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断且官方标注为已弃用：本次小时记录中超出服务级别协议（SLA）的批次数量。仅为历史指标，若无文档支持不应据此判断当前 SLA。
+- name: BatchesWithinSla
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断且官方标注为已弃用：该小时内符合服务级别协议（SLA）完成的用量批次数。属于遗留字段，应与官方 SLA 说明结合使用，不应作为唯一依据。
+- name: Computer
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断且官方标注为已弃用：旧采集路径中与用量记录关联的主机。对于工作区级摄取查询，Computer 通常为空；应检查行上下文，不要假设其代表设备身份。
+- name: DataType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识所报告用量涉及的工作区哪张表，可用于按表比较摄取量与成本。与 Quantity 一起按 DataType 分组，可找出某时间段内贡献量最大的数据源。
+- name: EndTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该用量行所覆盖的一小时聚合窗口的结束时间戳。可与 StartTime 配合确定精确窗口边界；它表示该小时结束，而非安全事件时间。
+- name: IsBillable
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。逻辑标志，表示平台是否将该用量记录视为可计费。可与 Quantity、MeterId 结合，将可计费摄取量与非计费或内部用量区分开。
+- name: LinkedMeterId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断且官方标注为已弃用：旧用量记录中的关联计费计量器 GUID。不应视为当前计费数据；成本分析应优先使用 MeterId 与最新文档。
+- name: LinkedResourceUri
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断且官方标注为已弃用：旧用量架构中的关联资源 URI。当前记录中通常为空；使用前应检查 ResourceUri 和行上下文。
+- name: MeterId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。应用于该小时用量行的计费计量器 GUID，标识所摄取数据的定价维度。可按 MeterId 与 Quantity、IsBillable 分组，核对各计量器的成本。
+- name: Quantity
+  type: TEXT
+  desc: 源类型 real；在 ExCyTIn MySQL 中以 TEXT 存储。据官方文档，该小时用量行所摄取的数据量（兆字节）。可按 DataType、Solution 或 MeterId 求和，用于评估摄取规模、预测增长并估算成本驱动因素。
+- name: QuantityUnit
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Quantity 值的单位；官方文档说明该值始终为兆字节（Mbytes）。用于在校验多行用量求和时确认单位一致。
+- name: ResourceUri
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识生成该用量行的工作区的 URI；官方文档指出同一工作区该表内所有行相同。在关联多个工作区时用于确认工作区范围。
+- name: Solution
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所报告用量关联的解决方案或管理包，按产品系列对数据类型分组。可按 Solution 与 Quantity、IsBillable 分组，将摄取量和成本归因到具体监视解决方案。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。据官方文档，报告该记录的代理或采集通道类型，例如 OpsManager、Linux 或 Azure。可结合 SourceSystem 与 DataType，了解哪些采集路径产生了用量。
+- name: StartTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。一小时聚合窗口的开始时间戳，官方文档说明其与 TimeGenerated 相同。用于精确按小时分桶；它表示用量窗口开始，而非安全事件发生时间。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断，官方列参考未提供说明：应理解为用量记录的工作区或租户范围标识符，而非目录租户 ID。用作筛选前请对照当前工作区文档确认含义。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。据官方文档，用量记录的创建日期和时间，与小时窗口开始时间对齐。可在该计费表中用于趋势、保留期和同比摄取量比较。
+- name: TotalBatches
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断且官方标注为已弃用：本次小时聚合处理的用量批次总数。属于遗留字段；若无文档支持，不应假设它反映当前批处理情况。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该行的表名称；对于本用量数据集应显示为 Usage。在查询工作区中类似计费相关表时，可按 Type 筛选出用量记录。

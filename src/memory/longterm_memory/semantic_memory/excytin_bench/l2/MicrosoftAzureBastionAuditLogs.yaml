@@ -1,0 +1,68 @@
+table_name: MicrosoftAzureBastionAuditLogs
+core_columns:
+- name: ClientIpAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起 Bastion 连接的浏览器源 IP；可据此查找来自同一客户端主机的其他会话，或标记异常外部来源。
+- name: ClientPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。客户端浏览器在此连接中使用的源 TCP 端口；与 ClientIpAddress 和时间结合可关联特定会话流，但不能用于识别用户。
+- name: Duration
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。已完成 Bastion 会话的持续时长（毫秒）；仅在会话结束后填充，可用于发现异常长或异常短的交互式会话。
+- name: Location
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按提供方记录的处理该请求的 Azure 区域；用于确认会话经过预期的 Bastion 区域，而非用于定位最终用户地理位置。
+- name: Message
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该 Bastion 事件关联的自由文本详情；当仅有会话开始/结束字段无法解释异常时，可检查其中的错误或状态上下文。
+- name: OperationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行记录的 Bastion 操作名称；用于在按用户或目标聚合前区分会话开始、结束或连接事件。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。会话使用的远程协议，例如 ssh 或 rdp（据名称推断）；用于在分析用户行为或目标暴露面时按访问方式区分会话。
+- name: ResourceType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。会话期间访问的 Azure 资源类型，例如 VM、VMSS 或与 Bastion 相关的类型；用于将调查聚焦于特定目标类别。
+- name: SessionEndTime
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Bastion 会话结束的 UTC 时间戳；与 SessionStartTime 配合可重建会话时间窗，并发现缺少正常结束的会话。
+- name: SessionStartTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。Bastion 会话开始的 UTC 时间戳；用于按用户或隧道对会话排序，并与目标 VM 的登录活动进行比对。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该记录的代理或采集管道，此服务通常为 Azure；用于区分数据摄入路径，而非描述会话主体。
+- name: TargetResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Bastion 会话所连接 VM 的 Azure 资源 ID；可据此排查针对单个目标在所有用户、客户端和时间上的访问记录。
+- name: TargetVMIPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。通过 Bastion 访问的目标 VM 的 IP 地址；在与其它网络或主机日志关联时配合 TargetResourceId 使用，而非作为客户端地址。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档记录，该记录所属的 Log Analytics 工作区 ID；用于将查询限定到正确工作区，切勿将其视为目录租户标识。
+- name: Time
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。服务记录的日志事件 UTC 时间戳；用于限定时间范围的排查，并对同一隧道内的事件排序。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。记录进入工作区时分配的摄入时间戳；可与 Time 比较以评估上报延迟，而非用于确定会话发生时间。
+- name: TunnelId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识单个会话隧道的内部 Bastion 连接 GUID；作为主键可关联开始与结束行以及单次连接内的全部活动。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供该记录的表名称；用于限定联合查询范围，并确认该行来自此 Bastion 审计表而非相关日志。
+- name: UserAgent
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。建立连接时提交的浏览器 user-agent 字符串；用于分析客户端工具并标记异常或自动化浏览器，但不能用于认证用户身份。
+- name: UserEmail
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。通过 Bastion 登录的用户所关联的电子邮件账户；便于以可读方式归属会话，但受目录命名准确性影响。
+- name: UserName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。从 Bastion 登录目标 VM 所使用的用户名；用于将会话归属到操作者，但请注意它标识登录身份而非客户端主机。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所关联 Azure 资源的唯一标识符；在以资源为中心的调查中用于将查询限定到特定 Bastion 或相关资源。

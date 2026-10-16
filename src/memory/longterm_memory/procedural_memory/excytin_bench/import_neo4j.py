@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from src.memory.longterm_memory.semantic_memory.excytin_bench.store import load_knowledge as load_semantic_knowledge
 import os
 from pathlib import Path
 
@@ -22,7 +23,7 @@ from .build_knowledge import (
 def validate_knowledge(knowledge, semantic=None, episodic=None):
     schema = json.loads(Path(__file__).with_name("procedure.schema.json").read_text())
     Draft202012Validator(schema).validate(knowledge)
-    semantic = semantic or json.loads(DEFAULT_SEMANTIC_KNOWLEDGE.read_text())
+    semantic = semantic or load_semantic_knowledge(DEFAULT_SEMANTIC_KNOWLEDGE)
     episodic = episodic or json.loads(DEFAULT_EPISODIC_KNOWLEDGE.read_text())
     if (
         knowledge["semantic_catalog"]["schema_hash"]
@@ -71,11 +72,6 @@ def import_knowledge(*, uri, username, password, database, knowledge):
     def replace(tx):
         for query, params, expected in [
             (
-                "MATCH (c:LogCatalog {catalog_id:$id}) RETURN c.schema_hash AS value",
-                {"id": knowledge["semantic_catalog"]["catalog_id"]},
-                knowledge["semantic_catalog"]["schema_hash"],
-            ),
-            (
                 "MATCH (c:EpisodeCatalog {episodic_catalog_id:$id}) RETURN c.source_sha256 AS value",
                 {"id": knowledge["episodic_catalog"]["episodic_catalog_id"]},
                 knowledge["episodic_catalog"]["source_sha256"],
@@ -83,7 +79,7 @@ def import_knowledge(*, uri, username, password, database, knowledge):
         ]:
             record = tx.run(query, **params).single()
             if record is None or record["value"] != expected:
-                raise ValueError("Import matching Semantic/Episodic dependencies first")
+                raise ValueError("Import matching Episodic dependency first")
         env = tx.run(
             "MATCH (e:Environment {environment_id:$id}) RETURN count(e) AS n",
             id=knowledge["environment_id"],

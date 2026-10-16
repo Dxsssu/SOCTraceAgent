@@ -1,0 +1,179 @@
+table_name: DeviceFileEvents
+core_columns:
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。名称推导出的活动类型，用于区分本行记录的文件操作（如创建、修改或重命名）。可用它按操作划分事件；具体枚举应结合 resource/category 上下文确认。
+- name: AdditionalFields
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态字段集合，存放本文件事件中无独立列值的额外属性（名称推导）。可逐事件查看其键以获取补充上下文；不要假定各行具有固定结构或 JSON 路径。
+- name: AppGuardContainerId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。当本文件事件产生时，用于隔离浏览器活动的 Application Guard 容器标识符。其存在表明该文件操作与某设备、某时间的隔离浏览会话相关。
+- name: DeviceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发生本文件事件的设备在服务中的标识符。可与其他 Defender 表关联，把该文件操作与同一设备的清单、登录或网络连接对应起来。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录的文件操作所在设备的完全限定名称。用于按主机分组和报告；应与 DeviceId 配合，因为名称可能随时间变化或重复。
+- name: FileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件所作用文件的名称，无论其被创建、更改还是重命名。可与 FolderPath 组合，跨设备、跨时间追踪同一文件。
+- name: FileOriginIP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。据数据来源的溯源信息，文件被下载时的来源 IP。可用其调查外部投放基础设施；该字段为空并不证明文件是本地创建的。
+- name: FileOriginReferrerUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。链接到所下载文件的页面 URL，描述下载的引荐上下文。可与 FileOriginUrl 一起重建投递链，但不能据此证明用户点击。
+- name: FileOriginUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。文件被下载来源的 URL，指示 Web 或远程投放来源。调查浏览器或下载器活动时，可与发起进程及 FileOriginIP 关联。
+- name: FileSize
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。该操作所涉文件按记录的大小（字节）。可用于比较不同主机或版本上的文件实例，并标记异常偏大或偏小的变体。
+- name: FolderPath
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件所作用文件所在的目录。可与 FileName 组合还原完整路径，并检查符合暂存或持久化特征的写入位置。
+- name: InitiatingProcessAccountDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行导致本文件事件的进程的账户域。在把文件活动归因到某身份时，可用它区分本地、工作组或目录账户。
+- name: InitiatingProcessAccountName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行对本文件事件负责的进程的账户用户名。可与域、SID 或 UPN 配合，把写入归因到设备上的具体身份。
+- name: InitiatingProcessAccountObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行发起进程的账户的目录对象 ID（如可用）。可用于把文件活动关联到身份记录；它标识账户而非设备。
+- name: InitiatingProcessAccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行本文件事件背后进程的账户安全标识符。在名称或 UPN 有差异的主机间进行确定性账户匹配时很有用。
+- name: InitiatingProcessAccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行发起进程的账户的用户主体名称。可用于以身份为中心的关联，并将文件活动与登录或邮件相关遥测连接。
+- name: InitiatingProcessCommandLine
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。启动导致本文件事件进程的命令行。可检查脚本解释器、下载工具或编码参数，以解释文件是如何产生的。
+- name: InitiatingProcessCreationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。对本文件事件负责的进程启动的时间。可与事件时间戳比较，判断启动后多久发生该文件操作，从而支持因果排序。
+- name: InitiatingProcessFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起本文件事件的进程名称。可据此查找同一可执行文件写入的其他文件；结合文件夹路径和哈希确认完整身份。
+- name: InitiatingProcessFileSize
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程映像文件的大小（字节）。在跨设备比较进程二进制时可用作弱指纹；它本身不能唯一标识该进程。
+- name: InitiatingProcessFolderPath
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。导致本文件事件的进程映像所在目录。与 InitiatingProcessFileName 结合，可判断该二进制是否从可疑或用户可写位置运行。
+- name: InitiatingProcessId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。发起本文件事件的进程 ID。由于 PID 会被复用，应按设备和时间限定范围；并与同主机、同时间的进程事件关联。
+- name: InitiatingProcessIntegrityLevel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。分配给发起进程的完整性级别，影响其权限。应结合设备和上下文解读；高完整性级别表示较高信任，本身并不代表恶意行为。
+- name: InitiatingProcessMD5
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程映像的 MD5 哈希，用于跨主机识别该可执行文件的传统指纹及威胁情报查询；存在碰撞可能。
+- name: InitiatingProcessParentCreationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。执行该文件操作的进程其父进程的启动时间，可将父进程时间线与该文件事件及其他设备活动进行关联。
+- name: InitiatingProcessParentFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。在此设备上生成执行该文件操作进程的父进程文件名，有助于建立围绕可疑文件写入的进程谱系。
+- name: InitiatingProcessParentId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。生成该文件事件发起进程的父进程 PID；PID 会被重用，需结合 DeviceId 与事件时间进行限定。
+- name: InitiatingProcessSHA1
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行该文件操作的进程映像 SHA-1 哈希，可用于信誉查询以及同一可执行文件跨设备关联。
+- name: InitiatingProcessSHA256
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该文件操作的进程映像 SHA-256 哈希；该字段通常为空，关联活动时优先使用 SHA1 列。
+- name: InitiatingProcessTokenElevation
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该文件操作的进程令牌提升状态（如已提升与未提升），用于判断其是否以提升权限执行。
+- name: InitiatingProcessVersionInfoCompanyName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该文件操作的可执行文件版本资源中的公司名称，可通过元数据不匹配发现未签名或伪装的可执行文件。
+- name: InitiatingProcessVersionInfoFileDescription
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备上发起该文件操作的进程版本资源中嵌入的描述字符串；应与文件名及签名者信息相互印证。
+- name: InitiatingProcessVersionInfoInternalFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该文件事件发起进程版本资源中记录的内部文件名，这一元数据属性有助于发现被重命名或伪造的二进制文件。
+- name: InitiatingProcessVersionInfoOriginalFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该文件操作进程版本资源中声明的原始文件名，对于被重命名的二进制文件常与磁盘上的名称不同。
+- name: InitiatingProcessVersionInfoProductName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该文件事件的进程版本资源中的产品名称，可用于供应商识别以及与预期软件进行异常检测。
+- name: InitiatingProcessVersionInfoProductVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起该文件操作的进程映像所记录的产品版本，可用于发现与可疑文件写入相关的过时或异常软件版本。
+- name: IsAzureInfoProtectionApplied
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，指示在此次记录的文件操作时该文件是否应用了 Azure 信息保护加密。
+- name: MD5
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录文件操作所作用文件的 MD5 哈希，可用于跨设备、跨事件查找并关联相同内容。
+- name: MachineGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。分配给设备的计算机组，用于基于角色的访问控制限定哪些分析人员角色可查看该设备的文件活动。
+- name: PreviousFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行记录的重命名操作之前该文件使用的名称，与 PreviousFolderPath 配合可重建移动或重命名的源路径。
+- name: PreviousFolderPath
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。在此次记录操作之前存放该文件的文件夹，可用于在设备上对比移动或重命名的源路径与目标路径。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。该终端记录的来源报告计数标识，可能重复。识别记录时应结合 DeviceName 和 Timestamp，不应把 ReportId 单独当作全局唯一事件键。
+- name: RequestAccountDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。远程发起该文件活动（例如通过共享）的账户域；有助于将远程操作者与本地发起进程区分开来加以追踪。
+- name: RequestAccountName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用于远程发起该文件活动的账户用户名；可与 RequestSourceIP 关联，以归属设备上的远程文件操作。
+- name: RequestAccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用于远程发起该文件活动的账户安全标识符，是归属远程写入并跨设备关联的稳定账户键值。
+- name: RequestProtocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。在适用情况下远程发起该文件活动所使用的网络协议，例如 Local、SMB 或 NFS，用于指示所采用的访问路径。
+- name: RequestSourceIP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。远程发起该文件活动的设备的 IPv4 或 IPv6 地址；与 RequestAccountName 配合可归属对受影响文件的远程访问。
+- name: RequestSourcePort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。远程发起该文件活动的设备上的源端口，在重建该操作背后的远程连接时作为源 IP 的补充信息。
+- name: SHA1
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件所操作文件的 SHA-1 哈希，可跨设备与路径识别受影响文件的内容；注意这是目标文件哈希，不是发起进程的哈希。
+- name: SHA256
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件所操作文件的 SHA-256 哈希；受影响文件内容的最强标识符，适合威胁情报匹配以及在多个路径间去重同一文件。
+- name: SensitivityLabel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件发生时赋予该文件的信息保护标签，表示数据分类；可结合 SensitivitySubLabel 发现被标记为敏感的标密文件遭异常移动、重命名或复制的情况。
+- name: SensitivitySubLabel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。归属于该文件敏感度标签下的子标签，细化本事件文件的数据分类；其独立于父标签处理，评估内容暴露时应将二者一并排查。
+- name: ShareName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本事件中保存该文件的网络共享或共享文件夹名称；仅当文件活动发生在共享上时才有意义，可用于界定基于 SMB 或共享的文件访问调查范围。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。将该文件事件采集到工作区的收集代理或源系统；有助于区分不同连接器来源，并在比较不同接入路径数据时筛选行。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本文件事件记录所在的 Log Analytics 工作区标识符；文档定义为工作区 ID，而非目录租户 ID。用于将查询限定到正确的工作区。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。MDE 代理在终结点上记录本文件事件的日期和时间；是排序文件活动和围绕设备或文件构建时间线的主要时间轴。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此行来源的表名称，用于限定查询范围并确认该行属于 DeviceFileEvents 数据；不要将其视为事件类型或操作分类值。
+- name: rn
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。导出数据中的行编号字段，不是安全事件标识。源架构未说明其排序规则；构建调查时间线应使用事件时间和实体标识。

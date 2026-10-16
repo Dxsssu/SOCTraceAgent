@@ -1,3 +1,4 @@
+"""Legacy graph export only; online SM and PM/EM imports use local L1/L2."""
 from __future__ import annotations
 
 import argparse
@@ -42,7 +43,8 @@ def chunked(rows: list[dict[str, Any]], size: int = 500) -> Iterable[list[dict[s
 
 
 def load_knowledge(path: Path) -> dict[str, Any]:
-    knowledge = json.loads(path.read_text(encoding="utf-8"))
+    from .store import load_knowledge as load_schema
+    knowledge = load_schema(path)
     schema_path = Path(__file__).with_name("knowledge.schema.json")
     Draft202012Validator(json.loads(schema_path.read_text(encoding="utf-8"))).validate(knowledge)
     required = {"format_version", "environment", "catalog", "tables", "join_keys"}

@@ -1,0 +1,96 @@
+table_name: Heartbeat
+core_columns:
+- name: Category
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断的心跳通道分类，如 Direct Agent、SCOM Agent 或 SCOM Management Server。用于在排查代理健康时区分直接连接与
+    SCOM 管理的代理。
+- name: Computer
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发出此次心跳的计算机名称，是主要的主机关联字段。可按主机分组心跳以检查上报连续性，或与其他表中的机器名关联。
+- name: ComputerEnvironment
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录发出心跳的计算机托管在 Azure 还是非 Azure 环境。用于按云与本地资产划分代理覆盖率和健康问题。
+- name: ComputerIP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。心跳计算机记录的 IP 地址，按文档说明使用公网地址。可用于网络位置核查，但应视为每次心跳的观测值而非固定的主机标识。
+- name: ComputerPrivateIPs
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。上报计算机关联的私有 IP 地址动态列表。可用于识别内部地址以关联主机；需检查数组内容，不要当作标量进行跨表连接。
+- name: IsGatewayInstalled
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，表示心跳时该计算机是否安装了 Log Analytics 网关。用于识别可能中转其他代理流量的主机，以评估数据收集路径。
+- name: MG
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断可能表示与代理心跳相关的管理组。此解释仅为名称推断：使用前请结合该行的 Category 与 ManagementGroupName 上下文核实。
+- name: ManagementGroupName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。代理所属 Operations Manager 管理组的名称。用于区分 SCOM 管理的心跳与直接连接或独立代理的心跳。
+- name: OSMajorVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。心跳计算机操作系统的主版本号。可与 OSName、OSMinorVersion 一起评估上报代理的补丁与平台覆盖情况。
+- name: OSMinorVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。心跳计算机操作系统的次版本号。可与 OSMajorVersion、OSName 一起识别和比较代理主机平台。
+- name: OSName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。上报计算机运行的操作系统名称。用于在排查覆盖率或兼容性问题时按平台对代理心跳进行分组和筛选。
+- name: OSType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。心跳计算机的操作系统类型，文档标注为 Windows 或 Linux。用于按平台类别划分代理健康与日志。
+- name: RemoteIPCountry
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与计算机所记录 IP 位置关联的国家。可作为代理资产的粗略位置上下文，不要当作精确的主机地理位置。
+- name: RemoteIPLatitude
+  type: TEXT
+  desc: 源类型 real；在 ExCyTIn MySQL 中以 TEXT 存储。由 IP 推导的计算机近似地理纬度。可与 RemoteIPLongitude 一起用于粗略位置映射，不用于精确定位。
+- name: RemoteIPLongitude
+  type: TEXT
+  desc: 源类型 real；在 ExCyTIn MySQL 中以 TEXT 存储。由 IP 推导的计算机近似地理经度。与 RemoteIPLatitude 配对可将代理主机映射到区域。
+- name: Resource
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档说明是运行代理的 Azure 资源名称。用于将心跳关联到具体云资源，注意官方描述可能与 ResourceGroup 互换。
+- name: ResourceGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档说明是运行代理资源所在的 Azure 资源组名称。可用资源组限定代理健康范围，注意官方描述可能与 Resource 互换。
+- name: ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行代理的 Azure 资源 ID，为向后兼容而保留；文档推荐使用 _ResourceId。用于与 Azure 资源进行跨表连接。
+- name: ResourceProvider
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行代理资源的 Azure 资源提供程序命名空间，如 Microsoft.Compute。可用于按提供程序筛选或分组代理主机，限定 Azure 资源范围。
+- name: ResourceType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行代理资源的 Azure 资源类型，例如 virtualmachines 或 managedclusters。可用于在盘点覆盖率时区分代理的托管上下文。
+- name: SCAgentChannel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录代理如何连接到工作区，可能值为 Direct 或 SCManagementServer。用于在代理健康分析中区分直接连接与经管理服务器路由的代理。
+- name: Solutions
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发出心跳时该代理已部署的解决方案列表。用于查看该时刻上报主机正在运行的监视或安全解决方案。
+- name: SourceComputerId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断是产生心跳的源计算机标识符；文档缺少官方列说明。可作为看似稳定的主机键使用，但断言唯一性前请检查上下文。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。收集心跳的代理类型，例如 Windows 代理的 OpsManager、Linux 代理的 Linux，或 Azure Diagnostics 的 Azure。用于限定数据接入路径。
+- name: SubscriptionId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。拥有发出此心跳的资源的 Azure 订阅标识符。用于将存活状态和代理版本检查限定到某个订阅，它并非用户或目录租户标识符。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据官方文档，这是与该记录关联的工作区 ID，而非 Azure AD 目录租户 ID。用于工作区范围限定；若调查目录身份，应依赖身份相关的表。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。心跳记录创建时的时间戳，标记代理上报的分钟。用于衡量每台计算机的最后可见时间、上报缺口和代理静默；它不是安全事件时间。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。表名值，此处为 Heartbeat，标识记录来源。在联合查询或过滤中使用，以在工作区关联分析时把代理健康行与其他 Log Analytics 表区分开。
+- name: VMUUID
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此心跳关联的虚拟机的唯一标识符，可用于在主机名或 IP 变化时跟踪该 VM。对于非 VM 来源不保证有值，也不是代理或用户 ID。
+- name: Version
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。上报此心跳的 Log Analytics 代理版本。用于在健康检查或修复规划中查找各计算机上过时或不一致的代理；它不是操作系统版本。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此心跳记录关联的资源的唯一 Azure 资源标识符。用于关联到该资源或与 Azure 资源日志连接；对于非 Azure 连接的来源可能为空。

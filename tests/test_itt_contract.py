@@ -73,7 +73,7 @@ def test_planner_uses_sm_fallback_and_empty_pm_section():
     event = Event(event_name="ignored", message="Investigate alert", context={"memory_profile": "excytin_bench"})
     memory = MemoryContextService(procedure_selector=lambda *_: "[]").planner_view().build(event)
     assert memory["procedural_memory"]["procedures"] == []
-    assert memory["semantic_memory"]["tables"] == []
+    assert memory["semantic_memory"]["table_cards"] == []
     assert planner_prompt("system", memory) == "system\n# 适用的 Procedural Memory"
 
 

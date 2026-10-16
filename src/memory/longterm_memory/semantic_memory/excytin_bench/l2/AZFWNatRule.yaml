@@ -1,0 +1,50 @@
+table_name: AZFWNatRule
+core_columns:
+- name: DestinationIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。DNAT 转换前防火墙看到的数据包目标 IP。与 TranslatedIp 对比可确认入站连接实际到达的内部后端。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。匹配数据包转换前的目标端口，通常为防火墙上对外发布的入站端口。与 TranslatedPort 配合可核对入站到后端的端口映射。
+- name: Policy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发该数据包 DNAT 规则所在的 Azure 防火墙策略名称。可用于将调查范围限定到特定策略配置。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。匹配数据包的网络协议，例如 UDP 或 TCP。在审查暴露的入站服务时可用于按传输层过滤 DNAT 活动。
+- name: Rule
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。匹配该数据包的具体 DNAT 规则名称。调查时可据此判断是哪条规则放行了该转换后的入站流量。
+- name: RuleCollection
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发 DNAT 规则所属的规则集合名称。用于按规则分组缩小范围，判断是哪个集合授权了该转换连接。
+- name: RuleCollectionGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发规则所属的规则集合组名称。可用于将流量映射到防火墙策略中的更高层级分组。
+- name: SourceIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起入站连接的数据包源 IP 地址。可据此排查访问已发布 DNAT 端点的外部或内部主机。
+- name: SourcePort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。入站数据包发起连接的源端口。与 SourceIp 和 TimeGenerated 结合可区分不同的入站连接尝试。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该记录的代理或采集来源，例如 Azure Diagnostics。用于指示防火墙日志如何进入工作区。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档说明，该记录关联的 Log Analytics 工作区 ID。它是工作区标识，而非目录租户 ID。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙数据平面日志条目创建时的 UTC 时间戳。可作为主要时间过滤条件并用于对 DNAT 流活动排序。
+- name: TranslatedIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。DNAT 后替换原始目标地址的 IP 地址。可揭示转换后入站数据包指向的内部后端目标；与 DestinationIp 对比使用。
+- name: TranslatedPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。DNAT 后替换原始目标端口的端口号。显示接收转换后入站连接的后端服务端口。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属表的名称，此处为 AZFWNatRule。用于确认该行为防火墙 DNAT 事件而非其他日志类型。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Azure 防火墙资源的唯一标识符。可用于将 DNAT 分析限定到具体防火墙实例。

@@ -37,7 +37,7 @@ def test_confirmation_requires_real_evidence_for_every_goal(mutation):
 def test_premature_completion_reopens_and_queries_relation(planner_closes):
     workflow=None
     def model(system,user):
-        if 'SM 字段选择助手' in system: return '[]'
+        if 'SM 表选择助手' in system: return '[]'
         if 'Procedural Memory' in system and 'Planner' not in system: return '[]'
         if '系统中的 Planner' in system:
             if workflow.state is None: return INITIAL_TTT

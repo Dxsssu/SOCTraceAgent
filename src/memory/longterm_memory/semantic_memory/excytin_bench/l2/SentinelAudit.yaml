@@ -1,0 +1,48 @@
+table_name: SentinelAudit
+core_columns:
+- name: CorrelationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。将同一次逻辑操作或请求产生的相关审核记录关联起来的标识符。重构跨 Sentinel 资源的多步变更时可用它分组记录；共享同一值本身并不证明操作成功或存在因果关系。
+- name: Description
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述被审核的 Sentinel 操作的可读文本，在 OperationName 之外补充变更细节。适合快速了解变更性质，但应将其视为叙述性上下文，而非结构化状态指示。
+- name: ExtendedProperties
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态属性包，保存此次被审核操作中特定于资源类型的附加细节。应先确定 SentinelResourceType 和 SentinelResourceKind
+    再查看键值，因为内容随资源而变化，模式并不保证。
+- name: OperationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发此审核记录的操作名称，表示对 Sentinel 资源尝试执行的动作。可跨行比较以查看某资源的操作序列；它表示操作名称，而非执行结果。
+- name: SentinelResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次被审核操作所针对的 Sentinel 资源的 Azure 资源标识符。可用于汇总某个连接器、规则或类似资源的全部审核记录，并与其他 Azure 资源日志关联；应按资源类型限定范围。
+- name: SentinelResourceKind
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所针对 Sentinel 资源的种类或子类型，例如连接器种类或警报规则种类。应与 SentinelResourceType 一起使用，将审核记录限定到可比资源后再比较属性或
+    ExtendedProperties 内容。
+- name: SentinelResourceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次被审核操作所影响 Sentinel 资源的显示名称，便于阅读结果和报告。名称在不同资源类型或工作区之间可能不唯一，因此应结合 SentinelResourceId
+    精确识别。
+- name: SentinelResourceType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所涉及 Sentinel 资源的类别，例如数据连接器或警报规则。可用它将查询限定到可比的审核记录，因为 ExtendedProperties 及适用的资源字段会因类别而异。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录在该审核记录上的收集代理或来源系统。对该表而言，通常反映通过 Azure 诊断收集 Sentinel 资源操作日志；应将其视为来源元数据，而不是关于被审核变更的证据。
+- name: Status
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次被审核操作记录的结果，例如成功或失败等类别。可用它区分尝试的变更与生效的变更，并应结合 Description 和 ExtendedProperties
+    核实失败，而不要假设具体原因。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。文档中定义为与该审核记录关联的 Log Analytics 工作区标识符。可用它将查询限定到正确的工作区；不要将其解释为 Azure 目录租户 ID。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。此审核事件生成时的 UTC 时间戳。可用于按时间范围审查 Sentinel 资源变更，并围绕可疑变更对记录排序；收集延迟可能影响显示的时间。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。存储此记录的表名。可在查询中用它将结果限定到该审核表，并在联合或联接操作中排除来自其他来源的相似数据。
+- name: WorkspaceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与被审核 Sentinel 资源记录关联的工作区标识符。可用它将查询限定到特定工作区并区分同名资源；它表示工作区范围，而不是用户或资源键。

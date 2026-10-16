@@ -1,8 +1,7 @@
-"""Derive internal retrieval metadata without expanding the stored v2 format.
+"""Derive compatibility retrieval metadata from the L1/L2 read model.
 
-The public table/field objects each have exactly five keys. Legacy episodic
-and procedural algorithms still need semantic categories and join membership;
-these are reconstructed in memory, never written back to the snapshot.
+This in-memory view supports offline PM/EM builders and legacy lexical
+retrieval. The online SM selector reads L1 and one exact L2 card directly.
 """
 
 from typing import Any

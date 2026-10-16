@@ -52,31 +52,28 @@ def graph_rows(knowledge):
 
 def import_knowledge(*, uri, username, password, database, knowledge):
     validate_knowledge(knowledge)
+    from src.memory.longterm_memory.semantic_memory.excytin_bench.store import load_knowledge as load_schema
+    semantic = load_schema()
+    if knowledge["semantic_catalog"]["schema_hash"] != semantic["catalog"]["schema_hash"]:
+        raise ValueError("Episodic schema differs from local L1/L2 memory")
     rows = graph_rows(knowledge)
 
     def replace(tx):
-        record = tx.run(
-            "MATCH (c:LogCatalog {catalog_id:$id}) RETURN c.schema_hash AS hash",
-            id=knowledge["semantic_catalog"]["catalog_id"],
-        ).single()
-        if not record or record["hash"] != knowledge["semantic_catalog"]["schema_hash"]:
-            raise ValueError("Import matching Semantic Memory first")
-        record = tx.run(
-            "MATCH (e:Environment {environment_id:$id}) RETURN count(e) AS count",
-            id=knowledge["environment_id"],
-        ).single()
-        if not record or record["count"] != 1:
-            raise ValueError("Missing or ambiguous environment")
+        tx.run(
+            "MERGE (e:Environment {environment_id:$id}) SET e += $properties",
+            id=knowledge["environment_id"], properties=semantic["environment"],
+        ).consume()
         tx.run(
             "MATCH (n) WHERE n.episodic_catalog_id IN $ids DETACH DELETE n",
             ids=["excytin-episodes-v1", CATALOG_ID],
         ).consume()
         tx.run(
-            "MATCH (e:Environment {environment_id:$env}), (s:LogCatalog {catalog_id:$sm}) "
+            "MATCH (e:Environment {environment_id:$env}) "
             "CREATE (c:EpisodeCatalog) SET c = $catalog "
-            "CREATE (e)-[:HAS_EPISODIC_MEMORY]->(c) CREATE (c)-[:USES_SCHEMA]->(s)",
+            "SET c.semantic_schema_hash = $schema_hash "
+            "CREATE (e)-[:HAS_EPISODIC_MEMORY]->(c)",
             env=knowledge["environment_id"],
-            sm=knowledge["semantic_catalog"]["catalog_id"],
+            schema_hash=knowledge["semantic_catalog"]["schema_hash"],
             catalog=knowledge["catalog"],
         ).consume()
         tx.run(

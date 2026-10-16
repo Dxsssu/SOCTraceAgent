@@ -15,14 +15,15 @@ from src.memory.longterm_memory.semantic_memory.excytin_bench.runtime_view impor
 
 KNOWLEDGE_PATH = (
     Path(__file__).resolve().parents[1]
-    / "src/memory/longterm_memory/semantic_memory/excytin_bench/semantic_memory.json"
+    / "src/memory/longterm_memory/semantic_memory/excytin_bench/l1.yaml"
 )
 TABLE_KEYS = {"table_id", "name", "description", "description_zh", "field"}
 FIELD_KEYS = {"field_id", "name", "data_type", "description", "description_zh"}
 
 
 def load_knowledge() -> dict:
-    return json.loads(KNOWLEDGE_PATH.read_text(encoding="utf-8"))
+    from src.memory.longterm_memory.semantic_memory.excytin_bench.store import load_knowledge as load
+    return load(KNOWLEDGE_PATH)
 
 
 def test_snapshot_is_scenario_independent_and_internally_consistent() -> None:
@@ -147,3 +148,40 @@ def test_semantic_retrieval_returns_all_fields_of_selected_table() -> None:
     assert {field['field_id'] for field in table['field']} == {field['field_id'] for field in source['fields']}
     assert len(table['field']) > 12
     assert {'Timestamp', 'ProcessCreationTime', 'InitiatingProcessCreationTime'} <= {field['name'] for field in table['field']}
+
+
+@pytest.mark.skipif(not DEFAULT_SOURCE.exists(), reason='Local SQL archive unavailable')
+def test_online_catalog_matches_actual_sql_not_only_source_metadata():
+    from src.memory.longterm_memory.semantic_memory.excytin_bench.build_knowledge import read_sql_schemas
+    from src.memory.longterm_memory.semantic_memory.excytin_bench.store import SemanticMemoryStore
+    sql, incidents = read_sql_schemas(DEFAULT_SOURCE)
+    store = SemanticMemoryStore()
+    assert len(incidents) == 8
+    assert {t['table'] for t in store.catalog()['log_sources']} == set(sql)
+    assert len(sql) == 58
+    assert sum(len(fields) for fields in sql.values()) == 1882
+    for table, fields in sql.items():
+        card = store.read_table(table)
+        assert {f['name']: f['type'] for f in card['core_columns']} == fields
+    for excluded in ('AzureDiagnostics', 'LAQueryLogs'):
+        with pytest.raises(ValueError):
+            store.read_table(excluded)
+
+
+def test_entity_annotations_have_real_field_evidence_and_correct_roles():
+    from src.memory.longterm_memory.semantic_memory.excytin_bench.store import SemanticMemoryStore, load_annotations
+    store = SemanticMemoryStore()
+    sources = {t['table']: t for t in store.catalog()['log_sources']}
+    fields = {t: {f['name']: f['type'] for f in store.read_table(t)['core_columns']} for t in sources}
+    annotations = load_annotations(fields)
+    for table, annotation in annotations.items():
+        assert sources[table]['entities'] == sorted(annotation['entity_fields'])
+        assert annotation['entity_fields']['workspace'] == ['TenantId']
+        assert 'TenantId' not in annotation['entity_fields'].get('tenant', [])
+    assert 'user' not in sources['AADManagedIdentitySignInLogs']['entities']
+    assert 'service_principal' in sources['AADServicePrincipalSignInLogs']['entities']
+    assert 'resource' in sources['Usage']['entities']
+    assert 'url' not in sources['Usage']['entities']
+    assert 'ip' not in sources['AzureMetrics']['entities']
+    assert 'host' in sources['Anomalies']['entities']
+    assert 'user' not in sources['Heartbeat']['entities']

@@ -1,0 +1,104 @@
+table_name: AADServicePrincipalSignInLogs
+core_columns:
+- name: AppId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。正在登录的服务主体所属应用程序的 GUID。用于确定哪个工作负载的标识尝试了此次资源登录。可用于将多条登录记录归组到同一应用，并与应用注册或企业应用上下文关联。
+- name: AuthenticationContextClassReferences
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次服务主体登录所要求并满足的身份验证上下文值。用于检查敏感资源是否强制要求了更高等级的身份验证上下文，以及该工作负载是否满足该要求。
+- name: AuthenticationProcessingDetails
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。关于此次登录如何进行身份验证处理的详细信息，例如凭据类型或策略评估备注。用于理解服务主体登录在身份验证阶段成功或失败的原因。
+- name: Category
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此服务主体记录的登录事件类别，用于区分非交互式类型。使用前应先按类别限定范围，因为并非每个类别都会填充所有列。
+- name: ConditionalAccessPolicies
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次服务主体登录所评估的条件访问策略详情。用于在调查工作负载登录是否被阻止或允许时，查看应用了哪些策略及其结果。
+- name: ConditionalAccessPoliciesV2
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。应用于此次登录的条件访问策略的结构化动态表示。该解释基于列名推断；需逐行检查实际动态内容，其结构可能不同且此处无文档说明。用于详细分析策略结果。
+- name: ConditionalAccessStatus
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次服务主体登录的条件访问策略总体状态，例如成功、失败或未应用。用于快速筛选被策略阻止或质询、而非因凭据错误而失败的登录。
+- name: CorrelationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。将此登录与租户内相关登录和审核事件关联的标识符。用于从服务主体登录追溯到下游资源访问或配置更改的完整链条。
+- name: DurationMs
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。此次服务主体登录操作的持续时间，以毫秒为单位。用于检测可能表明限流、延迟或后端异常行为的异常缓慢的身份验证或令牌颁发。
+- name: FederatedCredentialId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。若此次登录使用了工作负载标识联合，则表示所用应用程序联合标识凭据的标识符。用于确认哪个联合凭据完成了身份验证，并调查配置错误或可疑的联合。
+- name: IPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起此次服务主体登录的客户端 IP 地址。用于检测工作负载出现意外来源网络、与已知出站范围进行比较，以及关联来自同一地址的其他登录。
+- name: Id
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此特定服务主体登录活动记录的唯一标识符。用于在与其他表关联或报告时去重或直接引用单条登录记录。
+- name: Identity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成此登录记录时所呈现令牌中的标识，可能是用户账户、系统账户或服务主体。用于理解所记录事件背后的调用方上下文。
+- name: Level
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此服务主体登录事件关联的严重性级别。用于在大量记录中确定排查优先级，调查身份验证异常时重点关注较高严重性的条目。
+- name: Location
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发出此服务主体登录日志记录的资源所在的 Azure 区域。用于地理范围限定，并区分日志数据产生位置与登录客户端所在位置。
+- name: LocationDetails
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次服务主体登录所解析出的登录位置详情，通常包括城市、国家或地理坐标。用于评估地理位置异常，并与预期工作负载区域进行比较。
+- name: OperationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此服务主体登录记录所记录的操作；对于登录，文档说明其值为 Sign-in activity。可用作筛选条件，从表中的其他操作类型中隔离出登录活动记录。
+- name: OperationVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次服务主体登录期间客户端请求的 REST API 版本。用于识别可能与故障或安全策略缺口相关的过时客户端或协议版本。
+- name: ResourceDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此事件中服务主体登录的目标资源的显示名称。用于识别工作负载访问的目标服务或 API，并在针对同一资源的多条登录记录间进行关联。
+- name: ResourceGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此服务主体登录记录的日志关联的资源组。用于 Azure 资源范围限定，并将登录数据筛选到特定部署或工作负载边界。
+- name: ResourceIdentity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。服务主体所登录目标资源的标识符。用于在查询中精确引用目标资源，并与资源清单或配置数据关联。
+- name: ResourceServicePrincipalId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被登录目标资源的服务主体 ID。用于区分资源侧标识与调用方服务主体，并调查对特定目标应用程序的访问。
+- name: ResultDescription
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次服务主体登录操作未成功时的错误描述。用于理解失败原因，例如凭据无效、策略阻止或机密过期。
+- name: ResultSignature
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此次服务主体登录操作的错误代码（如有）。用于按特定错误代码对失败进行分组和筛选，并与已知身份验证错误模式进行比较。
+- name: ResultType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次服务主体令牌请求的结果代码，通常为成功或失败。可用它筛出失败的工作负载身份验证以便排查。
+- name: ServicePrincipalCredentialKeyId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起登录的服务主体所用凭据的密钥 ID。可据此判断是哪个应用凭据被使用、轮换或在多个事件中复用。
+- name: ServicePrincipalCredentialThumbprint
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次登录中发起服务主体所出示凭据的证书指纹。可与密钥 ID 配合确定所使用的具体证书材料。
+- name: ServicePrincipalId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起本次登录的服务主体的对象 ID。在跨应用关联活动时，可用它将事件对应到具体的工作负载身份。
+- name: ServicePrincipalName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起本次登录的服务主体的显示名称。便于按应用或自动化账户对身份验证活动进行可读分组。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。收集此记录的监视代理或管道，例如 Azure。可用于确认摄取路径并比较不同收集方式的覆盖范围。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按架构定义，这是存储该登录记录的 Log Analytics 工作区 ID。不要将其视为目录租户标识；应将其用于工作区范围限定。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。登录事件发生的 UTC 日期和时间。可作为时间线的主要时间轴，并用于与其他登录表关联。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属表的名称，此处为服务主体登录日志表。在联合查询中可用于保留数据来源。
+- name: UniqueTokenIdentifier
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档说明，这是本次登录事件中令牌请求的唯一标识符。可用于关联或去重相关的令牌颁发记录。

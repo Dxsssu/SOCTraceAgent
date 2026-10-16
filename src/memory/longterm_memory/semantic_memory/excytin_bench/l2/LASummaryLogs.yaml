@@ -1,0 +1,42 @@
+table_name: LASummaryLogs
+core_columns:
+- name: BinSize
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。按名称推断，表示本次执行所覆盖的汇总窗口长度（分钟）。可用它在不同分箱大小的规则之间对耗时和结果量进行归一化比较。
+- name: BinStartTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。本次执行所汇总数据时间范围的 UTC 起始点，因此该行描述的是被处理的日志数据而非作业运行时刻；可与 TimeGenerated 比较以查看处理延迟。
+- name: Message
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。适用时记录本次规则执行的错误或提示信息；检查它以了解失败的时间分箱，并结合 Status 与 RuleName 判断失败原因及受影响规则。
+- name: QueryDurationMs
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。本次规则分箱运行的执行时长（毫秒）；按 RuleName 与 BinSize 随时间比较，可找出需要查询优化或性能下降的汇总规则。
+- name: ResultsRecordCount
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。本次规则执行返回的聚合记录数。数量骤降可能表明数据摄取缺口或查询问题，而激增可能反映被汇总源数据中的异常活动。
+- name: RuleLastModifiedTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。规则定义最近一次修改的时间，而非本次执行时间。可用它解释规则修改后耗时、状态或结果计数的变化。
+- name: RuleName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次执行所属汇总规则的名称；按此字段对失败、耗时和记录数分组，可排出哪些汇总规则失败最多或最慢。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该记录的代理或收集来源，例如 Azure 表示 Azure Diagnostics；当混用多种来源时，可用它区分汇总规则遥测进入工作区的方式。
+- name: Status
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次规则分箱运行的执行状态，文档记录为 Started、Succeeded 或 Failed。过滤 Failed 可排查规则问题，并结合 BinStartTime
+    核对分箱完整性。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Log Analytics 工作区 ID，文档说明为工作区标识而非目录租户 ID；可用它将查询限定到单个工作区。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。本次执行开始处理分箱的 UTC 时间，与分箱数据范围解耦；可与 BinStartTime 配合衡量处理延迟并对执行排序。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属表的名称，在跨多表查询时可用于过滤；对本表而言，它应一致地标识汇总规则执行记录。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的资源的唯一标识；当多个资源向同一查询范围报告时，可用它将规则执行归属到特定工作区资源。

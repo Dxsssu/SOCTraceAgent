@@ -1,0 +1,96 @@
+table_name: SecurityIncident
+core_columns:
+- name: AdditionalData
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。存放未在固定列中呈现的提供方特定事件元数据的动态字段。其结构随来源不同，应结合 ProviderName 查看；不要预设固定键，也不要假定每行都有值。
+- name: AlertIds
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。构成该事件的警报资源 ID 动态数组。用于从事件向下钻取到底层警报；仅视为引用，不构成被入侵证据。取值由提供方定义，不保证唯一。
+- name: BookmarkIds
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。链接到该事件的书签资源 ID 动态数组。用于查找已保存的调查工件；存在书签仅说明分析师关注，并非确认恶意活动。其含义需查书签表。
+- name: Classification
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。事件关闭时赋予的字符串分类（如真/假阳性），由 Sentinel 记录。描述负责分析师或自动化的关闭决策；事件未关闭时为空。用于衡量分诊结果。
+- name: ClassificationComment
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。关闭分类时记录的说明事件关闭原因的评论文本。由关闭时的分析师或自动化写入；用于理解判断依据并审计关闭决策。
+- name: ClassificationReason
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。事件关闭时选择的字符串原因代码，比 Classification 更细。由关闭分析师或自动化设置；关闭前为空。用于跨提供方汇总关闭模式。
+- name: ClosedTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。事件最后一次关闭的 UTC 时间戳。对应分析师或自动化的关闭操作；未关闭时为 null。与 CreatedTime 配合可计算关闭耗时并识别长期未处理事件。
+- name: Comments
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。调查期间添加到事件的评论文本动态数组。由分析师或自动化撰写；结构由提供方定义。用于查看协作历史，但解析具体条目之前需先检查数组格式。
+- name: CreatedTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。Sentinel 创建该事件记录的 UTC 时间戳。描述的是事件生成时间，而非底层警报首次活动时间（参见 FirstActivityTime）。用于计算事件账龄和工作量分析。
+- name: Description
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。事件的自由文本描述，通常概述涉及的实体和检测到的行为。由生成该事件的提供方或分析规则写入；用于分诊上下文，但不要把叙述文本当作已核实证据。
+- name: FirstActivityTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该事件所涉最早活动的 UTC 时间戳（依据来源警报）。在事件创建或更新时设置；与表示记录生成时间的 CreatedTime 不同。用于界定调查时间窗口。
+- name: FirstModifiedTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。事件创建后首次被修改的 UTC 时间戳，例如状态、负责人或严重性变更。对应事件管理操作；用于衡量对新事件的响应速度。
+- name: IncidentName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识事件的资源名称字符串，通常是 Sentinel 内部标识符，用于查询和 URL。可区分工作区内的记录；与多提供方事件关联时需结合 ProviderName。
+- name: IncidentNumber
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。工作区内分配给该事件的整数序号。便于在报告中排序和引用事件，但提供方 ID 可能不同；应通过 ProviderName 和 ProviderIncidentId
+    关联。
+- name: IncidentUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。指向 Microsoft Sentinel 门户中该事件的 URI 字符串。用于将分析师导向权威调查视图；它是导航辅助，不代表事件内容或状态证据。
+- name: Labels
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。附加到事件、用于分组和筛选的标签动态数组。由分析师或自动化添加；标签词表由工作区自定义，依赖特定标签前应先检查取值。
+- name: LastActivityTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该事件全部来源警报中最新活动的 UTC 时间戳。随事件更新而设置；与 FirstActivityTime 配合可衡量活动跨度，而非事件处理时长。
+- name: LastModifiedTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。事件最近一次修改的 UTC 时间戳，例如状态、负责人、严重性或评论变更。反映事件管理操作；用于识别正在处理或停滞的事件。
+- name: ModifiedBy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识最近一次事件变更来源的字符串，如分析师身份或自动化。描述管理编辑背后的操作者；命名约定因提供方而异，使用前应检查取值格式。
+- name: Owner
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。描述事件所分配到的用户或团队的动态对象。对应分配工作流；结构由提供方定义，应检查其键而非预设固定的邮箱或姓名字段。
+- name: ProviderIncidentId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起提供方分配的事件标识符字符串，可能与 Sentinel 的 IncidentNumber 不同。与 ProviderName 配合可对同一事件跨系统去重或交叉引用。
+- name: ProviderName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该事件的来源提供方名称字符串，例如 Microsoft 安全产品或第三方集成。用于限定查询范围并解读提供方特定字段；并非所有提供方都填充所有列。
+- name: RelatedAnalyticRuleIds
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。与该事件关联的分析规则资源 ID 动态数组。用于追溯触发的检测；ID 仅是引用，匹配本身不证明被入侵。需查看规则定义以了解逻辑。
+- name: Severity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。由提供方或分析规则分配给事件的严重性级别字符串，例如分级风险层级。用于分诊优先级排序和工作量报告；允许取值由提供方定义，此处不枚举。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识提供该事件行的代理或采集通道（例如 Operations Manager 或 Azure Diagnostics）；用于了解数据来源，而非事件严重性或内容。
+- name: Status
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该表中事件的工作流状态，如新建、活动或已关闭；用于筛选未解决与已解决事件，并按时间分析分诊进展。
+- name: Tasks
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。附加到该事件响应流程的任务条目的动态集合；请结合上下文检查其结构以查看已分配清单项，而非推断告警级细节。基于名称的解读：请检查资源/类别上下文。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档说明为该事件行关联的 Log Analytics 工作区 ID；用于限定查询范围并关联同一工作区内的数据，而非目录租户标识符。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该事件记录被摄入表的 UTC 时间戳；用于时间窗口筛选和摄入延迟分析，与事件的活动时间或创建时间不同。
+- name: Title
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。来源提供的事件人类可读标题；用于快速识别和分诊时关键词检索，可靠筛选请优先使用结构化字段。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识该记录为 SecurityIncident 的表名值；在联合多个表时用于保留来源并仅将查询限定为事件行。

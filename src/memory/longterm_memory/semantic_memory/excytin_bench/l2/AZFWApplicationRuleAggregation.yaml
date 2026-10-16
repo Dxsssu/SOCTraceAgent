@@ -1,0 +1,53 @@
+table_name: AZFWApplicationRuleAggregation
+core_columns:
+- name: Action
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙对此聚合应用程序规则匹配所执行的操作（例如允许或拒绝）。结合 ApplicationRuleCount 可量化每条规则的阻断与放行流量。
+- name: ActionReason
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。当请求未触发任何规则时，防火墙执行该操作的原因。基于名称推断：具体取值未在此列出；可用于解释聚合流量中的隐式或默认处置。
+- name: ApplicationRuleCount
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该行所代表的应用程序规则命中次数聚合计数。可用它对计数加权、对主要规则、FQDN 或源 IP 排名，并比较允许与拒绝量。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。聚合请求的目的端口，Web 流量通常为 443 或 80。与 Protocol 和 Fqdn 结合，可刻画聚合应用程序流量所指向的服务。
+- name: Fqdn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。聚合请求所指向的完全限定域名。可用于确定每条规则下允许或拒绝的应用程序流量中哪些外部目标占主导。
+- name: Policy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含所触发规则的 Azure 防火墙策略名称。当多个策略向工作区发送数据时，可用它限定规则使用和允许/拒绝分析的适用范围。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。聚合请求的网络协议，如 HTTP 或 HTTPS。与 DestinationPort 和 Fqdn 结合，可刻画应用程序流量特征和规则覆盖情况。
+- name: Rule
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。匹配这些聚合请求的应用程序规则名称。以此为枢纽，可查看哪些规则被大量使用及其允许/拒绝比例。
+- name: RuleCollection
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含所触发规则的规则集合（位于其集合组内）。可用它在集合级别聚合应用程序流量并比较同级集合。
+- name: RuleCollectionGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含所触发规则的规则集合组。可用它将聚合的应用程序流量归因到防火墙策略的组结构中。
+- name: SourceIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。聚合请求的源 IP 地址，通常是工作负载或内部客户端。可用它查看哪些发送方产生最多允许或拒绝的应用程序流量。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该记录的收集代理或通道，例如 Azure 表示 Azure Diagnostics。可用于确认数据引入路径；它并不说明请求本身的来源。
+- name: TargetUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。聚合请求的目标 URL，仅对 HTTP 或经 TLS 检查的 HTTPS 流量存在。可用于检查允许或拒绝命中背后的具体路径或查询字符串。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Log Analytics 工作区 ID；这是工作区标识符，不是目录租户 ID。当涉及多个工作区时，可用它限定查询范围。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。数据平面日志创建时的 UTC 时间戳，标记该聚合区间的记录。可用于按时间分箱趋势和排序聚合桶，但并非精确事件时间。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。存储该记录的表名。在联合查询中合并应用程序与网络规则聚合数据时，可用它识别某行的来源表。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Azure 防火墙资源的唯一标识符。可用它将聚合的应用程序流量归因到具体的防火墙实例或中枢。

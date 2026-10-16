@@ -1,0 +1,50 @@
+table_name: UrlClickEvents
+core_columns:
+- name: AccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。点击该 URL 的账户的用户主体名称，将点击事件与具体身份关联。按此字段限定范围可回答谁与可疑链接发生了交互。
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。表示 Safe Links 或租户策略是允许还是阻止了该点击。可用它区分点击时被放行的点击与被阻止的尝试。
+- name: DetectionMethods
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。点击时识别出威胁的检测技术。基于名称推断；字符串取值因提供商而异。可结合 ThreatTypes 查看是哪个检测引擎给出的判定。
+- name: IPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用户点击链接所用设备的公网 IP 地址。可按此字段关联地理位置或网络上下文；这是客户端公网 IP，不是内部主机地址。
+- name: IsClickedThrough
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，表示用户是否到达原始 URL 还是被拦截。可结合 ActionType 与 ThreatTypes 评估实际暴露情况与被阻止的点击。
+- name: NetworkMessageId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Microsoft 365 生成的、包含所点击链接的电子邮件标识符。可用它将该次点击关联回原始邮件及其投递事件。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。点击事件的唯一标识符；点击穿透场景共享相同取值。可用它关联同一次交互产生的相关点击记录。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。收集该事件的代理类型，例如 OpsManager 或 Azure。主要用于确认数据采集管道，并不反映用户行为。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该表文档所述的 Log Analytics 工作区 ID；它是工作区标识符，不是目录租户 ID。可用于将查询限定在单个工作区。
+- name: ThreatTypes
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。点击时的判定结果，说明该 URL 指向恶意软件、钓鱼或其他威胁。可结合 ActionType 与 IsClickedThrough 判断当时施加了何种防护。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。用户点击链接的日期和时间；文档说明与 Timestamp 相同。是将点击事件限定到调查时间窗口的主要时间边界。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。表名称，日志管道用它标识来源表。在联合查询中将 UrlClickEvents 记录与其他表合并时可按此字段过滤。
+- name: Url
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用户点击的完整 URL。可按此字段查找点击同一链接的其他用户；点击只是尝试，并非载荷已投递的证明。
+- name: UrlChain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。在重定向场景中，列出重定向链中出现的 URL。可检查点击 URL 与最终目的地之间的中间跳转。
+- name: Workload
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用户点击链接时所用的应用，文档中取值包括 Email、Office 和 Teams。可用它区分邮件来源的点击与聊天或文档中的点击。

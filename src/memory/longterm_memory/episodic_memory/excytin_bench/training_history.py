@@ -32,10 +32,9 @@ DEFAULT_TRAJECTORIES = (
 DEFAULT_QUESTIONS_DIR = (
     REPOSITORY_ROOT / "data/excytin-bench/huggingface/questions/train"
 )
-DEFAULT_SEMANTIC_KNOWLEDGE = (
-    REPOSITORY_ROOT
-    / "src/memory/longterm_memory/semantic_memory/excytin_bench/semantic_memory.json"
-)
+from src.memory.longterm_memory.semantic_memory.excytin_bench import DEFAULT_KNOWLEDGE_PATH as DEFAULT_SEMANTIC_KNOWLEDGE
+from src.memory.longterm_memory.semantic_memory.excytin_bench.store import load_knowledge as load_semantic_knowledge
+
 
 EPISODIC_CATALOG_ID = "excytin-episodes-v1"
 EXPECTED_EPISODES = 237
@@ -342,7 +341,7 @@ def build_knowledge(
 ) -> dict[str, Any]:
     trajectories = load_jsonl(trajectories_path)
     questions = load_train_questions(questions_dir)
-    semantic_knowledge = json.loads(semantic_path.read_text(encoding="utf-8"))
+    semantic_knowledge = load_semantic_knowledge(semantic_path)
     semantic = SemanticIndex.from_knowledge(semantic_knowledge)
     mapped = map_trajectories_to_train(trajectories, questions)
     source_key_match_count = sum(

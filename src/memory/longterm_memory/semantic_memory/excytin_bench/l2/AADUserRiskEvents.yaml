@@ -1,0 +1,78 @@
+table_name: AADUserRiskEvents
+core_columns:
+- name: Activity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。检测到的用户风险所关联的活动类别，通常为 signin 或 user。在调查中可用于按活动上下文筛选和透视风险事件，以确定触发检测的用户操作。
+- name: ActivityDateTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。风险用户活动实际发生的 UTC 时间，可能早于 DetectedDateTime。可用于建立活动时间线、与其他日志关联并评估检测延迟。
+- name: AdditionalInfo
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON，包含风险事件的额外上下文，如证据、来源详情或用户代理。基于名称推断：由于架构不固定，需逐事件检查键值内容以提取调查细节。
+- name: CorrelationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此风险检测相关的登录关联 ID，未关联登录时为 null。可用于将风险事件关联到登录日志，以深入调查认证流程。
+- name: DetectedDateTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。Identity Protection 检测到风险的 UTC 时间，可能晚于 ActivityDateTime。可用于衡量检测时机、优先处理近期警报，并结合
+    DetectionTimingType 进行实时与离线分析。
+- name: DetectionTimingType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。检测的时机类别，如 realtime、nearRealtime 或 offline。可用于区分即时检测与批处理检测，并根据检测延迟确定响应优先级。
+- name: Id
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。风险事件的唯一 ID。可用于去重事件、在查询中引用特定检测，并与外部系统或报告中的同一风险实例进行关联。
+- name: IpAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。风险活动来源的客户端 IP 地址。可用于地理定位或转向同一地址的其他事件，并评估该 IP 对用户而言是否异常。
+- name: LastUpdatedDateTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。风险检测最后修改的 UTC 时间，例如在补救或状态变更后。可用于跟踪调查更新，并查看风险事件状态何时发生变化。
+- name: Location
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。描述登录位置的动态 JSON，如城市、国家或坐标。基于名称推断：需检查对象结构以提取地理细节，用于评估不可能旅行或陌生登录位置。
+- name: OperationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与风险事件相关的操作名称，如用户操作或检测操作。可用于对事件类型进行分类，并在调查中筛选特定操作上下文。
+- name: RequestId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与此风险检测关联的登录请求 ID，未关联登录时为 null。可用于关联登录日志，并追踪触发风险的具体认证请求。
+- name: RiskDetail
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。风险处理或解决方式的详情，如 adminConfirmedUserCompromised 或 userPerformedSecuredPasswordChange。可用于了解补救措施，以及风险是被确认、驳回还是自行补救。
+- name: RiskEventType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。检测到的风险事件类型，如 leakedCredentials 或 atypicalTravel。可用于分类和优先处理检测，并在用户风险调查中筛选特定威胁模式。
+- name: RiskLevel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。检测到的风险严重级别，如 low、medium 或 high。可用于分级事件、优先关注高风险用户活动，并在调查中支持基于风险的访问决策。
+- name: RiskState
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。检测到的风险的当前状态，如 atRisk、remediated 或 confirmedCompromised。可用于跟踪风险事件的生命周期，并确定哪些风险仍需关注或已解决。
+- name: Source
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成风险检测的来源，例如 activeDirectory。可用于识别标记事件的系统或检测器，并评估跨身份来源的检测覆盖范围。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。收集事件的代理类型，如 Azure Diagnostics 对应的 Azure。可用于了解摄取来源，并确保查询的是身份风险事件的正确数据管道。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据架构文档，此事件存储所在的 Log Analytics 工作区 ID。请勿将其视为目录租户 ID；调查时可用于将查询范围限定到正确的工作区。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。事件被摄取到日志中的 UTC 时间戳。可用于筛选近期风险事件、构建时间线，并基于事件到达时间与其他表进行联接。
+- name: TokenIssuerType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。检测到的登录风险的令牌颁发者类型，如 AzureAD 或 ADFederationServices。在调查与认证相关的风险事件时，可用于区分云身份与联合身份场景。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。日志表的名称，本数据集始终为 AADUserRiskEvents。可用于确认查询的是正确的表，并在联合或跨表查询中进行筛选。
+- name: UserDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与风险事件关联的用户的显示名称。可用于人类可读的标识和报告，同时依靠 UserId 或 UserPrincipalName 进行精确联接。
+- name: UserId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与风险检测关联的用户的唯一标识符。可用于将风险事件与其他表中的用户活动关联，并可靠地跟踪单个用户的风险历史。
+- name: UserPrincipalName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该风险检测所涉及身份的 UPN，用于标识高风险活动被归属到哪个用户。可据此从该标记转向该用户的登录和审核活动。

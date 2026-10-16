@@ -1,0 +1,47 @@
+table_name: AZFWThreatIntel
+core_columns:
+- name: Action
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙针对威胁情报命中采取的动作，例如允许或拒绝。是研判核心：判断可疑流量是被阻断还是被放行，并优先跟进已放行的流量。
+- name: DestinationIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发威胁情报命中的数据包目的 IP 地址。用于识别被联系的外部基础设施，结合信誉数据进行丰富，并关联其他指向同一地址的事件。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。命中数据包的目的端口。有助于区分服务类型（如 Web、DNS 或自定义端口），并支持范围界定以及识别可能的命令控制或数据外传通道。
+- name: Fqdn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。命中流量中请求的完全限定域名（如可解析）。用于识别内部主机联系的可疑或恶意域名，并可按域名关联其他防火墙及 DNS 遥测数据。
+- name: IsTlsInspected
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。指示该连接是否经过 TLS 检查。对理解 URL 可见性很重要：未经检查时，加密请求的详细信息可能仅限于域名或端点。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。命中数据包的网络协议，如 TCP 或 UDP。用于界定流量类型，并决定适用何种后续分析或基于端口的解读。
+- name: SourceIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发威胁情报命中的数据包源 IP 地址，通常为内部主机或设备。用于识别哪个资产尝试联系已知恶意基础设施的主要关联字段。
+- name: SourcePort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。命中数据包的源端口。结合 SourceIp 和时间，有助于关联特定客户端连接，并区分同一主机的并发会话。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该记录的代理或采集路径，例如 Azure 诊断。用于在验证各资源防火墙威胁情报事件采集覆盖情况时确认数据来源。
+- name: TargetUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。命中流量的请求目标 URL，仅对 HTTP 或经 TLS 检查的 HTTPS 请求可用。用于在域名之外精确定位所联系的具体资源路径。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Log Analytics 工作区 ID（本表文档如此定义），并非目录租户标识符。用于将查询限定到正确的工作区。
+- name: ThreatDescription
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙针对命中流量所识别威胁的描述。用于理解该条目的告警原因并确定研判优先级，但应视其为情报源证据，而非已遭入侵的证明。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。数据平面日志记录创建时的 UTC 时间戳。用作事件时间，用于时间线重建、关联时间窗口以及与其他防火墙或端点遥测的相对排序。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录所属表的名称。用于跨多个日志表的联合查询中过滤，以隔离 Azure 防火墙威胁情报条目。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与记录关联的 Azure 资源（通常为防火墙）的唯一标识符。用于将分析限定到特定防火墙实例，并在多个已部署防火墙之间归属命中记录。

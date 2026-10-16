@@ -1,0 +1,126 @@
+table_name: AlertEvidence
+core_columns:
+- name: AccountDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所涉账户的域部分，例如 NetBIOS 或 DNS 域。当同名用户存在于多个域时，需与 AccountName 一起限定，才能将其视为同一身份。
+- name: AccountName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所描述账户的用户名。它是与警报实体关联的账户，未必是进程发起者；应结合 SID、UPN 或域来解析正确身份。
+- name: AccountObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所涉账户的目录对象标识符，可用于跨服务、跨警报关联同一身份。它标识的是作为实体的账户，而非触发警报的操作者。
+- name: AccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行中账户的 Windows 安全标识符。可用它区分不同域或主机上的同名账户；在假定该 SID 对应同一身份前，应结合设备或时间范围限定。
+- name: AccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所引用账户的用户主体名称，通常为 user@domain 登录形式。可用于转向身份与登录数据，但其出现在警报证据中本身并不证明登录成功或已遭入侵。
+- name: AdditionalFields
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。存放未建模为列的额外证据属性的动态 JSON 集合。其键名与结构未记录且因行而异；可检查以发现补充信息，但由名称推测的含义应视为未确认。
+- name: AlertId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。
+- name: Application
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所记录证据活动关联的应用程序显示名称，例如涉及的客户端或服务。可用于查看警报周边出现了哪些应用；它不同于 ApplicationId，也不同于 OAuthApplicationId。
+- name: ApplicationId
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。与本证据行相关应用程序的整数标识符。应将其视为服务特定的数字引用；应结合 Application 或其他表进行关联，而不要假定它表示 Microsoft Entra
+    应用。
+- name: AttackTechniques
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。归因于本证据行所属警报触发活动的 MITRE ATT&CK 技术。它们是面向分析师的映射，并非攻击者行为的证明；可用于对警报分组和排优先级，并应与底层遥测核实。
+- name: Categories
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。以 JSON 数组列出本证据信息所属的类别，例如警报分类分组。可用于按类别筛选或分组证据；取值由服务定义，应检查实际内容，而不要假定固定分类体系。
+- name: DetectionSource
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发现本证据背后显著组件或活动的检测技术或传感器。可用于查看哪个防护措施触发了警报并比较覆盖情况；它标识的是检测器，而非被入侵资产。
+- name: DeviceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所引用设备在服务中的标识符。应与 DeviceName 和时间一起限定，并可用其转向设备清单、时间线或网络数据；它不是主机名或 IP。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所引用计算机的完全限定域名。可用作便于阅读的设备转向点，但应结合 DeviceId 和时间范围解析，因为名称可能在不同资产间被复用或重新分配。
+- name: EmailSubject
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本证据行关联的邮件项的标题行，通常用于邮件类警报。可用其通过 NetworkMessageId 定位该邮件；邮件作为证据出现并不表明收件人是否打开或点击了任何内容。
+- name: EntityType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所代表对象的类型，例如文件、进程、设备、用户或 IP。它决定其余证据列中哪些有意义，因此应先按它筛选，再解读实体相关字段。
+- name: EvidenceDirection
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。指示本证据行中的实体是网络连接的源还是目标。可用于确定流量证据方向；它描述的是连接方向，而非活动是否成功。
+- name: EvidenceRole
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述该实体在警报中的参与方式，例如是受影响还是仅相关。可用于区分真正受影响的资产与上下文实体，避免调查范围过度扩大。
+- name: FileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录证据操作作用的文件名。应将其视为文件实体属性，并使用 SHA256 或 FolderPath 进行转向；仅凭名称不能说明其被执行或具恶意性。
+- name: FileSize
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所引用文件的大小，单位为字节。可用于比较哈希或发现异常，但它只是描述性元数据，本身不是恶意内容的指标。
+- name: FolderPath
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录证据操作作用文件所在目录。可用于推断位置上下文，如临时或启动目录，并配合 FileName 与哈希进行转向；它不证明文件被执行。
+- name: LocalIP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所记录通信中本地设备使用的 IP 地址。应结合 DeviceId 和时间来归因网络活动；它可能是私有地址或被复用，依赖前应限定范围。
+- name: NetworkMessageId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所引用邮件项的 Office 365 生成唯一标识符。可用其连接邮件与邮件跟踪数据；它的存在将邮件与警报关联，但不证明用户交互。
+- name: OAuthApplicationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所引用第三方 OAuth 应用的标识符。可用其调查涉及该应用的同意授权或基于令牌的访问；应与 ApplicationId 区分开，后者是服务中的数字字段。
+- name: ProcessCommandLine
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。创建或启动本证据行所标记进程实体的命令行。用于了解执行意图与参数；需结合 DeviceId 和 TimeGenerated 关联，并与同一主机上其他进程区分。
+- name: RegistryKey
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被记录操作所针对的注册表键路径，仅在注册表相关证据行上填充，属于被警报设备的对象。与 RegistryValueName、RegistryValueData
+    配合可还原持久化或配置更改。
+- name: RegistryValueData
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所涉注册表值中存储的数据，关联被警报设备与操作时间。需结合键路径和值名称检查，以评估持久化载荷或篡改。
+- name: RegistryValueName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被记录操作所作用的注册表值名称，出现在注册表类证据行上。须结合 RegistryKey 和 DeviceId 限定后，再视为涉案值。
+- name: RemoteIP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行中被警报实体连接的对端 IP 地址，描述的是网络对端而非本机地址。可用 DeviceId 或 LocalIP 确定内部端点。
+- name: RemoteUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被警报实体连接的 URL 或 FQDN，记录于网络或邮件类证据行。需结合 EvidenceDirection 与 TimeGenerated 解读；URL
+    出现本身并不证明用户与其交互。
+- name: SHA1
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行中被记录操作所作用文件的 SHA-1 哈希。可作为跨警报的主要文件锚点；同时出现只能视为关联，不能证明系统已被入侵。
+- name: SHA256
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行所涉文件的 SHA-256 哈希。若有 SHA1 应优先使用，因为该列常未填充；不要因文件良性就假定它必然为空。
+- name: ServiceSource
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。为本证据行提供警报信息的产品或服务，表明实体来自哪个检测工作负载。用于限定查询范围，并解释为何具体实体列在不同行间不一致。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。采集该记录的代理或采集通道，如 OpsManager、Linux 或 Azure。反映的是采集链路而非检测产品；解读来源时应与 ServiceSource
+    结合。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与这条证据记录关联的 Log Analytics 工作区 ID，如文档所述。它是工作区标识符，而非目录租户 ID；用于将查询限定到某个工作区。
+- name: ThreatFamily
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本证据行中可疑文件或进程被归入的恶意软件家族。它表示检测标签，并非感染确认；下结论前应与其他证据核实。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。本条证据记录生成的 UTC 日期时间。可作为主要的事件时间过滤条件，并用于围绕警报对证据排序；注意它是记录生成时间，未必等于底层操作时间。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Title
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本证据行关联的警报标题，提供检测的可读摘要。便于分组和初筛，但因标题可能在多个警报间重复，应按 AlertId 限定范围。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属表的名称，表明其模式为 AlertEvidence。可在联合查询中用于筛选表来源；它不承载实体或时间语义。

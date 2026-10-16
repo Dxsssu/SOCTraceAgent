@@ -1,0 +1,128 @@
+table_name: DeviceImageLoadEvents
+core_columns:
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该加载事件记录的活动类别；可用于按终结点传感器报告的操作类型筛选或分组。
+- name: AppGuardContainerId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。当浏览器隔离生效时，承载发起加载进程的 Application Guard 虚拟化容器标识符，否则为空。用于隔离容器内的活动。
+- name: DeviceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发生模块加载的设备由服务分配的设备标识符。可与其他设备表关联，并在关联活动时配合时间范围限定。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。报告该加载事件的设备的完全限定域名。用于可读的主机下钻和跨设备分组分析。
+- name: FileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次事件中报告的被加载模块/镜像名称。可据此下钻查找加载同一模块的设备或进程。
+- name: FileSize
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。被加载模块镜像的字节大小。可与哈希和文件夹路径一起，在排查异常或不匹配模块时作为辅助信号。
+- name: FolderPath
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被加载模块在设备上的目录路径。用于发现从可写位置或用户目录加载、可能提示侧加载的情况。
+- name: InitiatingProcessAccountDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行本次加载发起进程的账户域。可与账户名和 SID 结合，限定正在追踪的身份活动范围。
+- name: InitiatingProcessAccountName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行本次加载发起进程的账户用户名。可据此查看特定用户上下文导致了哪些模块加载。
+- name: InitiatingProcessAccountObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起加载进程的账户的目录对象标识符。用于跨设备和跨表的稳定身份关联，而非主机范围限定。
+- name: InitiatingProcessAccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行加载进程的账户安全标识符。用于区分加载活动中的本地或系统身份与具名用户。
+- name: InitiatingProcessAccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行加载进程的账户用户主体名称。适用于以身份为中心的下钻，以及与登录或告警数据关联。
+- name: InitiatingProcessCommandLine
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。导致本次模块加载的进程命令行。排查加载行为时可检查可疑参数、脚本宿主或编码内容。
+- name: InitiatingProcessCreationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。发起加载的进程启动时间。可与事件时间和父进程创建时间一起，在调查中梳理进程先后顺序。
+- name: InitiatingProcessFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起加载的进程文件名。可据此查找同一可执行文件在环境中加载的其他模块。
+- name: InitiatingProcessFileSize
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程可执行镜像的字节大小。在比较加载模块的已知正常或可疑二进制文件时作为辅助信号。
+- name: InitiatingProcessFolderPath
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程可执行文件所在目录。用于发现由异常或用户可写路径中的二进制文件驱动的加载。
+- name: InitiatingProcessId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。发起加载的进程标识符。由于 PID 会被复用，关联进程事件前需按设备和时间限定。
+- name: InitiatingProcessIntegrityLevel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。分配给发起进程的 Windows 完整性级别，反映信任与启动来源。用于评估是高权限还是低完整性代码触发了加载。
+- name: InitiatingProcessMD5
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起加载进程可执行镜像的 MD5 哈希。用于威胁情报查询和跨设备去重发起进程。
+- name: InitiatingProcessParentCreationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程的父进程启动时间。可与其他时间戳结合，围绕可疑模块加载重建进程祖先关系。
+- name: InitiatingProcessParentFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该加载进程的父进程文件名。用于追踪谁启动了加载器，例如办公软件或脚本宿主生成二进制文件。
+- name: InitiatingProcessParentId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。生成该加载进程的父进程标识符。关联父进程事件前需按设备和时间限定，因为 PID 会复用。
+- name: InitiatingProcessSHA1
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起加载进程可执行镜像的 SHA-1 哈希。用于解析发起进程身份及威胁情报匹配。
+- name: InitiatingProcessSHA256
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发本次加载事件的进程映像的 SHA-256 哈希；该字段常为空，跨设备关联该进程时请回退使用 InitiatingProcessSHA1。
+- name: InitiatingProcessTokenElevation
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述发起进程令牌是否具有 UAC 提升，用于判断加载该模块的进程处于特权还是普通上下文。
+- name: InitiatingProcessVersionInfoCompanyName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程映像中嵌入的版本信息公司名称；有助于确认加载进程背后的发布厂商，而不是仅凭文件名判断。
+- name: InitiatingProcessVersionInfoFileDescription
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程映像的版本信息描述；在排查进程用途时可辅助判断该加载程序自称的功能。
+- name: InitiatingProcessVersionInfoInternalFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程版本信息中记录的内部文件名；可暴露与磁盘实际文件名不一致的情况，是常见的伪装线索。
+- name: InitiatingProcessVersionInfoOriginalFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程版本信息中的原始文件名；与 InitiatingProcessFileName 对比可发现被改名或伪装的可执行文件。
+- name: InitiatingProcessVersionInfoProductName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程版本信息中声明的产品名称；有助于在调查中将该加载程序归因到已知软件产品。
+- name: InitiatingProcessVersionInfoProductVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程版本信息中的产品版本；可用于发现设备上过时或异常的加载程序版本。
+- name: MD5
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次事件中加载的模块/映像的 MD5 哈希；可与其他哈希配合跨设备关联，或用于与已知文件信誉比对。
+- name: MachineGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。设备的 RBAC 计算机组标签，用于控制访问权限并按角色或敏感度对设备分组；可用于把结果限定在相关设备范围内。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。该终端记录的来源报告计数标识，可能重复。识别记录时应结合 DeviceName 和 Timestamp，不应把 ReportId 单独当作全局唯一事件键。
+- name: SHA1
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被加载模块映像的 SHA-1 哈希；通常是该文件中最常填充的哈希，跨设备关联同一库时优先使用它。
+- name: SHA256
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被加载模块映像的 SHA-256 哈希；是该库最强的标识符，适合查询信誉或在其他位置搜索同一文件时使用。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。采集该记录的代理或连接器类型，用于区分采集路径；当多个接入源的数据同时出现时，有助于确认数据来源。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录的 Log Analytics 工作区 ID；用于将查询限定到某个工作区，而不是目录或 Azure AD 租户标识。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。MDE 代理在终结点上记录本次模块加载的时间；是过滤并将加载事件与其他活动按时间排序的主要时间字段。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录所属的表名，此处为 DeviceImageLoadEvents；当联合查询混合多个 Defender for Endpoint 表时可用于过滤。

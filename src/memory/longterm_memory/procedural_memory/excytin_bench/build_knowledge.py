@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+from src.memory.longterm_memory.semantic_memory.excytin_bench.store import load_knowledge as load_semantic_knowledge, content_digest
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -103,7 +104,7 @@ def normalize_record(record, schema):
 
 def build_bundle(*, semantic_path=DEFAULT_SEMANTIC_KNOWLEDGE, episodic_path=DEFAULT_EPISODIC_KNOWLEDGE,
                  trajectories_path=DEFAULT_TRAJECTORIES, questions_dir=DEFAULT_QUESTIONS_DIR):
-    semantic = retrieval_view(json.loads(Path(semantic_path).read_text()))
+    semantic = retrieval_view(load_semantic_knowledge(semantic_path))
     episodic = json.loads(Path(episodic_path).read_text())
     if episodic['generation_policy']['source_split'] != 'train' or digest(trajectories_path) != episodic['catalog']['source_sha256']:
         raise ValueError('Training source differs from aligned EM source')
@@ -154,7 +155,7 @@ def build_bundle(*, semantic_path=DEFAULT_SEMANTIC_KNOWLEDGE, episodic_path=DEFA
         'semantic_catalog':{'catalog_id':semantic['catalog']['catalog_id'],'schema_hash':semantic['catalog']['schema_hash']},
         'episodic_catalog':{'episodic_catalog_id':episodic['catalog']['episodic_catalog_id'],'source_sha256':episodic['catalog']['source_sha256']},
         'catalog':{'procedural_catalog_id':CATALOG_ID,'procedure_count':len(procedures),'active_count':sum(p['status']=='active' for p in procedures),
-                   'training_episode_count':len(mapped),'training_attempt_count':len(records),'semantic_snapshot_sha256':digest(semantic_path),'episodic_snapshot_sha256':digest(episodic_path)},
+                   'training_episode_count':len(mapped),'training_attempt_count':len(records),'semantic_snapshot_sha256':content_digest(semantic_path),'episodic_snapshot_sha256':digest(episodic_path)},
         'procedures':procedures}
     return knowledge, {'source_split':'train','source_sha256':digest(trajectories_path),'templates':audit,'rejected':dict(rejected),
                        'limitations':['Runtime SQL replay is a separate validation step.', 'Current miner supports single-table filtered SELECT; joins and computed projections are excluded.', 'Successful source queries do not guarantee correct final answers.']}

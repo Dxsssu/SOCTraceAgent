@@ -1,0 +1,47 @@
+table_name: AADRiskyUsers
+core_columns:
+- name: CorrelationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用于将本条风险用户记录与其他表中的 Log Analytics 事件关联的标识符。可用它把风险状态与可能解释风险来源的登录或审计活动关联起来。
+- name: Id
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Identity Protection 所报告的该风险用户对象的唯一标识符，通常是目录对象 ID。可用它与其他身份表关联，或跨多次更新追踪同一账户。
+- name: IsDeleted
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。该风险用户账户是否在目录中被标记为已删除。为 true 表示风险记录可能指向已移除账户，处置风险前应先确认账户状态。
+- name: IsProcessing
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。后端是否仍在处理该用户的风险状态。为 true 时风险级别或状态可能即将变化，因此当前取值应视为暂定。
+- name: OperationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生或更新本条风险用户记录的操作名称，由来源提供。可用它区分不同记录产生动作；具体取值需结合来源上下文解读。
+- name: RiskDetail
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。说明该用户风险检测或处置情况的细节，例如管理员确认已入侵或用户已修改密码。可用它理解当前风险级别与状态的成因。
+- name: RiskLastUpdatedDateTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。身份保护服务最后一次更新该风险用户记录的 UTC 时间戳。可与 TimeGenerated 比较，判断该账户风险评估的新鲜程度。
+- name: RiskLevel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该用户被检测到的风险严重级别，如 low、medium 或 high。可用它确定账户调查优先级，但仅凭级别不能证明已遭入侵。
+- name: RiskState
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该用户风险的当前状态，例如 atRisk、remediated、dismissed 或 confirmedCompromised。可用它区分需要处置的账户与已被管理员或用户解决的账户。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。将该记录送入 Log Analytics 的代理或采集系统。可用它确认采集路径，并在多个来源写入同一工作区时过滤记录。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档架构，这是与该记录关联的 Log Analytics 工作区 ID。它标识工作区而非目录租户，因此不应将其视为目录租户标识符。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该记录生成进入工作区的 UTC 时间戳。可用它做时间窗口过滤，并相对其他身份事件排序风险状态变化。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属表的名称，在联合查询或确认某行来自哪个数据集时有用。对于这些风险用户记录，该值为常量。
+- name: UserDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该风险用户账户的显示名称。可与用户主体名称一起帮助分析人员识别账户，但显示名称并不唯一，应加以核实。
+- name: UserPrincipalName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该风险账户的用户主体名称（登录标识符）。可用它关联到同一账户的登录、审计或其他身份表。

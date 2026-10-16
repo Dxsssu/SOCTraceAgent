@@ -1,0 +1,70 @@
+table_name: AZFWDnsQuery
+core_columns:
+- name: DnssecOkBit
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。客户端查询中的布尔标志，表示发送方声明支持 DNSSEC。排查解析故障时有用：若为真，具备校验能力的客户端可能因应答未签名或被篡改而失败。
+- name: EDNS0BufferSize
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该查询中客户端声明的最大响应包大小（字节）。同一 SourceIp 大量查询出现大值，可支持解析器行为异常或超大响应暴露的假设；可与 ResponseSize
+    比较。
+- name: ErrorMessage
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙解析器就此查询返回给客户端的错误描述文本；成功时为空。结合 SourceIp、QueryName 与 TimeGenerated 筛选非空值，可解释解析失败原因。
+- name: ErrorNumber
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。解析器就此查询返回的数字错误码；与 ResponseCode 相关，但为数字而非 DNS 助记符。结合 ErrorMessage 与 ResponseCode
+    可归类客户端查询失败的原因。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该客户端发送 DNS 查询所用的传输协议，如 TCP 或 UDP。按 SourceIp 统计非 UDP 或异常协议组合，可发现值得核查的隧道或回退行为。
+- name: QueryClass
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该客户端请求的 DNS 查询类别，通常为互联网类记录。内部 SourceIp 主机上出现异常类别值（配合 QueryName 分组）可能表示非标准或构造的查询。
+- name: QueryId
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。客户端为本次查询分配的数字 DNS 事务标识。仅在特定 SourceIp 与 SourcePort 的短时间窗口内有意义；应用它将查询与响应配对，而非当作全局标识。
+- name: QueryName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该客户端请求防火墙解析器解析的域名。核心分析字段，可结合 SourceIp 与 TimeGenerated 发现信标模式、DGA 风格域名或对可疑域名的访问。
+- name: QueryType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次查询请求的 DNS 记录类型，如 A、AAAA、TXT 或 MX。按 SourceIp 汇总异常或大量的 TXT/MX 查询，有助于锁定可能的数据暂存或
+    C2 探测行为。
+- name: RequestDurationSecs
+  type: TEXT
+  desc: 源类型 real；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙收到该客户端查询到返回响应之间的耗时秒数。按 SourceIp 与 QueryName 观察缓慢或超时查询，可支持可用性问题或通过解析外传数据的假设。
+- name: RequestSize
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙所见该客户端 DNS 请求的字节大小。某 SourceIp 的请求异常大，结合 ResponseSize 与 QueryType 比较，可能表示超长或畸形查询载荷。
+- name: ResponseCode
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙解析器就本次查询返回的 DNS 响应码，如 NOERROR 或 NXDOMAIN。某 SourceIp 或域名族 NXDOMAIN 比例高，可能指向
+    DGA 活动或解析配置错误。
+- name: ResponseFlags
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。解析器为本次查询设置的 DNS 响应标志，以逗号分隔，如权威或截断标志。解析它们可解释特定 QueryName 的异常应答、因截断转用 TCP 重试或缓存行为。
+- name: ResponseSize
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙返回给该客户端的 DNS 响应字节大小。按 SourceIp 与 RequestSize、EDNS0BufferSize 比较，可揭示值得排查的超大或被截断应答模式。
+- name: SourceIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。向防火墙解析器发送本次 DNS 查询的客户端 IP 地址。将解析活动归属到内部主机的主要分析字段；结合 TimeGenerated 与 QueryName
+    使用，并按设备范围理解。
+- name: SourcePort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。客户端用于本次 DNS 查询的源端口。结合 SourceIp、Protocol 与 QueryId，有助于将查询与响应配对，并发现使用大量并发或异常源端口的主机。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。将该记录投递到工作区的收集器或代理。用于确认数据接入路径，并在将防火墙 DNS 日志与其他 Azure 或代理来源遥测关联时过滤记录。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Log Analytics 工作区 ID。当多个工作区向同一环境供数时，用它限定查询范围；它并非目录租户标识。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该 DNS 查询日志记录创建时的 UTC 时间戳。用于排序查询、围绕主机解析活动构建时间线并与其他日志关联的主要时间轴。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属表的名称，用于在联合或跨表查询中确认日志来源。它将 AZFWDnsQuery 记录标识为防火墙 DNS 代理查询，而非其他遥测。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发出该记录的 Azure 资源的唯一标识符，通常为防火墙实例。当多个实例向同一工作区上报时，用它把查询归属到特定防火墙。

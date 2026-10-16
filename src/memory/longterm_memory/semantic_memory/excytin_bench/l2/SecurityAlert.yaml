@@ -1,0 +1,108 @@
+table_name: SecurityAlert
+core_columns:
+- name: AlertLink
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。指向生成该警报的安全产品控制台中警报页面的 URL，可用于跳转到提供程序侧详情；应视为参考链接，而非入侵证据。
+- name: AlertName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发该警报的规则名称，由提供程序定义，可用于分组、计数以及跨环境比较检测。
+- name: AlertSeverity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。上报提供程序为该警报分配的严重性；可用于确定分诊优先级，但需注意严重性只是提供程序判断，并非已确认影响。
+- name: AlertType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供程序特定的警报类型分类；可用于筛选或分组相似检测，应结合上报提供程序的上下文解释其取值。
+- name: CompromisedEntity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。告警报告的主要受影响实体，设备告警中可能是主机名。可用于定位报告的主机或账户，再通过 Entities 确认实体类型。
+- name: ConfidenceLevel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供程序为该检测分配的置信度类别；分诊时可与严重性一同参考，但它是提供程序的评估，并非已核实的事实。
+- name: ConfidenceScore
+  type: TEXT
+  desc: 源类型 real；在 ExCyTIn MySQL 中以 TEXT 存储。上报提供程序为该警报分配的数值置信度评分；鉴于不同产品的评分范围可能不同，宜在同一提供程序内比较。
+- name: Description
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供程序撰写的说明，解释该警报检测到什么以及为何触发；有助于分诊理解，但反映的是提供程序的解读，并非独立确认。
+- name: DisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。警报的易读显示标题，通常比 AlertName 更具描述性；可用于报告以及按名称搜索相似警报。
+- name: EndTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。提供程序上报的该警报底层活动或检测窗口的结束时间；与 StartTime 配合可界定需要调查的时间段。
+- name: Entities
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。列出警报所引用实体（账户、主机、进程、文件、IP）的结构化载荷；可解析后用于跳转至活动日志，实体只是被涉及，并非已确认恶意。
+- name: ExtendedLinks
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。除 AlertLink 之外，提供程序提供的与该警报相关的附加链接；在将其作为调查参考前，应先检查其指向的目标。
+- name: ExtendedProperties
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供方自定义的告警元数据，可能包含分析员分配、自动调查标识或状态以及修复详情。提取调查或手动发起调查信息前，应先检查实际存在的键。
+- name: IsIncident
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，指示该警报在生成时是否被标记为某个事件的一部分；其含义取决于提供程序，不应取代自行进行的事件关联。
+- name: ProcessingEndTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。提供程序完成处理该警报的时间；与 EndTime 和 TimeGenerated 比较，可了解从检测到写入的延迟。
+- name: ProductComponentName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断，生成该警报的产品内部组件；应与 ProductName 结合查看以识别来源功能，不要假定组件含义固定不变。
+- name: ProductName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断，生成该警报的产品；可据此分组和筛选，以区分同一工作区内不同安全产品的检测。
+- name: ProviderName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发出该警报的安全提供程序名称；可据此将警报语义、严重性量表和扩展属性架构限定到单一提供程序。
+- name: RemediationSteps
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供程序针对该警报建议的修复步骤；可作为响应指引，但应先核实其适用性，而非盲目执行。
+- name: ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该警报所涉资源的 Azure 资源标识符；可用于跳转至资源范围日志和清点，但需注意部分警报可能没有具体资源。
+- name: SourceComputerId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该警报关联的源计算机标识符；可联接设备清点或代理表，并因标识符关联上报代理而需按时间限定范围。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据名称推断，将该警报记录写入工作区的系统或连接器；可通过检查区分不同摄取路径，因为官方文档未定义其取值。
+- name: StartTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。提供程序给出的该警报底层活动或检测窗口的开始时间；与 EndTime 配合可限定调查时间范围。
+- name: Status
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该警报在工作区中维护的当前生命周期状态，例如活动或已解决；分诊时可用于筛选未关闭与已关闭的检测。
+- name: SubTechniques
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。映射到该告警的子技术标识或名称，用于细化父技术。可与 Tactics 和 Techniques 一起理解告警声称检测到的具体对手行为；该映射是断言，并非证据。
+- name: SystemAlertId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。安全系统为该告警记录分配的标识符。可用于跨查询、连接和事件关联中关联同一告警；它标识的是告警，而不是底层事件或设备。
+- name: Tactics
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该告警映射到的 MITRE ATT&CK 战术标签，从较高层面描述对手目标。适用于研判和分组；应视为提供程序的映射，而非已确认的对手活动。
+- name: Techniques
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该告警关联的 MITRE ATT&CK 技术标识或名称，表示所声称的具体行为。可与 Tactics 和 SubTechniques 结合获取背景；该映射本身并不能证明系统已被攻陷。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。根据文档，与该告警记录关联的工作区标识符。可用于将查询限定到某个工作区；它不是目录租户 ID，不应被视为身份租户标识符。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该告警行生成到表中的时间戳。可用它对告警查询进行范围限定和排序；在推断底层活动发生时间时，应与 StartTime、EndTime 和 ProcessingEndTime
+    区分开。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行所属表的名称。可用于确认记录来源，并在联合或搜索查询中把 SecurityAlert 行与其他表区分过滤。
+- name: VendorName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供生成此告警的安全产品的供应商。可用于将告警归因到某个来源并比较不同供应商的覆盖范围；它描述的是产品来源，不是受影响的资产。
+- name: VendorOriginalId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。原始供应商为该告警分配的标识符，保留用于回查供应商控制台或 API。与供应商侧记录关联时可配合 SystemAlertId 使用。
+- name: WorkspaceResourceGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。承载该告警记录的工作区所在的 Azure 资源组。可用于按工作区部署进行范围限定或分组；它描述的是工作区归属，而不是被告警资源所属的资源组。
+- name: WorkspaceSubscriptionId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含该告警记录的工作区所在的 Azure 订阅标识符。可用于将查询限定到某个订阅或对工作区使用进行计费/归因；它不是受影响资源所在的订阅。

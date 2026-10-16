@@ -1,0 +1,107 @@
+table_name: CloudAppEvents
+core_columns:
+- name: AccountDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被记录活动账户的通讯录显示名称。可与 AccountId/AccountObjectId 结合，确认执行者身份或发现改名、冒充账户。
+- name: AccountId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Cloud App Security 对执行账户的标识，常为 UPN 或 Entra 对象 ID。作为主要执行者键用于聚合事件；跨身份表关联前需确认格式。
+- name: AccountObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行账户的 Entra 对象 ID（若可用）。与目录和身份日志关联的键；部分应用事件源可能为空，需逐事件校验。
+- name: AccountType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行账户的一般角色分类，如普通、管理员、系统或应用。用于优先排查特权活动；具体取值需按来源检查。
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发事件的活动类型，表示执行者在应用中做了什么。是构建调查时间线时的核心筛选与分组字段。
+- name: ActivityObjects
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。记录活动中涉及的对象（如文件或文件夹）的动态列表。解析以识别被操作资源；结构因应用而异，需结合资源/类别上下文检查。
+- name: ActivityType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发事件的活动类型，用途与 ActionType 类似。当 ActionType 取值过粗或缺失时，用于对应用操作进行分类。
+- name: AdditionalFields
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。未纳入固定列的额外事件或实体属性的动态容器。排查时需检查其键；结构因来源而异，名称推导语义需结合类别上下文。
+- name: AppInstanceId
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。云环境中某个应用特定实例的标识。用于区分多个应用部署或绑定实例之间的活动。
+- name: Application
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行或记录该活动的云应用名称。是在异构数据集中筛选相关应用事件的关键范围字段。
+- name: ApplicationId
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。与该事件关联应用的数字标识。可与 Application 配合，区分名称相似或跨区域的应用。
+- name: City
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。事件客户端 IP 地理定位的城市。与 CountryCode 和 ISP 结合，可在会话异常审查中评估位置合理性。
+- name: CountryCode
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。客户端 IP 地理定位的两位国家代码。用于不可能旅行或境外访问初步排查；与账户常规访问地区关联分析。
+- name: DeviceType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与活动关联的设备类型，按用途或平台类别划分。可与 OSPlatform 和 UserAgent 结合，刻画客户端环境。
+- name: IPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录通信期间分配给客户端的 IP 地址。用于威胁情报、代理检查和跨用户或应用关联的核心网络枢纽。
+- name: IPCategory
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。关于事件 IP 地址的附加分类信息。属名称推导解释；需结合 IPTags 和 IP 信誉上下文检查实际取值。
+- name: IPTags
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。应用于特定 IP 地址或范围的自定义标签。反映你自己的标记方案而非内置信誉；用于筛选已知企业或可疑范围。
+- name: ISP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与客户端 IP 地址关联的互联网服务提供商。可与 City/CountryCode 配合，判断访问来源是否符合用户预期网络。
+- name: IsAdminOperation
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，表示该活动是否由管理员执行。用于标记需优先审查的特权操作；其本身并不能证明恶意意图。
+- name: IsAnonymousProxy
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，表示事件 IP 是否属于已知匿名代理。属规避访问的风险信号；得出结论前需与其他证据相互印证。
+- name: IsExternalUser
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，表示网络内不属于组织域的用户。用于区分访客或合作伙伴活动与内部员工操作。
+- name: IsImpersonated
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。布尔值，表示该活动由某用户通过模拟代表另一用户执行。归因操作时需区分真实执行者与被代表身份。
+- name: OSPlatform
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。客户端设备运行的操作系统平台，含同族变体。与 DeviceType 和 UserAgent 配合，可刻画应用操作背后的终端。
+- name: ObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被记录操作所作用对象的唯一标识。用于追踪执行者所操作具体文件、邮件或资源的关联键。
+- name: ObjectName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被记录操作所针对的对象名称，如文件、文件夹或站点。结合 ObjectType 和 ActionType 可确定具体访问、修改或共享的内容。
+- name: ObjectType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。操作所作用对象的类别，如文件、文件夹或用户。与 ObjectName 配合可界定云应用活动影响的资源类型。
+- name: RawEventData
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。来自源云应用或服务的原始 JSON 事件负载，由 Defender for Cloud Apps 收集。可检查其中未在标准化列中体现的特定于提供商的属性。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。由报告服务为该活动报告或事件分配的标识符。可用于对同一源活动的相关记录进行分组或关联。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。将记录采集到工作区的收集器或代理类型。指示摄取路径，有助于在筛选云应用活动结果时验证数据来源。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Log Analytics 工作区标识符。用于将查询限定到某个工作区；它不是目录租户 ID。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。记录在日志管道中生成时的 UTC 时间戳。用作云应用活动调查的主要时间过滤和排序依据。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。提供该记录的表的名称。在跨多表的联合查询中，可用于区分 CloudAppEvents 的行与其他来源。
+- name: UserAgent
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行该活动的浏览器或客户端应用的用户代理字符串。可用于对客户端进行指纹识别、发现自动化或旧版软件，并与 UserAgentTags 关联。
+- name: UserAgentTags
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。由用户代理派生的 Defender for Cloud Apps 标签，如指示本机客户端、过时浏览器、过时操作系统或机器人。可用于标记异常客户端，但不能作为失陷的证据。

@@ -1,0 +1,92 @@
+table_name: IdentityLogonEvents
+core_columns:
+- name: AccountDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此登录事件中账户的显示名称，便于人工研判和实体映射；但显示名可能不唯一，不能作为可靠的账户关联键。
+- name: AccountDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行或尝试本次登录的账户所属域或目录域。可用于限定身份查询范围；它表示账户命名空间，并非 Microsoft Entra 租户。
+- name: AccountName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次登录事件中的账户用户名，通常不含域。调查时应配合 AccountDomain 或 AccountUpn 才能唯一识别账户。
+- name: AccountObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本次登录事件关联的账户对象的唯一标识符。当账户名称有歧义或发生变化时，可用它在事件间关联同一身份。
+- name: AccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次认证事件中账户的安全标识符（SID）。用于精确解析 Windows 身份，尤其在仅凭账户名有歧义时。
+- name: AccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行或尝试本次登录的账户的用户主体名称（UPN）。可用于跨服务关联身份活动，但应与账户标识符交叉验证。
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行记录的身份活动类别或操作类型，例如登录尝试或相关认证操作。应先查看不同取值再筛选，以正确限定查询范围。
+- name: AdditionalFields
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。本登录事件中固定列未涵盖的额外属性的动态集合。在查询中依赖任何嵌套值之前，应按事件类型检查其键结构。
+- name: Application
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行或与本次记录的认证操作关联的应用程序。有助于按客户端或服务区分身份活动，但并非所有事件类型都会填充此字段。
+- name: DestinationDeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。处理本次认证操作的服务端或目标设备名称。可用于识别登录所到达的目标系统，而不是发起方的客户端设备。
+- name: DestinationIPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。此事件的目标或服务端设备的 IP 地址。可用于识别认证尝试所指向的位置，与本表中的源 IPAddress 互为补充。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录的认证通信关联的目标端口。按字符串处理，并结合协议和目标地址刻画所访问的服务。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本次登录事件关联的设备的完全限定域名，通常是源设备或发起端点。用于将身份活动限定到特定设备和时间窗口。
+- name: DeviceType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本次登录事件关联的设备类型，例如某种端点类别。取值取决于数据源，应谨慎解释，仅用于分组或筛选。
+- name: FailureReason
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录的认证操作失败时的原因说明（如适用）。在调查失败登录时用于区分凭据错误、策略阻止或其他原因。
+- name: IPAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本次登录事件关联的端点 IP 地址，通常是尝试的源地址。应结合时间边界，按网络来源对活动进行分组分析。
+- name: ISP
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本事件中 IP 地址关联的互联网服务提供商，可作为认证来源的网络背景信息。它只是上下文补充，本身并不表示恶意。
+- name: Location
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本事件网络来源关联的地理位置，如城市或国家。仅用于异常研判；地理位置为近似值，不能证明实际所在地。
+- name: LogonType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次认证事件所记录的登录会话类型，用于区分交互式、网络、服务等登录类别。有助于区分可疑的远程登录与本地登录。
+- name: OSPlatform
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本次登录事件关联的机器的操作系统平台。应视为端点的描述性上下文，而不是设备清单字段。
+- name: Port
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次认证事件通信中使用的 TCP 端口，通常是源端口。按字符串处理，并结合 IPAddress 刻画客户端侧连接特征。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次认证通信使用的网络协议，例如某种登录协议。用于区分认证机制，并将查询限定到相关登录路径。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与本事件记录或报告关联的标识符。可用于检索或关联特定记录，但不要假设它能跨数据源唯一标识一次登录会话。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成本事件行的代理或采集通道，例如 Windows 代理或 Azure 诊断。用于理解数据来源，并在跨表关联前进行筛选。
+- name: TargetAccountDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行记录的登录操作所作用账户的显示名称。用于将操作关联到目标身份，调查某次尝试或访问涉及哪个账户。
+- name: TargetDeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本行记录的操作所作用设备的完全限定域名。用于识别被访问的目标设备，并在调查中在发起设备与目标设备之间转换视角。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录的 Log Analytics 工作区 ID。用于将查询限定到正确的工作区；它不是目录租户 ID，也不标识 AD 域。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。记录在工作区中生成的 UTC 日期和时间。用作登录活动时间窗口的主要过滤条件，并与前后事件进行关联。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该记录所属的表名称，用于在同一工作区跨表查询时区分此登录事件来源与其他表。

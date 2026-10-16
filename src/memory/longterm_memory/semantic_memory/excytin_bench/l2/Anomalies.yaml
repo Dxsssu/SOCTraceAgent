@@ -1,0 +1,110 @@
+table_name: Anomalies
+core_columns:
+- name: ActivityInsights
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON，包含触发该异常的活动的洞察信息，帮助分析人员理解规则判定的异常行为。其键的含义基于字段名称推断，应在具体上下文中检查 JSON 结构后再做判断。
+- name: AnomalyDetails
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON，包含生成该异常的规则与算法的总体信息及解释性细节。可用于理解检测逻辑，并在研判过程中作为辅助上下文。
+- name: AnomalyReasons
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON，记录该异常被判定为异常的详细原因。可用于佐证或质疑该发现；具体结构基于字段名称推断，需逐案检查。
+- name: AnomalyTemplateId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该行的异常模板的字符串标识符。可据此分组或关联，以比较同一模板在不同用户、设备或时间段产生的异常。
+- name: AnomalyTemplateName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行对应异常模板的可读名称。在调查发生了哪类异常时，可用于报告和按检测场景过滤。
+- name: AnomalyTemplateVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该行的异常模板的字符串版本号。通过比较不同时间的版本，可发现同一模板在检测行为或评分上的变化。
+- name: Description
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。对该生成异常的自由文本描述。可在研判时作为快速概览使用；其内容由规则生成，不应视为已核实的事件事实。
+- name: DestinationDevice
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行异常所涉及的源设备的名称。可与 DestinationDevice 及时间字段配合，限定针对设备的调查范围；标识含义基于字段名称推断。
+- name: DestinationIpAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该异常关联的目标 IP 地址。可据此关联网络连接遥测数据；它仅表示该行的目标 IP，并不证明流量具有恶意性。
+- name: DestinationLocation
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON，描述与该异常关联的目标位置信息。其结构基于字段名称推断；在得出关于目标地理位置的结论前，应先检查其键。
+- name: DeviceInsights
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON，包含与该异常相关的设备的洞察信息。可用于理解设备方面的促成因素；其键的含义基于字段名称推断，应在具体上下文中核对。
+- name: EndTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该异常结束的 UTC 时间。可与 StartTime 配合界定异常时间窗口，并在调查中将活动相对于其他事件进行排序。
+- name: Entities
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON，包含该生成异常涉及的全部实体，如账户、主机或地址等。可据此从异常转向相关遥测数据进行关联；应逐行核实实体类型。
+- name: ExtendedLinks
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态列表，指向生成该异常的数据的链接。可用于打开或查询底层记录；链接目标因环境而异，依赖前应先验证。
+- name: ExtendedProperties
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON 对象，包含有关该异常的额外键值对。可在研判时用作规则提供的上下文；其键的语义基于字段名称推断且此处未记录，解释时应谨慎。
+- name: Id
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该生成异常行的字符串标识符。可用于在查询和工作流中引用、去重或关联某条特定异常；其唯一性由数据源声明，此处不作保证。
+- name: RuleConfigVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该行的异常分析规则的配置版本字符串。可在不同行之间比较，以判断异常行为变化时规则配置是否发生了改变。
+- name: RuleId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该行的异常分析规则的标识符。可据此分组，以比较同一规则产生的异常并检查规则在不同时间段的行为。
+- name: RuleName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该行的异常分析规则的可读名称。可用于过滤、报告，并在调查中说明是哪项检测产生了该异常。
+- name: RuleStatus
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该行的异常分析规则的状态，如试运行或生产。可用于判断规则的成熟度；具体取值集合由规则定义，应在数据中核实。
+- name: Score
+  type: TEXT
+  desc: 源类型 real；在 ExCyTIn MySQL 中以 TEXT 存储。赋予该异常的数值评分，用于对发现进行排序或优先级划分。分值高低的含义取决于具体规则；应将评分视为相对信号，而非已确认遭到入侵的证据。
+- name: SourceDevice
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行异常所涉及的源设备的名称。可与 DestinationDevice 及时间字段配合，限定针对设备的调查范围；标识含义基于字段名称推断。
+- name: SourceIpAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该异常关联的源 IP 地址。可据此关联网络和登录遥测数据，查看从中发起的活动；仅凭 IP 不能确定归属或恶意意图。
+- name: SourceLocation
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态 JSON，描述与该异常关联的源位置信息。其结构基于字段名称推断；在得出地理位置或网络来源方面的结论前，应先检查其键。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该异常记录的代理或采集通道，例如 Azure 或 Operations Manager。可用于按采集路径筛选异常，并排除无关的采集管道。
+- name: StartTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。异常窗口按生成规则判定的 UTC 开始时间。与 EndTime 配合可确定检测区间，并对齐底层日志查询。
+- name: Tactics
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。规则为该异常映射的 MITRE ATT&CK 战术，通常以字符串形式给出。可用于在分诊时按攻击目标对异常进行分组或排序。
+- name: Techniques
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成规则与该异常关联的 MITRE ATT&CK 技术。可与 Tactics 配合，理解所建模的攻击行为并指导调查。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档模式，本字段为拥有该异常记录的 Log Analytics 工作区 ID。应视为工作区范围限定，而非 Azure AD 目录租户标识。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。该异常记录在工作区中生成的 UTC 时间戳。用于按时间范围查询并按顺序排列检测结果；可能与 StartTime 和 EndTime 不同。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录上标注的表名称值，通常用于标识 Anomalies 表。可在跨多个 Sentinel 表查询时用于确认表的来源。
+- name: UserInsights
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。与本条生成异常相关用户的洞察信息，以动态 JSON 存储。属基于名称的解读：应在具体上下文中查看其内容，不要假设字段固定，也不要据此断定用户已遭入侵。
+- name: UserName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按规则报告，生成本异常所针对的用户名。可用其关联该账户活动；应通过其他表解析身份，而不要仅依赖此字段。
+- name: UserPrincipalName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成本异常所针对用户的 UPN。可用于关联身份和登录数据；应与 UserName 相互印证，在得出结论前进行验证。
+- name: VendorName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档说明，生成该异常的厂商名称。可用于区分异常生成方，并在分诊时筛选特定检测来源。
+- name: WorkspaceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该异常记录关联的 Sentinel 工作区 ID。可用于将异常限定到某一工作区；应理解为工作区范围限定，而非目录租户标识。

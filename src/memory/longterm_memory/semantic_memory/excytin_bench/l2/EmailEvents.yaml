@@ -1,0 +1,132 @@
+table_name: EmailEvents
+core_columns:
+- name: AdditionalFields
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。动态字段，保存本表中未作为列呈现的额外提供商自定义属性。内容随事件变化；使用前请在邮件/资源上下文中检查键名，不要假设固定路径或取值。
+- name: AttachmentCount
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该收件人邮件事件中的附件数量。大于零表示存在附件，但仅凭此不能证明用户打开或执行了附件。
+- name: AuthenticationDetails
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该邮件的身份验证通过/失败结论，例如 SPF、DKIM、DMARC 及复合身份验证。可用于评估该邮件事件的发件人可信度；通过并不单独证明邮件安全。
+- name: BulkComplaintLevel
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。分配给该邮件事件的批量投诉级别（BCL）阈值，越高越可能引发投诉、越具垃圾邮件特征。应结合垃圾邮件判定字段使用，不能单独作为失陷指标。
+- name: ConfidenceLevel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该邮件事件垃圾邮件或钓鱼判定的置信度，例如垃圾邮件置信级别取值或钓鱼置信度 High/Low。需结合本行相应威胁与操作字段解读。
+- name: Connectors
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。路由该邮件事件的自定义邮件流指令或连接器。描述应用于该邮件的路由配置，当投递路径与预期组织邮件流不一致时有用。
+- name: DeliveryAction
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该邮件投递时所执行的操作，如已投递、移入垃圾邮件、已阻止或已替换。结合 DeliveryLocation 了解邮件去向；该操作不等于用户交互。
+- name: DeliveryLocation
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。本次投递事件记录的邮件位置。结合 DeliveryAction 和 RecipientEmailAddress 可了解初始处理情况；后续位置变化应查看
+    LatestDeliveryLocation 或投递后事件。
+- name: DetectionMethods
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。对该邮件事件产生判定的检测机制，区别于由此得出的投递操作。可用于查看是哪种过滤技术标记了该邮件及其分类方式。
+- name: EmailAction
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。基于过滤判定、策略与用户操作对该邮件采取的最终操作，如移入垃圾邮件、修改标头、重定向、删除或隔离。描述邮件处理结果，不代表用户对内容采取了操作。
+- name: EmailActionPolicy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。对该邮件事件生效的操作策略名称，例如反垃圾邮件、反钓鱼、反恶意软件或传输规则类别。可用于将结果归因到具体防护策略。
+- name: EmailActionPolicyGuid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。对该邮件事件生效的策略唯一标识符。可用于关联由同一策略处理的多个邮件，或与策略配置上下文进行连接。
+- name: EmailClusterId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。通过内容启发式分析将该邮件与其他邮件分组的标识符。可从单个邮件事件关联到同一簇的相关邮件（如相似活动）；聚类为启发式结果，不证明来源相同。
+- name: EmailDirection
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该邮件事件的方向，如入站、出站或组织内。可用于在分析发件人与收件人集合前，将调查范围限定为进入、离开或组织内部的邮件。
+- name: EmailLanguage
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。在该邮件事件内容中检测到的语言。可用于发现语言对收件人或组织而言异常的邮件，作为分诊线索而非判定结论。
+- name: InternetMessageId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。由发送方邮件系统为该邮件设置的对外可见标识符。可用于在邮件系统或外部报告间关联同一邮件；该标识符并非 Office 365 生成。
+- name: LatestDeliveryAction
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。服务或管理员通过手动修复对该邮件尝试的最后已知操作。可与 DeliveryAction 比较，判断投递后的修复是否改变了邮件的处理结果。
+- name: LatestDeliveryLocation
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。经过任何服务或手动修复后该邮件的最后已知位置。结合 LatestDeliveryAction，可追踪后续干预后该邮件的最终去向。
+- name: NetworkMessageId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。
+- name: OrgLevelAction
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。因匹配组织级策略而对该邮件事件采取的操作。结合 OrgLevelPolicy，可将结果归因于组织配置而非每用户设置。
+- name: OrgLevelPolicy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发该邮件事件所记录操作的组织策略名称。结合 OrgLevelAction，可识别是哪条组织规则影响了邮件处理。
+- name: RecipientEmailAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该邮件事件的收件人电子邮件地址，如适用则为通讯组展开后的地址。用于标识目标邮箱；一行代表该地址的邮件事件，不代表用户交互。
+- name: RecipientObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该事件中邮件收件人的目录对象标识符。在范围与权限允许时，可用于将收件人与基于目录的身份上下文关联；它是对象 ID，不是邮件地址。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该事件记录的唯一标识符。可用于引用特定邮件事件，或与引用同一标识符的其他报告关联，而非用于消息级关联。
+- name: SenderDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。邮件中显示的发件人显示名称，代表可见的 From 身份。可与 SenderFromAddress 一起识别伪造或误导性发件人名称，注意该名称由发件方控制。
+- name: SenderFromAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。邮件 From 信头中显示的发件人地址。评估身份冒用时可与信封发件人及身份验证结果比较；地址不一致本身不能证明欺骗。
+- name: SenderFromDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该邮件 From 信头地址的域部分。可用于按域聚合发件人、评估仿冒域，并关联同一 From 域的相关邮件。
+- name: SenderIPv4
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。最后检测到的中继该邮件的邮件服务器 IPv4 地址。可与发件人和邮件标识符一起追踪发送基础设施；它只是中继元数据，不能证明行为者身份。
+- name: SenderIPv6
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。最后检测到的中继该邮件的邮件服务器 IPv6 地址。可与 SenderIPv4 和邮件标识符一起追踪发送基础设施；缺失并不表示邮件无害。
+- name: SenderMailFromAddress
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。用于邮件传输的信封发件人地址。可结合 SenderFromAddress 和身份验证结果评估发送者身份；转发及邮件服务也可能造成正常的地址差异。
+- name: SenderMailFromDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该邮件信封发件人的域部分。可与 SenderFromDomain 及身份验证结果一起评估域对齐情况并识别不匹配的发送域。
+- name: SenderObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。当发件人为内部身份时，表示发件人的目录对象标识符；否则可能为空。可用于限定特定账户发送的邮件，与地址列不同。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。生成该记录的代理或收集系统，例如 Operations Manager 或 Azure。可用于了解数据接入来源，并在与其他日志源关联时筛选记录。
+- name: Subject
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该投递事件中邮件的主题行。可用于关键词或活动聚类、识别诱饵，并关联具有相同主题的相关邮件。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该记录关联的 Log Analytics 工作区标识符，并非目录租户 ID。可用于将查询限定到正确的工作区，并按工作区范围对数据分组。
+- name: ThreatNames
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。过滤检测为该邮件指定的具体威胁家族或恶意软件名称。可用于分组相关活动并丰富判定，但仅凭匹配并不能证明收件人已失陷。
+- name: ThreatTypes
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。电子邮件过滤堆栈给出的判定类别，说明邮件包含恶意软件、钓鱼或其他威胁。可与处置和位置列一起解读过滤结果；判定并不证明用户交互。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。记录生成时的 UTC 日期和时间。可作为投递、拦截与投递后处置时间线的主要时间边界，并用于对相关邮件事件排序。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含该记录的表的名称，在查询工作区中多个 Log Analytics 表时可用于筛选此表。
+- name: UrlCount
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。该事件中邮件内嵌 URL 的数量。可用于对含链接邮件进行分流，但 URL 存在或数量并不能证明任何 URL 被点击。
+- name: UserLevelAction
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。基于收件人定义的邮箱策略对该邮件采取的处置，例如用户级过滤结果。可用于区分用户配置的处理与组织级处置。
+- name: UserLevelPolicy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。触发该邮件用户级处置的最终用户邮箱策略。可与 UserLevelAction 配合，将处理归因于特定用户策略而非组织规则。

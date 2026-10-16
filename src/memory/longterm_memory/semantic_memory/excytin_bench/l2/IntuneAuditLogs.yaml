@@ -1,0 +1,35 @@
+table_name: IntuneAuditLogs
+core_columns:
+- name: Category
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。服务上报的 Intune 被审核操作类别，可用于先按功能领域筛选审核活动，再结合 OperationName 与 Identity 深入分析；具体取值以服务定义为准。
+- name: CorrelationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。关联标识符，用于串联同一次工作流内相关的 Intune 审核操作；可按身份或服务对多步操作分组，重建一次变更的执行顺序。
+- name: Identity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被记录为执行该 Intune 操作的标识（通常是发起变更的管理员或服务主体）；可用于归因操作，但显示字符串可能不一致，需核实账号范围。
+- name: OperationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。已执行的 Intune 操作名称，如策略、应用、设备或角色操作；可用于筛选特定变更类型，并按身份构建活动时间线。
+- name: Properties
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。承载该审核记录操作专属细节的结构化字符串；可有选择地查看以了解变更内容，其内部结构属于依据名称推断，且不同操作间不保证一致。
+- name: ResultDescription
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该 Intune 审核记录操作结果的文本说明或失败原因；在排查管理员变更时可用于解释操作成功或失败的原因。
+- name: ResultType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。被审核 Intune 操作的结果状态（例如成功或失败）；可在分析身份行为前，将有完成的变更与被拒绝或失败的尝试区分开。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该事件的代理或采集源类型（参见文档示例值）；可用于确认记录经由预期管道进入，而不应把它当作操作本身证据。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与该导出的 Intune 审核记录关联的工作区标识符；可用于跨工作区限定查询范围，不应将其解释为 Entra 目录租户标识。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。被审核 Intune 操作被上报的时间戳；可用于排序事件、关联身份活动，并将调查限定在相关时间窗口内。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。存储该记录的表名称；在构建跨表狩猎查询时，可用于将查询范围限定到 Intune 审核表。

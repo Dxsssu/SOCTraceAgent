@@ -1,7 +1,8 @@
-# Neo4j for SOCAgent Semantic Memory
+# Neo4j for SOCAgent PM / EM
 
 This directory contains the local Neo4j Community Edition deployment used by
-the long-term semantic memory work.
+Procedural and Episodic Memory. Semantic Memory uses local L1/L2 YAML files.
+Import EM then PM; neither requires a Semantic Memory graph.
 
 ## Start
 

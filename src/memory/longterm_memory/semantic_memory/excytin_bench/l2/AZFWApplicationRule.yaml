@@ -1,0 +1,62 @@
+table_name: AZFWApplicationRule
+core_columns:
+- name: Action
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙对此应用请求执行的结果（日志中记录的允许或拒绝等）。可按其分组统计放行与拦截的应用流量，并追溯是哪条规则给出的判定。
+- name: ActionReason
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。当请求未被显式规则匹配时记录的原因说明，例如默认操作丢弃。可用于区分策略导致的拒绝与隐式默认处理，但不能作为恶意意图的证据。
+- name: DestinationPort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙观察到的请求目标端口。结合 Protocol 与 Fqdn 可判断所访问的服务，并发现某来源访问的异常端口。
+- name: Fqdn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。请求所针对的完全限定域名（若已解析）。可据此查找访问某域名的所有客户端，或关联某主机一段时间内的外联目标。
+- name: IsExplicitProxyRequest
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。表示该请求是否通过显式代理端口到达，而非被透明拦截。排查时可用它区分配置了代理的客户端行为与其他流量。
+- name: IsTlsInspected
+  type: TEXT
+  desc: 源类型 bool；在 ExCyTIn MySQL 中以 TEXT 存储。表示该连接是否经过 TLS 检查。在依赖 URL 或分类字段前应先确认，因为未检查的流量可能缺少这些细节。
+- name: Policy
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。处理此请求的规则所属防火墙策略名称。可用它将活动归属到具体策略，并在正确配置范围内分析规则与规则集合。
+- name: Protocol
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。请求使用的网络协议，如 HTTP 或 HTTPS。可结合 DestinationPort 与 Fqdn 刻画应用流特征，并筛选出正在调查的流量类型。
+- name: Rule
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。匹配此请求的应用程序规则名称。可用它确认是哪条规则放行或拦截了流量，并评估该规则意图是否与观察到的目标相符。
+- name: RuleCollection
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。包含所匹配规则的规则集合名称。可用于按相关规则分组，并理解是哪一集合的评估产生了观察到的操作。
+- name: RuleCollectionGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所匹配规则所在的规则集合组名称。可用它追溯规则之上的策略层级，并比较不同组之间的行为。
+- name: SourceIp
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。防火墙记录的请求来源 IP 地址。可据此刻画某主机的应用访问目标，或查找访问某 FQDN 的所有客户端。
+- name: SourcePort
+  type: TEXT
+  desc: 源类型 int；在 ExCyTIn MySQL 中以 TEXT 存储。客户端用于此请求的源端口。需结合 SourceIp 与时间戳解读，因为端口会被复用；它有助于区分同一主机的并发会话。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识交付该记录的代理或采集通道，例如 Azure Diagnostics。可用它了解摄取路径，并识别经不同通道到达的重复记录。
+- name: TargetUrl
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。请求访问的目标 URL，仅对 HTTP 或经 TLS 检查的 HTTPS 流量填充。可用于比 Fqdn 更细的路径级分析，但需注意未检查会话可能缺失此值。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。按文档说明为与该记录关联的 Log Analytics 工作区标识符。可用它将查询限定到某工作区；不要将其视为目录或 Entra 租户标识。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。数据平面日志记录创建时的 UTC 时间戳。可用它限定调查时间范围、排列某主机的请求顺序，并将防火墙活动与其他日志源关联。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。存储该记录的表名称。可用它将查询限定到此应用规则表，并与同一工作区中的其他防火墙或诊断表区分开。
+- name: WebCategory
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。为请求的 FQDN 或 URL 分配的 Web 分类（若可用）；无法分类时为空。应将其视为排查用的分类辅助信息，而非恶意证据。
+- name: _ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该记录的 Azure 资源唯一标识符，通常为防火墙。当多个防火墙向同一工作区上报时，可用它将查询限定到特定防火墙实例。

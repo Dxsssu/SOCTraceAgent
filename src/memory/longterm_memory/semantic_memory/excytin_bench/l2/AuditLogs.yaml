@@ -1,0 +1,93 @@
+table_name: AuditLogs
+core_columns:
+- name: AADOperationType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。Entra ID 活动的操作类型。官方取值有 Add、Update、Delete 和 Other。可用于按操作类别对某个用户、组或应用程序的目录变更进行分组或过滤。
+- name: AADTenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发生所审核目录活动的 Entra ID 租户的标识符。可用于将调查限定到特定 Entra ID 租户；它与架构中的工作区 TenantId 不同。
+- name: ActivityDateTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。执行所审核目录活动的 UTC 日期和时间。可用于按时间限制事件搜索、将目录变更与其他日志关联，以及还原某次变更前后的活动序列。
+- name: ActivityDisplayName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。目录事件的可读活动或操作名称，例如创建用户或向组添加成员。可在调查中用于识别具体目录操作，并跨同活动的多个事件进行透视。
+- name: AdditionalDetails
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。保存所审核活动补充详细信息的动态对象。请在相关资源或类别上下文中检查其键和值，以查找未作为顶层列呈现的额外字段。
+- name: Category
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。审核记录的类别；官方文档指出当前支持的取值为 Audit。可在查询 AuditLogs 时用于确认记录类型，并区分目录审核条目与其他日志类别。
+- name: CorrelationId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。客户端传入的可选 GUID，用于将客户端操作与服务器端操作关联。可用于跟踪同一逻辑操作内跨越多个服务或步骤的相关目录活动。
+- name: DurationMs
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。审核记录上的持续时间字段。官方文档说明该属性未被使用，可以忽略；不要在本表中依赖它进行计时或性能分析。
+- name: Id
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。唯一标识所审核目录活动的 GUID。可在与其他数据集关联或跟进特定记录时，用于引用、去重或透视单条审核事件。
+- name: Identity
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发出请求时所出示令牌中的身份，可以是用户帐户、系统帐户或服务主体。可与 InitiatedBy 一起将目录活动归因到操作者。
+- name: InitiatedBy
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。描述发起目录活动的用户或应用程序的动态对象。请在资源上下文中检查其键，判断操作者是用户还是应用，并据此归因变更。
+- name: Level
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。审核记录的消息类型；官方文档指出当前始终为 Informational。它主要用于确认记录严重级别，而不是用于筛选有意义的失败。
+- name: Location
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。与所审核活动关联的数据中心位置。依据字段名和官方描述解释；可用于粗略的地理上下文，不宜作为目录调查中精确的操作者位置。
+- name: LoggedByService
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起或记录该目录活动的服务，例如核心目录、自助密码管理或特权身份管理。可用于按发起该活动的 Entra 服务对活动进行切分。
+- name: OperationName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行记录的目录操作名称。可与 ResultType 一起过滤特定操作，并评估该操作对操作者或目标资源是否成功。
+- name: OperationVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。客户端执行目录操作时请求的 REST API 版本。可用作生成该审核事件的客户端或工具的上下文，而非安全结果的指标。
+- name: Resource
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。.meta 架构中该字段没有描述；应将对其含义的解释视为基于名称推导，并检查记录上下文，而不要假设具体语义。
+- name: ResourceGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。.meta 架构中该字段没有描述；应将其解释视为基于名称推导，并在依赖它之前结合该行的资源上下文进行确认。
+- name: ResourceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。.meta 架构中该字段没有描述；应将其解释视为基于名称推导，并结合该行的其他上下文字段核实所引用的资源。
+- name: ResourceProvider
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。.meta 架构中该字段没有描述；应将其解释视为基于名称推导，并结合资源或类别上下文进行确认。
+- name: Result
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。目录活动的结果。官方取值为 success、failure、timeout 和 unknownFutureValue。可与 ActivityDisplayName
+    或 OperationName 配合，查找失败或超时的目录变更。
+- name: ResultDescription
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。对目录活动结果的附加描述。当结果为 failure 或 timeout 时，可用作辅助说明，帮助解释所审核操作发生的情况。
+- name: ResultReason
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。描述目录活动失败或超时结果的原因。在调查中当 Result 值表示 failure 或 timeout 时，可用它区分底层原因。
+- name: ResultSignature
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。审核记录上的次要结果字段。官方文档说明该属性未被使用，可以忽略；不要依赖它判断目录活动是否成功。
+- name: ResultType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。该行所记录 Entra 审核操作的结果；用于区分成功活动与失败，是排查被拒绝或报错的管理变更时的首要筛选条件。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。标识产生该行的收集代理或来源管道（如 Azure 诊断或直连连接器）；用于确认数据接入路径，而非用户或目录语义。
+- name: TargetResources
+  type: TEXT
+  desc: 源类型 dynamic；在 ExCyTIn MySQL 中以 TEXT 存储。描述被审核活动更改的资源的动态载荷，例如被修改的用户、组、应用、角色或策略对象；解析后可将操作关联到受影响的身份或对象。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。文档中标注为记录所属的 Log Analytics 工作区标识符，用于工作区范围限定和跨表关联；它不是 Microsoft Entra 目录租户 ID。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。记录在日志/导出管道中创建的时间；可用于时间范围过滤，但应与 ActivityDateTime 比较，以区分摄入延迟与实际事件时间。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录所属表的名称；在此表中用于确认该行来自 AuditLogs，并在联合多表查询时帮助限定范围。

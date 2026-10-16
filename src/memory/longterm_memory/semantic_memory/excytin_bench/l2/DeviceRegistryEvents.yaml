@@ -1,0 +1,134 @@
+table_name: DeviceRegistryEvents
+core_columns:
+- name: ActionType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。产生该行的活动，通常是注册表项或值的创建与修改。用它区分新植入的注册表项与对已有项的编辑。
+- name: AppGuardContainerId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。当存在时，表示隔离浏览器会话的 Application Guard 虚拟化容器，该会话活动引发了此注册表事件。普通主机活动时为空。
+- name: DeviceId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发生此注册表更改的终结点的服务分配标识符。用它跨 MDE 各表关联，并将事件限定到单台机器。
+- name: DeviceName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。报告此注册表事件的终结点的完全限定域名。当标识符未知时，用它进行主机级透视和初步排查。
+- name: InitiatingProcessAccountDomain
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行修改此注册表项的进程所用账户的域。与账户名配合可区分本地身份与域身份。
+- name: InitiatingProcessAccountName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行创建或修改此注册表项的进程所用账户的用户名。用它把注册表更改归因到某个用户上下文。
+- name: InitiatingProcessAccountObjectId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。更改此注册表项的进程背后用户账户的 Azure AD 对象 ID。适合在涉及目录的身份调查中解析身份。
+- name: InitiatingProcessAccountSid
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行进行此注册表更改的进程所用账户的安全标识符。用它精确识别 Windows 主机上的本地或域主体。
+- name: InitiatingProcessAccountUpn
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。运行修改此注册表项进程所用账户的用户主体名称。便于将注册表活动与登录身份数据关联。
+- name: InitiatingProcessCommandLine
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。创建或修改此注册表项的进程的完整命令行。可从中检查可疑参数，例如隐蔽的 reg.exe 或 PowerShell 写入。
+- name: InitiatingProcessCreationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。更改此注册表项的进程启动时的时间戳。与事件时间比较，可判断修改在进程启动后多久发生。
+- name: InitiatingProcessFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。负责此注册表更改的进程的映像名称，例如 reg.exe 或 explorer.exe。用它发现对敏感键的异常写入者。
+- name: InitiatingProcessFileSize
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。运行负责此注册表事件的进程的映像文件大小（字节）。体积异常小却写入自启动键的二进制文件值得审查。
+- name: InitiatingProcessFolderPath
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行此注册表修改的映像文件所在目录路径。从临时目录或用户可写路径运行的执行文件值得关联分析。
+- name: InitiatingProcessId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。事件发生时进行此注册表更改的进程 ID。由于 PID 会被复用，PID 分析需限定在相同的 DeviceId 和创建时间内。
+- name: InitiatingProcessIntegrityLevel
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。分配给更改此注册表项的进程的完整性级别，反映高或中等等信任度。级别提升提示存在特权注册表写入。
+- name: InitiatingProcessMD5
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。执行此注册表更改的映像文件的 MD5 哈希。可用于恶意软件信誉查询和跨终结点匹配，但注意 MD5 证据强度较弱。
+- name: InitiatingProcessParentCreationTime
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。修改注册表进程的父进程启动时的时间戳。有助于重建进程链并发现延迟或异常的衍生模式。
+- name: InitiatingProcessParentFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。衍生出进行此注册表更改进程的父进程映像名称。用它识别启动者，例如脚本宿主或 Office 应用。
+- name: InitiatingProcessParentId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。衍生出修改注册表项进程的父进程的进程 ID。与其他进程事件关联前，需配合设备和时间范围限定。
+- name: InitiatingProcessSHA1
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。进行此注册表更改的映像文件的 SHA-1 哈希。当缺少更强哈希时，可用于跨主机识别该二进制文件。
+- name: InitiatingProcessSHA256
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。负责此注册表事件的映像文件的 SHA-256 哈希；某些情况下可能为空，此时改用 SHA-1。优先用它精确识别二进制文件。
+- name: InitiatingProcessTokenElevation
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。修改此注册表项的进程的令牌提升状态，表明是否应用了用户访问控制提升。提升后的写入风险更高。
+- name: InitiatingProcessVersionInfoCompanyName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。更改此注册表项的映像版本信息资源中的公司名称。可信厂商的非空值有助于区分已签名软件与伪装二进制文件。
+- name: InitiatingProcessVersionInfoFileDescription
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程映像版本信息中嵌入的可读描述，用于识别该可执行文件是什么。可用于对可疑发起进程做基本判断，但攻击者可伪造版本字符串。
+- name: InitiatingProcessVersionInfoInternalFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起注册表修改的进程版本资源中的内部文件名。当磁盘文件名具有误导性时，可用于识别已知工具或被伪装的可执行文件。
+- name: InitiatingProcessVersionInfoOriginalFileName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程版本信息中记录的原始编译文件名，通常是厂商构建名称。可与 InitiatingProcessFileName 对比，以发现被重命名或伪装的可执行文件。
+- name: InitiatingProcessVersionInfoProductName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。修改注册表的进程在版本信息中声明的产品名称。可用于将该操作归因于某厂商产品，或识别为未知软件。
+- name: InitiatingProcessVersionInfoProductVersion
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。发起进程版本资源中的产品版本字符串。可用于比较补丁级别，并标记执行注册表修改的过时或异常版本。
+- name: MachineGroup
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。上报该注册表事件的终结点所属的基于角色的访问控制机器组标签。可用于按管理分组限定查询范围，并不代表对设备安全性的判断。
+- name: PreviousRegistryKey
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录修改之前所处的注册表项路径。与 RegistryKey 配合可发现值被迁移或项被重命名等用于隐藏持久化的改动。
+- name: PreviousRegistryValueData
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。修改发生之前存在的值数据。将其与 RegistryValueData 做差异对比，可准确看出攻击者或安装程序改动了什么。
+- name: PreviousRegistryValueName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。修改之前的注册表值名称。与 RegistryValueName 对比可发现值被重命名，这是混淆自启动项的常见手法。
+- name: RegistryKey
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录操作作用于的注册表项路径，例如自启动或服务位置。是持久化排查的核心关联点；需结合 ActionType 及设备与时间范围使用。
+- name: RegistryValueData
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。所记录操作写入注册表值的数据。结合 RegistryValueType 解析可看到实际载荷，例如命令行或二进制数据块。
+- name: RegistryValueName
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。操作所针对的注册表值名称。用于确定该项内具体哪个设置被更改，有助于追踪自启动相关的值名。
+- name: RegistryValueType
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。受影响注册表值声明的数据类型，例如字符串或二进制。在审查改动时决定应如何解析 RegistryValueData。
+- name: ReportId
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。该终端记录的来源报告计数标识，可能重复。识别记录时应结合 DeviceName 和 Timestamp，不应把 ReportId 单独当作全局唯一事件键。
+- name: SourceSystem
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。传递该行的代理或收集管道，例如 Defender 代理或 Azure Diagnostics。用于区分数据接入路径，而非描述注册表改动本身。
+- name: TenantId
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。存放该表的 Log Analytics 工作区标识符。用于将查询限定到某个工作区；它并非目录租户 ID。
+- name: TimeGenerated
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。MDE 代理在终结点上记录该注册表事件的日期和时间。是排序注册表改动并与进程活动关联的主要时间过滤字段。
+- name: Timestamp
+  type: TEXT
+  desc: 源类型 datetime；在 ExCyTIn MySQL 中以 TEXT 存储。源服务记录该事件或观测的时间。用于限定调查时间范围及排列记录；应与进程创建时间或其他对象专属时间区分。
+- name: Type
+  type: TEXT
+  desc: 源类型 string；在 ExCyTIn MySQL 中以 TEXT 存储。记录来源的表名。在本表中应为 DeviceRegistryEvents；在跨表查询时可用它过滤其他表的行。
+- name: rn
+  type: TEXT
+  desc: 源类型 long；在 ExCyTIn MySQL 中以 TEXT 存储。导出数据中的行编号字段，不是安全事件标识。源架构未说明其排序规则；构建调查时间线应使用事件时间和实体标识。
