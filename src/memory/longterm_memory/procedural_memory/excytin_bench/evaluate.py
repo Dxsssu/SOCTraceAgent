@@ -15,7 +15,7 @@ import sqlglot
 from sqlglot import exp
 
 from src.agent.llm import LLMClient, LLMConfig, parse_yaml_response
-from src.benchmarks.excytin_bench.workflow import _EXECUTOR_PROMPT
+from src.agent.executor import SQL_EXECUTOR_SYSTEM_PROMPT
 
 from . import DEFAULT_KNOWLEDGE_PATH
 from .import_neo4j import load_knowledge
@@ -83,7 +83,7 @@ def evaluate_case(case, knowledge, llm, *, use_memory=True):
     if selected:
         payload["query_template"] = {k:selected[0][k] for k in ('id','inputs','sql_template','returns','semantic_refs')}
     prompt = json.dumps(payload, ensure_ascii=False)
-    response = llm(_EXECUTOR_PROMPT, prompt)
+    response = llm(SQL_EXECUTOR_SYSTEM_PROMPT, prompt)
     result["response"] = response
     try:
         parsed = parse_yaml_response(response) or {}

@@ -28,10 +28,14 @@ def approve(prompt):
 
 def verify(prompt):
     payload = json.loads(prompt)
-    records = payload['executions']
-    if not records:
-        return json.dumps({'confirmed':False,'goals':[], 'gap':'没有可用结果。','suggestion':'补查目标关系。'})
-    record = records[-1]
-    return json.dumps({'confirmed':True, 'goals':[{'id':g['id'],'relation':'Test evidence establishes the requested relation',
-        'evidence':[{'execution_id':record['execution_id'],'excerpt_id':record['excerpts'][0]['excerpt_id']}]} for g in payload['goals']],
-        'gap':'','suggestion':''})
+    review = payload['reviewer']
+    assert set(review) == {'summary'}
+    confirmed = review['summary'] in {
+        'The queried alert identifier directly answers the question.',
+        'No matching rows and no further leads.',
+        'The L3 query could not retrieve evidence.',
+        'E1 确认告警 ID 为 alert-1。',
+        'device identified',
+        '进程创建时间已确认',
+    }
+    return json.dumps({'can_answer': 'yes', 'answer': 'alert-1'} if confirmed else {'can_answer': 'no'})

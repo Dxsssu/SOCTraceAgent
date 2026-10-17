@@ -55,7 +55,7 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
             if n.metadata.get("query_template"):
                 out["template_id"] = n.metadata["query_template"]["id"]
             out.update(execution_code=code if refs else n.metadata.get("execution_code", ""),
-                       execution_result=result if refs else n.metadata.get("execution_result", ""))
+                       execution_result=n.metadata.get("execution_result", "") if n.metadata.get("execution_result_source") == "reviewer" else (result if refs else n.metadata.get("execution_result", "")))
         if planner_view:
             if n.level < 3:
                 out.pop("status")
@@ -67,8 +67,8 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
     return [node(n) for n in tree.root_nodes]
 
 
-def review_payload(tree: TracebackTaskTree, executions=()) -> dict[str, Any]:
-    """Keep task structure and evidence separate so each result is sent once."""
+def review_payload(tree: TracebackTaskTree, execution) -> dict[str, Any]:
+    """Provide the task outline and only the current Executor result."""
     def outline(n):
         value = {"id": n.node_id, "objective": n.title,
                  "status": "done" if n.status in {S.DONE, S.RESOLVED} else "failed" if n.status in {S.BLOCKED, S.NOT_APPLICABLE} else "todo"}
@@ -78,9 +78,9 @@ def review_payload(tree: TracebackTaskTree, executions=()) -> dict[str, Any]:
     fields = {"execution_id", "node_id", "sql", "observation", "query_success",
               "result_status", "observation_truncated", "original_observation_chars",
               "tool_name", "tool_input", "result", "execution_status", "error_message"}
-    records = [e.to_dict() if hasattr(e, "to_dict") else e for e in executions]
+    record = execution.to_dict() if hasattr(execution, "to_dict") else execution
     return {"itt": [outline(n) for n in tree.root_nodes],
-            "executions": [{k: v for k, v in e.items() if k in fields} for e in records]}
+            "executor_result": {k: v for k, v in record.items() if k in fields}}
 
 
 def parse_itt(payload, event_id: str, round_id: int, *, previous=None, executions=(), procedures=()) -> TracebackTaskTree:
@@ -176,6 +176,8 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
             code, result, evidence = execution_fields(executions, ident)
             if not evidence:
                 code, result = metadata.get("execution_code", ""), metadata.get("execution_result", "")
+            if metadata.get("execution_result_source") == "reviewer":
+                result = metadata.get("execution_result", "")
             if value["execution_code"] != code or value["execution_result"] != result:
                 raise ValueError("Execution code/result must exactly preserve the supplied actual records")
             if status == "done" and not (evidence or refs):
@@ -202,6 +204,8 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
 
 
 def planner_prompt(system_prompt: str, memory: dict) -> str:
+    if memory.get("enabled") is False:
+        return system_prompt
     procedures = memory.get("procedural_memory", {}).get("procedures", [])
     section = json.dumps([{k: p[k] for k in ("id", "name", "purpose", "inputs", "sql_template", "returns") if k in p} for p in procedures[:1]], ensure_ascii=False, separators=(",", ":")) if procedures else ""
     prompt = system_prompt + "\n\n# 适用的 Procedural Memory\n" + section

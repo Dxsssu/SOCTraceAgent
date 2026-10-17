@@ -20,6 +20,17 @@ from src.workflow.context import ExecutorContextProvider, NullExecutorContextPro
 logger = logging.getLogger(__name__)
 
 
+SQL_EXECUTOR_SYSTEM_PROMPT = """
+# 角色定位
+你是 SQL 查询生成器，根据下发的任务构造一条 MySQL 只读 SQL 查询语句。
+如果输入包含 error_recovery，根据其中的 failed_sql 和 error 修复查询，输出一条新的 MySQL 只读 SQL 查询语句，不要提出建议或请求用户确认。
+# 输出格式
+仅输出一个合法 YAML 对象，且只能包含 sql 字段，其值为一条 MySQL 只读 SQL 查询语句。
+不要输出解释、分析、建议、提问、Markdown 代码围栏或任何其他字段和无关内容。
+sql: "一条 MySQL 只读查询语句"
+""".strip()
+
+
 EXECUTOR_SYSTEM_PROMPT = """
 你是多智能体驱动的 SOC 智能溯源系统中的 Executor。
 只根据当前 T 节点构造查询请求，不检索记忆、不修改 ITT、不生成最终答案。
@@ -405,6 +416,7 @@ def run_executor(poll_interval: float = 5.0) -> None:
 
 
 __all__ = [
+    "SQL_EXECUTOR_SYSTEM_PROMPT",
     "EXECUTOR_SYSTEM_PROMPT",
     "ExecutorAgent",
     "ExecutorRuntime",

@@ -66,7 +66,7 @@ uv run python main.py -role reviewer
 | Planner | 建立目标与问题、展开任务、选择下一步、更新 TTT | PM（含 semantic_refs） |
 | Executor | 仅根据当前 T 构造查询；程序执行并回写 ITT | 正常仅使用 T；SQL error 后额外检索最多 1 条 EM |
 | Reviewer | 审核真实结果，提供事实、缺口和建议 | 不检索记忆；仅任务树与执行证据 |
-| Verifier（SQL workflow） | 提交前核验目标关系及真实证据；拒绝时补查或明确无法确认 | 不检索记忆 |
+| Verifier（SQL workflow） | 每轮 Reviewer 后判断能否回答；能则直接输出答案，否则继续调查 | 不检索记忆 |
 
 本地调查每轮执行一个 L3，再进入复盘与重规划。业务事实以 SQLite 持久化状态为准，`MessageEnvelope` 是审计与展示层。默认数据库为 `runtime/socagent.db`，包含 `events`、`ttt_snapshots`、`executions`、`round_reviews`、`messages`。
 
@@ -144,6 +144,8 @@ Web 提供事件列表、详情、执行记录、复盘与层级查询；具体�
 
 ## 长期记忆
 
+临时消融可在 `.env` 设置 `SOCAGENT_LTM_ENABLED=false`，关闭 workflow 的 SM/PM/EM 加载与检索；SQL 报错仍可依据真实错误重试。恢复时设为 `true` 并重启进程。默认值为 `true`。
+
 长期记忆由 [MemoryContextService](src/workflow/context.py) 检索和裁剪后注入角色，不向 Agent 暴露通用 Cypher 或数据库访问接口。
 
 | 类型 | 内容与来源 | 详细说明 |
@@ -172,7 +174,7 @@ PM v5 保存可复用查询模板：`id/name/status/purpose/inputs/sql_template/
 
 ```text
 context + question -> Planner / ITT -> 当前 T -> Executor 生成只读 SQL
-    -> 环境执行 -> 程序回写 T 的 SQL/结果/状态 -> Reviewer -> Planner 更新 / 提交答案
+    -> 环境执行 -> 程序回写 T 的 SQL/结果/状态 -> Reviewer -> Verifier -> Planner 更新 / 提交答案
 ```
 
 [src/benchmarks/excytin_bench/agent.py](src/benchmarks/excytin_bench/agent.py) 提供 SecGym 的 `reset()`、`act()`、`get_logging()` 接口，可由官方 `ExcytinEnv.step()` 执行 SQL。仓库自己的 runner 使用兼容的 MySQL 执行边界，负责抽题、并行运行和落盘；应区分自有 runner 与官方环境的成绩。
@@ -196,7 +198,7 @@ SOCAGENT_LTM_BACKEND=snapshot uv run python -m src.benchmarks.excytin_bench.runn
 
 可用 `--incident incident_5` 限定抽题范围，`--question-dir` 和 `--output-dir` 覆盖输入、输出目录。runner **默认开启 LLM 裁判**；上例显式关闭，仅计算匹配和查询指标。需要模糊答案与部分步骤评分时改为 `--llm-eval`，会额外调用模型。
 
-默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 2 条 SQL；每次仅传当前 T，首次 SQL error 后检索一次 EM 并重试一次，空结果直接交给 Reviewer，不在 Executor 内重试；Reviewer 不检索 SM/PM。Reviewer 判断答案证据充分时可直接提交；预算耗尽或明确阻塞时也可提交已有信息，这不代表目标已解决。
+默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 2 条 SQL；每次仅传当前 T，首次 SQL error 后检索一次 EM 并重试一次，空结果直接交给 Reviewer，不在 Executor 内重试；Reviewer 不检索 SM/PM。Verifier 在每轮 Reviewer 后判断能否回答：能则直接生成并提交答案，不能则继续规划；预算耗尽且仍不能回答时提交“无法确认答案：调查结束，尚无充分证据。”
 
 每次运行输出到 `runtime/excytin_bench/runs/<run-id>/`：
 

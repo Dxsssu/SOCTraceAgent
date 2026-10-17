@@ -112,8 +112,8 @@ def test_benchmark_progressive_two_query_investigation():
             return 'sql: SELECT ProcessId FROM AlertEvidence LIMIT 1'
         if '你是 Reviewer' in system:
             if len(workflow.state.executions) == 1:
-                return 'summary: 进程 ID 为 42\nsuggestion: 缺少创建时间\n'
-            return 'summary: 进程创建时间已确认\nsuggestion: 提交答案\n'
+                return 'summary: 进程 ID 为 42'
+            return 'summary: 进程创建时间已确认'
         if workflow.state is None:
             return yaml.safe_dump(initial_itt(), allow_unicode=True)
         return yaml.safe_dump(expanded_itt(workflow.state.ttt, workflow.state.executions), allow_unicode=True)

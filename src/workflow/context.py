@@ -620,13 +620,18 @@ class MemoryContextService:
         policy: MemoryAccessPolicy | None = None,
         repositories: Mapping[str, _ExcytinBenchRepositoryBase] | None = None,
         procedure_selector: Callable[[str, str], str] | None = None,
+        enabled: bool | None = None,
     ) -> None:
+        self.enabled = enabled if enabled is not None else os.getenv(
+            "SOCAGENT_LTM_ENABLED", "true"
+        ).strip().lower() in {"1", "true", "yes", "on"}
         self._planner_pm_cache = {}
         self._planner_sm_cache = {}
         self.procedure_selector = procedure_selector
         self.policy = policy or MemoryAccessPolicy()
         self.repositories = dict(
-            build_default_repositories() if repositories is None else repositories
+            (build_default_repositories() if repositories is None else repositories)
+            if self.enabled else {}
         )
 
     def planner_view(self) -> PlannerMemoryView:

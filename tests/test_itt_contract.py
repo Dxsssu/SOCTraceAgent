@@ -90,10 +90,12 @@ def test_runtime_metadata_excluded_from_every_model_call():
             assert task["question"] == "Locate device"
             return "[]"
         if "中的 Planner" in system:
-            assert json.loads(prompt) == {"context": "Alert A", "question": "Locate device"}
+            instruction, content = prompt.split("\n", 1)
+            assert instruction == "下面是此次事件的背景和调查问题，请你根据要求初始化并输出ITT。"
+            assert json.loads(content) == {"context": "Alert A", "question": "Locate device"}
             return yaml.safe_dump(plan())
         if "你是 SQL 查询生成器" in system: return "sql: SELECT 1"
-        if "你是 Reviewer" in system: return 'summary: device identified\nsuggestion: 提交答案\n'
+        if "你是 Reviewer" in system: return 'summary: device identified'
         return "answer: device"
     workflow = ExcytinBenchWorkflow(llm=llm)
     workflow.start({"context": "Alert A", "question": "Locate device", "answer": "ANSWER_SECRET", "runtime_info": "RUNTIME_SECRET"},
@@ -101,7 +103,7 @@ def test_runtime_metadata_excluded_from_every_model_call():
     workflow.propose_next_action()
     workflow.act("[(1,)]")
     assert workflow.state.event.context["runtime_info"]["qid"] == "RUNTIME_SECRET"
-    assert len(calls) == 6  # Verifier is handled separately by this fixture
+    assert len(calls) == 5  # No answer synthesizer; Verifier handled separately
 
 
 def test_yaml_list_parser_rejects_wrappers():
@@ -240,3 +242,18 @@ def test_entity_contract_derives_parent_state_and_preserves_history(task_status,
     continued = parse_itt(payload, "event", 3, previous=updated, executions=executions)
     assert next_task(continued).node_id == "T2"
     assert continued.root_nodes[0].status == S.OPEN
+
+
+def test_reviewer_summary_survives_json_yaml_and_cannot_be_rewritten():
+    from src.schema import TracebackTaskTree
+    tree = parse_itt(plan(), 'event', 1)
+    tree = change_node(tree, 'T1', metadata={'execution_result': '已核对：返回两条记录。', 'execution_result_source': 'reviewer'})
+    restored = TracebackTaskTree.from_dict(json.loads(json.dumps(tree.to_dict())))
+    payload = yaml.safe_load(yaml.safe_dump(itt_payload(restored, planner_view=True), allow_unicode=True))
+    task = payload[0]['children'][0]['children'][0]
+    assert task['execution_result'] == '已核对：返回两条记录。'
+    updated = parse_itt(payload, 'event', 2, previous=restored)
+    assert updated.root_nodes[0].children[0].children[0].metadata['execution_result'] == task['execution_result']
+    task['execution_result'] = '模型改写的总结'
+    with pytest.raises(ValueError, match='Execution code/result'):
+        parse_itt(payload, 'event', 2, previous=restored)

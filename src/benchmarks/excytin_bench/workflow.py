@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+import secrets
+import string
 from collections.abc import Callable, Mapping
 from dataclasses import replace, dataclass, field
 from datetime import UTC, datetime
@@ -10,15 +12,17 @@ from typing import Any, ClassVar
 from uuid import uuid4
 
 import sqlglot
+import yaml
 
 from src.memory.longterm_memory.episodic_memory.excytin_bench.build_knowledge import entry_id as recovery_entry_id
 from src.agent.llm import call_llm, parse_yaml_response
+from src.agent.executor import SQL_EXECUTOR_SYSTEM_PROMPT
 from src.agent.planner import PLANNER_SYSTEM_PROMPT
 from src.agent.reviewer import REVIEWER_SYSTEM_PROMPT
-from src.agent.verifier import VERIFIER_SYSTEM_PROMPT, VERIFIER_CHALLENGE_PROMPT, validate_verification, evidence_excerpts
+from src.agent.verifier import VERIFIER_SYSTEM_PROMPT, validate_verification
 from src.schema.ttt_updates import next_task, change_node, resolved
 from src.schema.investigation import task_input
-from src.schema.reviewer_output import parse_review, review_decision
+from src.schema.reviewer_output import parse_review
 from src.schema.itt import parse_itt, parse_itt_response, itt_payload, planner_prompt, execution_fields, task_payload, review_payload
 from src.schema import Event, RoundReview, TracebackTaskTree, TTTNode, TTTNodeStatus
 from src.workflow.context import MemoryContextService
@@ -105,7 +109,6 @@ class WorkflowState:
     done: bool = False
     final_answer: str = ""
     verifications: list[dict[str, Any]] = field(default_factory=list)
-    verification_failures: dict[int, int] = field(default_factory=dict)
     error_repair_counts: dict[str, int] = field(default_factory=dict)
     executor_attempt_counts: dict[str, int] = field(default_factory=dict)
 
@@ -161,36 +164,6 @@ class ReadOnlySQLValidator:
         return normalized.rstrip(";").strip() + ";"
 
 
-_EXECUTOR_PROMPT = """
-# 角色定位
-你是 SQL 查询生成器，根据输入的一个任务节点构造一条 MySQL 只读查询。
-# 工作内容
-按 objective 确定查询目标与范围，参考 semantic_refs 中的表和字段。
-若节点含 query_template，核对其输入含义并从当前节点的已知值绑定参数，不猜值。正常执行只输出 template_id 和 bindings，程序将安全填参生成 SQL；不改写模板。LIKE 参数须包含所需通配符。缺少参数时不得编造值。error_recovery 存在时可输出修复后的 sql。
-execution_code 和 execution_result 非空时，据此调整查询；保留必要条件，不重复失败语句，不编造字段或实体值。结构不明时先查询表结构。
-若提供 error_recovery，核对其中经验的 background，参考 repair 修复当前错误。
-# 输出格式
-仅输出合法 YAML，不使用代码围栏或额外解释。有 query_template 且无 error_recovery 时：
-template_id: "提供的 id"
-bindings: {p1: "节点中已知参数"}
-否则：
-response_type: EXECUTE_SQL
-sql: "一条 MySQL 只读查询语句"
-""".strip()
-
-
-_ANSWER_PROMPT = """
-你是 ExCyTIn-Bench 的最终答案整理器。仅根据问题和已执行 SQL 的真实 observation 作答。
-不得使用长期记忆中的历史值，不得猜测，不得提及 TTT、Memory 或内部角色。
-答案应直接、简洁，并包含问题要求的实体或关系。只输出 YAML：
-response_type: FINAL_ANSWER
-answer: "提交给评测器的最终答案"
-""".strip()
-
-
-# The benchmark parser consumes progressive TTT objects, not the UI ITT list.
-_BENCHMARK_PLANNER_PROMPT = PLANNER_SYSTEM_PROMPT
-
 LLMCallable = Callable[[str, str], str]
 
 
@@ -208,7 +181,6 @@ class ExcytinBenchWorkflow:
         max_steps: int = 25,
         memory_contexts: MemoryContextService | None = None,
         llm: LLMCallable | None = None,
-        sql_generation_attempts: int = 2,
         max_executor_attempts_per_l3: int = 2,
         max_error_repairs: int = 1,
         yaml_response_attempts: int = 2,
@@ -220,7 +192,6 @@ class ExcytinBenchWorkflow:
         self._llm = llm or self._default_llm
         self.memory_contexts = memory_contexts or MemoryContextService(procedure_selector=self._llm)
         self._planner_memory = self.memory_contexts.planner_view()
-        self.sql_generation_attempts = max(1, sql_generation_attempts)
         self.max_executor_attempts_per_l3 = min(2, max(1, max_executor_attempts_per_l3))
         self.max_error_repairs = min(1, max(0, max_error_repairs))
         self.yaml_response_attempts = max(1, yaml_response_attempts)
@@ -234,6 +205,10 @@ class ExcytinBenchWorkflow:
     @staticmethod
     def _default_llm(system_prompt: str, user_prompt: str) -> str:
         return call_llm(system_prompt, user_prompt)
+
+    def _call_role_llm(self, system_prompt: str, user_prompt: str) -> str:
+        nonce = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
+        return self._llm(f"{nonce}\n{system_prompt}", user_prompt)
 
     def reset(self) -> None:
         self.state = None
@@ -371,9 +346,9 @@ class ExcytinBenchWorkflow:
         current = self._find_node(state.ttt, node.node_id)
         code, result, _ = execution_fields(state.executions, node.node_id)
         state.ttt = change_node(state.ttt, node.node_id,
-            metadata=dict(current.metadata, execution_code=code, execution_result=result),
+            metadata=dict(current.metadata, execution_code=code, execution_result="", execution_result_source="reviewer"),
             evidence_refs=(*current.evidence_refs, execution.execution_id),
-            result_summary=f"{result_status}; observation_truncated={observation_truncated}")
+            result_summary="")
         self._record_trace(
             "observation_received",
             {"execution": execution.to_dict()},
@@ -427,43 +402,42 @@ class ExcytinBenchWorkflow:
             TTTNodeStatus.BLOCKED if repair_trigger else TTTNodeStatus.DONE)
 
         review = self._review(execution)
+        current = self._find_node(state.ttt, node.node_id)
         state.ttt = change_node(state.ttt, node.node_id,
-            result_summary="; ".join(review["findings"] + review["gaps"]) or result_status)
+            metadata=dict(current.metadata, execution_result=review["summary"], execution_result_source="reviewer"),
+            result_summary="")
         state.reviews.append(review)
         self._record_trace("review_completed", {"review": review})
-        state.ready_to_submit = review["decision"] == "ready_to_submit"
-        state.cannot_continue = review["decision"] == "cannot_continue"
-
-        if state.ready_to_submit or state.cannot_continue:
-            for root in state.ttt.root_nodes:
-                state.ttt = change_node(state.ttt, root.node_id,
-                    status=TTTNodeStatus.RESOLVED if state.ready_to_submit else TTTNodeStatus.BLOCKED,
-                    result_summary="; ".join(review["answer_facts"] + review["findings"] + review["gaps"]) or review["decision"],
-                    evidence_refs=tuple(e.execution_id for e in state.executions))
-            state.ttt = replace(state.ttt, next_task_id=None)
-        state.ttt_history.append(state.ttt.to_dict())
+        verdict = self._verify_progress(review)
+        state.ready_to_submit = verdict["can_answer"] == "yes"
+        state.cannot_continue = False
         budget_exhausted = state.actions_issued >= self.max_steps - 1
-        if state.ready_to_submit or state.cannot_continue or budget_exhausted:
-            reason = (
-                review["decision"]
-                if state.ready_to_submit or state.cannot_continue
-                else "query_budget_exhausted"
-            )
-            self._record_trace(
-                "investigation_loop_exit_scheduled",
-                {
-                    "reason": reason,
-                    "step_no": execution.step_no,
-                    "answer_facts": review["answer_facts"],
-                },
-            )
+        if state.ready_to_submit:
+            state.final_answer = verdict["answer"]
+            for root in state.ttt.root_nodes:
+                state.ttt = change_node(state.ttt, root.node_id, status=TTTNodeStatus.RESOLVED)
+            state.ttt = replace(state.ttt, next_task_id=None)
+        elif budget_exhausted:
+            state.cannot_continue = True
+        state.ttt_history.append(state.ttt.to_dict())
+        if state.ready_to_submit or budget_exhausted:
+            self._record_trace("investigation_loop_exit_scheduled", {
+                "reason": "verifier_confirmed" if state.ready_to_submit else "query_budget_exhausted",
+                "step_no": execution.step_no,
+            })
             return execution
 
+        # Only the Verifier can finish the investigation; reopen planner goals
+        # if their status was prematurely marked complete.
+        def reopen(n):
+            return replace(n, status=TTTNodeStatus.OPEN if n.level < 3 else n.status,
+                           children=tuple(reopen(c) for c in n.children))
+        state.ttt = replace(state.ttt, root_nodes=tuple(reopen(n) for n in state.ttt.root_nodes))
         round_review = RoundReview(
             event_id=state.event.event_id,
             round_id=len(state.reviews),
             findings=tuple(review["findings"]),
-            gaps=tuple(review["gaps"]),
+            gaps=("Verifier：当前尚不能回答问题，请继续调查。",),
             recommendations=tuple(review["recommendations"]),
         )
         planner_context = self._planner_memory.build(
@@ -490,21 +464,14 @@ class ExcytinBenchWorkflow:
         # The official environment counts submission as a step, so always reserve it.
         should_submit = (
             state.ready_to_submit
-            or state.cannot_continue
             or state.actions_issued >= self.max_steps - 1
         )
         node = self._next_todo_leaf(state.ttt)
         if should_submit:
             return self._issue_submit()
         if node is None:
-            if all(n.status in {TTTNodeStatus.BLOCKED, TTTNodeStatus.RESOLVED} for n in state.ttt.root_nodes) and not resolved(state.ttt):
-                state.cannot_continue = True
-                return self._issue_submit()
-            if resolved(state.ttt):
-                state.ready_to_submit = True
-                return self._issue_submit()
             gap_review = RoundReview(event_id=state.event.event_id, round_id=state.ttt.round_id,
-                gaps=("目标未解决且没有可执行 L3，请展开下一步或明确阻塞原因。",))
+                gaps=("Verifier 尚未确认答案且没有可执行任务，请新增一个 todo 的 T 继续调查。",))
             context = self._planner_memory.build(state.event, review=gap_review, ttt=state.ttt, executions=state.executions)
             self._log_retrieval("planner", context)
             state.ttt = self._replan(state.ttt, gap_review, context)
@@ -523,6 +490,12 @@ class ExcytinBenchWorkflow:
                 f"Executor exceeded the per-L3 attempt limit for {node.node_id}"
             )
         state.executor_attempt_counts[node.node_id] = executor_attempt_no
+        codes = [e.sql for e in state.executions if e.node_id == node.node_id] + [sql]
+        code = codes[0] if len(codes) == 1 else json.dumps(codes, ensure_ascii=False)
+        state.ttt = change_node(state.ttt, node.node_id,
+            metadata=dict(node.metadata, execution_code=code))
+        node = self._find_node(state.ttt, node.node_id)
+        self._record_trace("executor_sql_written", {"node_id": node.node_id, "sql": sql})
         action = BenchmarkAction(
             action_type=BenchmarkActionType.QUERY,
             content=sql,
@@ -549,6 +522,7 @@ class ExcytinBenchWorkflow:
                 "workflow": "excytin_bench",
                 "event_id": self._bootstrap_event_id,
                 "status": self._bootstrap_status,
+                "ltm_enabled": self.memory_contexts.enabled,
                 "actions_issued": 0,
                 "initial_input": self._bootstrap_initial_input,
                 "trace": list(self._bootstrap_trace),
@@ -556,6 +530,7 @@ class ExcytinBenchWorkflow:
         state = self.state
         return {
             "workflow": "excytin_bench",
+            "ltm_enabled": self.memory_contexts.enabled,
             "event_id": state.event.event_id,
             "status": "done" if state.done else "active",
             "actions_issued": state.actions_issued,
@@ -580,10 +555,12 @@ class ExcytinBenchWorkflow:
         *,
         investigation_input: Mapping[str, str],
     ) -> TracebackTaskTree:
-        prompt = json.dumps(dict(investigation_input), ensure_ascii=False, indent=2)
+        prompt = "下面是此次事件的背景和调查问题，请你根据要求初始化并输出ITT。\n" + json.dumps(
+            dict(investigation_input), ensure_ascii=False, indent=2
+        )
         parsed = self._call_yaml_role(
             "planner",
-            planner_prompt(_BENCHMARK_PLANNER_PROMPT, planner_context),
+            planner_prompt(PLANNER_SYSTEM_PROMPT, planner_context),
             prompt,
             validator=lambda value: self._parse_ttt(
                 value,
@@ -602,18 +579,20 @@ class ExcytinBenchWorkflow:
         planner_context: Mapping[str, Any],
     ) -> TracebackTaskTree:
         state = self._require_state()
-        prompt = json.dumps(dict(task_input(state.event),
+        prompt = yaml.safe_dump(dict(task_input(state.event),
             itt=itt_payload(current_ttt, state.executions, planner_view=True),
-            review={"summary": "；".join((*review.findings, *review.gaps)),
-                    "suggestion": "；".join(review.recommendations)}),
-            ensure_ascii=False, indent=2)
+            review={"summary": "；".join((*review.findings, *review.gaps))}),
+            allow_unicode=True, sort_keys=False)
         next_round = current_ttt.round_id + 1
         def validate(value):
-            return parse_itt(value, state.event.event_id, next_round,
+            tree = parse_itt(value, state.event.event_id, next_round,
                              previous=current_ttt, executions=state.executions,
                              procedures=planner_context.get("procedural_memory", {}).get("procedures", []))
+            if self._next_todo_leaf(tree) is None:
+                raise ValueError("Verifier has not confirmed an answer; add a new todo T to continue investigation")
+            return tree
         parsed = self._call_yaml_role(
-            "planner", planner_prompt(_BENCHMARK_PLANNER_PROMPT, planner_context),
+            "planner", planner_prompt(PLANNER_SYSTEM_PROMPT, planner_context),
             prompt, validator=validate,
         )
         return validate(parsed)
@@ -624,114 +603,70 @@ class ExcytinBenchWorkflow:
         recovery = None
         if failure is not None and not failure.query_success:
             recoveries = self.memory_contexts.executor_recoveries(
-                state.event, error=failure.observation, sql=failure.sql)
-            recovery = {"failed_sql": failure.sql, "error": failure.observation,
-                        "episodic_memory": recoveries}
+                state.event, error=failure.observation, sql=failure.sql
+            ) if self.memory_contexts.enabled else []
+            recovery = {"failed_sql": failure.sql, "error": failure.observation}
             self._record_trace("executor_error_recovery", {
                 "node_id": node.node_id, "execution_id": failure.execution_id,
                 "matched_count": len(recoveries), "recoveries": recoveries,
                 "recovery_ids": [recovery_entry_id(e) for e in recoveries]})
-        validation_error = ""
-        for attempt_no in range(1, self.sql_generation_attempts + 1):
-            payload = task_payload(node)
-            if recovery is not None:
-                payload["error_recovery"] = recovery
-            prompt_parts = [json.dumps(payload, ensure_ascii=False)]
-            if validation_error:
-                prompt_parts.append(
-                    f"上一次候选 SQL 未通过本地安全校验：{validation_error}。请修复后重新输出。"
-                )
-            parsed = self._call_yaml_role(
-                "executor",
-                _EXECUTOR_PROMPT,
-                "\n".join(prompt_parts),
-            )
-            try:
-                if node.metadata.get("query_template") and recovery is None:
-                    from src.memory.longterm_memory.procedural_memory.excytin_bench.templates import render_sql
-                    template = node.metadata["query_template"]
-                    if set(parsed) != {"template_id", "bindings"} or parsed.get("template_id") != template["id"]:
-                        raise ValueError("Return only the supplied template_id and bindings")
-                    sql = render_sql(template, parsed["bindings"])
-                else:
-                    sql = str(parsed.get("sql") or "").strip()
-                return ReadOnlySQLValidator.validate(sql)
-            except ValueError as exc:
-                validation_error = str(exc)
-                if attempt_no == self.sql_generation_attempts:
-                    raise
-        raise RuntimeError("SQL generation failed")
+        payload = task_payload(node)
+        if recovery is not None:
+            payload["error_recovery"] = recovery
+        # One generation per SQL attempt. Format/local validation errors fail
+        # immediately; only actual database errors enter the repair path.
+        response = self._call_role_llm(SQL_EXECUTOR_SYSTEM_PROMPT, json.dumps(payload, ensure_ascii=False))
+        parsed = self._parse_response(response)
+        self._record_trace("role_yaml_parsed", {
+            "role": "executor", "attempt": 1, "response_type": parsed.get("response_type"),
+        })
+        if node.metadata.get("query_template") and recovery is None:
+            from src.memory.longterm_memory.procedural_memory.excytin_bench.templates import render_sql
+            template = node.metadata["query_template"]
+            if set(parsed) != {"template_id", "bindings"} or parsed.get("template_id") != template["id"]:
+                raise ValueError("Return only the supplied template_id and bindings")
+            sql = render_sql(template, parsed["bindings"])
+        else:
+            sql = str(parsed.get("sql") or "").strip()
+        return ReadOnlySQLValidator.validate(sql)
 
     def _review(self, execution: BenchmarkExecution) -> dict[str, Any]:
         state = self._require_state()
         prompt = json.dumps({
             **task_input(state.event),
-            **review_payload(state.ttt, state.executions),
-            "current_task_id": execution.node_id,
+            **review_payload(state.ttt, execution),
         }, ensure_ascii=False)
         parsed = self._call_yaml_role("reviewer", REVIEWER_SYSTEM_PROMPT, prompt,
                                       validator=parse_review)
         review = parse_review(parsed)
         # Legacy storage fields are populated by the runtime, never requested
-        # from the model. Control flow comes from exact terminal suggestions.
+        # from the model. The Verifier controls loop completion.
         return {
             "round_id": len(state.reviews) + 1,
             "step_no": execution.step_no,
             **review,
-            "decision": review_decision(review),
             "findings": [review["summary"]],
             "gaps": [],
-            "recommendations": [review["suggestion"]],
+            "recommendations": [],
             "answer_facts": [],
         }
 
     def _issue_submit(self) -> BenchmarkAction:
+        """Submit the Verifier answer without another model call."""
         state = self._require_state()
-        evidence = [execution.to_dict() for execution in state.executions]
-        prompt = "\n".join(
-            [
-                json.dumps(
-                    {"question": state.initial_input}, ensure_ascii=False, indent=2
-                ),
-                json.dumps({"executions": evidence}, ensure_ascii=False, indent=2),
-                json.dumps(
-                    {
-                        "review_answer_facts": [
-                            fact
-                            for review in state.reviews
-                            for fact in review.get("answer_facts", [])
-                        ]
-                    },
-                    ensure_ascii=False,
-                    indent=2,
-                ),
-            ]
-        )
-        parsed = self._call_yaml_role("answer_synthesizer", _ANSWER_PROMPT, prompt)
-        answer = str(parsed.get("answer") or "").strip()
-        if not answer:
-            raise ValueError("Final answer synthesizer returned an empty answer")
-        verdict = self._verify_answer(answer)
-        if not verdict["confirmed"]:
-            count = state.verification_failures.get(len(state.executions), 0) + 1
-            state.verification_failures[len(state.executions)] = count
-            if state.actions_issued < self.max_steps - 1 and not state.cannot_continue and count <= 2:
-                self._reopen_after_verification(verdict)
-                return self.propose_next_action()
-            # Budget/blocked exits cannot present an unverified candidate as fact.
-            answer = "无法确认答案：" + verdict["gap"]
-            state.ready_to_submit = False
+        if state.ready_to_submit:
+            answer = state.final_answer
+            if not answer:
+                raise ValueError("Verifier confirmed without an answer")
+        else:
+            answer = "无法确认答案：调查结束，尚无充分证据。"
             state.cannot_continue = True
             for root in state.ttt.root_nodes:
-                state.ttt = change_node(state.ttt, root.node_id, status=TTTNodeStatus.BLOCKED,
-                                        result_summary=verdict["gap"])
+                state.ttt = change_node(state.ttt, root.node_id, status=TTTNodeStatus.BLOCKED)
             state.ttt = replace(state.ttt, next_task_id=None)
             state.ttt_history.append(state.ttt.to_dict())
-        action = BenchmarkAction(
-            action_type=BenchmarkActionType.SUBMIT,
-            content=answer,
-            step_no=state.actions_issued + 1,
-        )
+        action = BenchmarkAction(action_type=BenchmarkActionType.SUBMIT,
+                                 content=answer, step_no=state.actions_issued + 1)
         state.actions_issued += 1
         state.pending_action = action
         state.final_answer = answer
@@ -741,47 +676,22 @@ class ExcytinBenchWorkflow:
         self._record_trace("workflow_completed", {"final_answer": answer})
         return action
 
-    def _verify_answer(self, answer):
+    def _verify_progress(self, review):
         state = self._require_state()
-        goals = [{"id": n.node_id, "objective": n.title} for n in state.ttt.root_nodes]
-        core = task_input(state.event)
-        records, excerpts = evidence_excerpts(state.executions, core["question"], answer)
-        prompt = json.dumps({**core, "goals": goals,
-            "candidate_answer": answer, "executions": records}, ensure_ascii=False)
-        validate = lambda value: validate_verification(value, {g["id"] for g in goals}, state.executions, excerpts, core["question"])
-        try:
-            verdict = self._call_yaml_role("verifier", VERIFIER_SYSTEM_PROMPT, prompt, validator=validate)
-            if verdict["confirmed"]:
-                # Fresh call sees raw evidence, not the first verifier's rationale.
-                verdict = self._call_yaml_role("verifier_challenge", VERIFIER_CHALLENGE_PROMPT,
-                                               prompt, validator=validate)
-        except ValueError as exc:
-            verdict = {"confirmed": False, "goals": [], "gap": "证据校验失败：" + str(exc)[:100],
-                       "suggestion": "补充能直接证明题目所求关系的执行证据。"}
-        state.verifications.append({"candidate_answer": answer, **verdict})
-        self._record_trace("answer_verified", state.verifications[-1])
+        prompt = json.dumps({
+            **task_input(state.event),
+            "itt": itt_payload(state.ttt, state.executions),
+            "reviewer": {"summary": review["summary"]},
+        }, ensure_ascii=False)
+        verdict = self._call_yaml_role("verifier", VERIFIER_SYSTEM_PROMPT, prompt,
+                                      validator=validate_verification)
+        verdict = validate_verification(verdict)
+        state.verifications.append(verdict)
+        self._record_trace("answer_verified", verdict)
         return verdict
 
-    def _reopen_after_verification(self, verdict):
-        state = self._require_state()
-        state.ready_to_submit = state.cannot_continue = False
-        # The runtime invalidates premature completion; executed tasks remain immutable.
-        def reopen(n):
-            return replace(n, status=TTTNodeStatus.OPEN if n.level < 3 else n.status,
-                           children=tuple(reopen(c) for c in n.children))
-        state.ttt = replace(state.ttt, root_nodes=tuple(reopen(n) for n in state.ttt.root_nodes),
-                            version=state.ttt.version + 1, next_task_id=None)
-        review = RoundReview(event_id=state.event.event_id, round_id=state.ttt.round_id,
-            gaps=("Verifier 未确认候选答案：" + verdict["gap"],),
-            recommendations=(verdict["suggestion"], "保留已执行任务，新建用于验证目标关系的任务；不能仅凭相关实体关闭目标。"))
-        context = self._planner_memory.build(state.event, review=review, ttt=state.ttt, executions=state.executions)
-        self._log_retrieval("planner", context)
-        state.ttt = self._replan(state.ttt, review, context)
-        state.ttt_history.append(state.ttt.to_dict())
-        self._record_trace("verification_replanned", {"ttt": state.ttt.to_dict()})
-
     def _log_retrieval(self, role: str, context: Mapping[str, Any]) -> None:
-        if self.state is None:
+        if self.state is None or not self.memory_contexts.enabled:
             return
         semantic = context.get("semantic_memory") or {}
         procedural = context.get("procedural_memory") or {}
@@ -833,7 +743,7 @@ class ExcytinBenchWorkflow:
         last_error: Exception | None = None
         prompt = user_prompt
         for attempt in range(1, self.yaml_response_attempts + 1):
-            response_text = self._llm(system_prompt, prompt)
+            response_text = self._call_role_llm(system_prompt, prompt)
             try:
                 parsed = parse_itt_response(response_text) if role == "planner" else self._parse_response(response_text)
                 if validator is not None:

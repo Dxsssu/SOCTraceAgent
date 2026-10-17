@@ -55,9 +55,9 @@ sql: SELECT AlertId FROM AlertEvidence LIMIT 5
 """
     if "你是 Reviewer" in system_prompt:
         assert "workflow_memory_context" not in user_prompt
-        assert set(json.loads(user_prompt)) == {"context", "question", "itt", "executions", "current_task_id"}
+        assert set(json.loads(user_prompt)) == {"context", "question", "itt", "executor_result"}
         assert "episodic_memory" not in user_prompt
-        return 'summary: The queried alert identifier directly answers the question.\nsuggestion: 提交答案\n'
+        return 'summary: The queried alert identifier directly answers the question.'
     if "最终答案整理器" in system_prompt:
         return """
 response_type: FINAL_ANSWER
@@ -75,6 +75,33 @@ def test_default_workflow_and_agent_limits() -> None:
     assert workflow.max_steps == 25
     assert workflow.max_executor_attempts_per_l3 == 2
     assert agent.max_steps == 25
+
+
+def test_disabled_ltm_never_loads_repositories_or_retrieves_recovery(monkeypatch):
+    from src.workflow.context import MemoryContextService
+    monkeypatch.setenv("SOCAGENT_LTM_ENABLED", "false")
+    def forbidden(*args, **kwargs):
+        raise AssertionError("LTM must not be accessed")
+    monkeypatch.setattr("src.workflow.context.build_default_repositories", forbidden)
+    monkeypatch.setattr(MemoryContextService, "executor_recoveries", forbidden)
+    calls = []
+    def llm(system, user):
+        calls.append((system, user))
+        assert "# 适用的 Procedural Memory" not in system
+        assert "# Semantic Memory" not in system
+        if "你是 SQL 查询生成器" in system:
+            payload = json.loads(user)
+            if "error_recovery" in payload:
+                assert set(payload["error_recovery"]) == {"failed_sql", "error"}
+            return "sql: SELECT UnknownField FROM SecurityAlert LIMIT 1"
+        return INITIAL_TTT
+    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow.act("Investigate the alert")
+    workflow.act("ProgrammingError: Unknown column 'UnknownField' in 'field list'")
+    assert workflow.memory_contexts.repositories == {}
+    assert workflow.get_logging()["ltm_enabled"] is False
+    assert workflow.get_logging()["memory_retrievals"] == []
+    assert len(calls) == 3
 
 
 def test_planner_yaml_with_explanatory_wrapper_is_retried() -> None:
@@ -146,7 +173,7 @@ def test_external_action_workflow_waits_for_environment_observation() -> None:
     assert first.content == "SELECT AlertId FROM AlertEvidence LIMIT 5;"
     assert workflow.state is not None
     assert workflow.state.executions == []
-    assert workflow.state.ttt.root_nodes[0].children[0].children[0].metadata == {"semantic_refs": [], "execution_code": "", "execution_result": ""}
+    assert workflow.state.ttt.root_nodes[0].children[0].children[0].metadata == {"semantic_refs": [], "execution_code": first.content, "execution_result": ""}
 
     second = workflow.act("[('alert-1',)]")
     assert second.action_type == BenchmarkActionType.SUBMIT
@@ -155,12 +182,14 @@ def test_external_action_workflow_waits_for_environment_observation() -> None:
     logging = workflow.get_logging()
     assert logging["actions_issued"] == 2
     assert logging["executions"][0]["observation"] == "[('alert-1',)]"
-    assert logging["reviews"][0]["decision"] == "ready_to_submit"
+    assert "decision" not in logging["reviews"][0]
+    assert "suggestion" not in logging["reviews"][0]
+    assert workflow.state.ready_to_submit
     assert len(logging["ttt_history"]) == 3
     assert logging["ttt_history"][-1]["root_nodes"][0]["status"] == "resolved"
     assert any(
         item["event_type"] == "investigation_loop_exit_scheduled"
-        and item["payload"]["reason"] == "ready_to_submit"
+        and item["payload"]["reason"] == "verifier_confirmed"
         for item in logging["trace"]
     )
     assert logging["memory_retrievals"][0]["allowed_memory_types"] == [
@@ -239,8 +268,8 @@ def test_sql_error_is_consumed_before_retry() -> None:
             if calls["executor"] == 1:
                 assert "episodic_memory" not in user_prompt
             else:
-                assert "episodic_memory" in user_prompt
-                assert json.loads(user_prompt)["error_recovery"]["episodic_memory"] == []
+                assert "episodic_memory" not in user_prompt
+                assert set(json.loads(user_prompt)["error_recovery"]) == {"failed_sql", "error"}
                 assert "Unknown column" in user_prompt
             return """
 response_type: EXECUTE_SQL
@@ -248,7 +277,7 @@ sql: SELECT AlertId FROM AlertEvidence LIMIT 1
 """
         if "你是 Reviewer" in system_prompt:
             calls["reviewer"] += 1
-            return 'summary: Unknown column must be repaired.\nsuggestion: Retry the current evidence goal.\n'
+            return 'summary: Unknown column must be repaired.'
         if "最终答案整理器" in system_prompt:
             return "response_type: FINAL_ANSWER\nanswer: unknown"
         if "根据真实 SQL 结果的 Review 输出带 base_version" in user_prompt:
@@ -283,13 +312,13 @@ def test_empty_result_goes_directly_to_reviewer_without_memory(monkeypatch) -> N
         if "你是 Reviewer" in system:
             calls["reviewer"] += 1
             payload = json.loads(user)
-            assert set(payload) == {"context", "question", "itt", "executions", "current_task_id"}
-            assert payload["executions"][0]["result_status"] == "empty_result"
-            assert payload["executions"][0]["observation"] == "[]"
+            assert set(payload) == {"context", "question", "itt", "executor_result"}
+            assert payload["executor_result"]["result_status"] == "empty_result"
+            assert payload["executor_result"]["observation"] == "[]"
             assert payload["itt"][0]["children"][0]["children"][0]["status"] == "done"
             assert "workflow_memory_context" not in user
-            assert "execution_result" not in user  # evidence occurs once, in executions
-            return 'summary: No matching rows and no further leads.\nsuggestion: 停止调查\n'
+            assert "execution_result" not in user  # evidence occurs once, in executor_result
+            return 'summary: No matching rows and no further leads.'
         return role_llm(system, user)
 
     workflow = ExcytinBenchWorkflow(llm=llm)
@@ -319,13 +348,13 @@ def test_executor_errors_allow_only_one_em_repair() -> None:
             if calls["executor"] == 1:
                 assert "episodic_memory" not in user_prompt
             elif calls["executor"] == 2:
-                assert "episodic_memory" in user_prompt
+                assert "episodic_memory" not in user_prompt
             else:
-                assert "episodic_memory" in user_prompt
+                assert "episodic_memory" not in user_prompt
             return "response_type: EXECUTE_SQL\nsql: SELECT AlertId FROM AlertEvidence"
         if "你是 Reviewer" in system_prompt:
             calls["reviewer"] += 1
-            return 'summary: The L3 query could not retrieve evidence.\nsuggestion: 停止调查\n'
+            return 'summary: The L3 query could not retrieve evidence.'
         if "最终答案整理器" in system_prompt:
             return "response_type: FINAL_ANSWER\nanswer: unknown"
         calls["planner"] += 1
@@ -375,7 +404,7 @@ def test_query_budget_exhaustion_skips_replanning_and_submits() -> None:
         if "你是 Reviewer" in system_prompt:
             calls["reviewer"] += 1
             assert json.loads(user_prompt)["question"] == "Which host is involved?"
-            return 'summary: The requested host is host-1.\nsuggestion: 继续核实缺失证据。\n'
+            return 'summary: The requested host is host-1.'
         if "最终答案整理器" in system_prompt:
             calls["answer"] += 1
             return "response_type: FINAL_ANSWER\nanswer: host-1"
@@ -388,8 +417,8 @@ def test_query_budget_exhaustion_skips_replanning_and_submits() -> None:
 
     submit = workflow.act("[('host-1',)]")
     assert submit.action_type == BenchmarkActionType.SUBMIT
-    assert submit.content == "host-1"
-    assert calls == {"planner": 1, "executor": 1, "reviewer": 1, "answer": 1}
+    assert submit.content == "无法确认答案：调查结束，尚无充分证据。"
+    assert calls == {"planner": 1, "executor": 1, "reviewer": 1, "answer": 0}
     assert any(
         item["event_type"] == "investigation_loop_exit_scheduled"
         and item["payload"]["reason"] == "query_budget_exhausted"
@@ -416,14 +445,14 @@ def test_literal_handling_does_not_allow_real_side_effects(sql: str) -> None:
 
 def test_benchmark_planner_documented_initial_contract_is_executable():
     import yaml
-    from src.benchmarks.excytin_bench.workflow import _BENCHMARK_PLANNER_PROMPT
+    from src.agent.planner import PLANNER_SYSTEM_PROMPT
 
-    example = "- id: G1" + _BENCHMARK_PLANNER_PROMPT.split("\n- id: G1", 1)[1]
+    example = "- id: G1" + PLANNER_SYSTEM_PROMPT.split("\n- id: G1", 1)[1]
     tree = ExcytinBenchWorkflow._parse_ttt(yaml.safe_load(example.replace("todo｜done｜error", "todo")), "contract-test", round_id=1)
     assert tree.next_task_id == "T1"
     assert ExcytinBenchWorkflow._next_todo_leaf(tree).node_id == "T1"
-    assert "仅输出合法 YAML 列表" in _BENCHMARK_PLANNER_PROMPT
-    assert "base_version" not in _BENCHMARK_PLANNER_PROMPT
+    assert "仅输出合法 YAML 列表" in PLANNER_SYSTEM_PROMPT
+    assert "base_version" not in PLANNER_SYSTEM_PROMPT
 
 
 def test_executor_receives_only_task_except_error_recovery(monkeypatch):
@@ -455,15 +484,15 @@ def test_executor_receives_only_task_except_error_recovery(monkeypatch):
     workflow.accept_observation("Unknown column 'AlertId'", query_success=False)
     task = itt_payload(workflow.state.ttt)[0]["children"][0]["children"][0]
     assert task["execution_code"] == first.content
-    assert task["execution_result"] == "Unknown column 'AlertId'"
+    assert task["execution_result"] == ""
     assert workflow.state.ttt_history[-1] == workflow.state.ttt.to_dict()
     workflow.propose_next_action()
-    assert {k: v for k, v in prompts[1].items() if k != "error_recovery"} == task
+    assert {k: v for k, v in prompts[1].items() if k != "error_recovery"} == {k: v for k, v in task.items() if k != "result_summary"}
     workflow.accept_observation("[{\"AlertId\": \"alert-1\"}]", query_success=True)
     task = itt_payload(workflow.state.ttt)[0]["children"][0]["children"][0]
     assert task["status"] == "done"
     assert json.loads(task["execution_code"]) == [first.content, first.content]
-    assert len(json.loads(task["execution_result"])) == 2
+    assert task["execution_result"] == "The queried alert identifier directly answers the question."
 
 
 def test_error_recovery_matches_em_and_reexecutes_without_sm_pm(monkeypatch):
@@ -493,10 +522,7 @@ def test_error_recovery_matches_em_and_reexecutes_without_sm_pm(monkeypatch):
                 return "response_type: EXECUTE_SQL\nsql: SELECT Title FROM SecurityAlert WHERE SystemAlertId = 'alert-1'"
             recovery = payload["error_recovery"]
             assert "Title" in recovery["error"]
-            assert len(recovery["episodic_memory"]) == 1
-            memory = recovery["episodic_memory"][0]
-            assert set(memory) == {"background", "error", "repair"}
-            assert "AlertName" in memory["repair"]
+            assert set(recovery) == {"failed_sql", "error"}
             assert "SystemAlertId = 'alert-1'" in recovery["failed_sql"]
             assert "procedural_memory" not in user and "semantic_memory" not in user
             return "response_type: EXECUTE_SQL\nsql: SELECT AlertName FROM SecurityAlert WHERE SystemAlertId = 'alert-1'"
@@ -517,6 +543,28 @@ def test_error_recovery_matches_em_and_reexecutes_without_sm_pm(monkeypatch):
     assert len(retrievals) == 1
 
 
+def test_reviewer_receives_only_current_executor_result():
+    from src.benchmarks.excytin_bench.workflow import BenchmarkExecution
+    captured = []
+    def llm(system, user):
+        if "你是 Reviewer" in system:
+            captured.append(json.loads(user))
+            return 'summary: Current result reviewed.'
+        return role_llm(system, user)
+    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow.start("Investigate the alert")
+    old = BenchmarkExecution(1, "T1", "Old attempt", "SELECT 1", "OLD_RESULT", True, "rows_returned")
+    current = BenchmarkExecution(2, "T1", "Current attempt", "SELECT 2", "CURRENT_RESULT", True, "rows_returned")
+    workflow.state.executions.extend([old, current])
+    workflow._review(current)
+    payload = captured[0]
+    assert set(payload) == {"context", "question", "itt", "executor_result"}
+    assert payload["executor_result"]["execution_id"] == "E2"
+    assert payload["executor_result"]["sql"] == "SELECT 2"
+    assert payload["executor_result"]["observation"] == "CURRENT_RESULT"
+    assert "OLD_RESULT" not in json.dumps(payload)
+
+
 def test_empty_result_continue_replans_new_task():
     import yaml
     workflow = None
@@ -525,11 +573,13 @@ def test_empty_result_continue_replans_new_task():
         if "你是 Verifier" in system: return verify(user)
         if "你是 Reviewer" in system:
             reviews.append(json.loads(user))
-            return 'summary: No matching rows.\nsuggestion: Inspect another source.\n'
+            return 'summary: No matching rows.'
         if "系统中的 Planner" in system and workflow.state is not None:
-            payload = json.loads(user)["itt"]
+            payload = yaml.safe_load(user)["itt"]
             tasks = payload[0]["children"][0]["children"]
             assert tasks[0]["status"] == "done"
+            assert "result_summary" not in tasks[0]
+            assert tasks[0]["execution_result"] == "No matching rows."
             tasks.append({"id": "T2", "objective": "Inspect another source", "status": "todo",
                           "semantic_refs": [], "execution_code": "", "execution_result": ""})
             return yaml.safe_dump(payload)
@@ -540,8 +590,8 @@ def test_empty_result_continue_replans_new_task():
     second = workflow.act("[]")
     assert first.node_id == "T1" and second.node_id == "T2"
     assert len(reviews) == 1
-    assert reviews[0]["executions"][0]["query_success"] is True
-    assert reviews[0]["executions"][0]["result_status"] == "empty_result"
+    assert reviews[0]["executor_result"]["query_success"] is True
+    assert reviews[0]["executor_result"]["result_status"] == "empty_result"
 
 
 def test_reviewer_retries_overlong_summary_before_accepting():
@@ -551,9 +601,9 @@ def test_reviewer_retries_overlong_summary_before_accepting():
         if "你是 Reviewer" in system:
             calls.append(user)
             if len(calls) == 1:
-                return json.dumps({"summary": "字" * 81, "suggestion": "提交答案"})
+                return json.dumps({"summary": "字" * 81})
             assert "summary exceeds 80 characters" in user
-            return 'summary: "E1 确认告警 ID 为 alert-1。"\nsuggestion: "提交答案"'
+            return 'summary: "E1 确认告警 ID 为 alert-1。"'
         return role_llm(system, user)
 
     workflow = ExcytinBenchWorkflow(llm=llm)
@@ -562,4 +612,25 @@ def test_reviewer_retries_overlong_summary_before_accepting():
     assert result.action_type == BenchmarkActionType.SUBMIT
     assert len(calls) == 2
     assert len(workflow.state.reviews[0]["summary"]) <= 80
-    assert workflow.state.reviews[0]["suggestion"] == "提交答案"
+    assert "suggestion" not in workflow.state.reviews[0]
+
+
+@pytest.mark.parametrize('response', [': broken yaml', 'sql: DELETE FROM SecurityAlert', 'sql: ""'])
+def test_executor_format_and_local_validation_errors_do_not_retry(response):
+    import yaml
+    from src.workflow.context import MemoryContextService
+    calls = []
+    def llm(system, user):
+        if '系统中的 Planner' in system:
+            return INITIAL_TTT
+        if 'SQL 查询生成器' in system:
+            calls.append(user)
+            return response
+        raise AssertionError(system)
+    workflow = ExcytinBenchWorkflow(llm=llm, yaml_response_attempts=5,
+        memory_contexts=MemoryContextService(enabled=False))
+    with pytest.raises((ValueError, yaml.YAMLError)):
+        workflow.act('Investigate the alert')
+    assert len(calls) == 1
+    assert workflow.state.actions_issued == 0
+    assert workflow.state.executions == []

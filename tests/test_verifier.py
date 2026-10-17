@@ -1,109 +1,135 @@
 import json
-from copy import deepcopy
-from types import SimpleNamespace
-
 import pytest
 import yaml
-
 from src.agent.verifier import validate_verification
 from src.benchmarks.excytin_bench.workflow import ExcytinBenchWorkflow
-from src.schema.itt import itt_payload
+from src.workflow.context import MemoryContextService
 from test_excytin_benchmark_workflow import INITIAL_TTT
 
 
-def record(success=True):
-    return SimpleNamespace(execution_id='E1', query_success=success,
-                           result_status='rows_returned', observation='PRT access: browsercore.exe')
+@pytest.mark.parametrize("value", [
+    {"can_answer": "yes", "answer": ""},
+    {"can_answer": "no", "answer": "invented"},
+    {"can_answer": "no", "answer": ""},
+    {"can_answer": "maybe"},
+    {"can_answer": "yes"},
+    {"can_answer": "yes", "answer": "answer", "extra": 1},
+])
+def test_invalid_verifier_contract(value):
+    with pytest.raises(ValueError):
+        validate_verification(value)
 
 
-def confirmation():
-    return {'confirmed':True,'goals':[{'id':'G1','relation':'PRT access is linked to this executable',
-        'evidence':[{'execution_id':'E1','quote':'PRT access: browsercore.exe'}]}], 'gap':'','suggestion':''}
+def test_verifier_controls_loop_and_supplies_final_answer():
+    calls = []
+    workflow = None
+    def model(system, user):
+        if "系统中的 Planner" in system:
+            calls.append("planner")
+            if workflow.state is None:
+                return INITIAL_TTT
+            payload = yaml.safe_load(user)
+            assert "Verifier" in payload["review"]["summary"]
+            assert set(payload["review"]) == {"summary"}
+            assert "# 输出格式模板" in system
+            assert "\n- id: G1" in system
+            assert user.startswith("context:")
+            tree = payload["itt"]
+            tree[0]["children"][0]["children"].append({
+                "id": "T2", "objective": "Check target relation", "status": "todo",
+                "execution_code": "", "execution_result": ""})
+            return yaml.safe_dump(tree)
+        if "SQL 查询生成器" in system:
+            calls.append("executor")
+            return "sql: SELECT FileName FROM AlertEvidence"
+        if "你是 Reviewer" in system:
+            calls.append("reviewer")
+            return json.dumps({"summary": "Result reviewed"})
+        if "你是 Verifier" in system:
+            calls.append("verifier")
+            p = json.loads(user)
+            assert set(p) == {"context", "question", "itt", "reviewer"}
+            assert set(p["reviewer"]) == {"summary"}
+            assert p["context"] == "Investigation context"
+            tasks = p["itt"][0]["children"][0]["children"]
+            assert tasks[0]["execution_code"]
+            assert tasks[0]["execution_result"] == "Result reviewed"
+            confirmed = len(tasks) == 2
+            if confirmed:
+                assert tasks[1]["execution_result"] == "Result reviewed"
+            return json.dumps({"can_answer": "yes", "answer": "browsercore.exe"} if confirmed else {"can_answer": "no"})
+        raise AssertionError("Unexpected role: " + system)
+    workflow = ExcytinBenchWorkflow(llm=model, memory_contexts=MemoryContextService(enabled=False))
+    workflow.act({"context": "Investigation context", "question": "Which process?"})
+    second = workflow.act("Only a lead")
+    assert not second.submit and second.node_id == "T2"
+    final = workflow.act("Target: browsercore.exe")
+    assert final.submit and final.content == "browsercore.exe"
+    assert calls == ["planner", "executor", "reviewer", "verifier", "planner", "executor", "reviewer", "verifier"]
 
 
-@pytest.mark.parametrize('mutation', ['unknown_id','fake_quote','failed_sql','missing_goal','no_relation','duplicate_goal'])
-def test_confirmation_requires_real_evidence_for_every_goal(mutation):
-    value=confirmation(); e=record()
-    if mutation=='unknown_id': value['goals'][0]['evidence'][0]['execution_id']='E99'
-    if mutation=='fake_quote': value['goals'][0]['evidence'][0]['quote']='invented'
-    if mutation=='failed_sql': e=record(False)
-    if mutation=='missing_goal': value['goals']=[]
-    if mutation=='no_relation': value['goals'][0]['relation']=''
-    if mutation=='duplicate_goal': value['goals']*=2
-    with pytest.raises(ValueError): validate_verification(value, {'G1'}, [e])
-
-
-@pytest.mark.parametrize('planner_closes', [False, True])
-def test_premature_completion_reopens_and_queries_relation(planner_closes):
-    workflow=None
-    def model(system,user):
-        if 'SM 表选择助手' in system: return '[]'
-        if 'Procedural Memory' in system and 'Planner' not in system: return '[]'
-        if '系统中的 Planner' in system:
-            if workflow.state is None: return INITIAL_TTT
-            payload=json.loads(user)['itt']
-            if not workflow.state.verifications or len(workflow.state.executions) > 1:
-                payload[0]['status']='done';payload[0]['children'][0]['status']='done'
-            else:
-                assert 'Verifier' in json.loads(user)['review']['summary']
-                payload[0]['children'][0]['children'].append(dict(id='T2',objective='Verify PRT alert process',
-                    status='todo',semantic_refs=[],execution_code='',execution_result=''))
-            return yaml.safe_dump(payload)
-        if 'SQL 查询生成器' in system: return 'sql: SELECT FileName FROM AlertEvidence'
-        if '你是 Reviewer' in system:
-            return json.dumps({'summary':'Execution returned a process',
-                'suggestion':'继续核查' if planner_closes else '提交答案'})
-        if '最终答案整理器' in system:
-            return 'answer: '+('powershell.exe' if len(workflow.state.executions)==1 else 'browsercore.exe')
-        if '你是 Verifier' in system:
-            p=json.loads(user)
-            assert 'workflow_memory_context' not in p
-            if len(workflow.state.executions)==1:
-                return json.dumps(dict(confirmed=False,goals=[],gap='Only script host observed, not target relation.',suggestion='Find process linked to the PRT alert.'))
-            return json.dumps(dict(confirmed=True,goals=[dict(id='G1',relation='Alert links PRT access to browsercore.exe',
-                evidence=[dict(execution_id='E2',quote='PRT access: browsercore.exe')])],gap='',suggestion=''))
+def test_budget_exit_does_not_invent_answer():
+    def model(system, user):
+        if "系统中的 Planner" in system: return INITIAL_TTT
+        if "SQL 查询生成器" in system: return "sql: SELECT 1"
+        if "你是 Reviewer" in system: return "summary: Candidate found"
+        if "你是 Verifier" in system:
+            return 'can_answer: "no"'
         raise AssertionError(system)
-    workflow=ExcytinBenchWorkflow(llm=model)
-    workflow.act('Which process accessed PRT?')
-    action=workflow.act('powershell.exe runs script')
-    assert not action.submit and action.node_id=='T2'
-    assert not workflow.state.verifications[0]['confirmed']
-    final=workflow.act('PRT access: browsercore.exe')
-    assert final.submit and final.content=='browsercore.exe'
-    assert workflow.state.verifications[-1]['confirmed']
-
-
-def test_budget_exit_does_not_submit_unverified_candidate():
-    workflow=None
-    def model(system,user):
-        if '系统中的 Planner' in system: return INITIAL_TTT
-        if 'SQL 查询生成器' in system:return 'sql: SELECT 1'
-        if '你是 Reviewer' in system:return 'summary: Candidate found\nsuggestion: 提交答案'
-        if '最终答案整理器' in system:return 'answer: wrong-candidate'
-        if '你是 Verifier' in system:return 'confirmed: false\ngoals: []\ngap: Missing relationship\nsuggestion: Check linked evidence'
-        return '[]'
-    workflow=ExcytinBenchWorkflow(llm=model,max_steps=2)
-    workflow.act('Find target')
-    final=workflow.act('candidate')
-    assert final.submit and 'wrong-candidate' not in final.content
+    workflow = ExcytinBenchWorkflow(llm=model, max_steps=2,
+        memory_contexts=MemoryContextService(enabled=False))
+    workflow.act("Find target")
+    final = workflow.act("candidate")
+    assert final.submit and final.content == "无法确认答案：调查结束，尚无充分证据。"
     assert not workflow.state.ready_to_submit
 
 
-def test_target_concept_cannot_be_only_script_name_substring():
-    e=record();e.observation='powershell.exe runs get-mfatoken.ps1'
-    value=confirmation();value['goals'][0]['evidence'][0]['quote']=e.observation
-    with pytest.raises(ValueError,match='target concept MFA'):
-        validate_verification(value,{'G1'},[e],question='Which process is linked to Multi Factor Authentication (MFA)?')
-    e.observation='Multi Factor Authentication alert: process.exe'
-    value=confirmation();value['goals'][0]['evidence'][0]['quote']=e.observation
-    assert validate_verification(value,{'G1'},[e],question='Which process is linked to Multi Factor Authentication (MFA)?')['confirmed']
+@pytest.mark.parametrize("decision", ["yes", "no"])
+def test_verifier_accepts_yaml_yes_no(decision):
+    text = f"can_answer: {decision}" + ('\nanswer: result' if decision == 'yes' else '')
+    result = validate_verification(yaml.safe_load(text))
+    assert result["can_answer"] == decision
+    assert ("answer" in result) == (decision == "yes")
 
 
-def test_excerpt_ids_are_bound_to_actual_execution_and_result():
-    from src.agent.verifier import evidence_excerpts
-    e=record();e.sql='SELECT Title, FileName FROM Events'
-    records,ledger=evidence_excerpts([e],'Which process accessed PRT?','browsercore.exe')
-    value=confirmation();value['goals'][0]['evidence']=[{'execution_id':'E1','excerpt_id':records[0]['excerpts'][0]['excerpt_id']}]
-    assert validate_verification(value,{'G1'},[e],ledger)['goals'][0]['evidence'][0]['quote']==e.observation
-    value=confirmation();value['goals'][0]['evidence']=[{'execution_id':'E2','excerpt_id':'E1:0'}]
-    with pytest.raises(ValueError): validate_verification(value,{'G1'},[e],ledger)
+@pytest.mark.parametrize('execution_success', [True, False])
+@pytest.mark.parametrize('correct_on_retry', [True, False])
+def test_terminal_tree_cannot_bypass_verifier(execution_success, correct_on_retry):
+    workflow = None
+    replans = []
+    def model(system, user):
+        if '系统中的 Planner' in system:
+            if workflow.state is None:
+                return INITIAL_TTT
+            # Retry appends feedback after the JSON document.
+            payload = yaml.safe_load(user.split("\n上一次输出未通过校验。", 1)[0])
+            tree = payload['itt']
+            replans.append(user)
+            if len(replans) == 2:
+                assert 'add a new todo T' in user
+                if correct_on_retry:
+                    tree[0]['children'][0]['children'].append({
+                        'id': 'T2', 'objective': 'Discover actual table schema', 'status': 'todo',
+                        'execution_code': '', 'execution_result': ''})
+            return yaml.safe_dump(tree)
+        if 'SQL 查询生成器' in system:
+            return 'sql: SHOW TABLES'
+        if '你是 Reviewer' in system:
+            return 'summary: Evidence insufficient'
+        if '你是 Verifier' in system:
+            return 'can_answer: "no"'
+        raise AssertionError(system)
+    workflow = ExcytinBenchWorkflow(llm=model, max_error_repairs=0,
+        memory_contexts=MemoryContextService(enabled=False))
+    workflow.act('Find target')
+    observation = '[]' if execution_success else 'ProgrammingError: missing table'
+    if correct_on_retry:
+        action = workflow.act(observation)
+        assert not action.submit and action.node_id == 'T2'
+    else:
+        with pytest.raises(ValueError, match='add a new todo T'):
+            workflow.act(observation)
+    assert len(replans) == 2
+    assert not workflow.state.done
+    assert not workflow.state.final_answer
+    assert all(a['action_type'] != 'submit' for a in workflow.state.action_history)

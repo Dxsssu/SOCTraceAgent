@@ -24,15 +24,11 @@ logger = logging.getLogger(__name__)
 
 REVIEWER_SYSTEM_PROMPT = """
 # 角色定位
-你是 Reviewer，总结当前任务的执行结果，并给出后续建议。
-# 工作内容
-依据真实执行记录概括结果、缺口或截断限制，引用 execution_id，不编造事实。空结果不等于问题解决。
-对照 question 和已有证据提出下一步；证据足够回答问题时，建议只填“提交答案”；证据不足且无可行方向时，只填“停止调查”。不生成 SQL。
+你是 Reviewer，负责总结当前轮次任务的实际执行结果，不生成后续建议。
 # 输出格式
-仅输出以下两个 YAML 字符串字段，不加围栏、列表或其他字段。
-summary 最多 80 字符，suggestion 最多 60 字符；汉字、字母、数字、标点和空格均计数。
+仅输出 summary 一个 YAML 字符串字段，不加解释、建议、围栏、列表或其他字段。
+summary 最多 80 字符；汉字、字母、数字、标点和空格均计数。
 summary: "当前执行结果总结"
-suggestion: "具体后续建议、提交答案或停止调查"
 """.strip()
 
 
@@ -42,9 +38,9 @@ class ReviewerAgent:
 
     role_name: str = "_reviewer"
     display_name: str = "Reviewer"
-    description: str = "负责总结当前 L3 的执行结果，并判断提交答案或继续调查。"
+    description: str = "负责总结当前轮次任务的实际执行结果。"
     responsibilities: tuple[str, ...] = (
-        "总结当前轮单个 L3 的执行结果，并判断应直接提交答案还是继续调查。",
+        "总结当前轮单个 L3 的实际执行结果，不生成后续建议。",
     )
     allowed_response_types: tuple[str, ...] = (
         "ROGER",
@@ -169,7 +165,7 @@ class ReviewerRuntime:
     ) -> RoundReview:
         user_prompt = json.dumps({
             **task_input(event),
-            **review_payload(TracebackTaskTree.from_dict(ttt_payload), executions),
+            **review_payload(TracebackTaskTree.from_dict(ttt_payload), executions[-1]),
         }, ensure_ascii=False)
         response_text = call_llm(
             self.agent.system_prompt,
@@ -180,7 +176,6 @@ class ReviewerRuntime:
             event_id=event.event_id,
             round_id=event.current_round,
             findings=(review["summary"],),
-            recommendations=(review["suggestion"],),
             created_by=self.agent.role_name,
             created_at=utc_now(),
             updated_at=utc_now(),

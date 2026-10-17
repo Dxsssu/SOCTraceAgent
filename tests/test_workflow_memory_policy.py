@@ -271,7 +271,7 @@ def test_executor_hands_off_after_one_l3_per_round() -> None:
             == 1
         )
 
-        review_response = 'summary: The first query returned one row.\nsuggestion: Preserve the remaining TTT branch for replanning.\n'
+        review_response = 'summary: The first query returned one row.'
         with patch("src.agent.reviewer.call_llm", return_value=review_response):
             assert workflow.reviewer.process_event(updated_event)
         replanning_event = workflow.storage.get_event(event.event_id)
