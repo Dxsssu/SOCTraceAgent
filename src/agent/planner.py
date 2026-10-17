@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 import logging
+import yaml
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -18,7 +18,8 @@ from src.schema import (
 from src.schema.event import utc_now
 from src.schema.ttt_updates import next_task, resolved
 from src.schema.investigation import task_input
-from src.schema.itt import parse_itt, parse_itt_response, itt_payload, planner_prompt
+from src.schema.itt import itt_payload, compact_json, planner_prompt
+from src.schema.planner_operations import apply_planner_operations, parse_planner_response
 from src.storage import SQLiteStorage
 from src.workflow.context import NullPlannerContextProvider, PlannerContextProvider
 
@@ -27,29 +28,33 @@ logger = logging.getLogger(__name__)
 
 PLANNER_SYSTEM_PROMPT = """
 # 角色定位
-你是多智能体驱动的 SOC 智能溯源系统中的 Planner，负责将调查目标分解为逐步推进的查询任务，并维护 Investigation Task Tree（ITT），使后续调查能够利用已经获得的上下文和结果。
-# ITT 结构
-ITT 由 G、E、T 三层组成：
-- G（Goal）：需要回答的调查问题。一个 G 对应一个独立问题。
-- E（Entity）：与 G 相关的单个调查实体。objective 只写简短的实体类型和名称或标识。
-- T（Task）：针对所属 E 的单步查询任务，由 Executor 通过一次 MySQL 只读查询完成。T 应解决通向 G 的一个具体子问题，不直接复述最终目标，避免将多个相互依赖的步骤合并为一个任务。
-# 首轮调查
-根据问题建立 G，从背景中选择直接相关的已知实体建立 E。每个 E 仅创建一个当前优先的 T。
-# 后续调查
-结合已有 ITT 和 Reviewer 总结，输出更新后的完整的 ITT 结构，根据情况增加 E 节点和 T 节点。
+你是多智能体驱动的 SOC 智能溯源系统中的 Planner，负责提出 Investigation Task Tree（ITT）的增量操作，由程序维护任务树。
+# 调查结构
+G（Goal）对应 question 中一个独立调查问题；E（Entity）是与 G 相关的单个实体，objective 写简短的实体类型和已知名称或标识；T（Task）是针对 E 的单步只读查询。
+首轮依据 question 建立 G，从 context 中选择直接相关的已知实体建立 E，每个 E 先建立一个优先 T。任务应包含执行所需的已知参数和范围，不合并多个相互依赖的查询。
+后续结合输入 ITT 和 Reviewer 总结，只提交本轮新增内容或下一任务选择。沿已有实体调查时直接引用其 ID；发现新实体时才 add_entity，不重复添加已有目标和任务。
+输入 itt 是 G→E→T 三层嵌套树，通过 children 表示父子关系，每个节点保留 id 和 objective。T.execution_result 中 facts 保留记录关联，source 标记来源和执行状态，limitations 标记证据范围；优先用具体事实构造下一任务，不把错误、空结果或截断视为完整否定证据。
+# 操作协议
+仅输出合法 YAML 对象，唯一顶层字段为 operations，值为操作列表。允许以下操作：
+- add_goal：必填 op、ref、objective；仅首轮可用。
+- add_entity：必填 op、ref、goal_id、objective。
+- add_task：必填 op、entity_id、objective；可选 ref。
+- select_task：必填 op、task_id；每轮最多一次，用于优先执行一个 todo T。省略时按树顺序选择首个可执行 T。
+程序分配正式 G/E/T ID。ref 是本次响应内唯一的小写别名（如 goal、alert）；用 $goal、$alert 引用此前操作创建的节点。已有节点直接使用输入中的 ID。别名只在本次响应内有效。
+不输出完整树，不为新节点指定正式 ID，不输出 children、status、execution_code、execution_result，不修改或复制历史记录，不直接回答调查问题。已完成或失败的 T 不能重开，需要继续调查时新增 T。
+已有可执行任务且无需新增内容时可输出 operations: []。SQL 调查中 Verifier 尚未确认答案而又没有可执行任务时，必须新增 T。
 # 输出格式模板
-严格按照以下模板输出完整 ITT，仅输出合法 YAML 列表，不添加解释或模板以外的字段。模板中的目标和实体仅为示例，须替换为本次输入的实际信息。节点id编号要唯一。
-- id: G1
-  objective: "定位告警关联进程的可执行文件路径"
-  children:
-    - id: E1
-      objective: "告警 alert-001"
-      children:
-        - id: T1
-          objective: "查询告警 alert-001 的关联进程 PID"
-          status: todo｜done｜error
-          execution_code: ""   # 由其他角色补充实际执行代码；Planner 创建任务时只需置空
-          execution_result: "" # 由程序写入 Reviewer 总结；Planner 创建任务时置空
+operations:
+  - op: add_goal
+    ref: goal
+    objective: "定位告警关联进程的可执行文件路径"
+  - op: add_entity
+    ref: alert
+    goal_id: $goal
+    objective: "告警 alert-001"
+  - op: add_task
+    entity_id: $alert
+    objective: "查询告警 alert-001 的关联进程 PID"
 """.strip()
 
 @dataclass(frozen=True, slots=True)
@@ -61,8 +66,8 @@ class PlannerAgent:
     description: str = "负责告警的初始分析、TTT 初始化，以及每一轮结束后的 TTT 更新。"
     responsibilities: tuple[str, ...] = (
         "分析初始告警上下文并建立溯源目标。",
-        "初始化并更新 G/E/T 调查树，由 Workflow 校验后保存。",
-        "根据 Reviewer 的轮次总结更新节点状态、结构和下一步重点。",
+        "提交 G/E/T 增量操作，由 Workflow 分配 ID、校验并更新任务树。",
+        "根据 Reviewer 的轮次总结增加实体和任务、选择下一步重点。",
     )
     allowed_response_types: tuple[str, ...] = (
         "ROGER",
@@ -237,9 +242,9 @@ class PlannerRuntime:
         memory = self.context_provider.build(event)
         response = call_llm(
             planner_prompt(self.agent.system_prompt, memory),
-            json.dumps(task_input(event), ensure_ascii=False, indent=2),
+            compact_json(task_input(event)),
         )
-        return parse_itt(parse_itt_response(response), event.event_id, event.current_round,
+        return apply_planner_operations(parse_planner_response(response), event.event_id, event.current_round,
                          procedures=memory.get("procedural_memory", {}).get("procedures", []))
 
     def _generate_updated_ttt(
@@ -250,12 +255,12 @@ class PlannerRuntime:
         memory = self.context_provider.build(
             event, review=latest_review, ttt=latest_ttt, executions=executions,
         )
-        payload = dict(task_input(event), itt=itt_payload(latest_ttt, executions, planner_view=True),
-                       review={"summary": "；".join((*latest_review.findings, *latest_review.gaps)),
-                               "suggestion": "；".join(latest_review.recommendations)})
+        payload = dict(task_input(event), itt=itt_payload(latest_ttt, executions, planner_view=True))
+        if latest_review.gaps or latest_review.recommendations:
+            payload["review"] = {"gaps": list(latest_review.gaps), "suggestions": list(latest_review.recommendations)}
         response = call_llm(planner_prompt(self.agent.system_prompt, memory),
-                            json.dumps(payload, ensure_ascii=False, indent=2))
-        return parse_itt(parse_itt_response(response), event.event_id, next_round,
+                            yaml.safe_dump(payload, allow_unicode=True, sort_keys=False))
+        return apply_planner_operations(parse_planner_response(response), event.event_id, next_round,
                          previous=latest_ttt, executions=executions,
                          procedures=memory.get("procedural_memory", {}).get("procedures", []))
 

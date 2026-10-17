@@ -1,0 +1,41 @@
+# 设计样例，尚未接入 workflow。来源与验证状态保存在 audit.json。
+- name: 根据邮件标识查询发件人
+  inputs: [NetworkMessageId]
+  steps:
+    - 在 EmailEvents 中按 NetworkMessageId 精确查询 SenderDisplayName、SenderFromAddress、SenderMailFromAddress。
+  outputs: [SenderDisplayName, SenderFromAddress, SenderMailFromAddress]
+  constraints:
+    - 使用当前调查已确认的邮件标识；多个候选、空值和截断须保留。
+    - 显示名、From 地址和信封发件人地址含义不同，不能据此确认实际操作者。
+
+- name: 根据 URL 查询相关邮件的发送信息
+  inputs: [URL, 所需发送信息（发件人身份或发送 IP）]
+  steps:
+    - 在 EmailUrlInfo 中按 Url 精确查询 NetworkMessageId，保留所有匹配邮件。
+    - 使用获得的 NetworkMessageId 查询 EmailEvents；身份查询返回 SenderDisplayName、SenderFromAddress、SenderMailFromAddress，发送 IP 查询返回 SenderIPv4、SenderIPv6。
+  outputs:
+    - 每封匹配邮件的 NetworkMessageId 及请求的发送信息
+  constraints:
+    - 按邮件标识保留结果关联；多封匹配邮件需结合已知事件范围消歧。
+    - 仅使用预定义的输出字段组合；缺少字段时回退结构核对。
+    - 本过程不证明邮件被点击或发送者的真实身份；保留空结果和截断限制。
+
+- name: 根据文件名查询进程命令行
+  inputs: [FileName]
+  steps:
+    - 在 DeviceProcessEvents 中按 FileName 精确查询 ProcessCommandLine。
+  outputs: [ProcessCommandLine]
+  constraints:
+    - 返回当前数据范围内的候选命令行，文件名不能唯一确定进程实例。
+    - 需要定位特定执行时，补充设备及时间等范围；不混淆目标进程与发起进程的命令行。
+
+- name: 根据投递后处理记录查询邮件内的 URL
+  inputs: [目标处理动作, 已知邮件范围]
+  steps:
+    - 在 EmailPostDeliveryEvents 中选择符合目标动作及已知范围的记录，取得 NetworkMessageId；核对实际 Action，不把 remove、quarantine、ZAP 当成同义词。
+    - 在 EmailUrlInfo 中按获得的 NetworkMessageId 查询 Url。
+  outputs:
+    - NetworkMessageId、实际处理动作及邮件包含的 URL
+  constraints:
+    - 保留多个匹配邮件；处理记录中的标识必须来自此次观察。
+    - 邮件包含 URL 不等于发生点击；点击问题还需要 UrlClickEvents 等证据。

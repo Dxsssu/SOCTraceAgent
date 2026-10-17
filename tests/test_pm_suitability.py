@@ -8,6 +8,7 @@ from src.memory.longterm_memory.procedural_memory.excytin_bench.templates import
 from src.schema.itt import parse_itt, itt_payload, task_payload
 from src.schema.ttt_updates import next_task
 from test_itt_contract import plan
+from pm_fakes import initial_operations
 
 
 def email_template():
@@ -39,7 +40,7 @@ def test_template_attaches_to_task_and_survives_replanning_without_pm():
     p=email_template();payload=plan();leaf=payload[0]['children'][0]['children'][0]
     leaf['template_id']=p['id']
     tree=parse_itt(payload,'event',1,procedures=[p])
-    assert task_payload(next_task(tree))['query_template']['sql_template']==p['sql_template']
+    assert next_task(tree).metadata['query_template']['sql_template']==p['sql_template']
     serialized=itt_payload(tree)
     assert serialized[0]['children'][0]['children'][0]['template_id']==p['id']
     assert 'sql_template' not in json.dumps(serialized)
@@ -55,7 +56,7 @@ def test_unknown_template_id_is_rejected_without_restoring_semantic_source_gate(
     assert parse_itt(payload,'event',1)
 
 
-def test_executor_template_path_uses_rendered_sql_not_generated_sql():
+def test_executor_uses_sql_contract_even_with_legacy_template_metadata():
     from src.benchmarks.excytin_bench.workflow import ExcytinBenchWorkflow
     from src.workflow.context import MemoryContextService, ExcytinBenchSnapshotRepository
     from unittest.mock import patch
@@ -65,19 +66,18 @@ def test_executor_template_path_uses_rendered_sql_not_generated_sql():
     calls=[]
     def llm(system,user):
         calls.append(system)
-        if '系统中的 Planner' in system:return yaml.safe_dump(payload)
+        if '系统中的 Planner' in system:return yaml.safe_dump(initial_operations(payload))
         assert 'SQL 查询生成器' in system
         task=json.loads(user)
-        assert task['query_template']['sql_template']==p['sql_template']
-        assert set(task)=={'id','objective','status','semantic_refs','execution_code','execution_result','query_template'}
-        return json.dumps({'template_id':p['id'],'bindings':{'p1':'synthetic-message'}})
+        assert set(task)=={'id','objective'}
+        return json.dumps({'sql': "SELECT SenderFromAddress FROM EmailEvents WHERE NetworkMessageId = 'synthetic-message'"})
     repo=ExcytinBenchSnapshotRepository()
     memory=MemoryContextService(repositories={'excytin_bench':repo})
     with patch.object(repo,'retrieve_procedures',return_value=[p]):
         workflow=ExcytinBenchWorkflow(llm=llm,memory_contexts=memory)
         workflow.start({'context':'NetworkMessageId synthetic-message','question':'Find sender'})
         action=workflow.propose_next_action()
-    assert action.content.rstrip(';')==render_sql(p,{'p1':'synthetic-message'})
+    assert action.content == "SELECT SenderFromAddress FROM EmailEvents WHERE NetworkMessageId = 'synthetic-message';"
     assert len(calls)==2
 
 

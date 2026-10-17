@@ -1,4 +1,4 @@
-from pm_fakes import verify
+from pm_fakes import verify, initial_operations
 import copy
 import json
 from unittest.mock import patch
@@ -91,11 +91,11 @@ def test_runtime_metadata_excluded_from_every_model_call():
             return "[]"
         if "中的 Planner" in system:
             instruction, content = prompt.split("\n", 1)
-            assert instruction == "下面是此次事件的背景和调查问题，请你根据要求初始化并输出ITT。"
+            assert instruction == "下面是此次事件的背景和调查问题，请输出初始化调查所需的 operations。"
             assert json.loads(content) == {"context": "Alert A", "question": "Locate device"}
-            return yaml.safe_dump(plan())
+            return yaml.safe_dump(initial_operations(plan()))
         if "你是 SQL 查询生成器" in system: return "sql: SELECT 1"
-        if "你是 Reviewer" in system: return 'summary: device identified'
+        if "你是 Reviewer" in system: return 'summary: device identified\nfacts: []\nlimitations: []'
         return "answer: device"
     workflow = ExcytinBenchWorkflow(llm=llm)
     workflow.start({"context": "Alert A", "question": "Locate device", "answer": "ANSWER_SECRET", "runtime_info": "RUNTIME_SECRET"},
@@ -115,7 +115,7 @@ def test_yaml_list_parser_rejects_wrappers():
 PM_REFS = [{"table": "DeviceProcessEvents", "fields": ["DeviceName", "ProcessCommandLine"]}]
 
 
-def test_semantic_refs_survive_storage_and_replanning_for_executor(tmp_path):
+def test_semantic_refs_survive_storage_but_are_not_sent_to_executor(tmp_path):
     from src.agent.executor import ExecutorRuntime
     from src.memory.working_memory import TTTStore
     payload = plan()
@@ -130,8 +130,7 @@ def test_semantic_refs_survive_storage_and_replanning_for_executor(tmp_path):
     node = store.claim_next_todo_leaf("event", 2)
     assert node.metadata["semantic_refs"] == PM_REFS
     intent = ExecutorRuntime._build_tool_intent(Event(event_name="test", message="Find process command line"), node)
-    assert '"DeviceProcessEvents"' in intent
-    assert '"ProcessCommandLine"' in intent
+    assert json.loads(intent) == {"id": node.node_id, "objective": node.title}
 
 
 @pytest.mark.parametrize("refs", [
@@ -156,16 +155,15 @@ def test_nonempty_semantic_refs_do_not_require_pm_knowledge(procedures):
     assert next_task(replanned).metadata["semantic_refs"] == PM_REFS
 
 
-def test_benchmark_planner_passes_pm_knowledge_to_executor():
+def test_benchmark_executor_omits_stored_pm_metadata():
     def llm(system, prompt):
         if "你是 Verifier" in system: return verify(prompt)
         if "中的 Planner" in system:
             payload = plan()
             payload[0]["children"][0]["children"][0]["semantic_refs"] = PM_REFS
-            return yaml.safe_dump(payload)
+            return yaml.safe_dump(initial_operations(payload))
         if "你是 SQL 查询生成器" in system:
-            assert '"semantic_refs"' in prompt
-            assert '"ProcessCommandLine"' in prompt
+            assert set(json.loads(prompt)) == {"id", "objective"}
             return "sql: SELECT ProcessCommandLine FROM DeviceProcessEvents LIMIT 1"
         return "[]"
     service = MemoryContextService(procedure_selector=llm)
@@ -185,7 +183,7 @@ def test_background_planner_accepts_pm_refs():
     class Context:
         def build(self, *args, **kwargs):
             return {"procedural_memory": {"procedures": [{"semantic_refs": PM_REFS}]}}
-    with patch("src.agent.planner.call_llm", return_value=yaml.safe_dump(payload)):
+    with patch("src.agent.planner.call_llm", return_value=yaml.safe_dump(initial_operations(payload))):
         tree = PlannerRuntime(context_provider=Context())._generate_initial_ttt(
             Event(event_name="test", message="What is the process command line?"))
     assert next_task(tree).metadata["semantic_refs"] == PM_REFS
@@ -193,8 +191,9 @@ def test_background_planner_accepts_pm_refs():
 
 def test_planner_template_without_memory_fields_accepts_initial_plan():
     from src.agent.planner import PLANNER_SYSTEM_PROMPT
-    payload = parse_itt_response(("- id: G1" + PLANNER_SYSTEM_PROMPT.split("\n- id: G1", 1)[1]).replace("todo｜done｜error", "todo"))
-    tree = parse_itt(payload, "event", 1)
+    from src.schema.planner_operations import parse_planner_response, apply_planner_operations
+    payload = parse_planner_response("operations:" + PLANNER_SYSTEM_PROMPT.split("\noperations:", 1)[1])
+    tree = apply_planner_operations(payload, "event", 1)
     assert next_task(tree).node_id == "T1"
     assert next_task(tree).metadata["semantic_refs"] == []
 
@@ -223,7 +222,8 @@ def test_omitted_memory_fields_preserve_existing_task_metadata():
 def test_entity_contract_derives_parent_state_and_preserves_history(task_status, parent_status):
     from src.agent.planner import PLANNER_SYSTEM_PROMPT
     assert all(line.strip() for line in PLANNER_SYSTEM_PROMPT.splitlines())
-    payload = parse_itt_response(("- id: G1" + PLANNER_SYSTEM_PROMPT.split("\n- id: G1", 1)[1]).replace("todo｜done｜error", "todo"))
+    payload = plan()
+    payload[0]["children"][0]["id"] = "E1"
     tree = parse_itt(payload, "event", 1)
     assert tree.root_nodes[0].children[0].node_id == "E1"
     executions = [{"node_id": "T1", "execution_id": "exec-1", "sql": "SELECT 1", "observation": "[(1,)]"}]

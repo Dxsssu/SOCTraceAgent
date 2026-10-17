@@ -65,7 +65,7 @@ uv run python main.py -role reviewer
 | --- | --- | --- |
 | Planner | 建立目标与问题、展开任务、选择下一步、更新 TTT | PM（含 semantic_refs） |
 | Executor | 仅根据当前 T 构造查询；程序执行并回写 ITT | 正常仅使用 T；SQL error 后额外检索最多 1 条 EM |
-| Reviewer | 审核真实结果，提供事实、缺口和建议 | 不检索记忆；仅任务树与执行证据 |
+| Reviewer | 提取本次查询的结构化事实和信息限制，由程序写回 ITT | 不检索记忆；仅当前任务和本次执行记录 |
 | Verifier（SQL workflow） | 每轮 Reviewer 后判断能否回答；能则直接输出答案，否则继续调查 | 不检索记忆 |
 
 本地调查每轮执行一个 L3，再进入复盘与重规划。业务事实以 SQLite 持久化状态为准，`MessageEnvelope` 是审计与展示层。默认数据库为 `runtime/socagent.db`，包含 `events`、`ttt_snapshots`、`executions`、`round_reviews`、`messages`。
@@ -83,33 +83,49 @@ pending -> planned -> executing -> reviewing -> replanning
 
 Planner 输入只保留 `context` 与 `question`。运行时构建事件 ID、轮次等管理信息；`runtime_info` 仅用于运行记录，不传入模型或 PM 选择助手。
 
-PM 选择助手根据 question 和当前进展，从 active 查询模板的精简目录中一次选择最多一个模板。没有多阶段前提审核或独立复核。选中的模板传给 Planner；T 只保存 template_id，程序附加真实模板，Executor 绑定已知参数后由程序生成 SQL。模板只提供查询方法，不能改变 G 或证明答案；无适用 PM 时由轻量 SM 代理提供结构知识。
+PM 选择助手根据 question 和当前进展，从 active 查询模板的精简目录中一次选择最多一个模板。没有多阶段前提审核或独立复核。选中的模板可供 Planner 参考；历史 template_id 元数据仍可读取。当前 Executor 统一接收 id/objective 并返回 SQL，不再使用模板填参输出分支。模板只提供查询方法，不能改变 G 或证明答案；无适用 PM 时由轻量 SM 代理提供结构知识。
 
-普通 SQLite 调查与 ExCyTIn 使用相同的 ITT YAML 列表协议：
+普通 SQLite 调查与 ExCyTIn 使用相同的 Planner **增量操作协议**，存储与展示仍保留完整 G/E/T 调查树：
 
-- G 的 `objective` 由 LLM 从 question 提炼，每个需要独立回答的调查问题对应一个 G，不根据背景额外扩大目标。F 由 LLM 联合初始 context 和 question 初始化，描述服务于该问题的调查方向。每个 G 包含 F，每个 F 至少包含一个 T；不允许第四层。
-- 节点字段为 `id`、`objective`、`status`，状态为 `todo/done/failed`。G/F 使用 `children`，T 使用 `semantic_refs`、`execution_code` 和 `execution_result`。
-- T 的 `semantic_refs` 为 `[{table: 表名, fields: [字段名]}]`，保存相关表字段，可参考 PM、已有 ITT 知识及真实结构查询结果，结构未知时为 `[]`。校验字段格式，不限制引用来源；存储于内部节点 metadata，随任务传给 Executor，已结束任务保留原引用。
-- 初始化与重规划均输出完整列表。已有 ID、目标、父子关系和历史路径保留；需要继续调查已结束路径时创建新任务。
-- 未执行任务的执行字段为空；执行后由运行时写入真实代码和结果，Planner 更新必须原样保留。多次尝试使用 JSON 数组字符串保留全部代码和结果。
-- Planner 按优先级排列列表，运行时选择首个祖先未结束的 todo 任务。未解决目标没有可执行任务时必须展开任务或明确失败。
-- 内部仍使用 TTT 快照存储，并转换状态和字段；事件 ID、轮次、版本与 `next_task_id` 由运行时管理。SQLite 写入仍检查期望版本。
+- G（Goal）对应 question 中一个独立问题，E（Entity）对应已知调查实体，T（Task）对应一次查询。每个 G 包含 E，每个 E 至少包含一个 T，不允许第四层。
+- Planner 只输出 `operations` 对象，支持 `add_goal`（仅首轮）、`add_entity`、`add_task`、`select_task`。完整树输出不再作为模型响应接受。
+- 程序分配正式 G/E/T ID。`ref` 是本批次唯一的临时别名，通过 `$alias` 引用；后续轮次直接引用输入中的正式 ID。别名不保存到快照。
+- Planner 不输出或改写 `children`、`status`、`execution_code`、`execution_result`。程序保留已有目标、父子关系、执行记录和终态任务，需要继续调查时新增 T。
+- `add_task` 可携带 `semantic_refs: [{table: 表名, fields: [字段名]}]` 或已提供 PM 的 `template_id`；未知结构时省略。模板由程序装载，历史任务的记忆引用保留。
+- 默认按树顺序选择首个可执行任务；`select_task` 可显式优先选择一个 todo T，不重排或改写历史树。已有可执行任务时可返回 `operations: []`。SQL workflow 中 Verifier 尚未确认答案且没有待执行任务时，必须新增 T。
+- 整批操作在内存中校验，失败不修改原快照；SQLite 写入继续检查期望版本。版本、轮次、状态与证据引用由程序维护。
+- Planner / Verifier 的 ITT 输入采用 YAML 嵌套树：G→E→T 通过 `children` 展示层级，各节点使用具名字段。保留节点 ID、目标及任务状态、SQL 和结构化证据，不裁剪历史；不使用列名加行数组的扁平表示。
+- Executor 只收到 `id/objective`；程序在执行前写入 `execution_code`。SQL 修复时把失败 SQL 和错误临时附到 objective，不修改保存的任务目标。
+- Reviewer 只收到 `task: {id, objective}` 与本次 `executor_result`（实际 SQL/工具请求、返回结果、执行状态、来源和截断标记），不接收 context/question、全树或其他任务历史。
+- Reviewer 输出 `summary/facts/limitations`：summary 最多 240 字符；facts 是保留同一记录关联关系的字段对象列表，不受 summary 长度限制；limitations 说明歧义、缺失和省略。程序补充可信 source，将完整对象写入 T.execution_result，原始结果另存 executions。错误和空结果不会产生有效 facts；截断限制由程序强制标注。
+- Verifier 从嵌套 ITT 读取证据，不重复接收最新 summary；Planner 的 SQL 重规划输入只额外标记 `review.can_answer: "no"`。历史字符串 execution_result 仍能读取。
+
+首轮示例：
 
 ```yaml
-- id: G1
-  objective: 告警涉及的进程 ID 是什么？
-  status: todo
-  children:
-    - id: F1
-      objective: 沿告警证据定位进程
-      status: todo
-      children:
-        - id: T1
-          objective: 查询告警关联的进程 ID
-          status: todo
-          semantic_refs: []
-          execution_code: ""
-          execution_result: ""
+operations:
+  - op: add_goal
+    ref: goal
+    objective: 告警涉及的进程 ID 是什么？
+  - op: add_entity
+    ref: alert
+    goal_id: $goal
+    objective: 告警 alert-001
+  - op: add_task
+    entity_id: $alert
+    objective: 查询告警 alert-001 关联的进程 ID
+```
+
+后续轮次只输出新增内容，例如：
+
+```yaml
+operations:
+  - op: add_task
+    ref: followup
+    entity_id: E1
+    objective: 结合已确认的主机和时间核对进程 42 的关联关系
+  - op: select_task
+    task_id: $followup
 ```
 
 ## Splunk / BOTS 调查
@@ -164,7 +180,7 @@ SM 固定读取本地 `l1.yaml` 与 `l2/<表名>.yaml`。PM/EM 后端通过 `SOC
 
 `.env.example` 含 Neo4j 占位密码，首次运行建议显式使用 `snapshot`。使用图后端时，按 [Neo4j 部署说明](docker/neo4j/README.md) 启动服务，将连接配置导出到进程或写入根目录 `.env`，再依次导入 **EM → PM**；导入时使用本地 L1/L2 校验 schema，无需 SM 图。重建 PM/EM JSON 不会自动更新 Neo4j。
 
-PM v5 保存可复用查询模板：`id/name/status/purpose/inputs/sql_template/returns/semantic_refs`。从训练成功查询中归纳 46 条模板（34 active、12 candidate），案件具体值参数化，表字段离线校验。在线仅一次有界模型选择（不再前提审核/独立复核），Planner 在 T 中引用 `template_id`，程序装载模板，Executor 只返回参数，程序安全生成 SQL；PM 未命中时检索精简 SM。模板与构建审计详见 `src/memory/longterm_memory/procedural_memory/excytin_bench/README.md`。Reviewer 不检索长期记忆；SQL 报错后仍仅一次 EM 修复。
+PM v5 保存可复用查询模板：`id/name/status/purpose/inputs/sql_template/returns/semantic_refs`。从训练成功查询中归纳 46 条模板（34 active、12 candidate），案件具体值参数化，表字段离线校验。在线仅一次有界模型选择（不再前提审核/独立复核），Planner 在 T 中引用 `template_id`，模板元数据保留兼容，但当前 Executor 统一返回 SQL；PM 未命中时检索精简 SM。模板与构建审计详见 `src/memory/longterm_memory/procedural_memory/excytin_bench/README.md`。Reviewer 不检索长期记忆；SQL 报错后仍仅一次 EM 修复。
 
 在线 SM 从完整 L1 选择一个精确表名，再读取对应 L2；EM v2 先按错误类型与对象查本地倒排索引，再以失败 SQL 的表/别名作用域消歧，优先报错位置并用 TF-IDF 相似度排序，最多取一条供 Executor 修复，未调用 embedding API。PM 使用以问题为目标的候选召回与适用性审查；引用存在不等于语义关联正确，真实执行仍需核实。
 

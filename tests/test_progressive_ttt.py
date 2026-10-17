@@ -1,4 +1,4 @@
-from pm_fakes import verify
+from pm_fakes import verify, initial_operations
 import json
 from dataclasses import replace
 from src.schema.itt import itt_payload, parse_itt
@@ -90,16 +90,6 @@ def initial_itt():
     return payload
 
 
-def expanded_itt(current, executions=()):
-    payload = itt_payload(current, executions)
-    payload[0]["children"].append({"id": "Q2", "objective": "进程创建时间是什么？", "status": "todo",
-        "children": [{"id": "T2", "objective": "读取已定位进程的创建记录", "status": "todo",
-                      "semantic_refs": [], "execution_code": "", "execution_result": ""}]})
-    # Ordering carries the planner's choice of the next task.
-    payload[0]["children"].reverse()
-    return payload
-
-
 def test_benchmark_progressive_two_query_investigation():
     workflow = None
     def llm(system, prompt):
@@ -112,14 +102,17 @@ def test_benchmark_progressive_two_query_investigation():
             return 'sql: SELECT ProcessId FROM AlertEvidence LIMIT 1'
         if '你是 Reviewer' in system:
             if len(workflow.state.executions) == 1:
-                return 'summary: 进程 ID 为 42'
-            return 'summary: 进程创建时间已确认'
+                return 'summary: 进程 ID 为 42\nfacts: []\nlimitations: []'
+            return 'summary: 进程创建时间已确认\nfacts: []\nlimitations: []'
         if workflow.state is None:
-            return yaml.safe_dump(initial_itt(), allow_unicode=True)
-        return yaml.safe_dump(expanded_itt(workflow.state.ttt, workflow.state.executions), allow_unicode=True)
+            return yaml.safe_dump(initial_operations(initial_itt()), allow_unicode=True)
+        return yaml.safe_dump({"operations": [
+            {"op": "add_entity", "ref": "process", "goal_id": "G1", "objective": "进程 42"},
+            {"op": "add_task", "entity_id": "$process", "objective": "读取进程 42 的创建记录"},
+        ]}, allow_unicode=True)
     workflow = ExcytinBenchWorkflow(max_steps=5, llm=llm)
     first = workflow.act({'context': '告警 A', 'question': '进程 ID 和创建时间是什么？'})
-    assert first.node_id == 'T9'
+    assert first.node_id == 'T1'
     second = workflow.act('[{"ProcessId":42}]')
     assert second.node_id == 'T2'
     assert not resolved(workflow.state.ttt)
@@ -143,11 +136,15 @@ def test_background_planner_uses_same_itt_protocol(tmp_path):
     current = workflow.ttt_store.save_snapshot(parse_itt(initial_itt(), "event", 1))
     workflow.storage.save_event(event)
     workflow.storage.save_round_review(RoundReview(event_id='event', round_id=1, gaps=('缺少创建时间',)))
-    with patch('src.agent.planner.call_llm', return_value=yaml.safe_dump(expanded_itt(current), allow_unicode=True)):
+    with patch('src.agent.planner.call_llm', return_value=yaml.safe_dump({"operations": [
+        {"op": "add_entity", "ref": "process", "goal_id": "G1", "objective": "进程 42"},
+        {"op": "add_task", "ref": "time", "entity_id": "$process", "objective": "读取进程创建时间"},
+        {"op": "select_task", "task_id": "$time"},
+    ]}, allow_unicode=True)):
         updated = workflow.planner.process_replanning(event)
     assert updated.event_status == EventStatus.PLANNED
     saved = workflow.ttt_store.get_latest_ttt('event')
-    assert saved.next_task_id == 'T2'
+    assert saved.next_task_id == 'T10'
     assert saved.round_id == 2
 
 

@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from src.schema.investigation import task_input
-from src.schema.itt import review_payload
-from src.schema.reviewer_output import parse_review
+from src.schema.itt import review_payload, compact_json
+from src.schema.reviewer_output import parse_review, evidence_result
+from src.schema.ttt_updates import change_node, walk
 from src.schema import TracebackTaskTree
 
-import json
 import logging
 import time
 from dataclasses import dataclass
@@ -24,11 +23,24 @@ logger = logging.getLogger(__name__)
 
 REVIEWER_SYSTEM_PROMPT = """
 # 角色定位
-你是 Reviewer，负责总结当前轮次任务的实际执行结果，不生成后续建议。
+你是 Reviewer，负责把当前 task 的实际 executor_result 压缩为可继续查询、可核对的证据，不生成后续建议或最终答案。
+# 证据保留规则
+仅根据本次返回结果提取事实；task 和 SQL 是查询意图及范围，不能把 WHERE 条件当作已观察到的字段值。
+facts 中每个对象保留同一条记录内相关字段的关联，使用结果中的字段名；不要把不同记录的主机、PID、时间等拼成一个事实。
+优先保留任务直接结果及后续查询所需的实体标识、PID/GUID、主机、时间及其时区、路径、IP、哈希、关联键。标识符、时间和长数字用带引号字符串，保持大小写、前导零和原始精度，不猜测缺失值。
+删除无关列和完全重复的事实，不用“已找到关联进程”替代具体值。不要为缩短 summary 删除 facts 中必要的信息。
+SQL 报错或空结果时 facts 为 []，在 limitations 中说明查询范围或错误；截断、缺失关联键、多候选或省略记录时明确说明限制，不把局部结果说成完整结果。
+来源 execution_id、执行状态和截断标记由程序补齐，不自行编造来源。
 # 输出格式
-仅输出 summary 一个 YAML 字符串字段，不加解释、建议、围栏、列表或其他字段。
-summary 最多 80 字符；汉字、字母、数字、标点和空格均计数。
-summary: "当前执行结果总结"
+仅输出一个 YAML 对象，必填 summary、facts、limitations，不加围栏或其他字段。
+summary 最多 240 字符，只概括本次结果；facts 不受此字符限制，是记录对象列表，每个字段值为字符串、数字、布尔或 null；limitations 是字符串列表，无限制时为 []。
+summary: "本次查询返回一个关联进程"
+facts:
+  - host_id: "host-01"
+    process_guid: "p-42"
+    pid: "0042"
+    timestamp: "2026-10-17T08:30:00Z"
+limitations: []
 """.strip()
 
 
@@ -163,15 +175,20 @@ class ReviewerRuntime:
         *,
         workflow_context: dict[str, Any] | None = None,
     ) -> RoundReview:
-        user_prompt = json.dumps({
-            **task_input(event),
-            **review_payload(TracebackTaskTree.from_dict(ttt_payload), executions[-1]),
-        }, ensure_ascii=False)
+        tree = TracebackTaskTree.from_dict(ttt_payload)
+        user_prompt = compact_json(review_payload(tree, executions[-1]))
         response_text = call_llm(
             self.agent.system_prompt,
             user_prompt,
         )
         review = parse_review(parse_yaml_response(response_text))
+        result = evidence_result(review, executions[-1])
+        record = executions[-1].to_dict() if hasattr(executions[-1], "to_dict") else executions[-1]
+        node_id = record["node_id"]
+        node = next(n for n, _ in walk(tree) if n.node_id == node_id)
+        updated = change_node(tree, node_id, metadata=dict(node.metadata,
+            execution_result=result, execution_result_source="reviewer"))
+        self.ttt_store.save_snapshot(updated, updated_by=self.agent.role_name, expected_version=tree.version)
         return RoundReview(
             event_id=event.event_id,
             round_id=event.current_round,

@@ -22,8 +22,9 @@ from src.agent.reviewer import REVIEWER_SYSTEM_PROMPT
 from src.agent.verifier import VERIFIER_SYSTEM_PROMPT, validate_verification
 from src.schema.ttt_updates import next_task, change_node, resolved
 from src.schema.investigation import task_input
-from src.schema.reviewer_output import parse_review
-from src.schema.itt import parse_itt, parse_itt_response, itt_payload, planner_prompt, execution_fields, task_payload, review_payload
+from src.schema.reviewer_output import parse_review, evidence_result
+from src.schema.itt import itt_payload, compact_json, planner_prompt, execution_fields, task_payload, review_payload
+from src.schema.planner_operations import apply_planner_operations, parse_planner_response
 from src.schema import Event, RoundReview, TracebackTaskTree, TTTNode, TTTNodeStatus
 from src.workflow.context import MemoryContextService
 
@@ -403,8 +404,9 @@ class ExcytinBenchWorkflow:
 
         review = self._review(execution)
         current = self._find_node(state.ttt, node.node_id)
+        result = evidence_result({k: review[k] for k in ("summary", "facts", "limitations")}, execution)
         state.ttt = change_node(state.ttt, node.node_id,
-            metadata=dict(current.metadata, execution_result=review["summary"], execution_result_source="reviewer"),
+            metadata=dict(current.metadata, execution_result=result, execution_result_source="reviewer"),
             result_summary="")
         state.reviews.append(review)
         self._record_trace("review_completed", {"review": review})
@@ -555,9 +557,7 @@ class ExcytinBenchWorkflow:
         *,
         investigation_input: Mapping[str, str],
     ) -> TracebackTaskTree:
-        prompt = "下面是此次事件的背景和调查问题，请你根据要求初始化并输出ITT。\n" + json.dumps(
-            dict(investigation_input), ensure_ascii=False, indent=2
-        )
+        prompt = "下面是此次事件的背景和调查问题，请输出初始化调查所需的 operations。\n" + compact_json(dict(investigation_input))
         parsed = self._call_yaml_role(
             "planner",
             planner_prompt(PLANNER_SYSTEM_PROMPT, planner_context),
@@ -569,8 +569,10 @@ class ExcytinBenchWorkflow:
                 procedures=planner_context.get("procedural_memory", {}).get("procedures", []),
             ),
         )
-        return self._parse_ttt(parsed, event.event_id, round_id=1,
+        tree = self._parse_ttt(parsed, event.event_id, round_id=1,
             procedures=planner_context.get("procedural_memory", {}).get("procedures", []))
+        self._record_trace("planner_operations_applied", {"operations": parsed["operations"], "version": tree.version})
+        return tree
 
     def _replan(
         self,
@@ -581,11 +583,10 @@ class ExcytinBenchWorkflow:
         state = self._require_state()
         prompt = yaml.safe_dump(dict(task_input(state.event),
             itt=itt_payload(current_ttt, state.executions, planner_view=True),
-            review={"summary": "；".join((*review.findings, *review.gaps))}),
-            allow_unicode=True, sort_keys=False)
+            review={"can_answer": "no"}), allow_unicode=True, sort_keys=False)
         next_round = current_ttt.round_id + 1
         def validate(value):
-            tree = parse_itt(value, state.event.event_id, next_round,
+            tree = apply_planner_operations(value, state.event.event_id, next_round,
                              previous=current_ttt, executions=state.executions,
                              procedures=planner_context.get("procedural_memory", {}).get("procedures", []))
             if self._next_todo_leaf(tree) is None:
@@ -595,7 +596,9 @@ class ExcytinBenchWorkflow:
             "planner", planner_prompt(PLANNER_SYSTEM_PROMPT, planner_context),
             prompt, validator=validate,
         )
-        return validate(parsed)
+        tree = validate(parsed)
+        self._record_trace("planner_operations_applied", {"operations": parsed["operations"], "version": tree.version})
+        return tree
 
     def _generate_sql(self, node: TTTNode) -> str:
         state = self._require_state()
@@ -612,30 +615,20 @@ class ExcytinBenchWorkflow:
                 "recovery_ids": [recovery_entry_id(e) for e in recoveries]})
         payload = task_payload(node)
         if recovery is not None:
-            payload["error_recovery"] = recovery
+            payload["objective"] += "\n本次查询修复信息（只修复 SQL，保持原任务目标）：\n" + compact_json(recovery)
         # One generation per SQL attempt. Format/local validation errors fail
         # immediately; only actual database errors enter the repair path.
-        response = self._call_role_llm(SQL_EXECUTOR_SYSTEM_PROMPT, json.dumps(payload, ensure_ascii=False))
+        response = self._call_role_llm(SQL_EXECUTOR_SYSTEM_PROMPT, compact_json(payload))
         parsed = self._parse_response(response)
         self._record_trace("role_yaml_parsed", {
             "role": "executor", "attempt": 1, "response_type": parsed.get("response_type"),
         })
-        if node.metadata.get("query_template") and recovery is None:
-            from src.memory.longterm_memory.procedural_memory.excytin_bench.templates import render_sql
-            template = node.metadata["query_template"]
-            if set(parsed) != {"template_id", "bindings"} or parsed.get("template_id") != template["id"]:
-                raise ValueError("Return only the supplied template_id and bindings")
-            sql = render_sql(template, parsed["bindings"])
-        else:
-            sql = str(parsed.get("sql") or "").strip()
+        sql = str(parsed.get("sql") or "").strip()
         return ReadOnlySQLValidator.validate(sql)
 
     def _review(self, execution: BenchmarkExecution) -> dict[str, Any]:
         state = self._require_state()
-        prompt = json.dumps({
-            **task_input(state.event),
-            **review_payload(state.ttt, execution),
-        }, ensure_ascii=False)
+        prompt = compact_json(review_payload(state.ttt, execution))
         parsed = self._call_yaml_role("reviewer", REVIEWER_SYSTEM_PROMPT, prompt,
                                       validator=parse_review)
         review = parse_review(parsed)
@@ -678,11 +671,10 @@ class ExcytinBenchWorkflow:
 
     def _verify_progress(self, review):
         state = self._require_state()
-        prompt = json.dumps({
+        prompt = yaml.safe_dump({
             **task_input(state.event),
-            "itt": itt_payload(state.ttt, state.executions),
-            "reviewer": {"summary": review["summary"]},
-        }, ensure_ascii=False)
+            "itt": itt_payload(state.ttt, state.executions, planner_view=True),
+        }, allow_unicode=True, sort_keys=False)
         verdict = self._call_yaml_role("verifier", VERIFIER_SYSTEM_PROMPT, prompt,
                                       validator=validate_verification)
         verdict = validate_verification(verdict)
@@ -745,7 +737,7 @@ class ExcytinBenchWorkflow:
         for attempt in range(1, self.yaml_response_attempts + 1):
             response_text = self._call_role_llm(system_prompt, prompt)
             try:
-                parsed = parse_itt_response(response_text) if role == "planner" else self._parse_response(response_text)
+                parsed = parse_planner_response(response_text) if role == "planner" else self._parse_response(response_text)
                 if validator is not None:
                     validator(parsed)
             except Exception as exc:  # noqa: BLE001 - retry malformed model output.
@@ -772,7 +764,7 @@ class ExcytinBenchWorkflow:
                 {
                     "role": role,
                     "attempt": attempt,
-                    "response_type": "ITT" if isinstance(parsed, list) else parsed.get("response_type"),
+                    "response_type": "ITT_OPERATIONS" if role == "planner" else parsed.get("response_type"),
                 },
             )
             return parsed
@@ -848,9 +840,9 @@ class ExcytinBenchWorkflow:
 
     @classmethod
     def _parse_ttt(
-        cls, parsed: list[dict[str, Any]], event_id: str, *, round_id: int, procedures=()
+        cls, parsed: dict[str, Any], event_id: str, *, round_id: int, procedures=()
     ) -> TracebackTaskTree:
-        return parse_itt(parsed, event_id, round_id, procedures=procedures)
+        return apply_planner_operations(parsed, event_id, round_id, procedures=procedures)
 
     _next_todo_leaf = staticmethod(next_task)
     _all_leaves_terminal = staticmethod(resolved)

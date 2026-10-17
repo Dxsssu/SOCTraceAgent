@@ -132,22 +132,8 @@ def test_planner_prompt_contains_workflow_filtered_context() -> None:
                 "semantic_memory": {"marker": "planner-sm"},
             }
 
-    response = """
-- id: G1
-  objective: Investigate the alert
-  status: todo
-  children:
-    - id: F1
-      objective: Validate the network evidence
-      status: todo
-      children:
-        - id: T1
-          objective: Query the alert evidence
-          status: todo
-          semantic_refs: []
-          execution_code: ""
-          execution_result: ""
-"""
+    from test_excytin_benchmark_workflow import INITIAL_OPERATIONS
+    response = INITIAL_OPERATIONS
     runtime = PlannerRuntime(context_provider=FakePlannerContext())
     with patch("src.agent.planner.call_llm", return_value=response) as mocked:
         tree = runtime._generate_initial_ttt(excytin_event())
@@ -271,7 +257,7 @@ def test_executor_hands_off_after_one_l3_per_round() -> None:
             == 1
         )
 
-        review_response = 'summary: The first query returned one row.'
+        review_response = 'summary: The first query returned one row.\nfacts: []\nlimitations: []'
         with patch("src.agent.reviewer.call_llm", return_value=review_response):
             assert workflow.reviewer.process_event(updated_event)
         replanning_event = workflow.storage.get_event(event.event_id)

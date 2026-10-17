@@ -1,4 +1,4 @@
-"""Planner's G/E/T YAML contract, adapted to the persisted task-tree model."""
+"""G/E/T snapshots and role payloads; Planner mutations use planner_operations."""
 from copy import deepcopy
 from dataclasses import replace
 import json
@@ -31,16 +31,11 @@ def execution_fields(executions, node_id):
 
 def task_payload(node: TTTNode) -> dict[str, Any]:
     """The complete, task-only input boundary for Executor."""
-    status = "done" if node.status == S.DONE else "failed" if node.status in {S.BLOCKED, S.NOT_APPLICABLE} else "todo"
-    return {
-        "id": node.node_id,
-        "objective": node.title,
-        "status": status,
-        "semantic_refs": deepcopy(node.metadata.get("semantic_refs", [])),
-        "execution_code": node.metadata.get("execution_code", ""),
-        "execution_result": node.metadata.get("execution_result", ""),
-        **({"query_template": deepcopy(node.metadata["query_template"])} if node.metadata.get("query_template") else {}),
-    }
+    return {"id": node.node_id, "objective": node.title}
+
+
+def compact_json(value) -> str:
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
 
 
 def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -> list[dict[str, Any]]:
@@ -56,6 +51,8 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
                 out["template_id"] = n.metadata["query_template"]["id"]
             out.update(execution_code=code if refs else n.metadata.get("execution_code", ""),
                        execution_result=n.metadata.get("execution_result", "") if n.metadata.get("execution_result_source") == "reviewer" else (result if refs else n.metadata.get("execution_result", "")))
+        if n.level == 3:
+            out["execution_result"] = deepcopy(out["execution_result"])
         if planner_view:
             if n.level < 3:
                 out.pop("status")
@@ -68,18 +65,15 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
 
 
 def review_payload(tree: TracebackTaskTree, execution) -> dict[str, Any]:
-    """Provide the task outline and only the current Executor result."""
-    def outline(n):
-        value = {"id": n.node_id, "objective": n.title,
-                 "status": "done" if n.status in {S.DONE, S.RESOLVED} else "failed" if n.status in {S.BLOCKED, S.NOT_APPLICABLE} else "todo"}
-        if n.children:
-            value["children"] = [outline(c) for c in n.children]
-        return value
+    """Only the current task and execution; no full tree or global context."""
     fields = {"execution_id", "node_id", "sql", "observation", "query_success",
               "result_status", "observation_truncated", "original_observation_chars",
               "tool_name", "tool_input", "result", "execution_status", "error_message"}
     record = execution.to_dict() if hasattr(execution, "to_dict") else execution
-    return {"itt": [outline(n) for n in tree.root_nodes],
+    task = next((n for n, _ in walk(tree) if n.node_id == record["node_id"] and n.level == 3), None)
+    if task is None:
+        raise ValueError("Reviewer execution must reference an existing task")
+    return {"task": task_payload(task),
             "executor_result": {k: v for k, v in record.items() if k in fields}}
 
 

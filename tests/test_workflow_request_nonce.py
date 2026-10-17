@@ -13,7 +13,7 @@ def test_role_retry_refreshes_system_prefix_and_preserves_user(monkeypatch):
 
     def model(system, user):
         calls.append((system, user))
-        return "invalid" if len(calls) == 1 else "summary: reviewed"
+        return "invalid" if len(calls) == 1 else 'summary: reviewed\nfacts: []\nlimitations: []'
 
     workflow = ExcytinBenchWorkflow(
         llm=model, memory_contexts=MemoryContextService(enabled=False)
@@ -21,7 +21,7 @@ def test_role_retry_refreshes_system_prefix_and_preserves_user(monkeypatch):
     result = workflow._call_yaml_role(
         "reviewer", "system instructions", "original input", validator=parse_review
     )
-    assert result == {"summary": "reviewed"}
+    assert result == {"summary": "reviewed", "facts": [], "limitations": []}
     assert calls[0] == ("aB3xY9\nsystem instructions", "original input")
     assert calls[1][0] == "kL7mN2\nsystem instructions"
     assert calls[1][1].startswith("original input\n上一次输出未通过校验")
