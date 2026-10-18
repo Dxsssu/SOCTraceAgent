@@ -35,7 +35,12 @@ def validate_operations(payload: Any) -> list[dict[str, Any]]:
             raise ValueError(f"operations[{i}]: unsupported op; use {', '.join(_FIELDS)}")
         required, optional = _FIELDS[operation["op"]]
         if not required <= set(operation) or set(operation) - required - optional:
-            raise ValueError(f"operations[{i}] {operation['op']}: required fields {sorted(required)}; optional {sorted(optional)}")
+            missing = sorted(required - set(operation))
+            unexpected = sorted(set(operation) - required - optional)
+            raise ValueError(f"operations[{i}] {operation['op']}: missing fields {missing}; unexpected fields {unexpected}; "
+                             f"required fields {sorted(required)}; optional {sorted(optional)}. "
+                             "Use entity_id for add_task, goal_id for add_entity, task_id for select_task; "
+                             "the runtime assigns new IDs. Do not output id, parent or execution_code.")
         for key in ("objective", "goal_id", "entity_id", "task_id", "template_id"):
             if key in operation and (not isinstance(operation[key], str) or not operation[key].strip()):
                 raise ValueError(f"operations[{i}].{key} must be a nonempty string")
@@ -45,6 +50,12 @@ def validate_operations(payload: Any) -> list[dict[str, Any]]:
 
 
 def parse_planner_response(text: str) -> dict[str, Any]:
+    # Accept a single whole-message transport fence, without extracting a
+    # convenient YAML fragment from surrounding prose or multiple candidates.
+    fenced = re.fullmatch(r"\s*```(?:yaml|yml)?[ \t]*\r?\n(.*?)\r?\n```\s*", text,
+                          flags=re.IGNORECASE | re.DOTALL)
+    if fenced and "```" not in fenced.group(1):
+        text = fenced.group(1)
     payload = yaml.safe_load(text)
     validate_operations(payload)
     return payload

@@ -41,6 +41,20 @@ def test_invalid_evidence_is_rejected(value):
         parse_review(value)
 
 
+def test_nested_schema_fact_error_identifies_location_without_losing_rows():
+    with pytest.raises(ValueError) as error:
+        parse_review(review(facts=[{"TABLE_NAME": "Events", "COLUMN_NAME": ["Id", "Time"]}]))
+    assert "facts[0]['COLUMN_NAME'] has type list" in str(error.value)
+    rows = [{"TABLE_NAME": "Events", "COLUMN_NAME": column} for column in ("Id", "Time")]
+    assert parse_review(review(facts=rows))["facts"] == rows
+
+
+def test_observed_json_cell_can_be_preserved_as_text():
+    cell = '[{"pid":"0042","parent":"0001"}]'
+    result = parse_review(review(facts=[{"Entities": cell}]))
+    assert result["facts"][0]["Entities"] == cell
+
+
 @pytest.mark.parametrize("status,success", [("empty_result", True), ("error", False)])
 def test_runtime_preserves_scope_and_drops_claims_from_unsuccessful_queries(status, success):
     record = {"execution_id": "E7", "result_status": status, "query_success": success}

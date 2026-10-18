@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import secrets
 import string
@@ -25,6 +26,7 @@ from src.schema.investigation import task_input
 from src.schema.reviewer_output import parse_review, evidence_result
 from src.schema.itt import itt_payload, compact_json, planner_prompt, execution_fields, task_payload, review_payload
 from src.schema.planner_operations import apply_planner_operations, parse_planner_response
+from src.schema.evidence_view import dump_evidence_prompt
 from src.schema import Event, RoundReview, TracebackTaskTree, TTTNode, TTTNodeStatus
 from src.workflow.context import MemoryContextService
 
@@ -114,6 +116,10 @@ class WorkflowState:
     executor_attempt_counts: dict[str, int] = field(default_factory=dict)
 
 
+class SQLSyntaxError(ValueError):
+    """A read-only candidate that the local MySQL parser cannot interpret."""
+
+
 class ReadOnlySQLValidator:
     """Validate one read-only MySQL statement before it reaches the benchmark."""
 
@@ -126,10 +132,10 @@ class ReadOnlySQLValidator:
         "EXPLAIN",
     }
     _FORBIDDEN = re.compile(
-        r"\b(?:INSERT|UPDATE|DELETE|REPLACE|MERGE|UPSERT|CREATE|ALTER|DROP|"
+        r"\b(?:INSERT|UPDATE|DELETE|MERGE|UPSERT|CREATE|ALTER|DROP|"
         r"TRUNCATE|RENAME|GRANT|REVOKE|CALL|DO|SET|USE|LOCK|UNLOCK|LOAD|"
         r"INTO\s+(?:OUTFILE|DUMPFILE)|FOR\s+UPDATE)\b|"
-        r"\b(?:LOAD_FILE|SLEEP|BENCHMARK)\s*\(",
+        r"\bREPLACE\b(?!\s*\()|\b(?:LOAD_FILE|SLEEP|BENCHMARK)\s*\(",
         re.IGNORECASE,
     )
 
@@ -139,7 +145,7 @@ class ReadOnlySQLValidator:
         if not normalized:
             raise ValueError("SQL is empty")
         if normalized.startswith(("--", "#", "/*")):
-            raise ValueError("SQL must start with an explicit read-only statement")
+            raise SQLSyntaxError("SQL must start with an explicit read-only statement; remove comments and return one read-only query")
         prefix_match = re.match(r"([A-Za-z]+)", normalized)
         prefix = prefix_match.group(1).upper() if prefix_match else ""
         if prefix not in cls._ALLOWED_PREFIXES:
@@ -159,7 +165,7 @@ class ReadOnlySQLValidator:
         try:
             expressions = sqlglot.parse(normalized, read="mysql")
         except sqlglot.errors.ParseError as exc:
-            raise ValueError(f"SQL cannot be parsed as MySQL: {exc}") from exc
+            raise SQLSyntaxError(f"SQL cannot be parsed as MySQL: {exc}") from exc
         if len(expressions) != 1 or expressions[0] is None:
             raise ValueError("Exactly one SQL statement is required")
         return normalized.rstrip(";").strip() + ";"
@@ -186,6 +192,10 @@ class ExcytinBenchWorkflow:
         max_error_repairs: int = 1,
         yaml_response_attempts: int = 2,
         max_observation_chars: int = 20_000,
+        planner_memory: Any | None = None,
+        planner_pm_enabled: bool | None = None,
+        executor_format_attempts: int = 1,
+        compact_evidence: bool = False,
     ) -> None:
         if max_steps < 2:
             raise ValueError("max_steps must reserve at least one query and one submit")
@@ -193,10 +203,18 @@ class ExcytinBenchWorkflow:
         self._llm = llm or self._default_llm
         self.memory_contexts = memory_contexts or MemoryContextService(procedure_selector=self._llm)
         self._planner_memory = self.memory_contexts.planner_view()
+        self.planner_pm_enabled = (os.getenv("SOCAGENT_PLANNER_PM_ENABLED", "false").lower() in {"1", "true", "yes"}
+                                   if planner_pm_enabled is None else planner_pm_enabled)
+        if planner_memory is not None or self.planner_pm_enabled:
+            from src.memory.longterm_memory.procedural_memory.excytin_bench.cards.retrieval import ProcedureCardMemory
+            self._planner_memory = planner_memory if planner_memory is not None else ProcedureCardMemory()
+            self.planner_pm_enabled = True
         self.max_executor_attempts_per_l3 = min(2, max(1, max_executor_attempts_per_l3))
         self.max_error_repairs = min(1, max(0, max_error_repairs))
         self.yaml_response_attempts = max(1, yaml_response_attempts)
         self.max_observation_chars = max(1_000, max_observation_chars)
+        self.executor_format_attempts = min(2, max(1, executor_format_attempts))
+        self.compact_evidence = compact_evidence
         self.state: WorkflowState | None = None
         self._bootstrap_trace: list[dict[str, Any]] = []
         self._bootstrap_status = "idle"
@@ -525,6 +543,7 @@ class ExcytinBenchWorkflow:
                 "event_id": self._bootstrap_event_id,
                 "status": self._bootstrap_status,
                 "ltm_enabled": self.memory_contexts.enabled,
+                "planner_pm_enabled": self.planner_pm_enabled,
                 "actions_issued": 0,
                 "initial_input": self._bootstrap_initial_input,
                 "trace": list(self._bootstrap_trace),
@@ -533,11 +552,13 @@ class ExcytinBenchWorkflow:
         return {
             "workflow": "excytin_bench",
             "ltm_enabled": self.memory_contexts.enabled,
+            "planner_pm_enabled": self.planner_pm_enabled,
             "event_id": state.event.event_id,
             "status": "done" if state.done else "active",
             "actions_issued": state.actions_issued,
             "max_steps": self.max_steps,
             "max_executor_attempts_per_l3": self.max_executor_attempts_per_l3,
+            "executor_format_attempts": self.executor_format_attempts,
             "initial_input": state.initial_input,
             "ttt": state.ttt.to_dict(),
             "executions": [item.to_dict() for item in state.executions],
@@ -557,7 +578,7 @@ class ExcytinBenchWorkflow:
         *,
         investigation_input: Mapping[str, str],
     ) -> TracebackTaskTree:
-        prompt = "下面是此次事件的背景和调查问题，请输出初始化调查所需的 operations。\n" + compact_json(dict(investigation_input))
+        prompt = "下面是此次事件的背景和调查问题。当前任务是初始化 ITT：只返回顶层为 operations 的 YAML，操作仅用 add_goal/add_entity/add_task/select_task，严格遵循系统中的字段协议。执行环境是 MySQL。不要返回 SQL、KQL、调查解释或最终答案。\n" + compact_json(dict(investigation_input))
         parsed = self._call_yaml_role(
             "planner",
             planner_prompt(PLANNER_SYSTEM_PROMPT, planner_context),
@@ -581,9 +602,9 @@ class ExcytinBenchWorkflow:
         planner_context: Mapping[str, Any],
     ) -> TracebackTaskTree:
         state = self._require_state()
-        prompt = yaml.safe_dump(dict(task_input(state.event),
+        prompt = dump_evidence_prompt(dict(task_input(state.event),
             itt=itt_payload(current_ttt, state.executions, planner_view=True),
-            review={"can_answer": "no"}), allow_unicode=True, sort_keys=False)
+            review={"can_answer": "no"}), compact=self.compact_evidence)
         next_round = current_ttt.round_id + 1
         def validate(value):
             tree = apply_planner_operations(value, state.event.event_id, next_round,
@@ -616,15 +637,40 @@ class ExcytinBenchWorkflow:
         payload = task_payload(node)
         if recovery is not None:
             payload["objective"] += "\n本次查询修复信息（只修复 SQL，保持原任务目标）：\n" + compact_json(recovery)
-        # One generation per SQL attempt. Format/local validation errors fail
-        # immediately; only actual database errors enter the repair path.
-        response = self._call_role_llm(SQL_EXECUTOR_SYSTEM_PROMPT, compact_json(payload))
-        parsed = self._parse_response(response)
+        # Serialization and local syntax repairs share this bounded budget.
+        # No rejected query is executed. Safety violations still fail fast.
+        original_objective = payload["objective"]
+        for attempt in range(1, self.executor_format_attempts + 1):
+            response = self._call_role_llm(SQL_EXECUTOR_SYSTEM_PROMPT, compact_json(payload))
+            error = None
+            event_type = "role_yaml_invalid"
+            try:
+                parsed = self._parse_response(response)
+                if not isinstance(parsed.get("sql"), str) or not parsed["sql"].strip():
+                    raise ValueError("Return YAML with a nonempty sql string containing one MySQL query")
+            except Exception as exc:
+                error = exc
+            if error is None:
+                try:
+                    sql = ReadOnlySQLValidator.validate(parsed["sql"])
+                except SQLSyntaxError as exc:
+                    error = exc
+                    event_type = "executor_sql_invalid"
+                # Other validation errors (writes, multiple statements, etc.)
+                # propagate immediately instead of asking the model to retry.
+            if error is None:
+                break
+            self._record_trace(event_type, {"role": "executor", "attempt": attempt,
+                "error": f"{type(error).__name__}: {error}", "raw_response": response[:10_000]})
+            if attempt == self.executor_format_attempts:
+                raise error
+            payload["objective"] = original_objective + "\n输出格式修正：只返回 sql 字段的 YAML，值是一条 MySQL 只读查询，不是 KQL 或说明。上一响应解析错误：" + str(error)
+            if isinstance(error, SQLSyntaxError):
+                payload["objective"] += "\n本地解析失败的 SQL：" + parsed["sql"] + "\n保持查询目标，简化为当前解析器可读的 MySQL。若 JSON_TABLE 不兼容，可先查询筛选后的原始 JSON 列供 Reviewer 解析，保留标识和时间。"
         self._record_trace("role_yaml_parsed", {
-            "role": "executor", "attempt": 1, "response_type": parsed.get("response_type"),
+            "role": "executor", "attempt": attempt, "response_type": parsed.get("response_type"),
         })
-        sql = str(parsed.get("sql") or "").strip()
-        return ReadOnlySQLValidator.validate(sql)
+        return sql
 
     def _review(self, execution: BenchmarkExecution) -> dict[str, Any]:
         state = self._require_state()
@@ -671,10 +717,10 @@ class ExcytinBenchWorkflow:
 
     def _verify_progress(self, review):
         state = self._require_state()
-        prompt = yaml.safe_dump({
+        prompt = dump_evidence_prompt({
             **task_input(state.event),
             "itt": itt_payload(state.ttt, state.executions, planner_view=True),
-        }, allow_unicode=True, sort_keys=False)
+        }, compact=self.compact_evidence)
         verdict = self._call_yaml_role("verifier", VERIFIER_SYSTEM_PROMPT, prompt,
                                       validator=validate_verification)
         verdict = validate_verification(verdict)
@@ -683,13 +729,15 @@ class ExcytinBenchWorkflow:
         return verdict
 
     def _log_retrieval(self, role: str, context: Mapping[str, Any]) -> None:
-        if self.state is None or not self.memory_contexts.enabled:
+        if self.state is None or not (self.memory_contexts.enabled or context.get("enabled")):
             return
         semantic = context.get("semantic_memory") or {}
         procedural = context.get("procedural_memory") or {}
         episodic = context.get("episodic_memory") or {}
         item = {
             "role": role,
+            "procedure_cards": context.get("procedure_cards", []),
+            "card_retrieval": context.get("card_retrieval"),
             "allowed_memory_types": list(context.get("allowed_memory_types") or []),
             "table_ids": [
                 table.get("table_id") for table in semantic.get("tables", [])
@@ -736,6 +784,7 @@ class ExcytinBenchWorkflow:
         prompt = user_prompt
         for attempt in range(1, self.yaml_response_attempts + 1):
             response_text = self._call_role_llm(system_prompt, prompt)
+            parsed = None
             try:
                 parsed = parse_planner_response(response_text) if role == "planner" else self._parse_response(response_text)
                 if validator is not None:
@@ -751,14 +800,28 @@ class ExcytinBenchWorkflow:
                         "raw_response": response_text[:10_000],
                     },
                 )
+                detail = ""
+                if role == "reviewer" and isinstance(parsed, dict) and isinstance(parsed.get("summary"), str):
+                    detail = (f"上次 summary 实际为 {len(parsed['summary'])} 字符。请只用一小句、100 字符以内概括结果，"
+                              "不要重复实体值。完整保留有效 facts 及 limitations；英文也按字符而非单词计数。")
                 prompt = "\n".join(
                     [
                         user_prompt,
                         "上一次输出未通过校验。请根据错误修正字段、长度或 YAML 格式，不要使用额外说明。",
                         f"解析错误：{type(exc).__name__}: {exc}",
+                        detail,
+                        ({
+                            "verifier": '必须含顶层 can_answer。证据充分时输出 can_answer: "yes" 与 answer: "依据证据的答案"；不足时只输出 can_answer: "no"。此处是格式说明，不代表证据充分。不要用 malicious_url 等自创字段替代 can_answer。',
+                            "reviewer": "必须输出 summary（字符串）、facts（字段字典列表）、limitations（字符串列表）；facts 内每个字段只能是字符串、数字、布尔或 null，禁止数组或对象。元数据查询按实际 TABLE_NAME/COLUMN_NAME 行保留，不聚合成列名数组。只总结本次真实结果，不自行写 source。",
+                            "planner": "顶层必须是 operations 列表；每项必须用 op 字段指定 add_goal/add_entity/add_task/select_task，字段遵循系统示例，不能把操作名作为映射键。",
+                        }.get(role, "")),
                     ]
                 )
                 continue
+            if role == "planner" and response_text.strip().startswith("```"):
+                self._record_trace("role_transport_normalized", {
+                    "role": role, "attempt": attempt, "normalization": "single_whole_message_yaml_fence",
+                })
             self._record_trace(
                 "role_yaml_parsed",
                 {

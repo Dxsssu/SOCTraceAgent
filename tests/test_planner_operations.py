@@ -12,6 +12,23 @@ from src.memory.working_memory import TTTStore
 from src.schema import Event, EventStatus, RoundReview
 from src.schema.itt import itt_payload
 from src.schema.planner_operations import apply_planner_operations, parse_planner_response
+
+
+def test_single_transport_fence_keeps_strict_operation_validation():
+    assert parse_planner_response('```yaml\noperations: []\n```') == {"operations": []}
+    for text in ('Explanation\n```yaml\noperations: []\n```',
+                 '```yaml\noperations: []\n```\nTrailing explanation',
+                 '```yaml\noperations: []\n```\n```yaml\noperations: []\n```',
+                 '```yaml\noperations: []\nanswer: invented\n```'):
+        with pytest.raises((ValueError, yaml.YAMLError)):
+            parse_planner_response(text)
+
+
+def test_operation_field_error_identifies_actual_missing_and_unexpected_fields():
+    with pytest.raises(ValueError) as error:
+        parse_planner_response('operations:\n- {op: add_task, id: T2, parent: E1, objective: query, execution_code: SELECT 1}')
+    assert "missing fields ['entity_id']" in str(error.value)
+    assert "unexpected fields ['execution_code', 'id', 'parent']" in str(error.value)
 from src.schema.ttt import TTTNodeStatus as S
 from src.schema.ttt_updates import change_node, next_task, walk
 from src.workflow.context import MemoryContextService
@@ -174,7 +191,7 @@ def test_background_workflow_initial_and_replan_use_operations(tmp_path):
 def test_sql_verifier_cannot_be_bypassed_by_empty_operations():
     def model(system, user):
         if "系统中的 Planner" in system:
-            return yaml.safe_dump(initial()) if "operations。" in user else "operations: []"
+            return yaml.safe_dump(initial()) if user.startswith("下面是此次事件的背景和调查问题") else "operations: []"
         if "SQL 查询生成器" in system:
             return "sql: SELECT 1"
         if "你是 Reviewer" in system:

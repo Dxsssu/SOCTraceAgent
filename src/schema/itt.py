@@ -200,6 +200,11 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
 def planner_prompt(system_prompt: str, memory: dict) -> str:
     if memory.get("enabled") is False:
         return system_prompt
+    if "procedure_cards" in memory:
+        cards = memory["procedure_cards"]
+        if not cards:
+            return system_prompt
+        return system_prompt + "\n\n# 可参考的调查过程\n" + json.dumps(cards, ensure_ascii=False, separators=(",", ":")) + "\n执行环境是 MySQL，数据表从安全日志导入，不是 KQL/Advanced Hunting。每个当前查询的 objective 应明确写出 MySQL 只读查询。以下过程是方法，不是本案证据。purpose=scope_discovery 表示需要先核对题目对应的事件或告警及其实体；背景有前后多个事件时，不得把前一事件的 IP、账户或主机直接绑定为后一事件的参数，也不能仅凭同名进程回答。purpose=candidate_discovery 仅用于查找候选告警实体，不代表已覆盖问题所需字段；须根据真实字段继续规划，不得把显示名当 UPN。input_type_available 仅表示输入类型已出现，仍须核对实体与目标的对应关系。只为参数确已获得的步骤创建当前查询任务；needs_prior_observation 的步骤须等待真实结果。将当前步骤的精确表字段、必要条件和已有参数写入 T.objective；必须保留 DeviceProcessEvents 等原始表名，不能改写成“进程事件表”等抽象名称，使只收到 id/objective 的 Executor 可以执行。不要复制整个过程，不添加协议之外的字段，不根据记忆填写事实。表字段经过离线核对，当前环境若不支持则安排结构核对。最后只返回 operations YAML，不返回 SQL/KQL 或解释。"
     procedures = memory.get("procedural_memory", {}).get("procedures", [])
     section = json.dumps([{k: p[k] for k in ("id", "name", "purpose", "inputs", "sql_template", "returns") if k in p} for p in procedures[:1]], ensure_ascii=False, separators=(",", ":")) if procedures else ""
     prompt = system_prompt + "\n\n# 适用的 Procedural Memory\n" + section

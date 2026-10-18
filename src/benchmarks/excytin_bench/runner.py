@@ -335,7 +335,7 @@ class ExcytinBenchmarkRunner:
                 )
         return run_dir, calculate_metrics(results, expected_total=len(cases))
 
-    def run_case(self, case: BenchmarkCase, *, case_dir: Path) -> dict[str, Any]:
+    def run_case(self, case: BenchmarkCase, *, case_dir: Path, split: str = "test") -> dict[str, Any]:
         started_at = _utc_now()
         started = time.perf_counter()
         workflow = self.workflow_factory(self.max_steps)
@@ -347,7 +347,7 @@ class ExcytinBenchmarkRunner:
         case_path = case_dir / f"{case.case_id}.json"
         base_record: dict[str, Any] = {
             **case.manifest_view(),
-            "split": "test",
+            "split": split,
             "started_at": started_at,
             "status": "running",
             "process": process,
@@ -363,7 +363,7 @@ class ExcytinBenchmarkRunner:
                 runtime_info={
                     "attack": case.incident,
                     "qid": case.qid,
-                    "split": "test",
+                    "split": split,
                 },
             )
             executor = self.executor_factory(case.incident)
@@ -436,7 +436,7 @@ class ExcytinBenchmarkRunner:
         finished_at = _utc_now()
         result = {
             **case.manifest_view(),
-            "split": "test",
+            "split": split,
             "status": status,
             "error": error,
             "started_at": started_at,

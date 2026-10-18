@@ -441,6 +441,17 @@ def test_literal_handling_does_not_allow_real_side_effects(sql: str) -> None:
         ReadOnlySQLValidator.validate(sql)
 
 
+def test_replace_string_function_is_read_only_but_replace_statements_are_not():
+    sql = "SELECT REPLACE(UserPrincipalName, ' ', '') FROM SigninLogs"
+    assert ReadOnlySQLValidator.validate(sql) == sql + ';'
+    for unsafe in ("REPLACE INTO SigninLogs (UserId) VALUES ('x')",
+                   "EXPLAIN REPLACE INTO SigninLogs (UserId) VALUES ('x')",
+                   "SELECT 1; REPLACE INTO SigninLogs (UserId) VALUES ('x')",
+                   "SELECT REPLACE(LOAD_FILE('/tmp/x'), 'a', 'b')"):
+        with pytest.raises(ValueError):
+            ReadOnlySQLValidator.validate(unsafe)
+
+
 def test_benchmark_planner_documented_initial_contract_is_executable():
     import yaml
     from src.agent.planner import PLANNER_SYSTEM_PROMPT
@@ -634,3 +645,40 @@ def test_executor_format_and_local_validation_errors_do_not_retry(response):
     assert len(calls) == 1
     assert workflow.state.actions_issued == 0
     assert workflow.state.executions == []
+
+
+def test_optional_local_sql_syntax_repair_does_not_execute_rejected_query():
+    from src.workflow.context import MemoryContextService
+    import json
+    calls = []
+    def llm(system, user):
+        if '系统中的 Planner' in system:
+            return INITIAL_OPERATIONS
+        calls.append(json.loads(user))
+        return 'sql: "SELECT (1"' if len(calls) == 1 else 'sql: SELECT 1'
+    workflow = ExcytinBenchWorkflow(llm=llm, executor_format_attempts=2,
+                                   memory_contexts=MemoryContextService(enabled=False))
+    action = workflow.act('Investigate the alert')
+    assert action.content == 'SELECT 1;'
+    assert len(calls) == 2
+    assert all(set(p) == {'id', 'objective'} for p in calls)
+    assert 'SELECT (1' in calls[1]['objective']
+    assert workflow.state.actions_issued == 1
+    assert workflow.state.executions == []
+    assert any(t['event_type'] == 'executor_sql_invalid' for t in workflow.state.trace)
+
+
+def test_unsafe_sql_is_not_retried_even_with_optional_syntax_repair():
+    from src.workflow.context import MemoryContextService
+    calls = []
+    def llm(system, user):
+        if '系统中的 Planner' in system:
+            return INITIAL_OPERATIONS
+        calls.append(user)
+        return 'sql: DELETE FROM SecurityAlert'
+    workflow = ExcytinBenchWorkflow(llm=llm, executor_format_attempts=2,
+                                   memory_contexts=MemoryContextService(enabled=False))
+    with pytest.raises(ValueError):
+        workflow.act('Investigate the alert')
+    assert len(calls) == 1
+    assert workflow.state.actions_issued == 0

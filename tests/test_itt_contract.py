@@ -91,7 +91,8 @@ def test_runtime_metadata_excluded_from_every_model_call():
             return "[]"
         if "中的 Planner" in system:
             instruction, content = prompt.split("\n", 1)
-            assert instruction == "下面是此次事件的背景和调查问题，请输出初始化调查所需的 operations。"
+            assert instruction.startswith("下面是此次事件的背景和调查问题")
+            assert "operations" in instruction and "MySQL" in instruction
             assert json.loads(content) == {"context": "Alert A", "question": "Locate device"}
             return yaml.safe_dump(initial_operations(plan()))
         if "你是 SQL 查询生成器" in system: return "sql: SELECT 1"
@@ -110,6 +111,23 @@ def test_yaml_list_parser_rejects_wrappers():
     assert parse_itt_response(yaml.safe_dump(plan())) == plan()
     with pytest.raises(ValueError):
         parse_itt_response("ttt: []")
+
+
+def test_reviewer_retry_reports_character_count_and_preserves_evidence():
+    from src.schema.reviewer_output import parse_review
+    from src.agent.reviewer import REVIEWER_SYSTEM_PROMPT
+    prompts = []
+    facts = [{"ProcessId": "0042", "DeviceName": "host"}]
+    def llm(system, prompt):
+        prompts.append(prompt)
+        return yaml.safe_dump({"summary": "x" * 300 if len(prompts) == 1 else "One process record.",
+                               "facts": facts, "limitations": []})
+    workflow = ExcytinBenchWorkflow(llm=llm, memory_contexts=MemoryContextService(enabled=False))
+    result = workflow._call_yaml_role("reviewer", REVIEWER_SYSTEM_PROMPT, "original observation", validator=parse_review)
+    assert len(prompts) == 2
+    assert "300 字符" in prompts[1]
+    assert "original observation" in prompts[1]
+    assert result["facts"] == facts
 
 
 PM_REFS = [{"table": "DeviceProcessEvents", "fields": ["DeviceName", "ProcessCommandLine"]}]

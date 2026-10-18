@@ -16,14 +16,20 @@ def parse_review(value):
     facts = value["facts"]
     if not isinstance(facts, list):
         raise ValueError("facts must be a list of record objects")
-    for fact in facts:
+    for index, fact in enumerate(facts):
         if not isinstance(fact, dict) or not fact:
             raise ValueError("Each fact must be a nonempty record object")
         for key, item in fact.items():
             if not isinstance(key, str) or not key.strip():
                 raise ValueError("Fact fields must be nonempty strings")
             if item is not None and type(item) not in (str, int, float, bool):
-                raise ValueError("Fact values must be JSON scalars; quote identifiers and timestamps")
+                raise ValueError(
+                    f"facts[{index}][{key!r}] has type {type(item).__name__}; "
+                    "Fact values must be JSON scalars (string, number, boolean or null), not lists/maps. "
+                    "For schema results keep one TABLE_NAME/COLUMN_NAME record per observed row; "
+                    "for an observed JSON cell preserve its JSON text as a quoted string. "
+                    "Quote identifiers and timestamps; do not drop evidence to satisfy the format."
+                )
             if isinstance(item, float) and not math.isfinite(item):
                 raise ValueError("Fact numbers must be finite")
     limitations = value["limitations"]

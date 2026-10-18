@@ -1,0 +1,2562 @@
+# Five-field cards; indexes and provenance remain outside model-facing content.
+- id: url_to_message
+  requires:
+  - url
+  produces:
+  - message_id
+  intents:
+  - email
+  - mail
+  - sender
+  - recipient
+  - 邮件
+  - 发件
+  - 收件
+  source_rule:
+    table: EmailUrlInfo
+    filters:
+    - Url
+    projection_any:
+    - NetworkMessageId
+  dependencies:
+    EmailUrlInfo:
+    - Url
+    - NetworkMessageId
+  card:
+    name: 根据邮件内 URL 获取邮件标识
+    inputs:
+    - 已知 URL
+    steps:
+    - 在 EmailUrlInfo 按 Url 精确匹配，返回 NetworkMessageId 和 Url。
+    outputs:
+    - 邮件标识 NetworkMessageId
+    constraints:
+    - 一个 URL 可对应多封邮件，保留所有候选及关联；不证明发生点击。
+- id: message_to_sender
+  requires:
+  - message_id
+  produces:
+  - sender
+  intents:
+  - sender
+  - sent from
+  - sending ip
+  - 发件
+  - 发送者
+  - 发送 IP
+  source_rule:
+    table: EmailEvents
+    filters:
+    - NetworkMessageId
+    projection_any:
+    - SenderDisplayName
+    - SenderFromAddress
+    - SenderMailFromAddress
+    - SenderIPv4
+    - SenderIPv6
+  dependencies:
+    EmailEvents:
+    - NetworkMessageId
+    - SenderDisplayName
+    - SenderFromAddress
+    - SenderMailFromAddress
+    - SenderIPv4
+    - SenderIPv6
+  card:
+    name: 根据邮件标识查询发送信息
+    inputs:
+    - 已确认 NetworkMessageId
+    - 所需信息是发件人身份还是发送 IP
+    steps:
+    - 在 EmailEvents 按 NetworkMessageId 查询；身份取 SenderDisplayName、SenderFromAddress、SenderMailFromAddress，发送 IP 取 SenderIPv4、SenderIPv6；返回邮件标识以保留关联。
+    outputs:
+    - 发件人显示名和地址或发送 IP
+    constraints:
+    - 不同发件字段不得混同；不能据此确认真实操作者；保留多候选和空值。
+- id: message_to_recipient
+  requires:
+  - message_id
+  produces:
+  - recipient
+  intents:
+  - recipient
+  - received
+  - receiver
+  - 收件
+  - 接收邮件
+  source_rule:
+    table: EmailEvents
+    filters:
+    - NetworkMessageId
+    projection_any:
+    - RecipientEmailAddress
+  dependencies:
+    EmailEvents:
+    - NetworkMessageId
+    - RecipientEmailAddress
+  card:
+    name: 根据邮件标识查询收件人
+    inputs:
+    - 已确认 NetworkMessageId
+    steps:
+    - 在 EmailEvents 按 NetworkMessageId 查询 NetworkMessageId、RecipientEmailAddress，保留每封邮件对应的各收件人。
+    outputs:
+    - 收件人地址
+    constraints:
+    - 收件人不等于点击者；多个收件人不得压成一个人。
+- id: message_to_url
+  requires:
+  - message_id
+  produces:
+  - url
+  intents:
+  - url
+  - link
+  - website
+  - 网址
+  - 链接
+  source_rule:
+    table: EmailUrlInfo
+    filters:
+    - NetworkMessageId
+    projection_any:
+    - Url
+  dependencies:
+    EmailUrlInfo:
+    - NetworkMessageId
+    - Url
+  card:
+    name: 根据邮件标识查询邮件内 URL
+    inputs:
+    - 已确认 NetworkMessageId
+    steps:
+    - 在 EmailUrlInfo 按 NetworkMessageId 查询 NetworkMessageId、Url。
+    outputs:
+    - 该邮件包含的 URL
+    constraints:
+    - 保留多条链接；邮件包含 URL 不证明恶意性或点击行为。
+- id: delivery_to_message
+  requires:
+  - delivery_action
+  produces:
+  - message_id
+  intents:
+  - quarantine
+  - zap
+  - removed
+  - delivery
+  - 隔离
+  - 移除
+  - 投递
+  source_rule:
+    table: EmailPostDeliveryEvents
+    filters:
+    - Action
+    projection_any:
+    - NetworkMessageId
+  dependencies:
+    EmailPostDeliveryEvents:
+    - Action
+    - NetworkMessageId
+    - InternetMessageId
+    - RecipientEmailAddress
+    - ThreatTypes
+  card:
+    name: 从投递后处理记录定位候选邮件
+    inputs:
+    - 目标处理动作及已知邮件范围
+    steps:
+    - 在 EmailPostDeliveryEvents 按 Action 检索目标动作，返回 NetworkMessageId、InternetMessageId、Action、RecipientEmailAddress、ThreatTypes；核对实际动作后选择相关候选，并保留日志记录的威胁分类。
+    outputs:
+    - 候选邮件标识、实际处理动作及邮件威胁分类
+    constraints:
+    - ZAP、remove、quarantine 不无条件等价；缺乏案件范围时只能返回候选，不能任选第一条；ThreatTypes 是邮件检测分类，不等于独立验证其中每个 URL 恶意。
+- id: url_to_click
+  requires:
+  - url
+  produces:
+  - click
+  - account_upn
+  intents:
+  - clicked
+  - click
+  - clicked on
+  - 点击
+  - 点击者
+  source_rule:
+    table: UrlClickEvents
+    filters:
+    - Url
+    projection_any:
+    - AccountUpn
+    - IPAddress
+    - Timestamp
+  dependencies:
+    UrlClickEvents:
+    - Url
+    - AccountUpn
+    - IPAddress
+    - Timestamp
+    - ActionType
+    - IsClickedThrough
+  card:
+    name: 根据 URL 查找点击相关事件
+    inputs:
+    - 已知 URL
+    steps:
+    - 在 UrlClickEvents 按 Url 查询 AccountUpn、IPAddress、Timestamp、ActionType、IsClickedThrough，结合实际动作解释是否点击或被阻止。
+    outputs:
+    - 点击相关账户、IP、时间和动作
+    constraints:
+    - 不把所有事件都解释为成功访问；IP 不能无条件当作设备唯一标识。
+- id: ip_to_signin
+  requires:
+  - ip
+  produces:
+  - account
+  - account_upn
+  - user_id
+  - application
+  intents:
+  - sign-in
+  - signin
+  - login
+  - aad user
+  - user id
+  - application
+  - 登录
+  - 用户标识
+  - 应用
+  source_rule:
+    table: SigninLogs
+    filters:
+    - IPAddress
+    projection_any:
+    - UserId
+    - UserPrincipalName
+    - UserDisplayName
+    - AppId
+    - AppDisplayName
+  dependencies:
+    SigninLogs:
+    - IPAddress
+    - UserId
+    - UserPrincipalName
+    - UserDisplayName
+    - AppId
+    - AppDisplayName
+    - TimeGenerated
+  card:
+    name: 根据来源 IP 查询登录账户与应用
+    inputs:
+    - 已知来源 IP 及可用时间范围
+    steps:
+    - 在 SigninLogs 按 IPAddress 查询 UserId、UserPrincipalName、UserDisplayName、AppId、AppDisplayName、TimeGenerated，按当前目标选择输出。
+    outputs:
+    - 候选登录账户或应用及登录时间
+    constraints:
+    - 同一 IP 可对应多个账户；缺乏消歧证据不能任取一条；不根据地址本身认定恶意。
+- id: file_to_command
+  requires:
+  - filename
+  produces:
+  - command
+  - process
+  intents:
+  - command line
+  - commandline
+  - executed
+  - process command
+  - 命令行
+  - 执行命令
+  source_rule:
+    table: DeviceProcessEvents
+    filters:
+    - FileName
+    projection_any:
+    - ProcessCommandLine
+  dependencies:
+    DeviceProcessEvents:
+    - FileName
+    - ProcessCommandLine
+    - DeviceName
+    - ProcessId
+    - ProcessCreationTime
+    - InitiatingProcessCommandLine
+    - InitiatingProcessId
+  card:
+    name: 根据可执行文件名查询进程命令行
+    inputs:
+    - 目标可执行文件名
+    steps:
+    - 在 DeviceProcessEvents 按 FileName 查询 ProcessCommandLine、DeviceName、ProcessId、ProcessCreationTime，同时保留 InitiatingProcessCommandLine、InitiatingProcessId 以区分目标进程和启动它的父进程。
+    outputs:
+    - 候选目标进程和发起进程各自的命令行及身份
+    constraints:
+    - FileName 是可执行文件名；脚本参数不能直接当 FileName；目标进程与发起进程命令行不同；问题未明确区分时保留两者并标注角色，不能截去参数、重定向或启动包装命令。
+- id: keyword_to_alert
+  requires:
+  - alert_topic
+  produces:
+  - alert_id
+  intents:
+  - alert
+  - detected
+  - incident
+  - 告警
+  - 检测
+  source_rule:
+    table: AlertInfo
+    filters:
+    - Title
+    projection_any:
+    - AlertId
+  dependencies:
+    AlertInfo:
+    - Title
+    - Category
+    - AlertId
+    - Timestamp
+  card:
+    name: 根据告警主题检索候选告警
+    inputs:
+    - 当前目标相关的告警主题
+    steps:
+    - 在 AlertInfo 按 Title 检索主题关键词，必要时结合 Category，返回 AlertId、Title、Category、Timestamp。
+    outputs:
+    - 候选 AlertId 及标题时间
+    constraints:
+    - 关键词命中仅表示候选，需结合当前背景筛选；不能据此确认攻击归属或因果。
+- id: alert_to_evidence
+  requires:
+  - alert_id
+  produces:
+  - alert_entity
+  intents:
+  - associated
+  - related
+  - account
+  - host
+  - process
+  - file
+  - ip address
+  - url
+  - 关联
+  - 账户
+  - 主机
+  - 进程
+  - 文件
+  - 地址
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - AlertId
+    projection_any:
+    - AccountName
+    - DeviceName
+    - FileName
+    - RemoteIP
+    - RemoteUrl
+    - ProcessCommandLine
+    - AccountSid
+  dependencies:
+    AlertEvidence:
+    - AlertId
+    - EntityType
+    - EvidenceRole
+    - EvidenceDirection
+    - DeviceName
+    - FileName
+    - ProcessCommandLine
+    - AccountName
+    - AccountSid
+    - RemoteIP
+    - RemoteUrl
+  card:
+    name: 根据告警标识获取关联实体证据
+    inputs:
+    - 当前调查已确认的 AlertId
+    - 所需实体类型
+    steps:
+    - 在 AlertEvidence 按 AlertId 查询，保留 AlertId、EntityType、EvidenceRole、EvidenceDirection；按目标返回 DeviceName、FileName、ProcessCommandLine、AccountName、AccountSid、RemoteIP 或 RemoteUrl。
+    outputs:
+    - 带实体类型与角色的告警关联证据
+    constraints:
+    - 同告警包含多类实体，字段必须保留记录关联；关联实体不自动等于攻击发起者。
+- id: account_to_signin
+  requires:
+  - account_upn
+  produces:
+  - signin_ip
+  intents:
+  - sign-in
+  - signin
+  - login
+  - accessed
+  - ip address
+  - 登录
+  - 访问 IP
+  source_rule:
+    table: SigninLogs
+    filters:
+    - UserPrincipalName
+    projection_any:
+    - IPAddress
+  dependencies:
+    SigninLogs:
+    - UserPrincipalName
+    - IPAddress
+    - TimeGenerated
+    - AppDisplayName
+  card:
+    name: 根据账户查询登录来源
+    inputs:
+    - 已确认账户 UPN 及已知时间范围
+    steps:
+    - 在 SigninLogs 按 UserPrincipalName 精确匹配，并应用已有时间范围，返回 IPAddress、TimeGenerated、UserPrincipalName、AppDisplayName。
+    outputs:
+    - 账户登录来源 IP 与时间
+    constraints:
+    - 显示名不是 UPN；多次登录应保留，不自动选择最早或最近一次作为攻击来源。
+- id: sender_to_mail
+  requires:
+  - email_address
+  produces:
+  - message_id
+  - sender
+  intents:
+  - sender
+  - sent
+  - sending
+  - 发件
+  - 发送
+  source_rule:
+    table: EmailEvents
+    filters:
+    - SenderFromAddress
+    projection_any:
+    - NetworkMessageId
+    - SenderIPv4
+    - RecipientEmailAddress
+  dependencies:
+    EmailEvents:
+    - SenderFromAddress
+    - NetworkMessageId
+    - RecipientEmailAddress
+    - SenderIPv4
+    - SenderIPv6
+    - Timestamp
+  card:
+    name: 根据发件地址定位邮件和发送 IP
+    inputs:
+    - 已确认为发件地址的邮箱
+    steps:
+    - 在 EmailEvents 按 SenderFromAddress 精确匹配，返回 NetworkMessageId、SenderFromAddress、RecipientEmailAddress、SenderIPv4、SenderIPv6、Timestamp，并按已有时间范围筛选。
+    outputs:
+    - 发出的邮件标识和发送 IP
+    constraints:
+    - 邮箱在背景出现不代表它是发件人；地址角色未确认时仅作探索候选。
+- id: recipient_to_mail
+  requires:
+  - email_address
+  produces:
+  - message_id
+  - recipient
+  intents:
+  - recipient
+  - received
+  - mailbox
+  - 收件
+  - 邮箱
+  source_rule:
+    table: EmailEvents
+    filters:
+    - RecipientEmailAddress
+    projection_any:
+    - NetworkMessageId
+    - SenderFromAddress
+  dependencies:
+    EmailEvents:
+    - RecipientEmailAddress
+    - NetworkMessageId
+    - SenderFromAddress
+    - Subject
+    - Timestamp
+  card:
+    name: 根据收件邮箱定位收到的邮件
+    inputs:
+    - 已确认为收件人的邮箱及已知范围
+    steps:
+    - 在 EmailEvents 按 RecipientEmailAddress 查询 NetworkMessageId、SenderFromAddress、Subject、Timestamp；使用已有时间或主题条件缩小范围。
+    outputs:
+    - 收到的候选邮件及邮件标识
+    constraints:
+    - 不能把任意背景邮箱当成收件人；查询返回的是候选邮件，仍需当前案件关联。
+- id: remote_ip_to_network
+  requires:
+  - remote_ip
+  produces:
+  - network
+  - command
+  - url
+  intents:
+  - connection
+  - network
+  - remote
+  - process
+  - domain
+  - network url
+  - 网络
+  - 外连
+  - 远端
+  source_rule:
+    table: DeviceNetworkEvents
+    filters:
+    - RemoteIP
+    projection_any:
+    - RemoteUrl
+    - InitiatingProcessCommandLine
+    - InitiatingProcessFileName
+  dependencies:
+    DeviceNetworkEvents:
+    - RemoteIP
+    - RemoteUrl
+    - DeviceName
+    - LocalIP
+    - Timestamp
+    - InitiatingProcessId
+    - InitiatingProcessFileName
+    - InitiatingProcessCommandLine
+  card:
+    name: 根据远端 IP 反查网络活动及发起进程
+    inputs:
+    - 已知远端 IP
+    steps:
+    - 在 DeviceNetworkEvents 按 RemoteIP 查询 RemoteUrl、DeviceName、LocalIP、Timestamp、InitiatingProcessId、InitiatingProcessFileName、InitiatingProcessCommandLine，按问题选择字段。
+    outputs:
+    - 远端 URL 或连接的发起进程信息
+    constraints:
+    - LocalIP 与 RemoteIP 不能互换；网络事件的发起进程字段不等于任意目标进程字段。
+- id: command_fragment_to_process
+  requires:
+  - command_fragment
+  produces:
+  - command
+  - process
+  - device
+  intents:
+  - command
+  - script
+  - process
+  - host
+  - 命令
+  - 脚本
+  - 进程
+  - 主机
+  source_rule:
+    table: DeviceProcessEvents
+    filters:
+    - ProcessCommandLine
+    projection_any:
+    - DeviceName
+    - ProcessCommandLine
+  dependencies:
+    DeviceProcessEvents:
+    - ProcessCommandLine
+    - DeviceName
+    - FileName
+    - ProcessId
+    - ProcessCreationTime
+  card:
+    name: 根据命令片段或脚本名定位执行进程
+    inputs:
+    - 已知命令片段或脚本文件名
+    steps:
+    - 在 DeviceProcessEvents 的 ProcessCommandLine 中匹配已知片段，返回 DeviceName、FileName、ProcessId、ProcessCreationTime、ProcessCommandLine，核对完整命令。
+    outputs:
+    - 执行脚本或命令的进程与主机
+    constraints:
+    - 脚本通常位于解释器命令参数中，不应直接要求 FileName 等于脚本名；模糊匹配结果仅为候选。
+- id: file_to_device
+  requires:
+  - file_artifact
+  produces:
+  - device
+  intents:
+  - host
+  - device
+  - computer
+  - file
+  - 主机
+  - 设备
+  - 文件
+  source_rule:
+    table: DeviceFileEvents
+    filters:
+    - FileName
+    projection_any:
+    - DeviceId
+    - DeviceName
+  dependencies:
+    DeviceFileEvents:
+    - FileName
+    - DeviceId
+    - DeviceName
+    - FolderPath
+    - Timestamp
+    - ActionType
+  card:
+    name: 根据文件名定位相关设备事件
+    inputs:
+    - 已知文件名及可用路径或时间范围
+    steps:
+    - 在 DeviceFileEvents 按 FileName 查询 DeviceId、DeviceName、FolderPath、Timestamp、ActionType，并使用已有范围消歧。
+    outputs:
+    - 涉及该文件的候选设备和文件活动
+    constraints:
+    - 文件事件不等于执行事件；同名文件可能出现在多个设备，不自动认定攻击设备。
+- id: account_to_click
+  requires:
+  - account_upn
+  produces:
+  - click
+  - url
+  intents:
+  - click
+  - clicked
+  - url
+  - link
+  - 点击
+  - 链接
+  source_rule:
+    table: UrlClickEvents
+    filters:
+    - AccountUpn
+    projection_any:
+    - Url
+    - IPAddress
+    - ReportId
+  dependencies:
+    UrlClickEvents:
+    - AccountUpn
+    - Url
+    - IPAddress
+    - Timestamp
+    - ActionType
+    - IsClickedThrough
+  card:
+    name: 根据账户查找点击相关 URL
+    inputs:
+    - 已确认账户 UPN 及可用时间范围
+    steps:
+    - 在 UrlClickEvents 按 AccountUpn 查询 Url、IPAddress、Timestamp、ActionType、IsClickedThrough，并使用已有时间范围。
+    outputs:
+    - 账户的点击相关 URL 和事件时间
+    constraints:
+    - 核对动作，不能把被阻止的事件解释为成功访问；当前仅有单个训练事件支持。
+- id: topic_to_security_alert
+  requires:
+  - alert_topic
+  produces:
+  - alert_entity
+  intents:
+  - alert
+  - detected
+  - incident
+  - 告警
+  - 检测
+  - 关联
+  source_rule:
+    table: SecurityAlert
+    filters:
+    - AlertName
+    projection_any:
+    - Entities
+    - SystemAlertId
+  dependencies:
+    SecurityAlert:
+    - SystemAlertId
+    - AlertName
+    - Description
+    - Entities
+    - TimeGenerated
+    - CompromisedEntity
+  card:
+    name: 从安全告警内容提取相关实体
+    inputs:
+    - 明确的告警主题及已知案件范围
+    steps:
+    - 在 SecurityAlert 按 AlertName 或 Description 检索相关主题，返回 SystemAlertId、AlertName、TimeGenerated、Entities、CompromisedEntity；解析 Entities 时保留每个对象的 Type 与原始字段关联。 对进程身份问题，提取每个匹配对象的 ProcessId、CreationTimeUtc 与 ParentProcess 关系，解析 $id/$ref，分别标注父子对象；仅保留回答或消歧需要的字段。
+    outputs:
+    - 安全告警中的关联实体
+    constraints:
+    - SystemAlertId 不无条件等于 AlertInfo.AlertId；Entities 同列中的不同对象不能混成同一实体；关键词匹配不证明归属。 多个同名进程均匹配时，不得仅因某个命令含 encodedCommand 就认定它是题目唯一目标；应在任务中要求保留候选及角色，继续关联证据或明确歧义。
+- id: internet_id_to_message
+  requires:
+  - internet_message_id
+  produces:
+  - message_id
+  intents:
+  - email
+  - mail
+  - url
+  - sender
+  - recipient
+  - 邮件
+  - 链接
+  source_rule:
+    table: EmailPostDeliveryEvents
+    filters:
+    - InternetMessageId
+    projection_any:
+    - NetworkMessageId
+  dependencies:
+    EmailPostDeliveryEvents:
+    - InternetMessageId
+    - NetworkMessageId
+  card:
+    name: 将邮件信头标识映射到服务邮件标识
+    inputs:
+    - 已确认 InternetMessageId
+    steps:
+    - 在 EmailPostDeliveryEvents 按 InternetMessageId 精确查询 InternetMessageId、NetworkMessageId。
+    outputs:
+    - NetworkMessageId
+    constraints:
+    - 两个标识语义不同，必须查询映射，不能直接互换；保留全部映射候选。
+- id: filename_to_alert_evidence
+  requires:
+  - filename
+  produces:
+  - alert_id
+  - alert_entity
+  intents:
+  - alert
+  - evidence
+  - account
+  - sid
+  - file
+  - 告警
+  - 证据
+  - 账户
+  - 文件
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - FileName
+    projection_any:
+    - AlertId
+    - AccountSid
+    - AccountObjectId
+  dependencies:
+    AlertEvidence:
+    - FileName
+    - AlertId
+    - EntityType
+    - EvidenceRole
+    - AccountSid
+    - AccountObjectId
+    - Title
+  card:
+    name: 根据可执行文件查找告警证据
+    inputs:
+    - 已知可执行文件名
+    steps:
+    - 在 AlertEvidence 按 FileName 查询 AlertId、Title、EntityType、EvidenceRole、FileName 及问题需要的 AccountSid 或 AccountObjectId，检查实体类型和字段实际取值。
+    outputs:
+    - 该文件相关的候选告警及账户证据
+    constraints:
+    - 文件类型记录中的账户字段可能为空；账户归属需额外关联，不能拿其他记录的账户直接补齐。
+- id: upn_to_sid
+  requires:
+  - account_upn
+  produces:
+  - account_sid
+  intents:
+  - sid
+  - security identifier
+  - SID
+  source_rule:
+    table: IdentityLogonEvents
+    filters:
+    - AccountUpn
+    projection_any:
+    - AccountSid
+  dependencies:
+    IdentityLogonEvents:
+    - AccountUpn
+    - AccountSid
+    - AccountObjectId
+    - DeviceName
+    - Timestamp
+  card:
+    name: 根据账户 UPN 查询 SID
+    inputs:
+    - 已确认账户 UPN
+    steps:
+    - 在 IdentityLogonEvents 按 AccountUpn 精确查询 AccountUpn、AccountSid、AccountObjectId、DeviceName、Timestamp；保留同记录关联。
+    outputs:
+    - 候选账户 SID 及事件范围
+    constraints:
+    - UPN、SID、ObjectId 不能互换；不同域或时间的映射不可无条件合并。
+- id: sid_to_identity
+  requires:
+  - account_sid
+  produces:
+  - account
+  - account_object_id
+  intents:
+  - account
+  - user id
+  - name
+  - 账户
+  source_rule:
+    table: IdentityLogonEvents
+    filters:
+    - AccountSid
+    projection_any:
+    - AccountObjectId
+    - AccountName
+    - AccountSid
+  dependencies:
+    IdentityLogonEvents:
+    - AccountSid
+    - AccountName
+    - AccountObjectId
+    - AccountUpn
+    - DeviceName
+    - Timestamp
+  card:
+    name: 根据 SID 查询账户身份
+    inputs:
+    - 已知 SID
+    steps:
+    - 在 IdentityLogonEvents 按 AccountSid 精确查询 AccountName、AccountObjectId、AccountUpn、DeviceName、Timestamp，并保留 AccountSid。
+    outputs:
+    - 账户名称、对象标识及候选 UPN
+    constraints:
+    - 字段可能为空；成功匹配 SID 不代表显示名或 UPN 必然存在。
+- id: device_id_to_aad
+  requires:
+  - device_id
+  produces:
+  - aad_device_id
+  intents:
+  - aaddeviceid
+  - AAD
+  - 设备标识
+  source_rule:
+    table: DeviceInfo
+    filters:
+    - DeviceId
+    projection_any:
+    - AadDeviceId
+  dependencies:
+    DeviceInfo:
+    - DeviceId
+    - AadDeviceId
+    - DeviceName
+    - Timestamp
+  card:
+    name: 将终端设备标识映射为 AAD 设备标识
+    inputs:
+    - 已确认 DeviceId
+    steps:
+    - 在 DeviceInfo 按 DeviceId 精确查询 DeviceId、AadDeviceId、DeviceName、Timestamp。
+    outputs:
+    - AAD 设备标识
+    constraints:
+    - DeviceId 与 AadDeviceId 语义不同；保留空值、多条历史记录。
+- id: aad_to_device_id
+  requires:
+  - aad_device_id
+  produces:
+  - device_id
+  - device
+  intents:
+  - deviceid
+  - device
+  - host
+  - 设备
+  source_rule:
+    table: DeviceInfo
+    filters:
+    - AadDeviceId
+    projection_any:
+    - DeviceId
+  dependencies:
+    DeviceInfo:
+    - DeviceId
+    - AadDeviceId
+    - DeviceName
+    - Timestamp
+  card:
+    name: 将 AAD 设备标识映射为终端标识
+    inputs:
+    - 已确认 AadDeviceId
+    steps:
+    - 在 DeviceInfo 按 AadDeviceId 精确查询 DeviceId、AadDeviceId、DeviceName、Timestamp。
+    outputs:
+    - 终端设备标识与设备名
+    constraints:
+    - 不能把 GUID 直接当作 DeviceId；映射缺失不等于设备不存在。
+- id: device_name_to_inventory
+  requires:
+  - device_name
+  produces:
+  - device_id
+  - aad_device_id
+  - device
+  intents:
+  - host
+  - device
+  - aaddeviceid
+  - 主机
+  source_rule:
+    table: DeviceInfo
+    filters:
+    - DeviceName
+    projection_any:
+    - DeviceId
+    - AadDeviceId
+  dependencies:
+    DeviceInfo:
+    - DeviceName
+    - DeviceId
+    - AadDeviceId
+    - Timestamp
+    - LoggedOnUsers
+  card:
+    name: 根据设备名查询设备标识
+    inputs:
+    - 已知设备名
+    steps:
+    - 在 DeviceInfo 按 DeviceName 查询 DeviceName、DeviceId、AadDeviceId、Timestamp；仅需登录用户时再取 LoggedOnUsers。
+    outputs:
+    - 候选设备标识及资产记录
+    constraints:
+    - 短主机名和 FQDN 需明确匹配范围；LoggedOnUsers 不证明某账户执行了目标操作。
+- id: ip_to_user_risk
+  requires:
+  - ip
+  produces:
+  - risk
+  intents:
+  - risk
+  - risky
+  - 风险
+  source_rule:
+    table: AADUserRiskEvents
+    filters:
+    - IpAddress
+    projection_any:
+    - RiskEventType
+    - RiskLevel
+    - UserPrincipalName
+  dependencies:
+    AADUserRiskEvents:
+    - IpAddress
+    - RiskEventType
+    - RiskLevel
+    - UserPrincipalName
+    - UserId
+    - ActivityDateTime
+  card:
+    name: 根据 IP 查询账户风险事件
+    inputs:
+    - 已知来源 IP
+    steps:
+    - 在 AADUserRiskEvents 按 IpAddress 查询 RiskEventType、RiskLevel、UserPrincipalName、UserId、ActivityDateTime，并返回 IpAddress。
+    outputs:
+    - 账户风险检测记录
+    constraints:
+    - 风险标签是检测结果，不是攻击归属结论；注意本表 IpAddress 的大小写拼写。
+- id: user_id_to_risk_ip
+  requires:
+  - user_id
+  produces:
+  - risk_ip
+  intents:
+  - risk
+  - ip
+  - 风险
+  source_rule:
+    table: AADUserRiskEvents
+    filters:
+    - UserId
+    projection_any:
+    - IpAddress
+  dependencies:
+    AADUserRiskEvents:
+    - UserId
+    - IpAddress
+    - ActivityDateTime
+    - RiskEventType
+    - RiskLevel
+  card:
+    name: 根据用户对象标识查询风险事件 IP
+    inputs:
+    - 已确认 UserId
+    steps:
+    - 在 AADUserRiskEvents 按 UserId 查询 IpAddress、ActivityDateTime、RiskEventType、RiskLevel，并返回 UserId。
+    outputs:
+    - 风险事件中的来源 IP
+    constraints:
+    - 检测时间与活动时间不同；不能用 UPN 或 SID 直接替代 UserId。
+- id: artifact_to_registry
+  requires:
+  - file_artifact
+  produces:
+  - registry
+  intents:
+  - registry
+  - asep
+  - persistence
+  - 注册表
+  source_rule:
+    table: DeviceRegistryEvents
+    filters:
+    - RegistryValueData
+    projection_any:
+    - RegistryKey
+    - RegistryValueData
+  dependencies:
+    DeviceRegistryEvents:
+    - RegistryKey
+    - RegistryValueName
+    - RegistryValueData
+    - ActionType
+    - DeviceName
+    - Timestamp
+    - InitiatingProcessCommandLine
+  card:
+    name: 根据文件痕迹检索注册表活动
+    inputs:
+    - 已知文件名或路径片段
+    steps:
+    - 在 DeviceRegistryEvents 的 RegistryValueData 中匹配已知文件痕迹，返回 RegistryKey、RegistryValueName、RegistryValueData、ActionType、DeviceName、Timestamp、InitiatingProcessCommandLine。
+    outputs:
+    - 注册表位置、值及发起进程
+    constraints:
+    - 字符串命中仅为候选，需核对路径；注册表记录不自动证明持久化成功。
+- id: inbox_rule_to_audit
+  requires:
+  - inbox_rule
+  produces:
+  - audit_ip
+  intents:
+  - inbox rule
+  - mailbox rule
+  - 收件箱规则
+  source_rule:
+    table: OfficeActivity
+    filters:
+    - Operation
+    projection_any:
+    - ClientIP
+    - Operation
+  dependencies:
+    OfficeActivity:
+    - Operation
+    - ClientIP
+    - UserId
+    - MailboxOwnerUPN
+    - TimeGenerated
+    - Parameters
+  card:
+    name: 检索收件箱规则审计来源
+    inputs:
+    - 收件箱规则操作主题及已知账户范围
+    steps:
+    - 在 OfficeActivity 按 Operation 检索 InboxRule 相关动作，返回 Operation、ClientIP、UserId、MailboxOwnerUPN、TimeGenerated、Parameters，并使用已有账户范围消歧。
+    outputs:
+    - 规则操作及来源 IP
+    constraints:
+    - 操作人 UserId 与邮箱所有者可能不同；ClientIP 可能带端口，保留原始值；规则创建不自动证明欺诈。
+- id: device_to_directory_actor
+  requires:
+  - device_name
+  produces:
+  - account_object_id
+  - account_sid
+  intents:
+  - ldap
+  - directory
+  - account
+  - 目录
+  source_rule:
+    table: IdentityQueryEvents
+    filters:
+    - DeviceName
+    projection_any:
+    - AccountObjectId
+  dependencies:
+    IdentityQueryEvents:
+    - DeviceName
+    - AccountObjectId
+    - AccountSid
+    - AccountUpn
+    - Query
+    - QueryType
+    - Timestamp
+  card:
+    name: 根据设备定位目录查询账户
+    inputs:
+    - 已知设备名及目录查询行为范围
+    steps:
+    - 在 IdentityQueryEvents 按 DeviceName 查询 AccountObjectId、AccountSid、AccountUpn、Query、QueryType、Timestamp，按已知查询行为筛选。
+    outputs:
+    - 目录查询账户对象标识及 SID
+    constraints:
+    - 目录查询操作者不等于被查询账户；保留多个操作者，字段为空时不可补造。
+- id: remote_ip_to_alert
+  requires:
+  - remote_ip
+  produces:
+  - alert_id
+  - alert_entity
+  intents:
+  - alert
+  - application
+  - 告警
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - RemoteIP
+    projection_any:
+    - Title
+    - ApplicationId
+    - AlertId
+  dependencies:
+    AlertEvidence:
+    - RemoteIP
+    - AlertId
+    - Title
+    - EntityType
+    - EvidenceRole
+    - ApplicationId
+  card:
+    name: 根据远端 IP 查关联告警
+    inputs:
+    - remote_ip
+    steps:
+    - 在 AlertEvidence 按 RemoteIP 查询 RemoteIP、AlertId、Title、EntityType、EvidenceRole；问题涉及应用时返回 ApplicationId。
+    outputs:
+    - alert_id
+    - alert_entity
+    constraints:
+    - 普通来源 IP 不能默认视为 RemoteIP；关联告警不证明攻击归属。
+- id: process_id_to_context
+  requires:
+  - process_id
+  - device_name
+  produces:
+  - process
+  - command
+  intents:
+  - process
+  - command
+  - 进程
+  source_rule:
+    table: DeviceProcessEvents
+    filters:
+    - ProcessId
+    projection_any:
+    - ProcessId
+    - ProcessCommandLine
+  dependencies:
+    DeviceProcessEvents:
+    - ProcessId
+    - DeviceName
+    - ProcessCreationTime
+    - FileName
+    - ProcessCommandLine
+    - InitiatingProcessId
+    - InitiatingProcessCommandLine
+  card:
+    name: 按主机和 PID 查询进程上下文
+    inputs:
+    - process_id
+    - device_name
+    steps:
+    - 在 DeviceProcessEvents 按 DeviceName 与 ProcessId 查询，返回 ProcessCreationTime、FileName、ProcessCommandLine、InitiatingProcessId、InitiatingProcessCommandLine；有确证时间范围时应用该范围。
+    outputs:
+    - process
+    - command
+    constraints:
+    - PID 可在不同主机或时段复用；不能按 PID 单独确认进程身份；保留多候选。
+- id: message_to_postdelivery
+  requires:
+  - message_id
+  produces:
+  - delivery_record
+  intents:
+  - removed
+  - quarantine
+  - action
+  - 隔离
+  source_rule:
+    table: EmailPostDeliveryEvents
+    filters:
+    - NetworkMessageId
+    projection_any:
+    - Action
+  dependencies:
+    EmailPostDeliveryEvents:
+    - NetworkMessageId
+    - Action
+    - ActionType
+    - ThreatTypes
+    - Timestamp
+    - RecipientEmailAddress
+  card:
+    name: 查询指定邮件的投递后处理
+    inputs:
+    - message_id
+    steps:
+    - 在 EmailPostDeliveryEvents 按 NetworkMessageId 查询 Action、ActionType、ThreatTypes、Timestamp、RecipientEmailAddress，并返回 NetworkMessageId。
+    outputs:
+    - delivery_record
+    constraints:
+    - 保留实际动作值和所有事件；隔离、移除和撤回不能无条件混同。
+- id: internet_id_to_sender
+  requires:
+  - internet_message_id
+  produces:
+  - sender
+  - message_id
+  intents:
+  - sender
+  - sending ip
+  - 发件
+  source_rule:
+    table: EmailEvents
+    filters:
+    - InternetMessageId
+    projection_any:
+    - SenderIPv4
+  dependencies:
+    EmailEvents:
+    - InternetMessageId
+    - NetworkMessageId
+    - SenderFromAddress
+    - SenderMailFromAddress
+    - SenderIPv4
+    - SenderIPv6
+  card:
+    name: 根据邮件信头标识查询发送信息
+    inputs:
+    - internet_message_id
+    steps:
+    - 在 EmailEvents 按 InternetMessageId 精确查询 NetworkMessageId、SenderFromAddress、SenderMailFromAddress、SenderIPv4、SenderIPv6，并保留 InternetMessageId。
+    outputs:
+    - sender
+    - message_id
+    constraints:
+    - 不能把 InternetMessageId 当成 NetworkMessageId；保留多个匹配及空字段。
+- id: device_name_to_network
+  requires:
+  - device_name
+  produces:
+  - network
+  intents:
+  - network
+  - connection
+  - 网络
+  source_rule:
+    table: DeviceNetworkEvents
+    filters:
+    - DeviceName
+    projection_any:
+    - RemoteIP
+    - RemoteUrl
+  dependencies:
+    DeviceNetworkEvents:
+    - DeviceName
+    - Timestamp
+    - ActionType
+    - LocalIP
+    - RemoteIP
+    - RemoteUrl
+    - InitiatingProcessId
+    - InitiatingProcessCommandLine
+  card:
+    name: 根据主机查询网络活动
+    inputs:
+    - device_name
+    steps:
+    - 在 DeviceNetworkEvents 按 DeviceName 查询 Timestamp、ActionType、LocalIP、RemoteIP、RemoteUrl、InitiatingProcessId、InitiatingProcessCommandLine；使用已知事件时间或进程条件限定范围。
+    outputs:
+    - network
+    constraints:
+    - 主机上的其他连接不能当成本次攻击；短名与 FQDN 要明确匹配规则。
+- id: command_to_alert
+  requires:
+  - command_fragment
+  produces:
+  - alert_id
+  - alert_entity
+  intents:
+  - alert
+  - command
+  - 告警
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - ProcessCommandLine
+    projection_any:
+    - FileName
+    - ProcessCommandLine
+  dependencies:
+    AlertEvidence:
+    - ProcessCommandLine
+    - AlertId
+    - Title
+    - FileName
+    - FolderPath
+    - DeviceName
+    - EntityType
+    - EvidenceRole
+  card:
+    name: 按命令片段查询告警证据
+    inputs:
+    - command_fragment
+    steps:
+    - 在 AlertEvidence 的 ProcessCommandLine 中检索已知片段，返回 AlertId、Title、FileName、FolderPath、DeviceName、EntityType、EvidenceRole、ProcessCommandLine。
+    outputs:
+    - alert_id
+    - alert_entity
+    constraints:
+    - 片段命中只能产生候选；路径和命令参数不能随意规范化或截去。
+- id: threat_family_to_account
+  requires:
+  - malware_family
+  produces:
+  - account_sid
+  - alert_entity
+  intents:
+  - sid
+  - account
+  - malware
+  - 账户
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - ThreatFamily
+    projection_any:
+    - AccountSid
+  dependencies:
+    AlertEvidence:
+    - ThreatFamily
+    - AccountSid
+    - AccountName
+    - AccountObjectId
+    - AlertId
+    - EntityType
+    - EvidenceRole
+  card:
+    name: 根据恶意软件家族查询账户证据
+    inputs:
+    - malware_family
+    steps:
+    - 在 AlertEvidence 按 ThreatFamily 查询 AccountSid、AccountName、AccountObjectId、AlertId、EntityType、EvidenceRole，并保留 ThreatFamily。
+    outputs:
+    - account_sid
+    - alert_entity
+    constraints:
+    - 家族名称与文件名不同；不同实体记录的账户字段不可混拼；空值不能补造。
+- id: topic_to_incident
+  requires:
+  - alert_topic
+  produces:
+  - incident_record
+  intents:
+  - incident
+  - 事件编号
+  source_rule:
+    table: SecurityIncident
+    filters:
+    - Title
+    projection_any:
+    - IncidentNumber
+    - Title
+  dependencies:
+    SecurityIncident:
+    - IncidentNumber
+    - Title
+    - Description
+    - AlertIds
+    - CreatedTime
+    - LastModifiedTime
+  card:
+    name: 按主题检索安全事件记录
+    inputs:
+    - alert_topic
+    steps:
+    - 在 SecurityIncident 按 Title 或 Description 检索当前主题，返回 IncidentNumber、Title、Description、AlertIds、CreatedTime、LastModifiedTime。
+    outputs:
+    - incident_record
+    constraints:
+    - 事件与告警是不同层级；AlertIds 需要按真实列表解析，不能把 IncidentNumber 当作 AlertId。
+- id: upn_to_alert
+  requires:
+  - account_upn
+  produces:
+  - alert_id
+  - alert_entity
+  intents:
+  - alert
+  - account
+  - 告警
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - AccountUpn
+    projection_any:
+    - AlertId
+    - Title
+  dependencies:
+    AlertEvidence:
+    - AccountUpn
+    - AlertId
+    - Title
+    - EntityType
+    - EvidenceRole
+    - AccountSid
+    - AccountObjectId
+  card:
+    name: 根据账户 UPN 检索告警证据
+    inputs:
+    - account_upn
+    steps:
+    - 在 AlertEvidence 按 AccountUpn 查询 AlertId、Title、EntityType、EvidenceRole、AccountSid、AccountObjectId，并保留 AccountUpn。
+    outputs:
+    - alert_id
+    - alert_entity
+    constraints:
+    - 账户关联告警不证明账户执行了全部行为；按题目主题和证据角色筛选。
+- id: url_to_network
+  requires:
+  - url
+  produces:
+  - network
+  - command
+  intents:
+  - network
+  - connection
+  - process
+  - 网络
+  source_rule:
+    table: DeviceNetworkEvents
+    filters:
+    - RemoteUrl
+    projection_any:
+    - LocalIP
+    - RemoteIP
+    - RemoteUrl
+  dependencies:
+    DeviceNetworkEvents:
+    - RemoteUrl
+    - RemoteIP
+    - LocalIP
+    - DeviceName
+    - Timestamp
+    - InitiatingProcessId
+    - InitiatingProcessCommandLine
+  card:
+    name: 根据远端 URL 查询网络连接
+    inputs:
+    - url
+    steps:
+    - 在 DeviceNetworkEvents 按 RemoteUrl 检索已知 URL 或域名，返回 RemoteUrl、RemoteIP、LocalIP、DeviceName、Timestamp、InitiatingProcessId、InitiatingProcessCommandLine。
+    outputs:
+    - network
+    - command
+    constraints:
+    - RemoteUrl 可能只存域名；若改用域名匹配须说明范围变宽，不能把网络连接当作邮件点击。
+- id: upn_to_noninteractive_identity
+  requires:
+  - account_upn
+  produces:
+  - user_id
+  - account
+  intents:
+  - user id
+  - non-interactive
+  - 账户标识
+  source_rule:
+    table: AADNonInteractiveUserSignInLogs
+    filters:
+    - UserPrincipalName
+    projection_any:
+    - UserId
+  dependencies:
+    AADNonInteractiveUserSignInLogs:
+    - UserPrincipalName
+    - UserId
+    - UserDisplayName
+    - TimeGenerated
+    - IPAddress
+  card:
+    name: 从非交互登录记录查询账户标识
+    inputs:
+    - account_upn
+    steps:
+    - 在 AADNonInteractiveUserSignInLogs 按 UserPrincipalName 精确查询 UserId、UserDisplayName、TimeGenerated、IPAddress，并保留 UserPrincipalName。
+    outputs:
+    - user_id
+    - account
+    constraints:
+    - 非交互登录不代表用户主动操作；同名账户不能仅按显示名合并。
+- id: display_name_to_risky_user
+  requires:
+  - account_display_name
+  produces:
+  - account_upn
+  - risk
+  intents:
+  - risky
+  - risk
+  - 风险用户
+  source_rule:
+    table: AADRiskyUsers
+    filters:
+    - UserDisplayName
+    projection_any:
+    - UserPrincipalName
+  dependencies:
+    AADRiskyUsers:
+    - UserDisplayName
+    - UserPrincipalName
+    - RiskLevel
+    - RiskState
+    - RiskDetail
+    - RiskLastUpdatedDateTime
+  card:
+    name: 根据显示名查询风险用户候选
+    inputs:
+    - account_display_name
+    steps:
+    - 在 AADRiskyUsers 按 UserDisplayName 查询 UserPrincipalName、RiskLevel、RiskState、RiskDetail、RiskLastUpdatedDateTime。
+    outputs:
+    - account_upn
+    - risk
+    constraints:
+    - 显示名可能重名；必须保留全部候选；风险用户状态不是本次事件的恶意归属证据。
+- id: upn_to_risk_status
+  requires:
+  - account_upn
+  produces:
+  - risk
+  intents:
+  - risk status
+  - risky
+  - 风险
+  source_rule:
+    table: AADRiskyUsers
+    filters:
+    - UserPrincipalName
+    projection_any:
+    - RiskLevel
+    - RiskState
+  dependencies:
+    AADRiskyUsers:
+    - UserPrincipalName
+    - RiskLevel
+    - RiskState
+    - RiskDetail
+    - RiskLastUpdatedDateTime
+  card:
+    name: 查询账户风险状态
+    inputs:
+    - account_upn
+    steps:
+    - 在 AADRiskyUsers 按 UserPrincipalName 精确查询 RiskLevel、RiskState、RiskDetail、RiskLastUpdatedDateTime，并返回 UserPrincipalName。
+    outputs:
+    - risk
+    constraints:
+    - 账户级状态与单次登录风险不同；更新时间不是攻击发生时间。
+- id: display_name_to_cloud_activity
+  requires:
+  - account_display_name
+  produces:
+  - cloud_activity
+  - audit_ip
+  intents:
+  - cloud
+  - activity
+  - 云应用
+  source_rule:
+    table: CloudAppEvents
+    filters:
+    - AccountDisplayName
+    projection_any:
+    - IPAddress
+    - ActivityType
+  dependencies:
+    CloudAppEvents:
+    - AccountDisplayName
+    - AccountObjectId
+    - IPAddress
+    - ActionType
+    - ActivityType
+    - TimeGenerated
+    - ApplicationId
+  card:
+    name: 根据账户显示名查云应用活动
+    inputs:
+    - account_display_name
+    steps:
+    - 在 CloudAppEvents 按 AccountDisplayName 查询 AccountObjectId、IPAddress、ActionType、ActivityType、TimeGenerated、ApplicationId；有已知活动时间时应用该范围。
+    outputs:
+    - cloud_activity
+    - audit_ip
+    constraints:
+    - 显示名只是候选筛选条件；不要把不同账户或不同活动的 IP 混为一条。
+- id: cloud_rule_action_values
+  requires:
+  - inbox_rule
+  produces:
+  - cloud_action
+  intents:
+  - rule
+  - 动作名称
+  - 规则
+  source_rule:
+    table: CloudAppEvents
+    filters:
+    - ActionType
+    projection_any:
+    - ActionType
+  dependencies:
+    CloudAppEvents:
+    - ActionType
+  card:
+    name: 枚举云应用规则操作的实际名称
+    inputs:
+    - inbox_rule
+    steps:
+    - 在 CloudAppEvents 按 ActionType 中 rule 关键词查询 DISTINCT ActionType，先确认环境中的实际动作名称。
+    outputs:
+    - cloud_action
+    constraints:
+    - 只返回动作词表，不证明规则被目标账户创建；下一步需要事件记录和账户关联。
+- id: directory_action_events
+  requires:
+  - directory_action
+  produces:
+  - directory_activity
+  intents:
+  - directory
+  - DKM
+  - ADFS
+  - 目录
+  source_rule:
+    table: IdentityDirectoryEvents
+    filters:
+    - ActionType
+    projection_any:
+    - ActionType
+  dependencies:
+    IdentityDirectoryEvents:
+    - ActionType
+    - DeviceName
+    - AccountObjectId
+    - AccountSid
+    - AccountUpn
+    - Timestamp
+    - AdditionalFields
+  card:
+    name: 按目录操作主题查询目录事件
+    inputs:
+    - directory_action
+    steps:
+    - 在 IdentityDirectoryEvents 按 ActionType 检索已知目录操作关键词，返回 DeviceName、AccountObjectId、AccountSid、AccountUpn、Timestamp、AdditionalFields，并保留 ActionType。
+    outputs:
+    - directory_activity
+    constraints:
+    - 动作关键词不等于已确认攻击；AdditionalFields 中对象角色需逐项核对。
+- id: directory_object_events
+  requires:
+  - account_object_id
+  produces:
+  - directory_activity
+  intents:
+  - object
+  - directory
+  - 对象
+  source_rule:
+    table: IdentityDirectoryEvents
+    filters:
+    - AdditionalFields
+    projection_any:
+    - ActionType
+  dependencies:
+    IdentityDirectoryEvents:
+    - ActionType
+    - AdditionalFields
+    - DeviceName
+    - Timestamp
+    - AccountObjectId
+    - AccountSid
+  card:
+    name: 根据对象标识检索目录事件附加字段
+    inputs:
+    - account_object_id
+    steps:
+    - 在 IdentityDirectoryEvents 的 AdditionalFields 中匹配已知对象标识，返回 ActionType、AdditionalFields、DeviceName、Timestamp、AccountObjectId、AccountSid。
+    outputs:
+    - directory_activity
+    constraints:
+    - 字符串命中后须解析附加字段核对对象角色；不能将目标对象当成操作账户。
+- id: directory_query_to_actor
+  requires:
+  - directory_query
+  produces:
+  - account_object_id
+  - account_sid
+  intents:
+  - ldap
+  - directory query
+  - 目录查询
+  source_rule:
+    table: IdentityQueryEvents
+    filters:
+    - Query
+    projection_any:
+    - Query
+    - AccountObjectId
+  dependencies:
+    IdentityQueryEvents:
+    - Query
+    - QueryType
+    - AccountObjectId
+    - AccountSid
+    - AccountUpn
+    - DeviceName
+    - Timestamp
+  card:
+    name: 根据目录查询主题定位操作账户
+    inputs:
+    - directory_query
+    steps:
+    - 在 IdentityQueryEvents 的 Query 或 QueryType 中检索已知查询主题，返回 Query、QueryType、AccountObjectId、AccountSid、AccountUpn、DeviceName、Timestamp。
+    outputs:
+    - account_object_id
+    - account_sid
+    constraints:
+    - LDAP 或 Directory 主题命中仅为候选；查询者不等于被查询账户。
+- id: user_id_to_signin
+  requires:
+  - user_id
+  produces:
+  - signin_ip
+  intents:
+  - login
+  - sign-in
+  - ip
+  - 登录
+  source_rule:
+    table: SigninLogs
+    filters:
+    - UserId
+    projection_any:
+    - IPAddress
+  dependencies:
+    SigninLogs:
+    - UserId
+    - UserPrincipalName
+    - IPAddress
+    - TimeGenerated
+    - AppDisplayName
+  card:
+    name: 根据用户标识查询登录来源
+    inputs:
+    - user_id
+    steps:
+    - 在 SigninLogs 按 UserId 精确查询 UserPrincipalName、IPAddress、TimeGenerated、AppDisplayName；应用已确认的活动时间范围。
+    outputs:
+    - signin_ip
+    constraints:
+    - UserId 不能由 SID 或其他目录的 ObjectId 直接替换；保留多次登录。
+- id: public_ip_to_device
+  requires:
+  - public_ip
+  produces:
+  - device
+  - device_id
+  intents:
+  - public ip
+  - device
+  - 公网
+  source_rule:
+    table: DeviceInfo
+    filters:
+    - PublicIP
+    projection_any:
+    - DeviceId
+  dependencies:
+    DeviceInfo:
+    - PublicIP
+    - DeviceId
+    - DeviceName
+    - Timestamp
+  card:
+    name: 根据公网 IP 查询设备资产候选
+    inputs:
+    - public_ip
+    steps:
+    - 在 DeviceInfo 按 PublicIP 查询 DeviceId、DeviceName、Timestamp，并返回 PublicIP。
+    outputs:
+    - device
+    - device_id
+    constraints:
+    - 公网 IP 可能共享或变化；普通来源 IP 不自动等于设备 PublicIP；不能仅凭 IP 确认主机。
+- id: topic_to_alert_evidence
+  requires:
+  - alert_topic
+  produces:
+  - alert_id
+  - alert_entity
+  intents:
+  - alert
+  - evidence
+  - 告警
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - Title
+    projection_any:
+    - Title
+    - ApplicationId
+  dependencies:
+    AlertEvidence:
+    - Title
+    - Categories
+    - AlertId
+    - EntityType
+    - EvidenceRole
+    - ApplicationId
+    - AccountSid
+    - DeviceName
+  card:
+    name: 按告警主题检索证据记录
+    inputs:
+    - alert_topic
+    steps:
+    - 在 AlertEvidence 按 Title 检索当前告警主题，必要时结合 Categories，返回 AlertId、Title、EntityType、EvidenceRole，按问题选择 ApplicationId、AccountSid 或 DeviceName。
+    outputs:
+    - alert_id
+    - alert_entity
+    constraints:
+    - 类别主题相似不证明是同一告警；不同实体行的字段不得拼接成同一对象。
+- id: device_to_alert_evidence
+  requires:
+  - device_name
+  produces:
+  - alert_id
+  - alert_entity
+  intents:
+  - host
+  - alert
+  - 主机
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - DeviceName
+    projection_any:
+    - AlertId
+  dependencies:
+    AlertEvidence:
+    - DeviceName
+    - AlertId
+    - Title
+    - EntityType
+    - EvidenceRole
+    - Timestamp
+  card:
+    name: 根据主机检索告警证据
+    inputs:
+    - device_name
+    steps:
+    - 在 AlertEvidence 按 DeviceName 查询 AlertId、Title、EntityType、EvidenceRole、Timestamp，并保留 DeviceName；再按题目主题确认目标告警。
+    outputs:
+    - alert_id
+    - alert_entity
+    constraints:
+    - 主机有多个告警时不可任选一个；短名匹配可能返回多个 FQDN。
+- id: sid_to_alert_evidence
+  requires:
+  - account_sid
+  produces:
+  - alert_id
+  - command
+  - account
+  intents:
+  - sid
+  - account
+  - command
+  - 账户
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - AccountSid
+    projection_any:
+    - ProcessCommandLine
+    - AccountName
+  dependencies:
+    AlertEvidence:
+    - AccountSid
+    - AlertId
+    - Title
+    - AccountName
+    - AccountObjectId
+    - ProcessCommandLine
+    - EntityType
+    - EvidenceRole
+  card:
+    name: 按 SID 查询告警账户和进程证据
+    inputs:
+    - account_sid
+    steps:
+    - 在 AlertEvidence 按 AccountSid 查询 AlertId、Title、AccountName、AccountObjectId、ProcessCommandLine、EntityType、EvidenceRole，并保留 AccountSid。
+    outputs:
+    - alert_id
+    - command
+    - account
+    constraints:
+    - 账户与进程关系必须由同记录或明确关联支持；空命令行不能由其他实体行补齐。
+- id: url_to_alert_evidence
+  requires:
+  - url
+  produces:
+  - alert_id
+  - account_upn
+  - alert_entity
+  intents:
+  - url
+  - account
+  - alert
+  - 链接
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - RemoteUrl
+    projection_any:
+    - AccountUpn
+    - RemoteUrl
+  dependencies:
+    AlertEvidence:
+    - RemoteUrl
+    - AlertId
+    - Title
+    - AccountUpn
+    - EntityType
+    - EvidenceRole
+  card:
+    name: 根据 URL 检索告警关联账户
+    inputs:
+    - url
+    steps:
+    - 在 AlertEvidence 按 RemoteUrl 查询 AlertId、Title、AccountUpn、EntityType、EvidenceRole，并保留 RemoteUrl。
+    outputs:
+    - alert_id
+    - account_upn
+    - alert_entity
+    constraints:
+    - URL 关联账户不等于点击者、收件人或发送者；必须核对实体类型和证据角色。
+- id: threat_to_mail_candidates
+  requires:
+  - mail_threat_topic
+  produces:
+  - message_id
+  - sender
+  intents:
+  - malicious email
+  - phishing
+  - 恶意邮件
+  source_rule:
+    table: EmailEvents
+    filters:
+    - ThreatTypes
+    projection_any:
+    - SenderIPv4
+    - SenderFromAddress
+    - ThreatTypes
+  dependencies:
+    EmailEvents:
+    - NetworkMessageId
+    - ThreatTypes
+    - ThreatNames
+    - SenderFromAddress
+    - SenderIPv4
+    - RecipientEmailAddress
+    - Timestamp
+  card:
+    name: 根据邮件威胁分类发现候选邮件
+    inputs:
+    - mail_threat_topic
+    steps:
+    - 在 EmailEvents 按已知 ThreatTypes 或 ThreatNames 检索，返回 NetworkMessageId、ThreatTypes、ThreatNames、SenderFromAddress、SenderIPv4、RecipientEmailAddress、Timestamp。
+    outputs:
+    - message_id
+    - sender
+    constraints:
+    - 非空 ThreatTypes 仅作候选发现；没有时间、收件人、URL 或告警范围时不能把所有邮件作为唯一目标。
+- id: device_id_to_network
+  requires:
+  - device_id
+  produces:
+  - network
+  intents:
+  - network
+  - connection
+  - 网络
+  source_rule:
+    table: DeviceNetworkEvents
+    filters:
+    - DeviceId
+    projection_any:
+    - RemoteIP
+  dependencies:
+    DeviceNetworkEvents:
+    - DeviceId
+    - DeviceName
+    - Timestamp
+    - ActionType
+    - RemoteIP
+    - RemoteUrl
+    - LocalIP
+    - InitiatingProcessId
+  card:
+    name: 按设备标识查询网络活动
+    inputs:
+    - device_id
+    steps:
+    - 在 DeviceNetworkEvents 按 DeviceId 查询 DeviceName、Timestamp、ActionType、RemoteIP、RemoteUrl、LocalIP、InitiatingProcessId，并使用已知事件范围。
+    outputs:
+    - network
+    constraints:
+    - 设备标识不等于 AadDeviceId；相关网络事件仍需核对时间与进程。
+- id: process_command_to_network
+  requires:
+  - command
+  produces:
+  - network
+  intents:
+  - connection
+  - network
+  - 连接
+  source_rule:
+    table: DeviceNetworkEvents
+    filters:
+    - InitiatingProcessCommandLine
+    projection_any:
+    - RemoteIP
+    - InitiatingProcessCommandLine
+  dependencies:
+    DeviceNetworkEvents:
+    - InitiatingProcessCommandLine
+    - InitiatingProcessId
+    - DeviceName
+    - Timestamp
+    - RemoteIP
+    - LocalIP
+    - RemoteUrl
+  card:
+    name: 根据进程命令查询发起的连接
+    inputs:
+    - command
+    steps:
+    - 在 DeviceNetworkEvents 按 InitiatingProcessCommandLine 匹配已知完整命令或有辨识度的片段，返回 InitiatingProcessId、DeviceName、Timestamp、RemoteIP、LocalIP、RemoteUrl，并保留命令。
+    outputs:
+    - network
+    constraints:
+    - 同命令可多次执行；模糊匹配要报告范围，必须结合主机和时间消歧。
+- id: parent_file_to_children
+  requires:
+  - parent_filename
+  produces:
+  - process
+  - command
+  intents:
+  - child
+  - spawn
+  - parent
+  - 子进程
+  source_rule:
+    table: DeviceProcessEvents
+    filters:
+    - InitiatingProcessFileName
+    projection_any:
+    - ProcessId
+    - FileName
+  dependencies:
+    DeviceProcessEvents:
+    - InitiatingProcessFileName
+    - InitiatingProcessId
+    - InitiatingProcessCommandLine
+    - ProcessId
+    - FileName
+    - ProcessCommandLine
+    - ProcessCreationTime
+    - DeviceName
+  card:
+    name: 根据发起程序查询子进程
+    inputs:
+    - parent_filename
+    steps:
+    - 在 DeviceProcessEvents 按 InitiatingProcessFileName 查询 InitiatingProcessId、InitiatingProcessCommandLine、ProcessId、FileName、ProcessCommandLine、ProcessCreationTime、DeviceName，结合已知主机和时间范围。
+    outputs:
+    - process
+    - command
+    constraints:
+    - 文件名必须已确认为父进程角色；不能把目标程序名直接当父进程名；保留多次启动。
+- id: ip_to_click_events
+  requires:
+  - ip
+  produces:
+  - click
+  - url
+  - account_upn
+  intents:
+  - click
+  - clicked
+  - 点击
+  source_rule:
+    table: UrlClickEvents
+    filters:
+    - IPAddress
+    projection_any:
+    - Url
+  dependencies:
+    UrlClickEvents:
+    - IPAddress
+    - AccountUpn
+    - Url
+    - Timestamp
+    - ActionType
+    - IsClickedThrough
+  card:
+    name: 根据来源 IP 查询 URL 点击相关事件
+    inputs:
+    - ip
+    steps:
+    - 在 UrlClickEvents 按 IPAddress 查询 AccountUpn、Url、Timestamp、ActionType、IsClickedThrough，并返回 IPAddress。
+    outputs:
+    - click
+    - url
+    constraints:
+    - 共享 IP 可对应多个账户；事件存在不等于点击成功，不得忽略 ActionType。
+- id: risky_signin_candidates
+  requires:
+  - risk_topic
+  produces:
+  - signin_ip
+  - account_upn
+  - user_id
+  intents:
+  - risk
+  - anonymous
+  - risky
+  - 风险登录
+  source_rule:
+    table: SigninLogs
+    filters:
+    - IsRisky
+    projection_any:
+    - IPAddress
+    - UserPrincipalName
+  dependencies:
+    SigninLogs:
+    - IsRisky
+    - RiskDetail
+    - RiskEventTypes
+    - UserPrincipalName
+    - UserId
+    - IPAddress
+    - TimeGenerated
+  card:
+    name: 发现风险登录候选
+    inputs:
+    - risk_topic
+    steps:
+    - 在 SigninLogs 根据 IsRisky、RiskDetail 或已知 RiskEventTypes 检索，返回 UserPrincipalName、UserId、IPAddress、TimeGenerated 和实际风险标记，使用已有账户和时间范围。
+    outputs:
+    - signin_ip
+    - account_upn
+    - user_id
+    constraints:
+    - 非空风险字段不一定表示恶意；字段文本取值要先核对，不能任选风险事件作为本次攻击。
+- id: alert_id_to_info
+  requires:
+  - alert_id
+  produces:
+  - alert_context
+  intents:
+  - alert
+  - title
+  - 告警
+  source_rule:
+    table: AlertInfo
+    filters:
+    - AlertId
+    projection_any:
+    - Title
+  dependencies:
+    AlertInfo:
+    - AlertId
+    - Title
+    - Timestamp
+    - Severity
+    - Category
+  card:
+    name: 根据告警标识核对告警主题
+    inputs:
+    - alert_id
+    steps:
+    - 在 AlertInfo 按已观察到的 AlertId 查询 AlertId、Title、Timestamp、Severity、Category；保留每个告警与其主题的对应关系。
+    outputs:
+    - alert_context
+    constraints:
+    - 用于确认候选告警是否属于目标事件；标题和严重性不能单独证明某个账户或进程参与攻击。
+- id: device_to_process_events
+  requires:
+  - device_name
+  produces:
+  - process
+  - command
+  intents:
+  - process
+  - command
+  - script
+  - 进程
+  - 脚本
+  source_rule:
+    table: DeviceProcessEvents
+    filters:
+    - DeviceName
+    projection_any:
+    - ProcessId
+    - ProcessCommandLine
+  dependencies:
+    DeviceProcessEvents:
+    - DeviceName
+    - Timestamp
+    - ProcessId
+    - ProcessCreationTime
+    - FileName
+    - ProcessCommandLine
+    - InitiatingProcessId
+    - InitiatingProcessCommandLine
+  card:
+    name: 在已确认设备上查询进程活动
+    inputs:
+    - device_name
+    steps:
+    - 在 DeviceProcessEvents 按 DeviceName 查询 Timestamp、ProcessId、ProcessCreationTime、FileName、ProcessCommandLine、InitiatingProcessId、InitiatingProcessCommandLine，并返回
+      DeviceName；有证据支持的事件时间范围时加入筛选。
+    outputs:
+    - process
+    - command
+    constraints:
+    - 设备上的所有进程不都属于目标攻击；根据事件、父子关系和命令继续收敛。
+    - 截断或大量候选时细化查询范围，不把第一条记录当答案；检测时间不自动等于进程创建时间。
+- id: parent_process_to_file_events
+  requires:
+  - parent_filename
+  produces:
+  - file_artifact
+  intents:
+  - file
+  - dropped
+  - 文件
+  - 落地
+  source_rule:
+    table: DeviceFileEvents
+    filters:
+    - InitiatingProcessFileName
+    projection_any:
+    - FileName
+    - FolderPath
+  dependencies:
+    DeviceFileEvents:
+    - InitiatingProcessFileName
+    - InitiatingProcessId
+    - InitiatingProcessCommandLine
+    - FileName
+    - FolderPath
+    - DeviceName
+    - Timestamp
+    - ActionType
+  card:
+    name: 根据已确认的发起程序查询文件活动
+    inputs:
+    - parent_filename
+    steps:
+    - 在 DeviceFileEvents 按 InitiatingProcessFileName 查询 FileName、FolderPath、DeviceName、Timestamp、ActionType、InitiatingProcessId、InitiatingProcessCommandLine；结合已确认的设备、进程和事件时间范围。
+    outputs:
+    - file_artifact
+    constraints:
+    - 程序名只用于发现候选；需结合 ActionType 确认是创建、修改还是删除，不能把全部文件事件都称为落地文件。
+    - PowerShell 临时策略测试文件等正常文件不能仅因同一发起程序而判恶意；结果截断时继续按已知事件范围收敛。
+- id: risk_status_to_user_candidates
+  requires:
+  - risk_topic
+  produces:
+  - account_upn
+  intents:
+  - risk
+  - risky
+  - compromised
+  - 风险
+  - 账户
+  source_rule:
+    table: AADRiskyUsers
+    filters:
+    - RiskLevel
+    - RiskState
+    projection_any:
+    - UserPrincipalName
+  dependencies:
+    AADRiskyUsers:
+    - UserPrincipalName
+    - RiskLevel
+    - RiskState
+  card:
+    name: 按风险状态发现账户候选
+    inputs:
+    - risk_topic
+    steps:
+    - 在 AADRiskyUsers 按 RiskLevel = 'high' 或 RiskState = 'atRisk' 查询 UserPrincipalName、RiskLevel、RiskState；保留账户与实际状态的对应关系。
+    outputs:
+    - account_upn
+    constraints:
+    - 仅用于尚无精确账户的风险事件调查；多个账户必须结合目标事件验证，风险状态本身不证明账户已被攻陷。
+    - 该操作不提供登录 IP 或邮件发送 IP；必须从对应事件表获得，不能混用来源。
+- id: logged_on_account_to_device
+  requires:
+  - account_name
+  produces:
+  - device_name
+  - device_id
+  - aad_device_id
+  intents:
+  - host
+  - device
+  - aad
+  - 主机
+  - 设备
+  source_rule:
+    table: DeviceInfo
+    filters:
+    - LoggedOnUsers
+    projection_any:
+    - DeviceName
+    - AadDeviceId
+  dependencies:
+    DeviceInfo:
+    - LoggedOnUsers
+    - DeviceName
+    - DeviceId
+    - AadDeviceId
+    - Timestamp
+  card:
+    name: 根据登录账户发现设备候选
+    inputs:
+    - account_name
+    steps:
+    - 在 DeviceInfo 的 LoggedOnUsers 中检索已观察到的账户名，返回 LoggedOnUsers、DeviceName、DeviceId、AadDeviceId、Timestamp；检查
+      LoggedOnUsers 内实际 UserName、DomainName、Sid 是否匹配。
+    outputs:
+    - device_name
+    - device_id
+    - aad_device_id
+    constraints:
+    - 子串命中仅产生候选，不等于精确账户匹配；同名账户需按域或 SID 区分。
+    - 登录账户可能对应多台设备；必须结合目标事件核对，清单时间不等于攻击发生时间。
+- id: click_report_to_event
+  requires:
+  - url_click_report_id
+  produces:
+  - click
+  - url
+  - account_upn
+  intents:
+  - url
+  - click
+  - 链接
+  - 点击
+  source_rule:
+    table: UrlClickEvents
+    filters:
+    - ReportId
+    projection_any:
+    - Url
+    - AccountUpn
+  dependencies:
+    UrlClickEvents:
+    - ReportId
+    - Url
+    - AccountUpn
+    - IPAddress
+    - Timestamp
+    - ActionType
+    - IsClickedThrough
+  card:
+    name: 根据点击记录标识回查事件
+    inputs:
+    - url_click_report_id
+    steps:
+    - 在 UrlClickEvents 按该表已观察到的 ReportId 查询 ReportId、Url、AccountUpn、IPAddress、Timestamp、ActionType、IsClickedThrough，保留全部匹配记录。
+    outputs:
+    - click
+    - url
+    - account_upn
+    constraints:
+    - 仅接受确认来自 UrlClickEvents 的 ReportId，不能使用其他表的同名标识。
+    - 回查同一条事件不能证明发生另一场点击；多个候选按时间、账户和题目关系核对，不能自动把一条旧 URL 当新事件答案。
+- id: empty_time_scope_diagnostic
+  requires:
+  - empty_time_scope
+  produces:
+  - scope_diagnostic
+  intents: []
+  recovery_trigger: empty_time_scope
+  source_rule:
+    table: SigninLogs
+    filters:
+    - IPAddress
+    projection_any:
+    - IPAddress
+  dependencies:
+    SigninLogs:
+    - IPAddress
+    - TimeGenerated
+    EmailEvents:
+    - SenderFromAddress
+    - TimeGenerated
+    DeviceProcessEvents:
+    - DeviceName
+    - Timestamp
+  card:
+    name: 空结果后的时间范围核对
+    inputs:
+    - 最近一次查询成功但为空，且同时包含精确实体条件与时间条件
+    steps:
+    - 核对时间条件来自哪里：如果把告警时间误作精确事件时间，先保留全部非时间条件，查询该实体的实际事件时间和值，诊断时间范围。使用 SQL 中实际表和时间列：SigninLogs/EmailEvents
+      的 TimeGenerated，DeviceProcessEvents 的 Timestamp。
+    - 根据返回时间与题目事件关系重新限定范围，再继续原调查。题目明确要求的时间范围不能静默删除；诊断查询的结果仅为候选。
+    outputs:
+    - 实际时间分布及范围差异，供后续限定查询
+    constraints:
+    - 空结果不证明时间条件错误；不能借此改变账户、IP、主机或题目目标。
+    - 若诊断结果与题目时间冲突，记录冲突并继续核对，不能把范围外记录直接当答案。
+    - 恢复提示不是已执行证据，不会直接解锁新实体类型。
+- id: empty_alert_device_scope_diagnostic
+  requires:
+  - empty_alert_device_scope
+  produces:
+  - scope_diagnostic
+  intents: []
+  recovery_trigger: empty_alert_device_scope
+  source_rule:
+    table: AlertEvidence
+    filters:
+    - AlertId
+    projection_any:
+    - AccountName
+    - AccountSid
+  dependencies:
+    AlertEvidence:
+    - AlertId
+    - DeviceName
+    - EntityType
+    - EvidenceRole
+    - AccountName
+    - AccountSid
+    - ProcessCommandLine
+  card:
+    name: 告警证据空结果后的跨行实体核对
+    inputs:
+    - 最近一次 AlertEvidence 查询按 AlertId 和 DeviceName 筛选但返回为空
+    steps:
+    - 保留原查询的全部 AlertId 及其他非设备条件，诊断性查询同一告警内的证据行，返回 AlertId、DeviceName、EntityType、EvidenceRole
+      及当前所需账户或进程字段。
+    - 按 AlertId 分组检查设备、账户、进程是否分散在不同记录；用设备全名和角色字段核对原条件，必要时查询原始告警实体以确认关系。
+    outputs:
+    - 同一告警内候选实体及尚待核对的关联
+    constraints:
+    - 同一告警包含多个实体不证明任意两者直接相关；不能把不同证据行的主机、SID、进程拼成一条已证实事实。
+    - 设备筛选为空也可能是设备名不匹配或告警选择错误；移除筛选只用于诊断，不能自动宣布新候选属于原目标设备。
+- id: empty_url_form_diagnostic
+  requires:
+  - empty_url_form
+  produces:
+  - scope_diagnostic
+  intents: []
+  recovery_trigger: empty_url_form
+  source_rule:
+    table: DeviceNetworkEvents
+    filters:
+    - RemoteUrl
+    projection_any:
+    - RemoteUrl
+  dependencies:
+    DeviceNetworkEvents:
+    - RemoteUrl
+    - LocalIP
+    - RemoteIP
+    - Timestamp
+    UrlClickEvents:
+    - Url
+    - AccountUpn
+    - Timestamp
+    - ActionType
+  card:
+    name: URL 精确查询为空后的存储形式核对
+    inputs:
+    - 最近一次在 DeviceNetworkEvents.RemoteUrl 或 UrlClickEvents.Url 上精确匹配 URL 但为空
+    steps:
+    - 保留已确认的账户、主机和事件范围，先按完整主机名发现 URL 候选，返回实际 URL 与相应时间、账户或网络实体字段；核对协议、端口、路径、末尾斜杠和子域。
+    - 子串匹配只用于发现候选，随后按完整实际 URL 与目标关系验证；如需扩大到父域，明确其可能引入兄弟子域及其他事件。
+    outputs:
+    - 实际 URL 形式及范围内候选
+    constraints:
+    - http 与 https、不同端口和路径不能自动视为相同 URL；不能为了匹配参考形式而改写观察值。
+    - 空结果不证明只是格式问题；若实际时间或实体与题目冲突，应保留冲突，不把扩大查询范围当作确认。
+- id: empty_parent_role_diagnostic
+  requires:
+  - empty_parent_role
+  produces:
+  - scope_diagnostic
+  intents: []
+  recovery_trigger: empty_parent_role
+  source_rule:
+    table: DeviceProcessEvents
+    filters:
+    - FileName
+    projection_any:
+    - ProcessCommandLine
+  dependencies:
+    DeviceProcessEvents:
+    - FileName
+    - InitiatingProcessFileName
+    - ProcessId
+    - InitiatingProcessId
+    - ProcessCommandLine
+    - InitiatingProcessCommandLine
+    - DeviceName
+    - Timestamp
+  card:
+    name: 父进程文件名查询为空后的角色核对
+    inputs:
+    - 最近一次按 DeviceProcessEvents.InitiatingProcessFileName 精确查询但为空
+    steps:
+    - 在原设备和事件范围内分别检查 FileName 与 InitiatingProcessFileName 是否包含目标程序，返回两者及 ProcessId、InitiatingProcessId、ProcessCommandLine、InitiatingProcessCommandLine、DeviceName、Timestamp。
+    - 标注目标程序在每行是当前进程还是发起进程；若名称仅部分匹配，核对完整文件名，保留父子关联后再回答题目。
+    outputs:
+    - 程序候选及父子角色
+    constraints:
+    - 目标作为当前进程出现不代表它是被查询进程的父进程；不得互换两种命令行或 PID。
+    - 文件名相似不证明同一程序，空结果也不证明角色错误；诊断后仍需确认题目要求的进程身份。

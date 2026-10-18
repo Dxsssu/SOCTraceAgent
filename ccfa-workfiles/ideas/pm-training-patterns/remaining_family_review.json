@@ -1,0 +1,386 @@
+{
+  "snapshot_cards": 66,
+  "scope": "Remaining unmatched filter families only; not exhaustive review of joins, no-filter queries, or semantic task coverage.",
+  "counts": {
+    "extend_existing": 11,
+    "built_candidate": 6,
+    "candidate_needs_context_review": 2,
+    "scope_modifier_not_standalone": 3,
+    "discovery_only_not_entity_pivot": 4,
+    "defer_predicate_validation": 1,
+    "defer_unsafe_generalization": 1
+  },
+  "families": [
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "CompromisedEntity",
+        "Description"
+      ],
+      "trajectory_count": 4,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "Entities"
+      ],
+      "trajectory_count": 2,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "Description",
+        "Entities"
+      ],
+      "trajectory_count": 2,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "AADRiskyUsers",
+      "filter_fields": [
+        "RiskLevel",
+        "RiskState"
+      ],
+      "trajectory_count": 1,
+      "decision": "built_candidate",
+      "reason": "Task and returned rows reviewed; candidate procedure preserves role/risk ambiguity and truncation constraints. Source/schema checked, not live validated.",
+      "reviewed_sources": [
+        {
+          "line": 107,
+          "message_index": 10,
+          "sql": "SELECT UserPrincipalName FROM AADRiskyUsers WHERE RiskLevel = 'high' OR RiskState = 'atRisk';",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "AADUserRiskEvents",
+      "filter_fields": [
+        "RiskDetail",
+        "RiskLevel"
+      ],
+      "trajectory_count": 1,
+      "decision": "candidate_needs_context_review",
+      "reason": "Predicate is an actual value/substring filter; inspect originating task, observation and entity role before building a reusable card.",
+      "reviewed_sources": [
+        {
+          "line": 70,
+          "message_index": 16,
+          "sql": "SELECT IpAddress, UserPrincipalName, RiskDetail, RiskEventType FROM AADUserRiskEvents WHERE RiskLevel = 'high' OR RiskDetail IS NOT NULL;",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "AlertInfo",
+      "filter_fields": [
+        "AlertId"
+      ],
+      "trajectory_count": 1,
+      "decision": "built_candidate",
+      "reason": "Reviewed original task and returned rows; built bounded entity lookup with explicit ambiguity/truncation constraints. One supporting trajectory; not live validated.",
+      "reviewed_sources": [
+        {
+          "line": 128,
+          "message_index": 22,
+          "sql": "SELECT * FROM AlertInfo WHERE AlertId IN ('ra638572495263899511_659368751', 'ra638572509488551447_-34679678', 'ra638572536984233851_1058778386');",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "DeviceFileEvents",
+      "filter_fields": [
+        "InitiatingProcessFileName"
+      ],
+      "trajectory_count": 1,
+      "decision": "built_candidate",
+      "reason": "Task and returned rows reviewed; candidate procedure preserves role/risk ambiguity and truncation constraints. Source/schema checked, not live validated.",
+      "reviewed_sources": [
+        {
+          "line": 149,
+          "message_index": 12,
+          "sql": "SELECT FileName, FolderPath FROM DeviceFileEvents WHERE InitiatingProcessFileName LIKE '%powershell%';",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "DeviceInfo",
+      "filter_fields": [
+        "LoggedOnUsers"
+      ],
+      "trajectory_count": 1,
+      "decision": "built_candidate",
+      "reason": "Reviewed task and observed rows; device lookup requires account-name evidence and candidate confirmation, click ReportId requires explicit source-table identity. Not live validated.",
+      "reviewed_sources": [
+        {
+          "line": 117,
+          "message_index": 22,
+          "sql": "SELECT * FROM DeviceInfo WHERE LoggedOnUsers LIKE '%samuelf%';",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "DeviceNetworkEvents",
+      "filter_fields": [
+        "ActionType"
+      ],
+      "trajectory_count": 1,
+      "decision": "candidate_needs_context_review",
+      "reason": "Predicate is an actual value/substring filter; inspect originating task, observation and entity role before building a reusable card.",
+      "reviewed_sources": [
+        {
+          "line": 156,
+          "message_index": 8,
+          "sql": "SELECT RemoteIP, Timestamp FROM DeviceNetworkEvents WHERE ActionType = 'ConnectionAttempt';",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "DeviceProcessEvents",
+      "filter_fields": [
+        "Timestamp"
+      ],
+      "trajectory_count": 1,
+      "decision": "scope_modifier_not_standalone",
+      "reason": "Time window alone does not identify a reusable investigation intent; attach only with justified entity/activity scope."
+    },
+    {
+      "table": "DeviceProcessEvents",
+      "filter_fields": [
+        "DeviceName"
+      ],
+      "trajectory_count": 1,
+      "decision": "built_candidate",
+      "reason": "Reviewed original task and returned rows; built bounded entity lookup with explicit ambiguity/truncation constraints. One supporting trajectory; not live validated.",
+      "reviewed_sources": [
+        {
+          "line": 170,
+          "message_index": 12,
+          "sql": "SELECT * FROM DeviceProcessEvents WHERE DeviceName = 'vnevado-win11t.vnevado.alpineskihouse.co';",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "EmailPostDeliveryEvents",
+      "filter_fields": [
+        "ThreatTypes"
+      ],
+      "trajectory_count": 1,
+      "decision": "discovery_only_not_entity_pivot",
+      "reason": "Historical SQL only tests non-null fields; it does not support an entity-bound lookup. Retain as discovery evidence, not a direct identity or threat pivot.",
+      "reviewed_sources": [
+        {
+          "line": 97,
+          "message_index": 14,
+          "sql": "SELECT * FROM EmailPostDeliveryEvents WHERE ThreatTypes IS NOT NULL;",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "IdentityLogonEvents",
+      "filter_fields": [
+        "IPAddress"
+      ],
+      "trajectory_count": 1,
+      "decision": "discovery_only_not_entity_pivot",
+      "reason": "Historical SQL only tests non-null fields; it does not support an entity-bound lookup. Retain as discovery evidence, not a direct identity or threat pivot.",
+      "reviewed_sources": [
+        {
+          "line": 181,
+          "message_index": 12,
+          "sql": "SELECT AccountObjectId, DeviceName, IPAddress FROM IdentityLogonEvents WHERE IPAddress IS NOT NULL;",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "IdentityLogonEvents",
+      "filter_fields": [
+        "AccountObjectId"
+      ],
+      "trajectory_count": 1,
+      "decision": "discovery_only_not_entity_pivot",
+      "reason": "Historical SQL only tests non-null fields; it does not support an entity-bound lookup. Retain as discovery evidence, not a direct identity or threat pivot.",
+      "reviewed_sources": [
+        {
+          "line": 181,
+          "message_index": 14,
+          "sql": "SELECT DISTINCT AccountObjectId FROM IdentityLogonEvents WHERE AccountObjectId IS NOT NULL;",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "Entities",
+        "TimeGenerated"
+      ],
+      "trajectory_count": 1,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "Description"
+      ],
+      "trajectory_count": 1,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "CompromisedEntity",
+        "Description",
+        "Techniques"
+      ],
+      "trajectory_count": 1,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "TimeGenerated"
+      ],
+      "trajectory_count": 1,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "Description",
+        "DisplayName"
+      ],
+      "trajectory_count": 1,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "SecurityAlert",
+      "filter_fields": [
+        "CompromisedEntity",
+        "Entities",
+        "TimeGenerated"
+      ],
+      "trajectory_count": 1,
+      "decision": "extend_existing",
+      "reason": "Review extra scope filters on topic_to_security_alert; do not make a card for each Boolean/projection variant."
+    },
+    {
+      "table": "SigninLogs",
+      "filter_fields": [
+        "RiskEventTypes",
+        "RiskLevel",
+        "RiskState"
+      ],
+      "trajectory_count": 1,
+      "decision": "extend_existing",
+      "reason": "Review risk-field variants within risky_signin_candidates, preserving actual values and output semantics."
+    },
+    {
+      "table": "SigninLogs",
+      "filter_fields": [
+        "RiskEventTypes",
+        "RiskEventTypes_V2"
+      ],
+      "trajectory_count": 1,
+      "decision": "extend_existing",
+      "reason": "Review risk-field variants within risky_signin_candidates, preserving actual values and output semantics."
+    },
+    {
+      "table": "SigninLogs",
+      "filter_fields": [
+        "ResultDescription",
+        "ResultType"
+      ],
+      "trajectory_count": 1,
+      "decision": "defer_predicate_validation",
+      "reason": "ResultType != Success OR non-null ResultDescription can include benign events; validate actual values before extracting a failed-login procedure.",
+      "reviewed_sources": [
+        {
+          "line": 70,
+          "message_index": 10,
+          "sql": "SELECT IPAddress, UserPrincipalName, ResultType, ResultDescription FROM SigninLogs WHERE ResultType != 'Success' OR ResultDescription IS NOT NULL;",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "SigninLogs",
+      "filter_fields": [
+        "TimeGenerated"
+      ],
+      "trajectory_count": 1,
+      "decision": "scope_modifier_not_standalone",
+      "reason": "Time window alone does not identify a reusable investigation intent; attach only with justified entity/activity scope."
+    },
+    {
+      "table": "UrlClickEvents",
+      "filter_fields": [
+        "DetectionMethods",
+        "ThreatTypes"
+      ],
+      "trajectory_count": 1,
+      "decision": "discovery_only_not_entity_pivot",
+      "reason": "Historical SQL only tests non-null fields; it does not support an entity-bound lookup. Retain as discovery evidence, not a direct identity or threat pivot.",
+      "reviewed_sources": [
+        {
+          "line": 120,
+          "message_index": 18,
+          "sql": "SELECT * FROM UrlClickEvents WHERE ThreatTypes IS NOT NULL OR DetectionMethods IS NOT NULL;",
+          "matching_card_filters": []
+        }
+      ]
+    },
+    {
+      "table": "UrlClickEvents",
+      "filter_fields": [
+        "TenantId"
+      ],
+      "trajectory_count": 1,
+      "decision": "defer_unsafe_generalization",
+      "reason": "Single tenant-filter query needs case-role audit; identifier appearance alone is insufficient evidence of a valid tenant pivot."
+    },
+    {
+      "table": "UrlClickEvents",
+      "filter_fields": [
+        "Timestamp"
+      ],
+      "trajectory_count": 1,
+      "decision": "scope_modifier_not_standalone",
+      "reason": "Time window alone does not identify a reusable investigation intent; attach only with justified entity/activity scope."
+    },
+    {
+      "table": "UrlClickEvents",
+      "filter_fields": [
+        "ReportId"
+      ],
+      "trajectory_count": 1,
+      "decision": "built_candidate",
+      "reason": "Reviewed task and observed rows; device lookup requires account-name evidence and candidate confirmation, click ReportId requires explicit source-table identity. Not live validated.",
+      "reviewed_sources": [
+        {
+          "line": 227,
+          "message_index": 14,
+          "sql": "SELECT * FROM UrlClickEvents WHERE ReportId = '7acb31b0-de17-442f-f5f2-08dc9a7bde38';",
+          "matching_card_filters": []
+        }
+      ]
+    }
+  ]
+}
