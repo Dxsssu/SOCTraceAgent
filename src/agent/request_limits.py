@@ -1,5 +1,15 @@
-"""Bounded output budgets for memory selectors, including benchmark transport."""
+"""Budgets for standalone memory tools without loading LTM in role requests."""
+import sys
+
+
 def memory_output_limit(system_prompt):
-    from src.memory.longterm_memory.semantic_memory.excytin_bench.fallback import SYSTEM_PROMPT, MAX_OUTPUT_TOKENS as SM_LIMIT
-    from src.memory.longterm_memory.procedural_memory.excytin_bench.retrieval import SELECTION_PROMPT, MAX_OUTPUT_TOKENS as PM_LIMIT
-    return SM_LIMIT if system_prompt == SYSTEM_PROMPT else PM_LIMIT if system_prompt == SELECTION_PROMPT else None
+    # Standalone selectors already imported their own prompt definitions.
+    # Ordinary workflow requests must not import memory modules just to compare.
+    for name, prompt_name in (
+        ("src.memory.longterm_memory.semantic_memory.excytin_bench.fallback", "SYSTEM_PROMPT"),
+        ("src.memory.longterm_memory.procedural_memory.excytin_bench.retrieval", "SELECTION_PROMPT"),
+    ):
+        module = sys.modules.get(name)
+        if module is not None and system_prompt == getattr(module, prompt_name, None):
+            return module.MAX_OUTPUT_TOKENS
+    return None

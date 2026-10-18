@@ -67,18 +67,20 @@ def test_executor_uses_sql_contract_even_with_legacy_template_metadata():
     def llm(system,user):
         calls.append(system)
         if '系统中的 Planner' in system:return yaml.safe_dump(initial_operations(payload))
-        assert 'SQL 查询生成器' in system
+        assert '你是 Executor' in system
         task=json.loads(user)
         assert set(task)=={'id','objective'}
         return json.dumps({'sql': "SELECT SenderFromAddress FROM EmailEvents WHERE NetworkMessageId = 'synthetic-message'"})
-    repo=ExcytinBenchSnapshotRepository()
-    memory=MemoryContextService(repositories={'excytin_bench':repo})
-    with patch.object(repo,'retrieve_procedures',return_value=[p]):
-        workflow=ExcytinBenchWorkflow(llm=llm,memory_contexts=memory)
-        workflow.start({'context':'NetworkMessageId synthetic-message','question':'Find sender'})
-        action=workflow.propose_next_action()
+    # Restore legacy metadata as stored state, without injecting memory into workflow.
+    stored_tree=parse_itt(payload, 'restored', 1, procedures=[p])
+    from src.benchmarks.excytin_bench.workflow import WorkflowState
+    from src.schema import Event
+    workflow=ExcytinBenchWorkflow(llm=llm)
+    workflow.state=WorkflowState(event=Event(event_id='restored', event_name='test', message='Find sender'),
+                                 ttt=stored_tree, initial_input='Find sender')
+    action=workflow.propose_next_action()
     assert action.content == "SELECT SenderFromAddress FROM EmailEvents WHERE NetworkMessageId = 'synthetic-message';"
-    assert len(calls)==2
+    assert len(calls)==1
 
 
 def test_selector_echo_cannot_replace_canonical_template():

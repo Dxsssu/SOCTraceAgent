@@ -98,7 +98,7 @@ def test_benchmark_progressive_two_query_investigation():
             return "[]"
         if '最终答案整理器' in system:
             return 'answer: "42, 2026-01-01T00:00:00Z"'
-        if '你是 SQL 查询生成器' in system:
+        if '你是 Executor' in system:
             return 'sql: SELECT ProcessId FROM AlertEvidence LIMIT 1'
         if '你是 Reviewer' in system:
             if len(workflow.state.executions) == 1:

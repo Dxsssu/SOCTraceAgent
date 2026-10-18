@@ -4,32 +4,25 @@ import threading
 from typing import Any
 
 from src.agent.executor import ExecutorRuntime
-from src.agent.llm import call_llm
 from src.agent.planner import PlannerRuntime
 from src.agent.reviewer import ReviewerRuntime
 from src.memory.working_memory import TTTStore
 from src.messaging import RoleName, SQLiteMessageBus
 from src.storage import SQLiteStorage
 
-from .context import MemoryContextService
-
 
 class SOCTraceWorkflow:
-    """Compose role runtimes with shared state and role-scoped memory views."""
+    """Compose role runtimes with shared working state; LTM is detached."""
 
     def __init__(
         self,
         *,
         db_path: str | None = None,
         poll_interval: float = 5.0,
-        memory_contexts: MemoryContextService | None = None,
     ) -> None:
         self.storage = SQLiteStorage(db_path)
         self.ttt_store = TTTStore(db_path)
         self.bus = SQLiteMessageBus(db_path)
-        self.memory_contexts = memory_contexts or MemoryContextService(
-            procedure_selector=call_llm
-        )
         shared: dict[str, Any] = {
             "storage": self.storage,
             "ttt_store": self.ttt_store,
@@ -38,7 +31,6 @@ class SOCTraceWorkflow:
         }
         self.planner = PlannerRuntime(
             **shared,
-            context_provider=self.memory_contexts.planner_view(),
         )
         self.executor = ExecutorRuntime(
             **shared,

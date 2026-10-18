@@ -15,19 +15,19 @@ from src.schema import Event, EventStatus, Execution, ExecutionStatus, TTTNodeSt
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
 from src.tools import get_registered_tool, list_registered_tools
-from src.workflow.context import ExecutorContextProvider, NullExecutorContextProvider
+from src.workflow.providers import ExecutorContextProvider, NullExecutorContextProvider
 
 logger = logging.getLogger(__name__)
 
 
 SQL_EXECUTOR_SYSTEM_PROMPT = """
 # 角色定位
-你是 SQL 查询生成器，根据下发的任务构造一条 MySQL 只读 SQL 查询语句。
-输入仅包含 id 和 objective。如果 objective 附有本次查询修复信息，根据其中的 failed_sql 和 error 修复查询，输出一条新的 MySQL 只读 SQL 查询语句，不要提出建议或请求用户确认。
-objective 中给出的精确表名和列名必须保留，不能改写成猜测的英文表名。若任务仅写“安全告警表”等抽象名称而没有确切表名，或修复信息显示表/列不存在，则先生成一条 information_schema.TABLES/COLUMNS 元数据查询以核对候选结构；限定 TABLE_SCHEMA=DATABASE()，按相关表名或字段关键词筛选。不得换一个猜测的表名继续查询。
+你是 Executor，执行者，负责将下发的调查任务转换成一条 MySQL 只读 SQL 查询语句。
 # 输出格式
-仅输出一个合法 YAML 对象，且只能包含 sql 字段，其值为一条 MySQL 只读 SQL 查询语句。
-不要输出解释、分析、建议、提问、Markdown 代码围栏或任何其他字段和无关内容。
+只能输出一个合法 YAML 对象，且只能包含 sql 字段，其值为一条 MySQL 只读 SQL 查询语句。
+回复必须直接以 sql: 开始，并在该字段的值结束后立即结束；前后不得添加任何其他内容。
+严禁输出解释、分析、推理过程、建议、提问、标题、步骤、注释说明、Markdown 代码围栏、示例或其他字段。
+唯一允许的回复形式：
 sql: "一条 MySQL 只读查询语句"
 """.strip()
 

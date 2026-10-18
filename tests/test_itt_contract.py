@@ -95,7 +95,7 @@ def test_runtime_metadata_excluded_from_every_model_call():
             assert "operations" in instruction and "MySQL" in instruction
             assert json.loads(content) == {"context": "Alert A", "question": "Locate device"}
             return yaml.safe_dump(initial_operations(plan()))
-        if "你是 SQL 查询生成器" in system: return "sql: SELECT 1"
+        if "你是 Executor" in system: return "sql: SELECT 1"
         if "你是 Reviewer" in system: return 'summary: device identified\nfacts: []\nlimitations: []'
         return "answer: device"
     workflow = ExcytinBenchWorkflow(llm=llm)
@@ -104,7 +104,7 @@ def test_runtime_metadata_excluded_from_every_model_call():
     workflow.propose_next_action()
     workflow.act("[(1,)]")
     assert workflow.state.event.context["runtime_info"]["qid"] == "RUNTIME_SECRET"
-    assert len(calls) == 5  # No answer synthesizer; Verifier handled separately
+    assert len(calls) == 3  # Planner, Executor, Reviewer; no memory selectors.
 
 
 def test_yaml_list_parser_rejects_wrappers():
@@ -122,7 +122,7 @@ def test_reviewer_retry_reports_character_count_and_preserves_evidence():
         prompts.append(prompt)
         return yaml.safe_dump({"summary": "x" * 300 if len(prompts) == 1 else "One process record.",
                                "facts": facts, "limitations": []})
-    workflow = ExcytinBenchWorkflow(llm=llm, memory_contexts=MemoryContextService(enabled=False))
+    workflow = ExcytinBenchWorkflow(llm=llm)
     result = workflow._call_yaml_role("reviewer", REVIEWER_SYSTEM_PROMPT, "original observation", validator=parse_review)
     assert len(prompts) == 2
     assert "300 字符" in prompts[1]
@@ -180,7 +180,7 @@ def test_benchmark_executor_omits_stored_pm_metadata():
             payload = plan()
             payload[0]["children"][0]["children"][0]["semantic_refs"] = PM_REFS
             return yaml.safe_dump(initial_operations(payload))
-        if "你是 SQL 查询生成器" in system:
+        if "你是 Executor" in system:
             assert set(json.loads(prompt)) == {"id", "objective"}
             return "sql: SELECT ProcessCommandLine FROM DeviceProcessEvents LIMIT 1"
         return "[]"
@@ -188,7 +188,7 @@ def test_benchmark_executor_omits_stored_pm_metadata():
     pm = {"name": "Process lookup", "status": "active", "goal": "Find process command line",
           "input_slots": {}, "operations": "Read process events", "semantic_refs": PM_REFS}
     with patch.object(ExcytinBenchSnapshotRepository, "retrieve_procedures", return_value=[pm]):
-        workflow = ExcytinBenchWorkflow(llm=llm, memory_contexts=service)
+        workflow = ExcytinBenchWorkflow(llm=llm)
         workflow.start({"context": "device A", "question": "What is the process command line?"})
     action = workflow.propose_next_action()
     assert "ProcessCommandLine" in action.content

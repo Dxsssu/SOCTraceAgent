@@ -16,7 +16,7 @@ def test_role_retry_refreshes_system_prefix_and_preserves_user(monkeypatch):
         return "invalid" if len(calls) == 1 else 'summary: reviewed\nfacts: []\nlimitations: []'
 
     workflow = ExcytinBenchWorkflow(
-        llm=model, memory_contexts=MemoryContextService(enabled=False)
+        llm=model
     )
     result = workflow._call_yaml_role(
         "reviewer", "system instructions", "original input", validator=parse_review

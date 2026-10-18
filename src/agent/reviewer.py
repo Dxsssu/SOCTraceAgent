@@ -16,7 +16,7 @@ from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageB
 from src.schema import Event, EventStatus, RoundReview
 from src.schema.event import utc_now
 from src.storage import SQLiteStorage
-from src.workflow.context import NullReviewerContextProvider, ReviewerContextProvider
+from src.workflow.providers import NullReviewerContextProvider, ReviewerContextProvider
 
 logger = logging.getLogger(__name__)
 

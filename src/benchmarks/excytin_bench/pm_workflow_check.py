@@ -80,6 +80,7 @@ def main():
     parser.add_argument("--max-steps", type=int, default=12)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    parser.error("LTM is detached from workflow during reconstruction; use checkpoint dfb8646 for PM experiments")
     load_dotenv(".env")
     load_dotenv("docker/neo4j/.env")
     load_dotenv("docker/excytin-mysql/.env")

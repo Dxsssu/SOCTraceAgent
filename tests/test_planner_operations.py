@@ -169,7 +169,7 @@ def test_pm_template_uses_canonical_definition():
 
 
 def test_background_workflow_initial_and_replan_use_operations(tmp_path):
-    workflow = SOCTraceWorkflow(db_path=str(tmp_path / "runtime.db"), memory_contexts=MemoryContextService(enabled=False))
+    workflow = SOCTraceWorkflow(db_path=str(tmp_path / "runtime.db"))
     event = Event(event_id="event", event_name="alert", message="Identify process")
     with patch("src.agent.planner.call_llm", return_value=yaml.safe_dump(initial())):
         event = workflow.planner.process_initial_plan(event)
@@ -192,12 +192,12 @@ def test_sql_verifier_cannot_be_bypassed_by_empty_operations():
     def model(system, user):
         if "系统中的 Planner" in system:
             return yaml.safe_dump(initial()) if user.startswith("下面是此次事件的背景和调查问题") else "operations: []"
-        if "SQL 查询生成器" in system:
+        if "你是 Executor" in system:
             return "sql: SELECT 1"
         if "你是 Reviewer" in system:
             return 'summary: Candidate only\nfacts: []\nlimitations: []'
         return 'can_answer: "no"'
-    workflow = ExcytinBenchWorkflow(llm=model, memory_contexts=MemoryContextService(enabled=False))
+    workflow = ExcytinBenchWorkflow(llm=model)
     workflow.act("Locate target")
     with pytest.raises(ValueError, match="add a new todo T"):
         workflow.act("[(1,)]")

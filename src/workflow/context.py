@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any
 
 from neo4j import GraphDatabase
 
@@ -75,75 +75,11 @@ class MemoryAccessPolicy:
             )
 
 
-class PlannerContextProvider(Protocol):
-    def build(
-        self,
-        event: Event,
-        *,
-        review: RoundReview | None = None,
-        ttt: TracebackTaskTree | None = None,
-        executions: Sequence[Any] = (),
-    ) -> dict[str, Any]: ...
-
-
-class ExecutorContextProvider(Protocol):
-    def build(
-        self,
-        event: Event,
-        *,
-        node: Any,
-        executions: Sequence[Any] = (),
-        include_episodic: bool = False,
-        episodic_query: str | None = None,
-        episodic_background: str | None = None,
-    ) -> dict[str, Any]: ...
-
-
-class ReviewerContextProvider(Protocol):
-    def build(
-        self,
-        event: Event,
-        *,
-        ttt: TracebackTaskTree,
-        executions: Sequence[Any] = (),
-    ) -> dict[str, Any]: ...
-
-
-class NullPlannerContextProvider:
-    def build(
-        self,
-        event: Event,
-        *,
-        review: RoundReview | None = None,
-        ttt: TracebackTaskTree | None = None,
-        executions: Sequence[Any] = (),
-    ) -> dict[str, Any]:
-        return {"enabled": False, "reason": "no_memory_profile"}
-
-
-class NullExecutorContextProvider:
-    def build(
-        self,
-        event: Event,
-        *,
-        node: Any,
-        executions: Sequence[Any] = (),
-        include_episodic: bool = False,
-        episodic_query: str | None = None,
-        episodic_background: str | None = None,
-    ) -> dict[str, Any]:
-        return {"enabled": False, "reason": "no_memory_profile"}
-
-
-class NullReviewerContextProvider:
-    def build(
-        self,
-        event: Event,
-        *,
-        ttt: TracebackTaskTree,
-        executions: Sequence[Any] = (),
-    ) -> dict[str, Any]:
-        return {"enabled": False, "reason": "no_memory_profile"}
+# Re-export legacy contracts for standalone LTM tooling.
+from .providers import (
+    PlannerContextProvider, ExecutorContextProvider, ReviewerContextProvider,
+    NullPlannerContextProvider, NullExecutorContextProvider, NullReviewerContextProvider,
+)
 
 
 _TOKEN_RE = re.compile(r"[a-z][a-z0-9_:-]{1,}|[\u4e00-\u9fff]{2,}", re.IGNORECASE)

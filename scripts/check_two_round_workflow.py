@@ -73,7 +73,7 @@ def main():
         return isinstance(itt, list) and all('children' in g and all('children' in e for e in g['children']) for g in itt)
 
     def llm(system, user):
-        role = next(r for r, marker in [('planner', '系统中的 Planner'), ('executor', 'SQL 查询生成器'),
+        role = next(r for r, marker in [('planner', '系统中的 Planner'), ('executor', '你是 Executor'),
                      ('reviewer', '你是 Reviewer'), ('verifier', '你是 Verifier')] if marker in system)
         if role == 'planner' and workflow.state and len(workflow.state.reviews) >= 2:
             raise RoundLimitReached()
@@ -84,7 +84,7 @@ def main():
         else:
             payload = yaml.safe_load(base)
         if role == 'executor':
-            check('executor_only_id_objective', set(payload) == {'id', 'objective'})
+            check('executor_task_and_optional_error', set(payload) in ({'id', 'objective'}, {'id', 'objective', 'error'}))
         elif role == 'reviewer':
             check('reviewer_only_current_task_and_execution', set(payload) == {'task', 'executor_result'}
                   and set(payload['task']) == {'id', 'objective'}
@@ -124,7 +124,7 @@ def main():
             save()
             print(f"call {entry['index']} {role} finished {entry['seconds']}s", flush=True)
 
-    workflow = ExcytinBenchWorkflow(llm=llm, memory_contexts=MemoryContextService(enabled=False))
+    workflow = ExcytinBenchWorkflow(llm=llm)
     db = MySQLQueryExecutor(case.incident, password=os.environ['MYSQL_ROOT_PASSWORD'])
     try:
         workflow.start({k: case.question[k] for k in ('context', 'question')})

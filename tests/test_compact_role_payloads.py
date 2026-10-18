@@ -110,7 +110,7 @@ def test_two_round_workflow_preserves_evidence_through_planner_and_verifier():
             return yaml.safe_dump({'operations': [{'op': 'add_task', 'entity_id': 'E1',
                 'objective': 'Check host-A process GUID 000123456789012345678901234567890'}]})
         payload = yaml.safe_load(user)
-        if 'SQL 查询生成器' in system:
+        if '你是 Executor' in system:
             calls.append('executor')
             assert set(payload) == {'id', 'objective'}
             return 'sql: SELECT * FROM processes'
@@ -127,7 +127,7 @@ def test_two_round_workflow_preserves_evidence_through_planner_and_verifier():
         assert tasks[0]['execution_result']['facts'] == FACTS
         assert tasks[0]['execution_result']['source']['execution_id'] == 'E1'
         return 'can_answer: "no"' if len(tasks) == 1 else 'can_answer: "yes"\nanswer: /tmp/first'
-    workflow = ExcytinBenchWorkflow(llm=model, memory_contexts=MemoryContextService(enabled=False))
+    workflow = ExcytinBenchWorkflow(llm=model)
     action = workflow.act({'context': 'host-A alert', 'question': 'Find executable'})
     assert workflow.state.pending_node.metadata['execution_code'] == action.content
     second = workflow.act(compact_json(FACTS))

@@ -21,7 +21,7 @@ from src.schema.investigation import task_input
 from src.schema.itt import itt_payload, compact_json, planner_prompt
 from src.schema.planner_operations import apply_planner_operations, parse_planner_response
 from src.storage import SQLiteStorage
-from src.workflow.context import NullPlannerContextProvider, PlannerContextProvider
+from src.workflow.providers import NullPlannerContextProvider, PlannerContextProvider
 
 logger = logging.getLogger(__name__)
 

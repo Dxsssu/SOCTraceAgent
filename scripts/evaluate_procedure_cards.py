@@ -17,9 +17,8 @@ from dotenv import load_dotenv
 
 from src.benchmarks.excytin_bench.runner import ExcytinBenchmarkRunner, load_test_cases
 from src.benchmarks.excytin_bench.workflow import ExcytinBenchWorkflow
-from src.memory.longterm_memory.procedural_memory.excytin_bench.cards.retrieval import DEFAULT_CATALOG, ProcedureCardMemory
+from src.memory.longterm_memory.procedural_memory.excytin_bench.cards.retrieval import DEFAULT_CATALOG
 from src.memory.longterm_memory.procedural_memory.excytin_bench.evaluate import TrackedLLM
-from src.workflow.context import MemoryContextService
 
 
 def write(path, value):
@@ -41,6 +40,8 @@ def main():
     parser.add_argument("--compact-evidence", action="store_true")
     parser.add_argument("--run-id", default=datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ"))
     args = parser.parse_args()
+    if "pm" in args.modes:
+        parser.error("LTM is detached from workflow during reconstruction; use --modes baseline or checkpoint dfb8646 for PM experiments")
     load_dotenv()
     load_dotenv("docker/excytin-mysql/.env")
     cases = {c.case_id: c for c in load_test_cases(Path("data/excytin-bench/huggingface/questions") / args.split)}
@@ -116,8 +117,7 @@ def main():
                     print(json.dumps({"case": case_id, "mode": mode, "call": len(calls), "seconds": record["seconds"], "error": record.get("error")}), flush=True)
 
             runner = ExcytinBenchmarkRunner(max_steps=args.max_steps, workflow_factory=lambda limit: ExcytinBenchWorkflow(
-                max_steps=limit, llm=invoke, memory_contexts=MemoryContextService(enabled=False), planner_pm_enabled=mode == "pm",
-                planner_memory=ProcedureCardMemory(catalog_snapshot) if mode == "pm" else None,
+                max_steps=limit, llm=invoke,
                 executor_format_attempts=args.executor_format_attempts, compact_evidence=args.compact_evidence))
             result = runner.run_case(cases[case_id], case_dir=out / mode, split=args.split)
             result.update(mode=mode, usage=dict(llm.usage), model=llm.client.config.model)

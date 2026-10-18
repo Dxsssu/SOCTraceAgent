@@ -40,7 +40,7 @@ def role_llm(system_prompt: str, user_prompt: str) -> str:
         payload = json.loads(user_prompt)
         assert all(set(p) == {"id", "name", "inputs", "returns"} for p in payload["catalog"])
         return json.dumps([p["id"] for p in payload["catalog"]][:1])
-    if "你是 SQL 查询生成器" in system_prompt:
+    if "你是 Executor" in system_prompt:
         task = json.loads(user_prompt)
         assert set(task) == {"id", "objective"}
         assert "procedural_memory" not in user_prompt
@@ -60,7 +60,7 @@ sql: SELECT AlertId FROM AlertEvidence LIMIT 5
 response_type: FINAL_ANSWER
 answer: alert-1
 """
-    assert "# 适用的 Procedural Memory" in system_prompt
+    assert "# 适用的 Procedural Memory" not in system_prompt
     assert "episodic_memory" not in user_prompt
     return INITIAL_OPERATIONS
 
@@ -86,17 +86,16 @@ def test_disabled_ltm_never_loads_repositories_or_retrieves_recovery(monkeypatch
         calls.append((system, user))
         assert "# 适用的 Procedural Memory" not in system
         assert "# Semantic Memory" not in system
-        if "你是 SQL 查询生成器" in system:
+        if "你是 Executor" in system:
             payload = json.loads(user)
-            assert set(payload) == {"id", "objective"}
-            if "本次查询修复信息" in payload["objective"]:
-                assert set(json.loads(payload["objective"].rsplit("\n", 1)[1])) == {"failed_sql", "error"}
+            assert set(payload) == ({"id", "objective", "error"} if "error" in payload else {"id", "objective"})
+            if "error" in payload:
+                assert set(json.loads(payload["error"].rsplit("\n", 1)[1])) == {"failed_sql", "error"}
             return "sql: SELECT UnknownField FROM SecurityAlert LIMIT 1"
         return INITIAL_OPERATIONS
     workflow = ExcytinBenchWorkflow(llm=llm)
     workflow.act("Investigate the alert")
     workflow.act("ProgrammingError: Unknown column 'UnknownField' in 'field list'")
-    assert workflow.memory_contexts.repositories == {}
     assert workflow.get_logging()["ltm_enabled"] is False
     assert workflow.get_logging()["memory_retrievals"] == []
     assert len(calls) == 3
@@ -190,13 +189,8 @@ def test_external_action_workflow_waits_for_environment_observation() -> None:
         and item["payload"]["reason"] == "verifier_confirmed"
         for item in logging["trace"]
     )
-    assert logging["memory_retrievals"][0]["allowed_memory_types"] == [
-        "procedural",
-    ]
-    assert all(
-        item["allowed_memory_types"] != ["procedural", "semantic", "episodic"]
-        for item in logging["memory_retrievals"]
-    )
+    assert logging["memory_retrievals"] == []
+    assert logging["ltm_enabled"] is False
 
 
 def test_initial_dict_uses_allowlist_and_excludes_ground_truth() -> None:
@@ -261,13 +255,13 @@ def test_sql_error_is_consumed_before_retry() -> None:
             payload = json.loads(user_prompt)
             assert all(set(p) == {"id", "name", "inputs", "returns"} for p in payload["catalog"])
             return json.dumps([p["id"] for p in payload["catalog"]][:1])
-        if "你是 SQL 查询生成器" in system_prompt:
+        if "你是 Executor" in system_prompt:
             calls["executor"] += 1
             if calls["executor"] == 1:
                 assert "episodic_memory" not in user_prompt
             else:
                 assert "episodic_memory" not in user_prompt
-                assert set(json.loads(json.loads(user_prompt)["objective"].rsplit("\n", 1)[1])) == {"failed_sql", "error"}
+                assert set(json.loads(json.loads(user_prompt)["error"].rsplit("\n", 1)[1])) == {"failed_sql", "error"}
                 assert "Unknown column" in user_prompt
             return """
 response_type: EXECUTE_SQL
@@ -305,7 +299,7 @@ def test_empty_result_goes_directly_to_reviewer_without_memory(monkeypatch) -> N
 
     def llm(system, user):
         if "你是 Verifier" in system: return verify(user)
-        if "你是 SQL 查询生成器" in system:
+        if "你是 Executor" in system:
             calls["executor"] += 1
         if "你是 Reviewer" in system:
             calls["reviewer"] += 1
@@ -341,7 +335,7 @@ def test_executor_errors_allow_only_one_em_repair() -> None:
             payload = json.loads(user_prompt)
             assert all(set(p) == {"id", "name", "inputs", "returns"} for p in payload["catalog"])
             return json.dumps([p["id"] for p in payload["catalog"]][:1])
-        if "你是 SQL 查询生成器" in system_prompt:
+        if "你是 Executor" in system_prompt:
             calls["executor"] += 1
             if calls["executor"] == 1:
                 assert "episodic_memory" not in user_prompt
@@ -396,7 +390,7 @@ def test_query_budget_exhaustion_skips_replanning_and_submits() -> None:
             payload = json.loads(user_prompt)
             assert all(set(p) == {"id", "name", "inputs", "returns"} for p in payload["catalog"])
             return json.dumps([p["id"] for p in payload["catalog"]][:1])
-        if "你是 SQL 查询生成器" in system_prompt:
+        if "你是 Executor" in system_prompt:
             calls["executor"] += 1
             return "response_type: EXECUTE_SQL\nsql: SELECT CompromisedEntity FROM SecurityAlert"
         if "你是 Reviewer" in system_prompt:
@@ -464,7 +458,7 @@ def test_benchmark_planner_documented_initial_contract_is_executable():
     assert "base_version" not in PLANNER_SYSTEM_PROMPT
 
 
-def test_executor_receives_only_id_objective_even_during_repair(monkeypatch):
+def test_executor_repair_adds_error_without_changing_objective(monkeypatch):
     from src.workflow.context import MemoryContextService
     from src.schema.itt import itt_payload
 
@@ -477,10 +471,10 @@ def test_executor_receives_only_id_objective_even_during_repair(monkeypatch):
 
     def llm(system, user):
         if "你是 Verifier" in system: return verify(user)
-        if "你是 SQL 查询生成器" in system:
+        if "你是 Executor" in system:
             task = json.loads(user)
             prompts.append(task)
-            assert set(task) == {"id", "objective"}
+            assert set(task) == ({"id", "objective"} if len(prompts) == 1 else {"id", "objective", "error"})
             assert "private-context-marker" not in user
             assert "private-question-marker" not in user
             return "response_type: EXECUTE_SQL\nsql: SELECT AlertId FROM AlertEvidence LIMIT 1"
@@ -498,8 +492,10 @@ def test_executor_receives_only_id_objective_even_during_repair(monkeypatch):
     assert workflow.state.ttt_history[-1] == workflow.state.ttt.to_dict()
     workflow.propose_next_action()
     assert prompts[1]["id"] == task["id"]
-    assert prompts[1]["objective"].startswith(task["objective"])
-    assert json.loads(prompts[1]["objective"].rsplit("\n", 1)[1])["failed_sql"] == first.content
+    assert prompts[1]["objective"] == prompts[0]["objective"] == task["objective"]
+    assert set(prompts[1]) == {"id", "objective", "error"}
+    assert "请参考并重新生成" in prompts[1]["error"]
+    assert json.loads(prompts[1]["error"].rsplit("\n", 1)[1])["failed_sql"] == first.content
     workflow.accept_observation("[{\"AlertId\": \"alert-1\"}]", query_success=True)
     task = itt_payload(workflow.state.ttt)[0]["children"][0]["children"][0]
     assert task["status"] == "done"
@@ -507,7 +503,7 @@ def test_executor_receives_only_id_objective_even_during_repair(monkeypatch):
     assert task["execution_result"]["summary"] == "The queried alert identifier directly answers the question."
 
 
-def test_error_recovery_matches_em_and_reexecutes_without_sm_pm(monkeypatch):
+def test_error_recovery_uses_actual_error_without_ltm(monkeypatch):
     from src.workflow.context import MemoryContextService
     from src.schema.itt import itt_payload
     calls = []
@@ -526,13 +522,13 @@ def test_error_recovery_matches_em_and_reexecutes_without_sm_pm(monkeypatch):
 
     def llm(system, user):
         if "你是 Verifier" in system: return verify(user)
-        if "你是 SQL 查询生成器" in system:
+        if "你是 Executor" in system:
             payload = json.loads(user)
             calls.append(payload)
             if len(calls) == 1:
                 assert "error_recovery" not in payload
                 return "response_type: EXECUTE_SQL\nsql: SELECT Title FROM SecurityAlert WHERE SystemAlertId = 'alert-1'"
-            recovery = json.loads(payload["objective"].rsplit("\n", 1)[1])
+            recovery = json.loads(payload["error"].rsplit("\n", 1)[1])
             assert "Title" in recovery["error"]
             assert set(recovery) == {"failed_sql", "error"}
             assert "SystemAlertId = 'alert-1'" in recovery["failed_sql"]
@@ -544,7 +540,7 @@ def test_error_recovery_matches_em_and_reexecutes_without_sm_pm(monkeypatch):
     workflow.act("Find alert name")
     assert retrievals == []
     action = workflow.act("ProgrammingError: Unknown column 'Title' in 'field list'")
-    assert len(retrievals) == 1
+    assert retrievals == []
     assert "AlertName" in action.content
     assert "SystemAlertId = 'alert-1'" in action.content
     workflow.accept_observation("[('suspicious login',)]", query_success=True)
@@ -552,7 +548,7 @@ def test_error_recovery_matches_em_and_reexecutes_without_sm_pm(monkeypatch):
     assert task["status"] == "done"
     assert len(json.loads(task["execution_code"])) == 2
     assert "error_recovery" not in task
-    assert len(retrievals) == 1
+    assert retrievals == []
 
 
 def test_reviewer_receives_only_current_executor_result():
@@ -634,12 +630,12 @@ def test_executor_format_and_local_validation_errors_do_not_retry(response):
     def llm(system, user):
         if '系统中的 Planner' in system:
             return INITIAL_OPERATIONS
-        if 'SQL 查询生成器' in system:
+        if '你是 Executor' in system:
             calls.append(user)
             return response
         raise AssertionError(system)
     workflow = ExcytinBenchWorkflow(llm=llm, yaml_response_attempts=5,
-        memory_contexts=MemoryContextService(enabled=False))
+        )
     with pytest.raises((ValueError, yaml.YAMLError)):
         workflow.act('Investigate the alert')
     assert len(calls) == 1
@@ -657,7 +653,7 @@ def test_optional_local_sql_syntax_repair_does_not_execute_rejected_query():
         calls.append(json.loads(user))
         return 'sql: "SELECT (1"' if len(calls) == 1 else 'sql: SELECT 1'
     workflow = ExcytinBenchWorkflow(llm=llm, executor_format_attempts=2,
-                                   memory_contexts=MemoryContextService(enabled=False))
+                                   )
     action = workflow.act('Investigate the alert')
     assert action.content == 'SELECT 1;'
     assert len(calls) == 2
@@ -677,7 +673,7 @@ def test_unsafe_sql_is_not_retried_even_with_optional_syntax_repair():
         calls.append(user)
         return 'sql: DELETE FROM SecurityAlert'
     workflow = ExcytinBenchWorkflow(llm=llm, executor_format_attempts=2,
-                                   memory_contexts=MemoryContextService(enabled=False))
+                                   )
     with pytest.raises(ValueError):
         workflow.act('Investigate the alert')
     assert len(calls) == 1

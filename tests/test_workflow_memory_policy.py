@@ -162,7 +162,7 @@ def test_executor_tool_intent_contains_only_current_task() -> None:
     assert "procedural_memory" not in intent
 
 
-def test_orchestrator_wires_shared_state_and_scoped_views() -> None:
+def test_orchestrator_wires_shared_state_without_ltm() -> None:
     with TemporaryDirectory() as directory:
         db_path = str(Path(directory) / "workflow.db")
         workflow = SOCTraceWorkflow(db_path=db_path, poll_interval=0.01)
@@ -170,7 +170,7 @@ def test_orchestrator_wires_shared_state_and_scoped_views() -> None:
         assert workflow.executor.ttt_store is workflow.ttt_store
         assert workflow.reviewer.bus is workflow.bus
         assert (
-            workflow.planner.context_provider.__class__.__name__ == "PlannerMemoryView"
+            workflow.planner.context_provider.__class__.__name__ == "NullPlannerContextProvider"
         )
         assert (
             workflow.executor.context_provider.__class__.__name__

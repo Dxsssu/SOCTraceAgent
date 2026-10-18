@@ -126,7 +126,9 @@ def test_failed_observation_and_planned_parameters_do_not_unlock_procedure():
     assert memory.build(event, ttt=tree)["card_retrieval"]["selected_ids"] == ["message_to_sender"]
 
 
-def test_planner_only_integration_with_global_ltm_off():
+def test_workflow_ignores_legacy_pm_environment(monkeypatch):
+    monkeypatch.setenv("SOCAGENT_PLANNER_PM_ENABLED", "true")
+    monkeypatch.setenv("SOCAGENT_LTM_ENABLED", "true")
     calls = []
     def fake(system, prompt):
         calls.append((system, prompt))
@@ -135,13 +137,13 @@ def test_planner_only_integration_with_global_ltm_off():
 - {op: add_entity, ref: url, goal_id: $goal, objective: URL https://example.invalid/a}
 - {op: add_task, entity_id: $url, objective: 在 EmailUrlInfo 按 Url 查询邮件标识}
 '''
-    workflow = ExcytinBenchWorkflow(llm=fake, memory_contexts=MemoryContextService(enabled=False), planner_pm_enabled=True)
+    workflow = ExcytinBenchWorkflow(llm=fake)
     workflow.start({"context": "https://example.invalid/a", "question": "Who sent the email?"})
-    assert "url_to_message" in calls[0][0]
-    assert "needs_prior_observation" in calls[0][0]
+    assert "url_to_message" not in calls[0][0]
+    assert "needs_prior_observation" not in calls[0][0]
     logging = workflow.get_logging()
-    assert logging["planner_pm_enabled"] and not logging["ltm_enabled"]
-    assert logging["memory_retrievals"][0]["card_retrieval"]["model_calls"] == 0
+    assert not logging["planner_pm_enabled"] and not logging["ltm_enabled"]
+    assert logging["memory_retrievals"] == []
     assert planner_prompt(PLANNER_SYSTEM_PROMPT, {"enabled": True, "procedure_cards": []}) == PLANNER_SYSTEM_PROMPT
 
 
@@ -159,8 +161,8 @@ def test_optional_executor_format_repair_preserves_two_field_input():
         assert set(payload) == {"id", "objective"}
         calls.append(payload)
         return "Here is a KQL explanation" if len(calls) == 1 else "sql: SELECT 1"
-    workflow = ExcytinBenchWorkflow(llm=fake, memory_contexts=MemoryContextService(enabled=False),
-                                   planner_pm_enabled=False, executor_format_attempts=2)
+    workflow = ExcytinBenchWorkflow(llm=fake,
+                                   executor_format_attempts=2)
     workflow.start({"context": "", "question": "查邮件"})
     action = workflow.propose_next_action()
     assert action.content == "SELECT 1;"

@@ -243,7 +243,7 @@ def main(argv=None):
             cases=[c.manifest_view() for c in cases], versions=json.loads((AGENT_ROOT/'versions.json').read_text()),
             baseline_source_sha256=(hashlib.sha256((UPSTREAM/'secgym/agents/baseline_agent.py').read_bytes()).hexdigest()
                                     if 'paper_baseline' in selected_agents else None),
-            adaptations=['Native BaselineAgent with reset and transport override; native CLI loops; ours with SM/PM/conditional EM',
+            adaptations=['Native BaselineAgent with reset and transport override; native CLI loops; ours without LTM (detached for reconstruction)',
                          'Shared total action budget, terminal on submission or Nth query; official evaluator with independent judge',
                          'All model calls share temperature=0 and process quota limiter; thinking settings recorded in protocol',
                          'Full test set by default; optional per-incident subsampling; no train supplementation',

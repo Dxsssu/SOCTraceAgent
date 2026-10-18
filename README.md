@@ -2,11 +2,13 @@
 
 SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Planner、Executor、Reviewer** 围绕渐进式 TTT（Traceback Task Tree，溯源任务树）协作调查。项目包含本地 Splunk/BOTS 调查、ExCyTIn-Bench 测评、三类长期记忆，以及外部 Agent 对比实验。Python 包名和部分运行时标识沿用 `socagent` / `SOCAgent`。
 
+当前 LTM 正在重建：本地调查和 SQL workflow 均已断开长期记忆接入，旧环境开关不会重新启用。知识库与离线工具保留；接入前版本已保存至 Git 提交 `dfb8646`。
+
 当前主要能力：
 
 - **告警调查**：LLM 规划任务、选择 MCP 工具，通过 Splunk REST API 查询真实日志，逐步复盘和重规划。
 - **共享工作记忆**：SQLite 持久化事件、版本化 TTT、执行证据、轮次复盘和审计消息。
-- **长期记忆**：按角色注入 Semantic / Episodic / Procedural Memory，SM 使用 L1/L2 YAML 文件；PM/EM 支持 JSON 快照和 Neo4j 后端。
+- **长期记忆（暂时移出 workflow）**：SM / PM / EM 及程序卡片保留供重建，当前调查不加载、不检索、不注入。
 - **Web 作战室**：创建和查看事件，展示任务树、执行记录与复盘，通过 Socket.IO 推送更新。
 - **测评与基线**：ExCyTIn SQL 调查流程、并行测评、结果落盘，以及 OpenCode、Qwen Code、Cline 和论文 BaselineAgent 的配对实验入口。
 
@@ -24,8 +26,6 @@ cp .env.example .env
 
 ```dotenv
 PARATERA_API_KEY=your_api_key
-# 首次运行使用仓库快照，无需启动 Neo4j
-SOCAGENT_LTM_BACKEND=snapshot
 ```
 
 然后启动：
@@ -54,7 +54,7 @@ uv run python main.py -role reviewer
 
 ```text
 告警 Event
-  -> Planner：接收 context + question 与适用 PM，建立 ITT
+  -> Planner：接收 context + question，建立 ITT
   -> Executor：执行一个 L3，记录 Execution 与证据
   -> Reviewer：生成 RoundReview
   -> Planner：提交版本化增量更新
@@ -63,8 +63,8 @@ uv run python main.py -role reviewer
 
 | 角色 | 职责 | 长期记忆权限 |
 | --- | --- | --- |
-| Planner | 建立目标与问题、展开任务、选择下一步、更新 TTT | PM（含 semantic_refs） |
-| Executor | 仅根据当前 T 构造查询；程序执行并回写 ITT | 正常仅使用 T；SQL error 后额外检索最多 1 条 EM |
+| Planner | 建立目标与问题、展开任务、选择下一步、更新 TTT | 无 |
+| Executor | 仅根据当前 T 构造查询；程序执行并回写 ITT | 无；SQL error 后仅使用真实错误重试 |
 | Reviewer | 提取本次查询的结构化事实和信息限制，由程序写回 ITT | 不检索记忆；仅当前任务和本次执行记录 |
 | Verifier（SQL workflow） | 每轮 Reviewer 后判断能否回答；能则直接输出答案，否则继续调查 | 不检索记忆 |
 
@@ -83,7 +83,7 @@ pending -> planned -> executing -> reviewing -> replanning
 
 Planner 输入只保留 `context` 与 `question`。运行时构建事件 ID、轮次等管理信息；`runtime_info` 仅用于运行记录，不传入模型或 PM 选择助手。
 
-PM 选择助手根据 question 和当前进展，从 active 查询模板的精简目录中一次选择最多一个模板。没有多阶段前提审核或独立复核。选中的模板可供 Planner 参考；历史 template_id 元数据仍可读取。当前 Executor 统一接收 id/objective 并返回 SQL，不再使用模板填参输出分支。模板只提供查询方法，不能改变 G 或证明答案；无适用 PM 时由轻量 SM 代理提供结构知识。
+当前 Planner 不接收 SM、PM 或程序卡片；Executor 不检索 EM。未知结构可通过只读结构查询调查。历史 template_id 元数据仍可读取。
 
 普通 SQLite 调查与 ExCyTIn 使用相同的 Planner **增量操作协议**，存储与展示仍保留完整 G/E/T 调查树：
 
@@ -95,7 +95,7 @@ PM 选择助手根据 question 和当前进展，从 active 查询模板的精�
 - 默认按树顺序选择首个可执行任务；`select_task` 可显式优先选择一个 todo T，不重排或改写历史树。已有可执行任务时可返回 `operations: []`。SQL workflow 中 Verifier 尚未确认答案且没有待执行任务时，必须新增 T。
 - 整批操作在内存中校验，失败不修改原快照；SQLite 写入继续检查期望版本。版本、轮次、状态与证据引用由程序维护。
 - Planner / Verifier 的 ITT 输入采用 YAML 嵌套树：G→E→T 通过 `children` 展示层级，各节点使用具名字段。保留节点 ID、目标及任务状态、SQL 和结构化证据，不裁剪历史；不使用列名加行数组的扁平表示。
-- Executor 只收到 `id/objective`；程序在执行前写入 `execution_code`。SQL 修复时把失败 SQL 和错误临时附到 objective，不修改保存的任务目标。
+- Executor 只收到 `id/objective`；程序在执行前写入 `execution_code`。SQL 修复时新增独立 `error` 字段，包含重新生成说明、失败 SQL 和报错结果，`objective` 保持原样。
 - Reviewer 只收到 `task: {id, objective}` 与本次 `executor_result`（实际 SQL/工具请求、返回结果、执行状态、来源和截断标记），不接收 context/question、全树或其他任务历史。
 - Reviewer 输出 `summary/facts/limitations`：summary 最多 240 字符；facts 是保留同一记录关联关系的字段对象列表，不受 summary 长度限制；limitations 说明歧义、缺失和省略。程序补充可信 source，将完整对象写入 T.execution_result，原始结果另存 executions。错误和空结果不会产生有效 facts；截断限制由程序强制标注。
 - Verifier 从嵌套 ITT 读取证据，不重复接收最新 summary；Planner 的 SQL 重规划输入只额外标记 `review.can_answer: "no"`。历史字符串 execution_result 仍能读取。
@@ -158,31 +158,18 @@ curl -X POST http://127.0.0.1:5008/api/event/create \
 
 Web 提供事件列表、详情、执行记录、复盘与层级查询；具体路由见 [src/webapp/server.py](src/webapp/server.py)。实时消息来自本地 SQLite watcher。
 
-## 长期记忆
+## 长期记忆（重建期间暂停接入）
 
-临时消融可在 `.env` 设置 `SOCAGENT_LTM_ENABLED=false`，关闭 workflow 的 SM/PM/EM 加载与检索；SQL 报错仍可依据真实错误重试。恢复时设为 `true` 并重启进程。默认值为 `true`。
+本地 `SOCTraceWorkflow` 与 SQL `ExcytinBenchWorkflow` 不再创建 `MemoryContextService`，也不检索 SM、PM、EM 或程序卡片。`SOCAGENT_LTM_ENABLED`、`SOCAGENT_PLANNER_PM_ENABLED`、`SOCAGENT_MEMORY_PROFILE` 和 Neo4j 配置不会启用 workflow 的长期记忆。
 
-长期记忆由 [MemoryContextService](src/workflow/context.py) 检索和裁剪后注入角色，不向 Agent 暴露通用 Cypher 或数据库访问接口。
+- SQLite 工作记忆、ITT、原始执行记录、Reviewer 证据和 Verifier 判断保持原有流程。
+- SQL 报错仍允许一次基于失败 SQL 和真实错误的重试，无 EM 检索。
+- workflow 构造参数 `memory_contexts`、`planner_memory`、`planner_pm_enabled` 已移除；旧调用会显式报错。
+- `src/memory/longterm_memory/`、`src/workflow/context.py`、知识库及离线构建/检索工具保留，方便重建。角色接口与空上下文实现独立位于 `src/workflow/providers.py`。
+- PM 在线对照实验暂停；`scripts.evaluate_procedure_cards` 仅可使用 `--modes baseline`。历史分析工具仍可读取已有结果。
+- 日志保留兼容字段：`ltm_enabled=false`、`planner_pm_enabled=false`、`memory_retrievals=[]`。
 
-| 类型 | 内容与来源 | 详细说明 |
-| --- | --- | --- |
-| Semantic Memory（SM） | L1 全局表目录（用途、实体）与 L2 单表字典（字段名、MySQL 类型、中文解释） | [构建与读取](src/memory/longterm_memory/semantic_memory/excytin_bench/README.md) |
-| Episodic Memory（EM） | 三字段失败恢复：背景、报错、修复；21 条，覆盖训练历史 70 次错误 | [构建与导入](src/memory/longterm_memory/episodic_memory/excytin_bench/README.md) |
-| Procedural Memory（PM） | 训练轨迹中重复的操作序列；以名称、状态、目标检索，按需读取输入槽和步骤 | [构建与导入](src/memory/longterm_memory/procedural_memory/excytin_bench/README.md) |
-
-普通事件通过 `context.memory_profile` 指定 `excytin_bench`，或设置默认 `SOCAGENT_MEMORY_PROFILE=excytin_bench`，才注入该 Profile 的记忆；事件配置优先。不设置时，普通 Splunk 调查不会注入 ExCyTIn 记忆。指定 Profile 不会把本地 Splunk Executor 切换为 MySQL 测评流程。
-
-SM 固定读取本地 `l1.yaml` 与 `l2/<表名>.yaml`。PM/EM 后端通过 `SOCAGENT_LTM_BACKEND` 选择：
-
-- `snapshot`：读取仓库内的 JSON 快照，无需 Neo4j。
-- `neo4j`：从已导入的 Neo4j 图加载，连接失败会报错。
-- `auto`：存在非空 `NEO4J_PASSWORD` 时尝试 Neo4j，连接失败回退到快照；否则直接读取快照。
-
-`.env.example` 含 Neo4j 占位密码，首次运行建议显式使用 `snapshot`。使用图后端时，按 [Neo4j 部署说明](docker/neo4j/README.md) 启动服务，将连接配置导出到进程或写入根目录 `.env`，再依次导入 **EM → PM**；导入时使用本地 L1/L2 校验 schema，无需 SM 图。重建 PM/EM JSON 不会自动更新 Neo4j。
-
-PM v5 保存可复用查询模板：`id/name/status/purpose/inputs/sql_template/returns/semantic_refs`。从训练成功查询中归纳 46 条模板（34 active、12 candidate），案件具体值参数化，表字段离线校验。在线仅一次有界模型选择（不再前提审核/独立复核），Planner 在 T 中引用 `template_id`，模板元数据保留兼容，但当前 Executor 统一返回 SQL；PM 未命中时检索精简 SM。模板与构建审计详见 `src/memory/longterm_memory/procedural_memory/excytin_bench/README.md`。Reviewer 不检索长期记忆；SQL 报错后仍仅一次 EM 修复。
-
-在线 SM 从完整 L1 选择一个精确表名，再读取对应 L2；EM v2 先按错误类型与对象查本地倒排索引，再以失败 SQL 的表/别名作用域消歧，优先报错位置并用 TF-IDF 相似度排序，最多取一条供 Executor 修复，未调用 embedding API。PM 使用以问题为目标的候选召回与适用性审查；引用存在不等于语义关联正确，真实执行仍需核实。
+接入前完整版本：Git 提交 `dfb8646`，分支 `feat/itt-efficiency-and-ltm-redesign`。旧设计细节见该版本 README 与各记忆模块文档。
 
 ## ExCyTIn-Bench 测评
 
@@ -199,22 +186,22 @@ context + question -> Planner / ITT -> 当前 T -> Executor 生成只读 SQL
 
 1. 测试题目：默认目录 `data/excytin-bench/huggingface/questions/test/`。数据目录不纳入 Git，需要单独准备上游数据；当前加载器要求八个 incident 的题目文件齐全。
 2. MySQL 数据：按 [MySQL 部署说明](docker/excytin-mysql/README.md) 准备数据、生成导入文件并启动所需 incident 容器。
-3. LLM 配置，以及 JSON 快照或已导入的 Neo4j 记忆。
+3. LLM 配置；当前流程无需长期记忆快照或 Neo4j。
 
-使用快照后端随机抽取 10 题：
+随机抽取 10 题：
 
 ```bash
 set -a
 source docker/excytin-mysql/.env
 set +a
 
-SOCAGENT_LTM_BACKEND=snapshot uv run python -m src.benchmarks.excytin_bench.runner \
+uv run python -m src.benchmarks.excytin_bench.runner \
   --sample-size 10 --seed 42 --max-steps 25 --workers 3 --no-llm-eval
 ```
 
 可用 `--incident incident_5` 限定抽题范围，`--question-dir` 和 `--output-dir` 覆盖输入、输出目录。runner **默认开启 LLM 裁判**；上例显式关闭，仅计算匹配和查询指标。需要模糊答案与部分步骤评分时改为 `--llm-eval`，会额外调用模型。
 
-默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 2 条 SQL；每次仅传当前 T，首次 SQL error 后检索一次 EM 并重试一次，空结果直接交给 Reviewer，不在 Executor 内重试；Reviewer 不检索 SM/PM。Verifier 在每轮 Reviewer 后判断能否回答：能则直接生成并提交答案，不能则继续规划；预算耗尽且仍不能回答时提交“无法确认答案：调查结束，尚无充分证据。”
+默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 2 条 SQL；每次仅传当前 T，首次 SQL error 后使用失败 SQL 和实际错误重试一次，空结果直接交给 Reviewer，不在 Executor 内重试；Reviewer 不检索 SM/PM。Verifier 在每轮 Reviewer 后判断能否回答：能则直接生成并提交答案，不能则继续规划；预算耗尽且仍不能回答时提交“无法确认答案：调查结束，尚无充分证据。”
 
 每次运行输出到 `runtime/excytin_bench/runs/<run-id>/`：
 
@@ -278,8 +265,8 @@ XTY_MODEL=deepseek-v4.1-flash
 | `PARATERA_EMBEDDING_MODEL` | `GLM-Embedding-3` |
 | `SOCAGENT_DB_PATH` / `SOCAGENT_POLL_INTERVAL` | `runtime/socagent.db` / `5` 秒 |
 | `SOCAGENT_WEB_HOST` / `SOCAGENT_WEB_PORT` | `127.0.0.1` / `5008` |
-| `SOCAGENT_MEMORY_PROFILE` | 默认空；当前支持 `excytin_bench` |
-| `SOCAGENT_LTM_BACKEND` | 默认 `auto`；快速开始推荐 `snapshot` |
+| `SOCAGENT_MEMORY_PROFILE` | 默认空；仅供保留的离线记忆工具使用 |
+| `SOCAGENT_LTM_BACKEND` | 离线记忆工具后端；workflow 不再读取 |
 | `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` / `NEO4J_DATABASE` | 图记忆连接配置 |
 | `SPLUNK_USERNAME` / `SPLUNK_PASSWORD` / `SPLUNK_VERIFY_TLS` | Splunk 身份验证与 TLS 设置 |
 | `SPLUNK_BOTSV{1,2,3}_BASE_URL` / `SPLUNK_BOTSV{1,2,3}_INDEX` | 各数据集端点与索引 |
@@ -349,5 +336,3 @@ SOCTraceAgent/
 - 本地调查的真实工具集中于 Splunk；资产查询、威胁情报等能力尚未接入。
 - 外部数据、数据库服务和原生 CLI 需要单独准备；`uv sync` 只安装 Python 项目依赖。
 - 原生 CLI 基线使用统一代理、工具和预算约束，比较结果需同时报告这些条件以及各框架是否使用长期记忆。
-
-PM 未命中时使用 L1/L2 SM 兜底：一次模型调用读取完整全局表目录（table、desc、entities），选择一个精确表名，由程序读取对应 L2 卡片。Planner 接收完整字段名、MySQL 类型和中文解释（保留源类型说明），不截断表目录或单表字段。选择助手输出最多 192 token、关闭 thinking、不进行格式重试；不传完整 ITT 或执行历史。相同任务和 SM 库复用缓存（含未命中）。SM 也未命中时，Planner 应安排结构查询，不猜字段。
