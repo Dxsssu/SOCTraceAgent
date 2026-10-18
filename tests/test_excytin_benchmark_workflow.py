@@ -622,8 +622,8 @@ def test_reviewer_retries_overlong_summary_before_accepting():
     assert "suggestion" not in workflow.state.reviews[0]
 
 
-@pytest.mark.parametrize('response', [': broken yaml', 'sql: DELETE FROM SecurityAlert', 'sql: ""'])
-def test_executor_format_and_local_validation_errors_do_not_retry(response):
+@pytest.mark.parametrize('response, expected_calls', [(': broken yaml', 2), ('sql: DELETE FROM SecurityAlert', 1), ('sql: ""', 2)])
+def test_executor_format_retries_once_but_unsafe_sql_does_not(response, expected_calls):
     import yaml
     from src.workflow.context import MemoryContextService
     calls = []
@@ -638,7 +638,7 @@ def test_executor_format_and_local_validation_errors_do_not_retry(response):
         )
     with pytest.raises((ValueError, yaml.YAMLError)):
         workflow.act('Investigate the alert')
-    assert len(calls) == 1
+    assert len(calls) == expected_calls
     assert workflow.state.actions_issued == 0
     assert workflow.state.executions == []
 

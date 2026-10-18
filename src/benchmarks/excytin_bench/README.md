@@ -62,8 +62,9 @@ for _ in range(env.max_steps):
 - 每题默认最多 25 个 benchmark action；Workflow 会预留最后一个 action 用于提交最终答案，因此成功提交前最多执行 24 条 SQL。
 - Executor 针对同一个 L3 的内部查询循环最多执行 2 条 SQL。SQL error 时用失败 SQL 和实际错误重试；空结果按正常返回回写 T 并直接交给 Reviewer，不在 Executor 内重试。SQL 报错达到次数上限后交回 Reviewer/Planner。
 - 仅 SQL error 允许一次基于实际错误的修复，同时受每个 T 总计 2 次的硬上限约束；已移除 max_empty_repairs 参数。空结果不表示问题解决，Planner 可根据结构化证据新增调查任务。
-- 单次 LLM 请求默认 120 秒超时且不自动重试，可通过
-  `PARATERA_REQUEST_TIMEOUT_SECONDS` 和 `PARATERA_MAX_RETRIES` 调整；超时会作为该题失败记录，而不是无限停在 `running`。
+- 单次 LLM 请求默认 120 秒超时，使用当前 provider 的 `*_REQUEST_TIMEOUT_SECONDS` 配置。所有角色遇到超时、连接失败、HTTP 408/409/429 或 5xx 时，随机等待 5–10 秒后重试，最多重试两次（总计三次请求），请求内容保持不变。401/403 等非临时错误直接抛出；重试耗尽后由 runner 记录本题失败。
+- 接口重试由 workflow 统一处理，默认模型调用关闭 SDK 内部重试，避免与 `*_MAX_RETRIES` 叠加。自定义 llm 回调也应关闭其内部重试。trace 记录 `llm_api_retry_scheduled` 和 `llm_api_retries_exhausted`。
+- Executor 输出格式或本地 SQL 语法校验失败时，默认附上校验错误再请求一次（`executor_format_attempts=2`）；写操作、多语句等禁止操作直接拒绝。接口重试与格式修正各自计数，只有最终通过校验的 SQL 才计为查询动作。
 
 ## 并行与速率限制
 

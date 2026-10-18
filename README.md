@@ -4,6 +4,8 @@ SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Pla
 
 当前 LTM 正在重建：本地调查和 SQL workflow 均已断开长期记忆接入，旧环境开关不会重新启用。知识库与离线工具保留；接入前版本已保存至 Git 提交 `dfb8646`。
 
+当前仅启用 SQL workflow 的四个角色主提示词。旧 Executor 执行与 MCP 路由提示词已注释，本地 Splunk 调查的工具路由暂时停用；Web 可启动，但该调查路径目前不能执行工具。
+
 当前主要能力：
 
 - **告警调查**：LLM 规划任务、选择 MCP 工具，通过 Splunk REST API 查询真实日志，逐步复盘和重规划。
@@ -202,6 +204,8 @@ uv run python -m src.benchmarks.excytin_bench.runner \
 可用 `--incident incident_5` 限定抽题范围，`--question-dir` 和 `--output-dir` 覆盖输入、输出目录。runner **默认开启 LLM 裁判**；上例显式关闭，仅计算匹配和查询指标。需要模糊答案与部分步骤评分时改为 `--llm-eval`，会额外调用模型。
 
 默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 2 条 SQL；每次仅传当前 T，首次 SQL error 后使用失败 SQL 和实际错误重试一次，空结果直接交给 Reviewer，不在 Executor 内重试；Reviewer 不检索 SM/PM。Verifier 在每轮 Reviewer 后判断能否回答：能则直接生成并提交答案，不能则继续规划；预算耗尽且仍不能回答时提交“无法确认答案：调查结束，尚无充分证据。”
+
+SQL workflow 的所有角色遇到接口超时、连接失败、HTTP 408/409/429 或 5xx 时，随机等待 5–10 秒，最多重试两次；默认模型调用关闭 SDK 内部重试，避免重复叠加。Executor 输出格式错误会附上校验错误再请求一次。两类重试独立计数，不增加 SQL 动作数，耗尽后记录本题失败。401/403 等非临时错误直接报错。
 
 每次运行输出到 `runtime/excytin_bench/runs/<run-id>/`：
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import random
+import time
 import re
 import secrets
 import string
@@ -11,10 +13,13 @@ from enum import StrEnum
 from typing import Any, ClassVar
 from uuid import uuid4
 
+import httpx
+from openai import APIConnectionError, APIStatusError
+
 import sqlglot
 import yaml
 
-from src.agent.llm import call_llm, parse_yaml_response
+from src.agent.llm import LLMClient, LLMConfig, parse_yaml_response
 from src.agent.executor import SQL_EXECUTOR_SYSTEM_PROMPT
 from src.agent.planner import PLANNER_SYSTEM_PROMPT
 from src.agent.reviewer import REVIEWER_SYSTEM_PROMPT
@@ -187,7 +192,7 @@ class ExcytinBenchWorkflow:
         max_error_repairs: int = 1,
         yaml_response_attempts: int = 2,
         max_observation_chars: int = 20_000,
-        executor_format_attempts: int = 1,
+        executor_format_attempts: int = 2,
         compact_evidence: bool = False,
     ) -> None:
         if max_steps < 2:
@@ -208,11 +213,51 @@ class ExcytinBenchWorkflow:
 
     @staticmethod
     def _default_llm(system_prompt: str, user_prompt: str) -> str:
-        return call_llm(system_prompt, user_prompt)
+        # Workflow owns the retry budget; do not multiply it by SDK retries.
+        client = LLMClient(replace(LLMConfig.from_env(), max_retries=0))
+        try:
+            return client.chat(system_prompt=system_prompt, user_prompt=user_prompt)
+        finally:
+            client.client.close()
+
+    @staticmethod
+    def _retryable_api_error(error: Exception) -> bool:
+        if isinstance(error, (APIConnectionError, httpx.TransportError,
+                              TimeoutError, ConnectionError)):
+            return True
+        if isinstance(error, (APIStatusError, httpx.HTTPStatusError)):
+            status = getattr(error, "status_code", None) or error.response.status_code
+            return status in {408, 409, 429} or status >= 500
+        return False
 
     def _call_role_llm(self, system_prompt: str, user_prompt: str) -> str:
         nonce = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
-        return self._llm(f"{nonce}\n{system_prompt}", user_prompt)
+        request_system = f"{nonce}\n{system_prompt}"
+        role = next((name for name, prompt in (
+            ("planner", PLANNER_SYSTEM_PROMPT), ("executor", SQL_EXECUTOR_SYSTEM_PROMPT),
+            ("reviewer", REVIEWER_SYSTEM_PROMPT), ("verifier", VERIFIER_SYSTEM_PROMPT),
+        ) if system_prompt == prompt), "unknown")
+        for attempt in range(1, 4):
+            try:
+                return self._llm(request_system, user_prompt)
+            except Exception as exc:
+                if not self._retryable_api_error(exc):
+                    raise
+                details = {
+                    "role": role, "attempt": attempt, "max_retries": 2,
+                    "error_type": type(exc).__name__,
+                    "http_status": getattr(exc, "status_code", None)
+                        or getattr(getattr(exc, "response", None), "status_code", None),
+                    "error": str(exc),
+                }
+                if attempt == 3:
+                    self._record_trace("llm_api_retries_exhausted", details)
+                    raise
+                delay = random.uniform(5.0, 10.0)
+                self._record_trace("llm_api_retry_scheduled", {
+                    **details, "retry_no": attempt, "delay_seconds": delay,
+                })
+                time.sleep(delay)
 
     def reset(self) -> None:
         self.state = None

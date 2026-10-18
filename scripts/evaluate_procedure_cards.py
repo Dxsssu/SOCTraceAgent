@@ -36,7 +36,7 @@ def main():
     parser.add_argument("--split", choices=["train", "test"], default="train")
     parser.add_argument("--max-steps", type=int, default=25)
     parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
-    parser.add_argument("--executor-format-attempts", type=int, choices=[1, 2], default=1)
+    parser.add_argument("--executor-format-attempts", type=int, choices=[1, 2], default=2)
     parser.add_argument("--compact-evidence", action="store_true")
     parser.add_argument("--run-id", default=datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ"))
     args = parser.parse_args()

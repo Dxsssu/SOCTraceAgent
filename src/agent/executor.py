@@ -8,7 +8,6 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from src.agent.llm import call_llm, parse_yaml_response
 from src.memory.working_memory import TTTStore
 from src.messaging import MessageEnvelope, MessageType, RoleName, SQLiteMessageBus
 from src.schema import Event, EventStatus, Execution, ExecutionStatus, TTTNodeStatus
@@ -32,42 +31,43 @@ sql: "一条 MySQL 只读查询语句"
 """.strip()
 
 
-EXECUTOR_SYSTEM_PROMPT = """
-你是多智能体驱动的 SOC 智能溯源系统中的 Executor。
-只根据当前 T 节点构造查询请求，不检索记忆、不修改 ITT、不生成最终答案。
-输入节点只包含 id 和 objective；objective 描述查询目标、已知参数及范围。
-不编造未知实体或结果。遵守工具接口和查询方言，只生成一条只读查询。
-只输出合法 YAML：response_type 为 EXECUTION_SQL；execution 包含 node_id、node_title、tool_name、parameters。
-不使用 Markdown 围栏或额外说明。运行标识由程序维护。
-""".strip()
-
-
-EXECUTOR_ROUTER_PROMPT = """
-你是多智能体驱动的 SOC 智能溯源系统中的 Executor，当前负责工具路由。
-
-## 角色定位
-为当前 L3 从候选 MCP 工具中选择唯一一个最合适的工具。
-
-## 输入信息
-当前 T 节点，以及候选工具的名称、用途和限制。
-
-## 工作流程
-1. 核对当前任务需要的能力与工具限制。
-2. 选择一个候选工具并简述理由；只有一个候选工具时直接选择它并说明原因。
-
-## 约束条件
-不编造工具名，不生成查询或执行结果，不改变调查方向，不将记忆内容当作案件证据。
-
-## 输出格式
-只输出一个合法 YAML 对象，不使用 Markdown 代码围栏或额外说明。
-字段仅允许 tool_name、reason、confidence；confidence 为 high、medium 或 low。
-不添加 response_type 或 execution 字段，保持工具路由接口约定。
-
-## 输出示例
-tool_name: 来自候选列表的工具名称
-reason: 该工具支持当前任务所需的日志检索能力
-confidence: high
-""".strip()
+# 旧版执行与工具路由提示词暂时停用，仅保留当前 SQL workflow 提示词。
+# EXECUTOR_SYSTEM_PROMPT = """
+# 你是多智能体驱动的 SOC 智能溯源系统中的 Executor。
+# 只根据当前 T 节点构造查询请求，不检索记忆、不修改 ITT、不生成最终答案。
+# 输入节点只包含 id 和 objective；objective 描述查询目标、已知参数及范围。
+# 不编造未知实体或结果。遵守工具接口和查询方言，只生成一条只读查询。
+# 只输出合法 YAML：response_type 为 EXECUTION_SQL；execution 包含 node_id、node_title、tool_name、parameters。
+# 不使用 Markdown 围栏或额外说明。运行标识由程序维护。
+# """.strip()
+#
+#
+# EXECUTOR_ROUTER_PROMPT = """
+# 你是多智能体驱动的 SOC 智能溯源系统中的 Executor，当前负责工具路由。
+#
+# ## 角色定位
+# 为当前 L3 从候选 MCP 工具中选择唯一一个最合适的工具。
+#
+# ## 输入信息
+# 当前 T 节点，以及候选工具的名称、用途和限制。
+#
+# ## 工作流程
+# 1. 核对当前任务需要的能力与工具限制。
+# 2. 选择一个候选工具并简述理由；只有一个候选工具时直接选择它并说明原因。
+#
+# ## 约束条件
+# 不编造工具名，不生成查询或执行结果，不改变调查方向，不将记忆内容当作案件证据。
+#
+# ## 输出格式
+# 只输出一个合法 YAML 对象，不使用 Markdown 代码围栏或额外说明。
+# 字段仅允许 tool_name、reason、confidence；confidence 为 high、medium 或 low。
+# 不添加 response_type 或 execution 字段，保持工具路由接口约定。
+#
+# ## 输出示例
+# tool_name: 来自候选列表的工具名称
+# reason: 该工具支持当前任务所需的日志检索能力
+# confidence: high
+# """.strip()
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,7 +84,7 @@ class ExecutorAgent:
         "ROGER",
         "EXECUTION_SQL",
     )
-    system_prompt: str = EXECUTOR_SYSTEM_PROMPT
+    system_prompt: str = SQL_EXECUTOR_SYSTEM_PROMPT
 
 
 class ExecutorRuntime:
@@ -286,50 +286,55 @@ class ExecutorRuntime:
         *,
         workflow_context: dict[str, Any] | None = None,
     ) -> dict[str, str]:
-        tools = self._list_available_tools()
-        if not tools:
-            return {
-                "tool_name": "",
-                "reason": "No MCP tools are currently registered for routing.",
-                "confidence": "low",
-            }
-
-        intent = str(getattr(node, "title", "") or "")
-        user_prompt = "\n".join(
-            [
-                "请从可用 MCP 工具中选择最适合执行当前 TTT 叶子节点任务的工具，只输出 YAML。",
-                "输出字段只允许：tool_name, reason, confidence。",
-                "confidence 只允许：high, medium, low。",
-                "不得输出未列出的工具名。",
-                f"intent: {intent}",
-                f"node: {json.dumps(task_payload(node), ensure_ascii=False)}",
-                f"tools: {json.dumps(tools, ensure_ascii=False, indent=2)}",
-            ]
+        raise RuntimeError(
+            "Legacy MCP tool routing is paused while its prompt is commented out; "
+            "use the ExcytinBenchWorkflow SQL workflow."
         )
-        parsed = parse_yaml_response(
-            call_llm(
-                EXECUTOR_ROUTER_PROMPT,
-                user_prompt,
-            )
-        )
-        valid_names = {tool["name"] for tool in tools}
-        selected_name = str((parsed or {}).get("tool_name") or "").strip()
-        if selected_name not in valid_names:
-            selected_name = tools[0]["name"]
-            reason = "Tool router returned an invalid tool name, so the first available MCP tool was selected as fallback."
-            confidence = "low"
-        else:
-            reason = str((parsed or {}).get("reason") or "").strip()
-            confidence = (
-                str((parsed or {}).get("confidence") or "medium").strip().lower()
-            )
-        if confidence not in {"high", "medium", "low"}:
-            confidence = "medium"
-        return {
-            "tool_name": selected_name,
-            "reason": reason,
-            "confidence": confidence,
-        }
+        # 旧路由实现暂存，恢复提示词时可一并恢复。
+        # tools = self._list_available_tools()
+        # if not tools:
+        #     return {
+        #         "tool_name": "",
+        #         "reason": "No MCP tools are currently registered for routing.",
+        #         "confidence": "low",
+        #     }
+        #
+        # intent = str(getattr(node, "title", "") or "")
+        # user_prompt = "\n".join(
+        #     [
+        #         "请从可用 MCP 工具中选择最适合执行当前 TTT 叶子节点任务的工具，只输出 YAML。",
+        #         "输出字段只允许：tool_name, reason, confidence。",
+        #         "confidence 只允许：high, medium, low。",
+        #         "不得输出未列出的工具名。",
+        #         f"intent: {intent}",
+        #         f"node: {json.dumps(task_payload(node), ensure_ascii=False)}",
+        #         f"tools: {json.dumps(tools, ensure_ascii=False, indent=2)}",
+        #     ]
+        # )
+        # parsed = parse_yaml_response(
+        #     call_llm(
+        #         EXECUTOR_ROUTER_PROMPT,
+        #         user_prompt,
+        #     )
+        # )
+        # valid_names = {tool["name"] for tool in tools}
+        # selected_name = str((parsed or {}).get("tool_name") or "").strip()
+        # if selected_name not in valid_names:
+        #     selected_name = tools[0]["name"]
+        #     reason = "Tool router returned an invalid tool name, so the first available MCP tool was selected as fallback."
+        #     confidence = "low"
+        # else:
+        #     reason = str((parsed or {}).get("reason") or "").strip()
+        #     confidence = (
+        #         str((parsed or {}).get("confidence") or "medium").strip().lower()
+        #     )
+        # if confidence not in {"high", "medium", "low"}:
+        #     confidence = "medium"
+        # return {
+        #     "tool_name": selected_name,
+        #     "reason": reason,
+        #     "confidence": confidence,
+        # }
 
     def _execute_tool(
         self,
@@ -417,7 +422,6 @@ def run_executor(poll_interval: float = 5.0) -> None:
 
 __all__ = [
     "SQL_EXECUTOR_SYSTEM_PROMPT",
-    "EXECUTOR_SYSTEM_PROMPT",
     "ExecutorAgent",
     "ExecutorRuntime",
     "run_executor",
