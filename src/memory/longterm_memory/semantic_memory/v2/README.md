@@ -1,6 +1,6 @@
 # Semantic Memory v2：宽概念召回、调查意图排序
 
-更新：2026-10-18。当前 MySQL workflow 默认启用；旧 SM、PM、EM 仍关闭，本地 Splunk workflow 未接入。
+更新：2026-10-19。当前 MySQL workflow 默认按 Procedural 多步流程 → Episodic 单步片段 → Semantic v2 检索；前两层未命中或被 Planner 拒绝后才检索本层。SM-only 对照保持可用。旧记忆服务仍关闭，本地 Splunk workflow 未接入。
 
 ## 核心结构
 
@@ -35,7 +35,7 @@ IP 使用 `kind_policy: hint`。即使输入 Source_IP/source_ip，登录表仍�
 ## 检索规则
 
 ```yaml
-semantic_query:
+memory_query:
   known: [IP]
   wanted: [Login_Time, Application]
   intent: 查询指定 IP 的 SAP 身份验证时间和目标应用
@@ -56,7 +56,7 @@ Login_Time → CreatedDateTime 表示身份验证事件创建时间；Event_Time
 
 ```text
 E 实体 + question / 本轮调查意图
-  → Planner semantic_query
+  → Planner memory_query
   → 本地召回与排序，返回候选简介和相关字段
   → Planner operations / add_task.table
   → 程序绑定所选表已经检索到的字段上下文

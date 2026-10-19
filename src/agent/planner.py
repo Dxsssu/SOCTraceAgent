@@ -43,24 +43,37 @@ G（Goal）对应 question 中一个独立调查问题；E（Entity）是与 G �
 程序分配正式 G/E/T ID。ref 是本次响应内唯一的小写别名（如 goal、alert）；用 $goal、$alert 引用此前操作创建的节点。已有节点直接使用输入中的 ID。别名只在本次响应内有效。
 不输出完整树，不为新节点指定正式 ID，不输出 children、status、execution_code、execution_result，不修改或复制历史记录，不直接回答调查问题。已完成或失败的 T 不能重开，需要继续调查时新增 T。
 已有可执行任务且无需新增内容时可输出 operations: []。SQL 调查中 Verifier 尚未确认答案而又没有可执行任务时，必须新增 T。
-# Procedural Memory（仅输入包含 procedural_memory 时启用）
-实体节点 E 对应当前调查前沿（F）。针对已知实体与调查意图先输出 semantic_query，系统先查 Procedural Memory；未命中则自动返回 Semantic 候选表。不要读取全量片段或猜测片段 ID。procedural_memory.concepts 额外列出 PM 的起点类型；例如 Title、AlertName 是告警标题关键词入口，Alert_ID 是告警标识。它们即使未出现在 Semantic 概念列表中，也可用于先查 PM。调查意图包含告警主题/行为关键词时，可从标题片段定位告警 ID，再下钻证据，不必始终局限于原始日志。
-procedural_results 中的片段是训练经验候选，不是本次事件证据。核对起点字段含义、调查目标、步骤、全部 inputs 和 caution；只有适用且输入值已知时才能选用。否则再次输出相同 semantic_query，明确走 Semantic Memory；若直接选择普通 table 任务，程序也会先补做最近请求的 Semantic 检索后校验选表；不能为了套模板编造输入或改写任务目标。
-命中后 add_task 使用 procedure，不能同时填写 table/schema_probe/semantic_refs/template_id。例如：
+# 分层调查记忆（输入包含 procedural_memory / episodic_memory 时启用）
+记忆检索由 Planner 负责，Executor 只生成 SQL。顺序固定为 Procedural 多步流程 → Episodic 单步片段 → Semantic 表字段；不要把完整目录注入任务，也不要猜测片段 ID。
+使用 memory_query 表达当前已知实体概念、希望得到的输出概念和调查意图。known/wanted 只放概念，不放实体值、表名或“某表结构”等句子；实体值留在 T.objective 和 inputs。各层提供可用概念词表，Title、AlertName、Alert_ID 等也可作为片段检索入口。
+系统先返回适用的多步流程；PM 未命中则自动查询 EM，EM 也未命中才返回 Semantic 候选表。有候选但不适用时，再次输出完全相同的 memory_query，表示拒绝当前层并查询下一层；不要修改措辞反复从 PM 开始。不得跳过 EM 直接选择 Semantic 表。
+# Procedural Memory：多步流程
+procedural_results 只包含多步流程，每个步骤以 episodic_id 引用一个单步经验，bindings 指明步骤之间的数据依赖。核对目标、起点实体角色、各步骤输入和 caution；指导流程是训练经验，不是当前事件证据。只在流程适用且当前步骤参数齐备时选择。
+add_task 使用 procedure，例如：
   - op: add_task
     entity_id: E1
-    objective: "按已知邮件 ID 查发件人"
+    objective: "按已知 URL 获取邮件标识，供后续查询发件人"
     procedure:
-      id: 返回的片段ID
+      id: 已返回的多步流程ID
       step: s1
-      inputs: {p1: "当前事件已知的值"}
-inputs 键必须对应所选步骤的参数名；string[] 必须用 YAML 列表，LIKE 模式由调查意图明确给出。不要把训练片段描述中的占位符当实体值。无需另查 Semantic 表字段，系统传递选定 SQL 模板和注意事项。
-多步片段按实际结果逐步创建 T，不预建依赖未执行结果的任务。首步任务 ID 是 run（例如 T1）。后续 add_task.procedure 填相同 id、对应 step、run: T1；inputs 仅填外部参数，派生参数由程序从上游真实结果绑定。上游多候选时可用 selections: {"s1.NetworkMessageId": [当前结果中的值]} 明确选择；必须说明并核对事件归属，不能擅自只取第一行。分支步骤可分别挂到合适的新 E。
-active_runs 保留正在调查的片段步骤及执行状态。上游失败、空结果、截断或字段语义不适用时，停止沿该片段扩展，通过 semantic_query 重新选表；SQL 失败交回规划，不修改记忆模板。程序校验错误会反馈具体原因。
+      inputs: {p1: "当前已知URL"}
+多步流程逐步创建 T，不预建依赖未知结果的任务。首步 T 的 ID 是 run；后续 procedure 使用相同 id、相应 step 和 run: T1。外部参数写入 inputs，派生参数由程序从上游真实结果绑定。多候选时用 selections: {"s1.NetworkMessageId": [当前结果中的值]} 明确选择，不擅自取第一行、不用历史训练值。
+active_runs 保留已启动流程及真实执行状态。后续可直接继续已启动流程，无需重新检索；分支步骤可挂到合适的新 E。上游失败、空结果或截断时不继续依赖步骤，通过相同检索请求转向 EM/SM 或提出新的调查目标。
+# Episodic Memory：单步调查片段
+episodic_results 包含独立单步片段。Planner 根据当前实体值和目标选择一条，用 episode 绑定，例如：
+  - op: add_task
+    entity_id: E1
+    objective: "按已知网络邮件ID查询发件人"
+    episode:
+      id: 已返回的单步片段ID
+      step: s1
+      inputs: {p1: ["当前网络邮件ID"]}
+参数类型和键名严格依据该候选 inputs；上例为列表，实际候选可能要求标量。片段包含一个查询动作，执行后根据真实结果决定下一步，可继续检索单步经验，不把多个依赖查询合成一个 T。
+procedure、episode、table/schema_probe 互斥。两类记忆都由程序绑定 SQL 模板，Executor 必须保留 bound_sql 的表、条件、参数及 LIMIT。模板执行失败交回规划，不修改记忆模板；训练占位符不能当作实体值。EM 候选不适用时再次提交相同 memory_query，转查 Semantic；在已经检索过 EM 的前提下，普通 table 任务也表示拒绝模板并转查 Semantic。
 # Semantic Memory v2（仅输入包含 semantic_memory_v2 时启用）
 采用两步协议：先检索候选表，再选择一张表建立单步任务。检索与 operations 不混写。
-检索响应示例（唯一顶层 semantic_query；不是 operations 中的 op）：
-semantic_query:
+检索响应示例（唯一顶层 memory_query；不是 operations 中的 op）：
+memory_query:
   known: [IP]
   wanted: [Login_Time, Application]
   intent: "查询指定 IP 的身份验证发生时间与目标应用"
@@ -74,7 +87,7 @@ operations:
     table: SigninLogs
     objective: "按已知 IP 查询认证时间和目标应用"
 Semantic 覆盖当前环境全部日志表和字段，但仅按需返回匹配字段。可用 Field:字段名 精确检索物理字段（如 Field:Entities）；物理同名不保证跨表语义相同，须阅读字段说明。
-table 是 SQL 选表的唯一依据；objective 写真实的过滤值、目标和证据支持的范围。任务明确点名的额外物理字段由程序在所选表的概念字典中核实并补齐说明；未知字段不会通过。若不知道需要的字段名，再次 semantic_query 检索主机、账户、发起进程等概念，程序会合并同表字段。
+table 是 SQL 选表的唯一依据；objective 写真实的过滤值、目标和证据支持的范围。任务明确点名的额外物理字段由程序在所选表的概念字典中核实并补齐说明；未知字段不会通过。若不知道需要的字段名，再次 memory_query 检索主机、账户、发起进程等概念，程序会合并同表字段。
 依据表用途与调查目标选表，排名只是建议。direct 表示已覆盖检索概念，不保证存在相关记录；partial 表示可用于中间调查，允许选择并说明下一步。不要为了覆盖全部目标而强行把不相关字段放到同一张表。URL 点击账户与邮件收件人不等同：可先检索 URL → Click_Account/Email_ID，再用邮件 ID 查询收件关系。
 可复用已检索表，或以 offset 翻页；每次规划最多检索 5 次，每个调查 32 次。结构化检索无候选时可 add_task 加 schema_probe: true（不含 table），仅检查限定范围的 SHOW/DESCRIBE 或当前数据库 information_schema；不要扫描全部表。元数据不证明事件发生，空结果也不证明事件不存在。
 # 输出格式模板

@@ -586,6 +586,21 @@ class ExcytinBenchWorkflow:
         )
         return action
 
+    def _layered_memory_logging(self):
+        session = self._procedural_session
+        records = session.retrievals if session else []
+        contexts = self._task_procedural_contexts
+        return {
+            "memory_architecture": "planner_pm_flows_em_snippets_sm_v1",
+            "planner_em_enabled": bool(session),
+            "memory_catalog_ids": session.store.document.get("memory_catalog_ids", {}) if session else {},
+            "procedural_retrievals": [r for r in records if r["memory_type"] == "procedural"],
+            "episodic_retrievals": [r for r in records if r["memory_type"] == "episodic"],
+            "memory_routing_history": list(records),
+            "task_procedural_contexts": {k: v for k, v in contexts.items() if v.get("memory_type") == "procedural"},
+            "task_episodic_contexts": {k: v for k, v in contexts.items() if v.get("memory_type") == "episodic"},
+        }
+
     def get_logging(self) -> dict[str, Any]:
         if self.state is None:
             return {
@@ -596,8 +611,7 @@ class ExcytinBenchWorkflow:
                 "semantic_memory_v2_enabled": self.semantic_memory_enabled,
                 "memory_retrievals": list(self._semantic_session.retrievals) if self._semantic_session else [],
                 "planner_pm_enabled": self.procedural_memory_enabled,
-                "procedural_retrievals": list(self._procedural_session.retrievals) if self._procedural_session else [],
-                "task_procedural_contexts": dict(self._task_procedural_contexts),
+                **self._layered_memory_logging(),
                 "procedural_fallbacks": list(self._procedural_session.fallbacks) if self._procedural_session else [],
                 "actions_issued": 0,
                 "initial_input": self._bootstrap_initial_input,
@@ -609,8 +623,7 @@ class ExcytinBenchWorkflow:
             "ltm_enabled": self.semantic_memory_enabled,
             "semantic_memory_v2_enabled": self.semantic_memory_enabled,
             "planner_pm_enabled": self.procedural_memory_enabled,
-            "procedural_retrievals": list(self._procedural_session.retrievals) if self._procedural_session else [],
-            "task_procedural_contexts": dict(self._task_procedural_contexts),
+            **self._layered_memory_logging(),
             "procedural_fallbacks": list(self._procedural_session.fallbacks) if self._procedural_session else [],
             "event_id": state.event.event_id,
             "status": "done" if state.done else "active",
@@ -689,23 +702,25 @@ class ExcytinBenchWorkflow:
         adapter = pm or session
         session.default_intent = str(inputs.get("question", ""))
         prompt_payload = {**inputs, "semantic_memory_v2": {"concepts": session.vocabulary(),
-            "instruction": "先输出 semantic_query: {known: [概念], wanted: [概念], intent: 调查目标}；再用 operations 的 add_task.table 选表。允许 partial 候选作为中间步骤，不输出 semantic_refs。"},
+            "instruction": "先输出 memory_query: {known: [概念], wanted: [概念], intent: 调查目标}；再用 operations 的 add_task.table 选表。允许 partial 候选作为中间步骤，不输出 semantic_refs。"},
             "semantic_results": []}
         if pm:
             prompt_payload["procedural_memory"] = {
-                "instruction": "semantic_query 会优先检索 Procedural Memory；候选适用则 add_task.procedure 选步骤。无候选自动回退 Semantic；有候选但不适用时再次提交相同 semantic_query 进入 Semantic。依赖步骤只在真实上游返回后创建。",
+                "instruction": "memory_query 按 Procedural 多步流程 → Episodic 单步片段 → Semantic 表字段的顺序检索。PM 适用时用 add_task.procedure，EM 适用时用 add_task.episode。重复相同请求表示放弃当前层，检索下一层；未命中自动向下。流程依赖步骤仅在真实上游结果返回后创建。",
                 "active_runs": pm.active_runs(),
-                "concepts": pm.vocabulary(),
+                "concepts": pm.vocabulary("procedural"),
             }
             prompt_payload["procedural_results"] = []
+            prompt_payload["episodic_memory"] = {"concepts": pm.vocabulary("episodic"), "instruction": "单步调查片段由 Planner 选择，用 episode 指定 id、step: s1 和 inputs；Executor 不检索记忆。"}
+            prompt_payload["episodic_results"] = []
         if session.retrievals:
             from src.memory.longterm_memory.semantic_memory.v2 import render_view
             last = session.retrievals[-1]
             prompt_payload["semantic_results"].append({"lookup_id": last["lookup_id"], "view": render_view(last["result"])})
 
         def validate(value):
-            if "semantic_query" in value:
-                session.queries(value["semantic_query"])
+            if "memory_query" in value:
+                session.queries(value["memory_query"])
                 return
             clean, _ = adapter.prepare(value)
             return apply_planner_operations(clean, event_id, round_id,
@@ -716,18 +731,20 @@ class ExcytinBenchWorkflow:
                 prompt_payload["semantic_memory_v2"]["instruction"] = "本次规划检索预算已用完，使用已返回候选输出 operations；无覆盖时新增 schema_probe 任务。"
             parsed = self._call_yaml_role("planner", PLANNER_SYSTEM_PROMPT,
                 compact_json(prompt_payload), validator=validate, response_parser=adapter.parse)
-            if "semantic_query" in parsed:
+            if "memory_query" in parsed:
                 if turn == 5:
                     raise ValueError("Planner exceeded 5 semantic lookups per planning round")
                 if pm:
-                    pm_view = pm.retrieve(parsed["semantic_query"])
+                    before = len(pm.retrievals)
+                    pm_view = pm.retrieve(parsed["memory_query"])
+                    for record in pm.retrievals[before:]:
+                        self._record_trace(record["memory_type"] + "_memory_retrieved", record)
                     if pm_view is not None:
-                        self._record_trace("procedural_memory_retrieved", pm_view)
-                        prompt_payload["procedural_results"].append(pm_view)
+                        prompt_payload[pm_view["memory_type"] + "_results"].append(pm_view)
                         if pm_view["candidates"]:
                             continue
-                    self._record_trace("procedural_memory_fallback", {"query": parsed["semantic_query"], "reason": "miss_or_planner_rejected_candidates"})
-                view = session.retrieve(parsed["semantic_query"])
+                    self._record_trace("procedural_memory_fallback", {"query": parsed["memory_query"], "reason": "procedural_and_episodic_missed_or_declined"})
+                view = session.retrieve(parsed["memory_query"])
                 self._record_trace("semantic_memory_retrieved", session.retrievals[-1])
                 prompt_payload["semantic_results"].append(view)
                 continue
@@ -743,7 +760,7 @@ class ExcytinBenchWorkflow:
                 if context.get("mode") == "procedure":
                     pm.register(node_id, context)
                     self._task_procedural_contexts[node_id] = context
-                    self._record_trace("planner_procedural_step_selected", {"node_id": node_id, "context": context})
+                    self._record_trace("planner_" + context["memory_type"] + "_step_selected", {"node_id": node_id, "context": context})
                 else:
                     self._task_semantic_contexts[node_id] = context
                     self._record_trace("planner_semantic_table_selected", {"node_id": node_id, "context": context})
@@ -762,8 +779,9 @@ class ExcytinBenchWorkflow:
         payload = task_payload(node)
         procedure = self._task_procedural_contexts.get(node.node_id)
         if procedure is not None:
-            payload["procedural_context"] = {k: procedure[k] for k in ("snippet_id", "step_id", "sql_template", "bindings", "bound_sql", "caution")}
-            payload["procedural_instruction"] = "执行此已选片段步骤。bound_sql 已按当前输入与真实上游结果绑定，直接以 sql 字段返回该语句；不得增删过滤条件、换表、改值或改变 LIMIT。注意事项用于理解范围，不是额外事实。"
+            memory_type = procedure["memory_type"]
+            payload[memory_type + "_context"] = {k: procedure[k] for k in ("snippet_id", "step_id", "episodic_id", "sql_template", "bindings", "bound_sql", "caution")}
+            payload[memory_type + "_instruction"] = "执行此已选片段步骤。bound_sql 已按当前输入与真实上游结果绑定，直接以 sql 字段返回该语句；不得增删过滤条件、换表、改值或改变 LIMIT。注意事项用于理解范围，不是额外事实。"
         semantic = self._task_semantic_contexts.get(node.node_id)
         if semantic is not None:
             payload["semantic_context"] = semantic
@@ -936,7 +954,7 @@ class ExcytinBenchWorkflow:
                         ({
                             "verifier": '必须含顶层 can_answer。证据充分时输出 can_answer: "yes" 与 answer: "依据证据的答案"；不足时只输出 can_answer: "no"。此处是格式说明，不代表证据充分。不要用 malicious_url 等自创字段替代 can_answer。',
                             "reviewer": "必须输出 summary（字符串）、facts（字段字典列表）、limitations（字符串列表）；facts 内每个字段只能是字符串、数字、布尔或 null，禁止数组或对象。元数据查询按实际 TABLE_NAME/COLUMN_NAME 行保留，不聚合成列名数组。只总结本次真实结果，不自行写 source。",
-                            "planner": "按系统协议输出 operations（每项用 op 指定操作）。启用 Semantic Memory v2 时也可单独输出 semantic_query 请求概念检索；不要把操作名作为映射键。",
+                            "planner": "按系统协议输出 operations（每项用 op 指定操作）。启用 Semantic Memory v2 时也可单独输出 memory_query 请求概念检索；不要把操作名作为映射键。",
                         }.get(role, "")),
                     ]
                 )

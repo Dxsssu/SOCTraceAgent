@@ -2,11 +2,14 @@
 
 SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Planner、Executor、Reviewer** 围绕渐进式 TTT（Traceback Task Tree，溯源任务树）协作调查。项目包含本地 Splunk/BOTS 调查、ExCyTIn-Bench 测评、三类长期记忆，以及外部 Agent 对比实验。Python 包名和部分运行时标识沿用 `socagent` / `SOCAgent`。
 
-当前 SQL workflow 默认启用训练轨迹 Procedural Memory 与 Semantic Memory v2；系统先按实体类型和意图检索片段，Planner 选择适用步骤，Executor 接收模板和绑定参数；未命中或不适用时回退到 Semantic 选表。旧版 SM、PM、EM 与程序卡片继续停用，本地 Splunk workflow 仍未接入 LTM。旧环境开关不会重新启用旧记忆；接入前版本已保存至 Git 提交 `dfb8646`。
+当前 SQL workflow 默认按 **Procedural → Episodic → Semantic** 检索。训练基底保留 **99 条多步流程、320 条单步片段**；运行时另外应用流程屏蔽清单和失败案例调整层，当前有效数量见[记忆审计](src/memory/longterm_memory/procedural_memory/flows/failure_review/audit.json)。多步流程的步骤引用 Episodic 单步片段。Planner 优先选择适用流程，没有适用流程时选择单步片段，再无适用片段时通过 Semantic v2 选表和字段。Executor 接收当前步骤的绑定模板或精简 Schema，输出一条只读 SQL。
 
-Semantic Memory v2：[两张扁平字典、workflow 接入协议与示例验证](src/memory/longterm_memory/semantic_memory/v2/README.md)。通过 `ExcytinBenchWorkflow(procedural_memory_enabled=False)` 可运行仅 Semantic 对照；`semantic_memory_enabled=False` 同时关闭两个新记忆路径。
+- [Procedural 多步流程与三层检索协议](src/memory/longterm_memory/procedural_memory/flows/README.md)
+- [Episodic 单步调查片段](src/memory/longterm_memory/episodic_memory/investigation_snippets/README.md)
+- [Semantic v2 两张扁平字典](src/memory/longterm_memory/semantic_memory/v2/README.md)
+- [237 条训练轨迹的原始提取与审计](src/memory/longterm_memory/procedural_memory/trajectory_snippets/README.md)：原 419 条联合目录作为构建来源保留，运行时读取拆分后的 PM/EM 目录。原始拆分没有重写 SQL 或引入测试数据。后续对 266 道测试失败案例的调整单独保存在 `flows/adaptations.json`，标记 `evaluation_failure_adaptation`；适用性仍由 Planner 判断。
 
-Procedural Memory：[从 237 条完整训练轨迹提取、合并和验证的调查片段](src/memory/longterm_memory/procedural_memory/trajectory_snippets/README.md)，包含原子查询、多步证据关联、条件路线及独立恢复经验；已接入 SQL workflow；片段仍标记 candidate，运行时校验当前 Schema、输入和真实上游依赖。[原 40 条版本](src/memory/longterm_memory/procedural_memory/snippets/README.md)保留为预设意图规则的历史基线，不代表完整轨迹提取结果。
+`ExcytinBenchWorkflow(procedural_memory_enabled=False)` 关闭 PM/EM、保留 Semantic 对照；`semantic_memory_enabled=False` 关闭三个新记忆路径。本地 Splunk workflow 与旧版记忆服务仍停用。
 
 当前仅启用 SQL workflow 的四个角色主提示词。旧 Executor 执行与 MCP 路由提示词已注释，本地 Splunk 调查的工具路由暂时停用；Web 可启动，但该调查路径目前不能执行工具。
 
@@ -14,7 +17,7 @@ Procedural Memory：[从 237 条完整训练轨迹提取、合并和验证的调
 
 - **告警调查**：LLM 规划任务、选择 MCP 工具，通过 Splunk REST API 查询真实日志，逐步复盘和重规划。
 - **共享工作记忆**：SQLite 持久化事件、版本化 TTT、执行证据、轮次复盘和审计消息。
-- **长期记忆**：SQL workflow 使用 SM v2 的概念字段检索；旧 SM / PM / EM 及程序卡片保留供重建。
+- **长期记忆**：SQL workflow 按 PM 多步流程 → EM 单步片段 → SM v2 概念字段检索。
 - **Web 作战室**：创建和查看事件，展示任务树、执行记录与复盘，通过 Socket.IO 推送更新。
 - **测评与基线**：ExCyTIn SQL 调查流程、并行测评、结果落盘，以及 OpenCode、Qwen Code、Cline 和论文 BaselineAgent 的配对实验入口。
 
@@ -89,7 +92,7 @@ pending -> planned -> executing -> reviewing -> replanning
 
 Planner 输入只保留 `context` 与 `question`。运行时构建事件 ID、轮次等管理信息；`runtime_info` 仅用于运行记录，不传入模型或 PM 选择助手。
 
-当前 Planner 不接收 SM、PM 或程序卡片；Executor 不检索 EM。未知结构可通过只读结构查询调查。历史 template_id 元数据仍可读取。
+SQL Planner 通过检索获得 PM/EM 候选或 SM 表字段视图，选择后下发当前 T；Executor 不自行检索记忆。未知结构可通过只读结构查询调查。
 
 普通 SQLite 调查与 ExCyTIn 使用相同的 Planner **增量操作协议**，存储与展示仍保留完整 G/E/T 调查树：
 
@@ -166,14 +169,14 @@ Web 提供事件列表、详情、执行记录、复盘与层级查询；具体�
 
 ## 长期记忆（新版本逐步接入）
 
-本地 `SOCTraceWorkflow` 不启用长期记忆；SQL `ExcytinBenchWorkflow` 使用新版本 PM/SM，不创建旧 `MemoryContextService`，也不检索旧版 SM、PM、EM 或程序卡片。`SOCAGENT_LTM_ENABLED`、`SOCAGENT_PLANNER_PM_ENABLED`、`SOCAGENT_MEMORY_PROFILE` 和 Neo4j 配置不会启用 workflow 的长期记忆。
+本地 `SOCTraceWorkflow` 不启用长期记忆；SQL `ExcytinBenchWorkflow` 使用新版本 PM/EM/SM，不创建旧 `MemoryContextService`，也不检索旧版 SM、PM、EM 或程序卡片。`SOCAGENT_LTM_ENABLED`、`SOCAGENT_PLANNER_PM_ENABLED`、`SOCAGENT_MEMORY_PROFILE` 和 Neo4j 配置不会启用 workflow 的长期记忆。
 
 - SQLite 工作记忆、ITT、原始执行记录、Reviewer 证据和 Verifier 判断保持原有流程。
-- Semantic 路径 SQL 报错仍允许一次基于真实错误的修复；PM 模板失败交回 Planner 重新选路，不直接改写模板；无 EM 检索。
+- Semantic 路径 SQL 报错仍允许一次基于真实错误的修复；PM/EM 模板失败交回 Planner 重新选路，不直接改写模板。
 - workflow 构造参数 `memory_contexts`、`planner_memory`、`planner_pm_enabled` 已移除；旧调用会显式报错。
 - `src/memory/longterm_memory/`、`src/workflow/context.py`、知识库及离线构建/检索工具保留，方便重建。角色接口与空上下文实现独立位于 `src/workflow/providers.py`。
 - PM 在线对照实验暂停；`scripts.evaluate_procedure_cards` 仅可使用 `--modes baseline`。历史分析工具仍可读取已有结果。
-- 日志保留兼容字段：`ltm_enabled=false`、`planner_pm_enabled=false`、`memory_retrievals=[]`。
+- SQL 日志分别记录 `procedural_retrievals`、`episodic_retrievals`、`memory_retrievals`（SM）及三类任务上下文；`memory_architecture` 标识当前三层架构。上述旧版兼容字段的关闭状态仅适用于本地停用的 workflow。
 
 接入前完整版本：Git 提交 `dfb8646`，分支 `feat/itt-efficiency-and-ltm-redesign`。旧设计细节见该版本 README 与各记忆模块文档。
 

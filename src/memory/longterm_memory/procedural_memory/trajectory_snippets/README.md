@@ -1,6 +1,6 @@
 # 从完整训练轨迹重建的 Procedural Memory
 
-本目录替代上一版“先定义 40 个意图、再扫描训练 SQL”的构建方法。输入为训练集中的 **237 条完整轨迹**；不使用测试集，不预设片段总数或意图目录。当前 SQL workflow 默认加载本目录，由 `procedural_memory_enabled` 控制；旧程序卡片系统仍关闭。
+本目录替代上一版“先定义 40 个意图、再扫描训练 SQL”的构建方法。输入为训练集中的 **237 条完整轨迹**；不使用测试集，不预设片段总数或意图目录。本目录是不可变训练来源；当前 SQL workflow 加载拆分目录及单独的失败案例调整层，由 `procedural_memory_enabled` 控制；旧程序卡片系统仍关闭。
 
 ## 本次构建结果
 
@@ -88,17 +88,10 @@ uv run python -m pytest -q tests/test_trajectory_snippets.py
 
 ## 当前 workflow 接入
 
-`session.py` 连接已验证片段与 `ExcytinBenchWorkflow`：
+本目录的 `excytin/catalog.json` 是 **419 条历史联合目录**，保留为训练审计与重建来源。运行时已拆分为 [99 条 Procedural 多步流程](../flows/README.md) 和 [320 条 Episodic 单步片段](../../episodic_memory/investigation_snippets/README.md)，不再直接从本目录加载运行时目录。SQL 模板、参数依赖和训练证据保持不变。
 
-1. Planner 使用现有 `semantic_query` 描述已知概念、目标概念与意图；系统先按实体概念/角色、意图关键词和输出概念召回最多四个 PM 候选，并验证目标 Schema。不会给 Planner 注入完整目录。
-2. Planner 选择 `add_task.procedure: {id, step, inputs}`，片段建议与 SQL 模板、参数、注意事项一起传给 Executor；省去该任务的 Semantic 选表。候选不适用时重复同一 query 转 Semantic，未命中直接自动回退。直接选择普通 table 任务也视为拒绝模板，程序补做最近请求的 Semantic 检索后校验该表。
-3. 首步 T 的 ID 作为 run，后续步骤填写 `run` 并消费同一次调查的原始返回值；不使用 Reviewer 推测、历史训练值或无依据的实体替换。多候选需明确 selections，失败/空/截断拒绝继续绑定。
-4. 为兼容只接受 SQL 字符串的 Benchmark，按类型校验后的参数由 SQL AST 字面量编码，禁止字符串替换。Executor 仍只返回 sql，运行时比较 AST，拒绝改写片段条件、表或参数。模板执行失败交回 Planner 选路。
+`session.py` 适配层仍复用这里的校验和绑定实现，执行 PM → EM → SM 三层检索。Planner 用 `procedure` 选流程步骤、`episode` 选单步；候选不适用时重复相同请求进入下一层，未命中自动下探。只有经过 EM 后，普通 table 任务才能转入 Semantic。详见上面的三层协议。
 
-起点匹配与目标概念召回仅提供候选，适用性仍由 Planner 判断，不保证语义检索无误。`active_runs` 提供未完成多步计划；相互依赖的 T 按观察结果逐个建立。
+原有 `branch_recipes.json` 和 `recovery_rules.json` 继续保留为离线候选；本次没有启用这些失败恢复规则，也没有把它们计入新的 320 条 EM 单步片段。
 
-真实接口评测：`uv run python scripts/run_procedural_workflow_fancybag.py --max-steps 10`；原始调用、SQL、PM/SM 选择及答案保存在 `runtime/procedural_workflow_fancybag/`。
-
-`excytin/summary.json` 是离线构建阶段的历史快照，其中 `workflow_enabled=false` 不描述当前运行时开关；当前启用状态以 `get_logging().planner_pm_enabled` 为准。
-
-Planner 同时收到 Semantic 概念词表和 PM 的起点词表，后者包含 `Title`、`AlertName`、`Alert_ID` 等仅由片段目录提供的入口。不会把完整片段或所有 SQL 注入提示词。普通 table 选择若位于相同 Semantic 检索的后页，适配层会在总检索预算内自动翻页并缓存；未收录的表仍无法作为 Semantic 任务通过，不把排名缺页和字典缺失混为一谈。
+`excytin/summary.json` 是离线构建阶段的历史快照，其中 `workflow_enabled=false` 不描述当前运行时开关。当前状态以 workflow 日志的 `planner_pm_enabled`、`planner_em_enabled` 和 `memory_architecture` 为准。

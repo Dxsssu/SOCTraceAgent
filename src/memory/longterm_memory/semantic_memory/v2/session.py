@@ -22,7 +22,7 @@ class SemanticPlanningSession:
 
     @staticmethod
     def queries(payload):
-        example = 'semantic_query: {known: [IP], wanted: [Login_Time], intent: "查询登录认证时间"}'
+        example = 'memory_query: {known: [IP], wanted: [Login_Time], intent: "查询登录认证时间"}'
         if not isinstance(payload, dict) or set(payload) - {"known", "wanted", "offset", "intent"} or "known" not in payload:
             raise ValueError("Use known/wanted/intent, not query/concepts. Example: " + example)
         result = {}
@@ -67,11 +67,11 @@ class SemanticPlanningSession:
     def parse(self, text):
         fenced = re.fullmatch(r"\s*```(?:yaml|yml)?[ \t]*\r?\n(.*?)\r?\n```\s*", text, re.I | re.S)
         value = yaml.safe_load(fenced.group(1) if fenced else text)
-        if isinstance(value, dict) and set(value) == {"semantic_query"}:
-            self.queries(value["semantic_query"])
+        if isinstance(value, dict) and set(value) == {"memory_query"}:
+            self.queries(value["memory_query"])
             return value
         if not isinstance(value, dict):
-            raise ValueError("Return one YAML object: semantic_query or operations")
+            raise ValueError("Return one YAML object: memory_query or operations")
         self._clean_operations(value)
         return value
 
@@ -97,7 +97,7 @@ class SemanticPlanningSession:
                 if op.get("semantic_refs") or op.get("table"):
                     raise ValueError("A schema_probe cannot also select a business table")
                 if not self.retrievals:
-                    raise ValueError("Try semantic_query first, e.g. {known: [IP], intent: 查询登录认证时间}")
+                    raise ValueError("Try memory_query first, e.g. {known: [IP], intent: 查询登录认证时间}")
                 contexts.append({"mode": "schema_probe"})
                 continue
             table = op.get("table")

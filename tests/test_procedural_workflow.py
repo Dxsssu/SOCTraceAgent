@@ -65,23 +65,23 @@ def test_default_workflow_uses_retrieved_template_and_repairs_drift():
     def llm(system, user):
         data = yaml.safe_load(user.split("\n上一次输出")[0])
         calls.append(data)
-        if "procedural_context" in data:
+        if "episodic_context" in data:
             sql_attempts.append(data)
             return yaml.safe_dump(
                 {
                     "sql": "SELECT SenderFromAddress FROM EmailEvents"
                     if len(sql_attempts) == 1
-                    else data["procedural_context"]["bound_sql"]
+                    else data["episodic_context"]["bound_sql"]
                 }
             )
-        if "procedural_results" in data:
-            if not data["procedural_results"]:
-                return yaml.safe_dump({"semantic_query": QUERY})
-            candidate = data["procedural_results"][-1]["candidates"][0]
+        if "episodic_results" in data:
+            if not data["episodic_results"]:
+                return yaml.safe_dump({"memory_query": QUERY})
+            candidate = data["episodic_results"][-1]["candidates"][0]
             return yaml.safe_dump(
                 initial(
                     {
-                        "procedure": {
+                        "episode": {
                             "id": candidate["id"],
                             "step": "s1",
                             "inputs": {"p1": ["mail-1"]},
@@ -107,6 +107,9 @@ def test_default_workflow_uses_retrieved_template_and_repairs_drift():
     assert len(sql_attempts) == 2
     assert not w.get_logging()["memory_retrievals"]
     assert w.get_logging()["planner_pm_enabled"]
+    assert w.get_logging()["planner_em_enabled"]
+    assert not w.get_logging()["task_procedural_contexts"]
+    assert w.get_logging()["task_episodic_contexts"]["T1"]["memory_type"] == "episodic"
     assert "DO_NOT_LEAK" not in json.dumps(calls)
     w.accept_observation("[('mail-1', 'a@test')]", query_success=True)
     assert w.propose_next_action().submit
@@ -120,8 +123,8 @@ def test_default_workflow_uses_retrieved_template_and_repairs_drift():
 def test_rejected_candidate_falls_back_to_semantic_in_workflow():
     replies = iter(
         [
-            {"semantic_query": QUERY},
-            {"semantic_query": QUERY},
+            {"memory_query": QUERY},
+            {"memory_query": QUERY},
             initial({"table": "EmailEvents"}),
             {
                 "sql": "SELECT SenderFromAddress FROM EmailEvents WHERE NetworkMessageId='mail-1'"
@@ -159,6 +162,8 @@ def test_live_chain_uses_observed_upstream_and_rejects_failed_or_invented_values
     # Use the released three-step fork, keeping only the fields its SQL actually needs.
     p = session()
     sid = "proc_3cce7d309146babc5a846c3e"
+    # Dependency-contract fixture deliberately exercises an archived deployment flow.
+    p.disabled.discard(sid)
     snippet = p.store.snippets[sid]
     schema = {}
     for step in snippet["steps"]:
@@ -213,12 +218,12 @@ def test_failed_template_hands_control_to_planner_instead_of_rewriting_memory():
     sql = pm.bind(spec)["bound_sql"]
     replies = iter(
         [
-            {"semantic_query": QUERY},
-            initial({"procedure": spec}),
+            {"memory_query": QUERY},
+            initial({"episode": spec}),
             {"sql": sql},
             {"summary": "字段查询失败", "facts": [], "limitations": ["unknown column"]},
             {"can_answer": "no"},
-            {"semantic_query": QUERY},
+            {"memory_query": QUERY},
             {
                 "operations": [
                     {
@@ -241,10 +246,10 @@ def test_failed_template_hands_control_to_planner_instead_of_rewriting_memory():
     assert not w._procedural_session.runs["T1"]["observations"]["s1"]["success"]
 
 
-def test_table_choice_after_pm_candidates_automatically_uses_semantic():
+def test_table_choice_after_episodic_candidates_automatically_uses_semantic():
     replies = iter(
         [
-            {"semantic_query": QUERY},
+            {"memory_query": QUERY},
             initial({"table": "EmailEvents"}),
             {
                 "sql": "SELECT SenderFromAddress FROM EmailEvents WHERE NetworkMessageId='mail-1'"
@@ -286,7 +291,7 @@ def test_workflow_replan_continues_same_run_using_raw_results(monkeypatch):
     }
     doc["catalog_id"] = digest(doc)
     store = TrajectorySnippetStore(doc)
-    monkeypatch.setattr(TrajectorySnippetStore, "load", lambda path: store)
+    monkeypatch.setattr("src.memory.longterm_memory.procedural_memory.flows.load_runtime_catalog", lambda: store)
     schema = {}
     for template in templates.values():
         for table, fields in template["schema_fields"].items():
@@ -312,7 +317,7 @@ def test_workflow_replan_continues_same_run_using_raw_results(monkeypatch):
         if phase == 1:
             return yaml.safe_dump(
                 {
-                    "semantic_query": {
+                    "memory_query": {
                         "known": ["Action"],
                         "wanted": ["Email_Sender", "URL"],
                         "intent": "查询隔离邮件的发件人和URL",

@@ -5,7 +5,7 @@ import yaml
 
 from src.benchmarks.excytin_bench.workflow import ExcytinBenchWorkflow
 
-QUERY = {"semantic_query": {"known": [{"concept": "邮件ID", "kind": "network_message_id"}],
+QUERY = {"memory_query": {"known": [{"concept": "邮件ID", "kind": "network_message_id"}],
                             "wanted": [{"concept": "发件人", "kind": "header_from"}]}}
 
 
@@ -31,7 +31,7 @@ def test_default_workflow_retrieves_selects_passes_context_and_finishes():
     workflow = ExcytinBenchWorkflow(procedural_memory_enabled=False, llm=llm)
     workflow.set_semantic_schema({"EmailEvents": {"NetworkMessageId": "text", "SenderFromAddress": "text", "TimeGenerated": "text", "SecretUnused": "text"}})
     workflow.start({"context": "Known mail-1", "question": "Find sender", "answer": "FORBIDDEN_REFERENCE"})
-    assert "semantic_query" not in json.dumps(calls[0][1].get("semantic_results"))
+    assert "memory_query" not in json.dumps(calls[0][1].get("semantic_results"))
     assert "EmailEvents" not in json.dumps(calls[0][1])
     assert "EmailEvents" in json.dumps(calls[1][1]["semantic_results"])
     action = workflow.propose_next_action()
@@ -126,7 +126,7 @@ def test_context_ids_follow_creation_order_not_tree_order():
 
 
 def test_question_intent_supplies_fallback_and_table_only_selection():
-    q = {"semantic_query": {"known": ["Source_IP"], "wanted": ["Login_Time"]}}
+    q = {"memory_query": {"known": ["Source_IP"], "wanted": ["Login_Time"]}}
     selected = plan("SigninLogs")
     selected["operations"][-1]["objective"] = "查询已知 IP 的认证时间"
     replies = iter([q, selected, {"sql": "SELECT CreatedDateTime FROM SigninLogs WHERE IPAddress = '192.0.2.1'"}])
@@ -138,7 +138,7 @@ def test_question_intent_supplies_fallback_and_table_only_selection():
 
 
 def test_partial_selection_reaches_executor_without_full_coverage_gate():
-    query = {"semantic_query": {"known": [{"concept": "URL", "kind": "clicked_url"}],
+    query = {"memory_query": {"known": [{"concept": "URL", "kind": "clicked_url"}],
         "wanted": ["Email_Sender", {"concept": "Email_ID", "kind": "network_message_id"}]}}
     replies = iter([query, plan("UrlClickEvents"), {"sql": "SELECT NetworkMessageId FROM UrlClickEvents WHERE Url = 'https://example.test'"}])
     w = ExcytinBenchWorkflow(procedural_memory_enabled=False, llm=lambda s, u: yaml.safe_dump(next(replies)))
@@ -163,7 +163,7 @@ def test_retrieving_additional_concepts_merges_only_selected_table_fields():
     from src.memory.longterm_memory.semantic_memory.v2.session import SemanticPlanningSession
     from src.memory.longterm_memory.semantic_memory.v2 import SemanticMemoryV2
     session = SemanticPlanningSession(SemanticMemoryV2.load())
-    session.retrieve(QUERY["semantic_query"])
+    session.retrieve(QUERY["memory_query"])
     session.retrieve({"known": [{"concept": "Email_ID", "kind": "network_message_id"}], "wanted": ["Email_Subject"]})
     clean, contexts = session.prepare(plan())
     assert "table" not in clean["operations"][-1]
@@ -181,7 +181,7 @@ def test_sql_binding_rejects_unretrieved_fields_tables_and_star(sql):
     from src.memory.longterm_memory.semantic_memory.v2.session import validate_sql_binding, SemanticPlanningSession
     from src.memory.longterm_memory.semantic_memory.v2 import SemanticMemoryV2
     session = SemanticPlanningSession(SemanticMemoryV2.load())
-    session.retrieve(QUERY["semantic_query"])
+    session.retrieve(QUERY["memory_query"])
     _, contexts = session.prepare(plan())
     with pytest.raises(ValueError):
         validate_sql_binding(sql, contexts[0])
@@ -197,7 +197,7 @@ def test_sql_binding_handles_aliases_aggregation_and_ctes(sql):
     from src.memory.longterm_memory.semantic_memory.v2.session import validate_sql_binding, SemanticPlanningSession
     from src.memory.longterm_memory.semantic_memory.v2 import SemanticMemoryV2
     session = SemanticPlanningSession(SemanticMemoryV2.load())
-    session.retrieve(QUERY["semantic_query"])
+    session.retrieve(QUERY["memory_query"])
     _, contexts = session.prepare(plan())
     validate_sql_binding(sql, contexts[0])
 
@@ -225,7 +225,7 @@ def test_omitted_table_is_inferred_only_from_unique_exact_retrieved_name():
     from src.memory.longterm_memory.semantic_memory.v2.session import SemanticPlanningSession
     from src.memory.longterm_memory.semantic_memory.v2 import SemanticMemoryV2
     session = SemanticPlanningSession(SemanticMemoryV2.load())
-    session.retrieve(QUERY["semantic_query"])
+    session.retrieve(QUERY["memory_query"])
     def request(objective):
         return {"operations": [{"op": "add_task", "entity_id": "E1", "objective": objective}]}
     _, contexts = session.prepare(request("查询 EmailEvents 的发件人"))

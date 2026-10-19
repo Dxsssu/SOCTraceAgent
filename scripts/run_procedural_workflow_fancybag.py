@@ -122,6 +122,11 @@ def run_case(case, case_dir, config, max_steps, stop_event):
         "selections": log.get("task_semantic_contexts", {}),
         "procedural_retrievals": log.get("procedural_retrievals", []),
         "procedural_selections": log.get("task_procedural_contexts", {}),
+        "episodic_selections": log.get("task_episodic_contexts", {}),
+        "episodic_retrievals": log.get("episodic_retrievals", []),
+        "memory_architecture": log.get("memory_architecture"),
+        "memory_catalog_ids": log.get("memory_catalog_ids", {}),
+        "memory_routing_history": log.get("memory_routing_history", []),
         "procedural_fallbacks": log.get("procedural_fallbacks", []),
         "executions": log.get("executions", []),
         "retry_events": [
@@ -269,14 +274,17 @@ def source_hashes():
     paths = [Path(__file__), ROOT / "src/benchmarks/excytin_bench/workflow.py",
              ROOT / "src/benchmarks/excytin_bench/runner.py", *sorted((ROOT / "src/agent").glob("*.py"))]
     for directory in [ROOT / "src/memory/longterm_memory/semantic_memory/v2",
-                      ROOT / "src/memory/longterm_memory/procedural_memory/trajectory_snippets"]:
+                      ROOT / "src/memory/longterm_memory/procedural_memory/trajectory_snippets",
+                      ROOT / "src/memory/longterm_memory/procedural_memory/flows",
+                      ROOT / "src/memory/longterm_memory/episodic_memory/investigation_snippets"]:
         paths.extend(sorted(directory.glob("*.py")))
+        paths.extend(sorted(directory.glob("*.json")))
         paths.extend(sorted((directory / "excytin").glob("*.json")))
     return {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fancybag + PM/SM 全量测试，默认跳过已完成题目")
+    parser = argparse.ArgumentParser(description="Fancybag + PM/EM/SM 全量测试，默认跳过已完成题目")
     selection = parser.add_mutually_exclusive_group()
     selection.add_argument("--all", action="store_true", help="运行全部测试题（默认）")
     selection.add_argument("--cases", nargs="+", help="只运行指定题目")
