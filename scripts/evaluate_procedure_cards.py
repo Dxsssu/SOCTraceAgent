@@ -117,7 +117,7 @@ def main():
                     print(json.dumps({"case": case_id, "mode": mode, "call": len(calls), "seconds": record["seconds"], "error": record.get("error")}), flush=True)
 
             runner = ExcytinBenchmarkRunner(max_steps=args.max_steps, workflow_factory=lambda limit: ExcytinBenchWorkflow(
-                max_steps=limit, llm=invoke,
+                max_steps=limit, llm=invoke, semantic_memory_enabled=False,
                 executor_format_attempts=args.executor_format_attempts, compact_evidence=args.compact_evidence))
             result = runner.run_case(cases[case_id], case_dir=out / mode, split=args.split)
             result.update(mode=mode, usage=dict(llm.usage), model=llm.client.config.model)

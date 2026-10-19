@@ -17,7 +17,6 @@ import httpx
 from openai import APIConnectionError, APIStatusError
 
 import sqlglot
-import yaml
 
 from src.agent.llm import LLMClient, LLMConfig, parse_yaml_response
 from src.agent.executor import SQL_EXECUTOR_SYSTEM_PROMPT
@@ -194,6 +193,8 @@ class ExcytinBenchWorkflow:
         max_observation_chars: int = 20_000,
         executor_format_attempts: int = 2,
         compact_evidence: bool = False,
+        semantic_memory_enabled: bool = True,
+        procedural_memory_enabled: bool = True,
     ) -> None:
         if max_steps < 2:
             raise ValueError("max_steps must reserve at least one query and one submit")
@@ -205,6 +206,13 @@ class ExcytinBenchWorkflow:
         self.max_observation_chars = max(1_000, max_observation_chars)
         self.executor_format_attempts = min(2, max(1, executor_format_attempts))
         self.compact_evidence = compact_evidence
+        self.semantic_memory_enabled = semantic_memory_enabled
+        self.procedural_memory_enabled = procedural_memory_enabled and semantic_memory_enabled
+        self._procedural_session = None
+        self._task_procedural_contexts: dict[str, dict] = {}
+        self._semantic_schema = None
+        self._semantic_session = None
+        self._task_semantic_contexts: dict[str, dict] = {}
         self.state: WorkflowState | None = None
         self._bootstrap_trace: list[dict[str, Any]] = []
         self._bootstrap_status = "idle"
@@ -265,6 +273,18 @@ class ExcytinBenchWorkflow:
         self._bootstrap_status = "idle"
         self._bootstrap_event_id = ""
         self._bootstrap_initial_input = ""
+        self._semantic_session = None
+        self._semantic_schema = None
+        self._task_semantic_contexts.clear()
+        self._task_procedural_contexts.clear()
+        self._procedural_session = None
+
+    def set_semantic_schema(self, schema) -> None:
+        """Bind a target database schema before start; never expose its full content."""
+        if self.state is not None and not self.state.done:
+            raise RuntimeError("Cannot replace schema during an active investigation")
+        from copy import deepcopy
+        self._semantic_schema = deepcopy(schema)
 
     def start(
         self,
@@ -303,6 +323,16 @@ class ExcytinBenchWorkflow:
         self._bootstrap_status = "initializing"
         self._bootstrap_event_id = event.event_id
         self._bootstrap_initial_input = question
+        self._task_semantic_contexts.clear()
+        self._task_procedural_contexts.clear()
+        self._procedural_session = None
+        if self.semantic_memory_enabled:
+            from src.memory.longterm_memory.semantic_memory.v2 import SemanticMemoryV2
+            from src.memory.longterm_memory.semantic_memory.v2.session import SemanticPlanningSession
+            self._semantic_session = SemanticPlanningSession(SemanticMemoryV2.load(schema=self._semantic_schema))
+            if self.procedural_memory_enabled:
+                from src.memory.longterm_memory.procedural_memory.trajectory_snippets.session import ProceduralPlanningSession
+                self._procedural_session = ProceduralPlanningSession(self._semantic_session)
         self._record_trace(
             "workflow_starting",
             {"event_id": event.event_id},
@@ -389,6 +419,8 @@ class ExcytinBenchWorkflow:
             original_observation_chars=len(raw_observation),
         )
         state.executions.append(execution)
+        if self._procedural_session:
+            self._procedural_session.observe(node.node_id, raw_observation, success, observation_truncated)
         current = self._find_node(state.ttt, node.node_id)
         code, result, _ = execution_fields(state.executions, node.node_id)
         state.ttt = change_node(state.ttt, node.node_id,
@@ -415,7 +447,7 @@ class ExcytinBenchWorkflow:
         state.ttt_history.append(state.ttt.to_dict())
         self._record_trace("ttt_execution_updated", {"ttt": state.ttt.to_dict()})
 
-        if repair_trigger == "sql_error" and not executor_attempt_budget_exhausted:
+        if repair_trigger == "sql_error" and not executor_attempt_budget_exhausted and node.node_id not in self._task_procedural_contexts:
             repair_count = state.error_repair_counts.get(node.node_id, 0)
             if repair_count < self.max_error_repairs:
                 state.error_repair_counts[node.node_id] = repair_count + 1
@@ -560,8 +592,13 @@ class ExcytinBenchWorkflow:
                 "workflow": "excytin_bench",
                 "event_id": self._bootstrap_event_id,
                 "status": self._bootstrap_status,
-                "ltm_enabled": False,
-                "planner_pm_enabled": False,
+                "ltm_enabled": self.semantic_memory_enabled,
+                "semantic_memory_v2_enabled": self.semantic_memory_enabled,
+                "memory_retrievals": list(self._semantic_session.retrievals) if self._semantic_session else [],
+                "planner_pm_enabled": self.procedural_memory_enabled,
+                "procedural_retrievals": list(self._procedural_session.retrievals) if self._procedural_session else [],
+                "task_procedural_contexts": dict(self._task_procedural_contexts),
+                "procedural_fallbacks": list(self._procedural_session.fallbacks) if self._procedural_session else [],
                 "actions_issued": 0,
                 "initial_input": self._bootstrap_initial_input,
                 "trace": list(self._bootstrap_trace),
@@ -569,8 +606,12 @@ class ExcytinBenchWorkflow:
         state = self.state
         return {
             "workflow": "excytin_bench",
-            "ltm_enabled": False,
-            "planner_pm_enabled": False,
+            "ltm_enabled": self.semantic_memory_enabled,
+            "semantic_memory_v2_enabled": self.semantic_memory_enabled,
+            "planner_pm_enabled": self.procedural_memory_enabled,
+            "procedural_retrievals": list(self._procedural_session.retrievals) if self._procedural_session else [],
+            "task_procedural_contexts": dict(self._task_procedural_contexts),
+            "procedural_fallbacks": list(self._procedural_session.fallbacks) if self._procedural_session else [],
             "event_id": state.event.event_id,
             "status": "done" if state.done else "active",
             "actions_issued": state.actions_issued,
@@ -582,7 +623,8 @@ class ExcytinBenchWorkflow:
             "executions": [item.to_dict() for item in state.executions],
             "reviews": list(state.reviews),
             "verifications": list(state.verifications),
-            "memory_retrievals": [],
+            "memory_retrievals": list(self._semantic_session.retrievals) if self._semantic_session else [],
+            "task_semantic_contexts": dict(self._task_semantic_contexts),
             "ttt_history": list(state.ttt_history),
             "action_history": list(state.action_history),
             "trace": list(state.trace),
@@ -596,6 +638,8 @@ class ExcytinBenchWorkflow:
         investigation_input: Mapping[str, str],
     ) -> TracebackTaskTree:
         prompt = "下面是此次事件的背景和调查问题。当前任务是初始化 ITT：只返回顶层为 operations 的 YAML，操作仅用 add_goal/add_entity/add_task/select_task，严格遵循系统中的字段协议。执行环境是 MySQL。不要返回 SQL、KQL、调查解释或最终答案。\n" + compact_json(dict(investigation_input))
+        if self.semantic_memory_enabled:
+            return self._plan_with_semantic(dict(investigation_input), event.event_id, 1)
         parsed = self._call_yaml_role(
             "planner",
             PLANNER_SYSTEM_PROMPT,
@@ -620,6 +664,11 @@ class ExcytinBenchWorkflow:
             itt=itt_payload(current_ttt, state.executions, planner_view=True),
             review={"can_answer": "no"}), compact=self.compact_evidence)
         next_round = current_ttt.round_id + 1
+        if self.semantic_memory_enabled:
+            return self._plan_with_semantic(dict(task_input(state.event),
+                itt=itt_payload(current_ttt, state.executions, planner_view=True),
+                review={"can_answer": "no"}), state.event.event_id, next_round,
+                previous=current_ttt, executions=state.executions)
         def validate(value):
             tree = apply_planner_operations(value, state.event.event_id, next_round,
                              previous=current_ttt, executions=state.executions)
@@ -634,6 +683,73 @@ class ExcytinBenchWorkflow:
         self._record_trace("planner_operations_applied", {"operations": parsed["operations"], "version": tree.version})
         return tree
 
+    def _plan_with_semantic(self, inputs, event_id, round_id, *, previous=None, executions=()):
+        session = self._semantic_session
+        pm = self._procedural_session
+        adapter = pm or session
+        session.default_intent = str(inputs.get("question", ""))
+        prompt_payload = {**inputs, "semantic_memory_v2": {"concepts": session.vocabulary(),
+            "instruction": "先输出 semantic_query: {known: [概念], wanted: [概念], intent: 调查目标}；再用 operations 的 add_task.table 选表。允许 partial 候选作为中间步骤，不输出 semantic_refs。"},
+            "semantic_results": []}
+        if pm:
+            prompt_payload["procedural_memory"] = {
+                "instruction": "semantic_query 会优先检索 Procedural Memory；候选适用则 add_task.procedure 选步骤。无候选自动回退 Semantic；有候选但不适用时再次提交相同 semantic_query 进入 Semantic。依赖步骤只在真实上游返回后创建。",
+                "active_runs": pm.active_runs(),
+                "concepts": pm.vocabulary(),
+            }
+            prompt_payload["procedural_results"] = []
+        if session.retrievals:
+            from src.memory.longterm_memory.semantic_memory.v2 import render_view
+            last = session.retrievals[-1]
+            prompt_payload["semantic_results"].append({"lookup_id": last["lookup_id"], "view": render_view(last["result"])})
+
+        def validate(value):
+            if "semantic_query" in value:
+                session.queries(value["semantic_query"])
+                return
+            clean, _ = adapter.prepare(value)
+            return apply_planner_operations(clean, event_id, round_id,
+                previous=previous, executions=executions, require_next_task=True)
+
+        for turn in range(6):
+            if turn == 5:
+                prompt_payload["semantic_memory_v2"]["instruction"] = "本次规划检索预算已用完，使用已返回候选输出 operations；无覆盖时新增 schema_probe 任务。"
+            parsed = self._call_yaml_role("planner", PLANNER_SYSTEM_PROMPT,
+                compact_json(prompt_payload), validator=validate, response_parser=adapter.parse)
+            if "semantic_query" in parsed:
+                if turn == 5:
+                    raise ValueError("Planner exceeded 5 semantic lookups per planning round")
+                if pm:
+                    pm_view = pm.retrieve(parsed["semantic_query"])
+                    if pm_view is not None:
+                        self._record_trace("procedural_memory_retrieved", pm_view)
+                        prompt_payload["procedural_results"].append(pm_view)
+                        if pm_view["candidates"]:
+                            continue
+                    self._record_trace("procedural_memory_fallback", {"query": parsed["semantic_query"], "reason": "miss_or_planner_rejected_candidates"})
+                view = session.retrieve(parsed["semantic_query"])
+                self._record_trace("semantic_memory_retrieved", session.retrievals[-1])
+                prompt_payload["semantic_results"].append(view)
+                continue
+            clean, contexts = adapter.prepare(parsed)
+            tree = validate(parsed)
+            from src.schema.ttt_updates import walk
+            old_ids = {n.node_id for n, _ in walk(previous)} if previous else set()
+            new_tasks = {n.node_id: n for n, _ in walk(tree) if n.level == 3 and n.node_id not in old_ids}
+            ids = sorted(new_tasks, key=lambda value: int(value[1:]))
+            if len(ids) != len(contexts):
+                raise ValueError("Semantic context/task count mismatch")
+            for node_id, context in zip(ids, contexts):
+                if context.get("mode") == "procedure":
+                    pm.register(node_id, context)
+                    self._task_procedural_contexts[node_id] = context
+                    self._record_trace("planner_procedural_step_selected", {"node_id": node_id, "context": context})
+                else:
+                    self._task_semantic_contexts[node_id] = context
+                    self._record_trace("planner_semantic_table_selected", {"node_id": node_id, "context": context})
+            self._record_trace("planner_operations_applied", {"operations": parsed["operations"], "version": tree.version})
+            return tree
+
     def _generate_sql(self, node: TTTNode) -> str:
         state = self._require_state()
         failure = self._latest_repairable_for_node(state, node.node_id)
@@ -644,6 +760,15 @@ class ExcytinBenchWorkflow:
                 "node_id": node.node_id, "execution_id": failure.execution_id,
                 "source": "execution_error"})
         payload = task_payload(node)
+        procedure = self._task_procedural_contexts.get(node.node_id)
+        if procedure is not None:
+            payload["procedural_context"] = {k: procedure[k] for k in ("snippet_id", "step_id", "sql_template", "bindings", "bound_sql", "caution")}
+            payload["procedural_instruction"] = "执行此已选片段步骤。bound_sql 已按当前输入与真实上游结果绑定，直接以 sql 字段返回该语句；不得增删过滤条件、换表、改值或改变 LIMIT。注意事项用于理解范围，不是额外事实。"
+        semantic = self._task_semantic_contexts.get(node.node_id)
+        if semantic is not None:
+            payload["semantic_context"] = semantic
+            if semantic.get("mode") != "schema_probe":
+                payload["semantic_instruction"] = "只查询 semantic_context.table；只使用 fields 和 time_field 中已提供的字段。显式列出字段，不使用 SELECT *。partial 仅是调查中间步骤，不能臆造缺失字段。"
         if recovery is not None:
             payload["error"] = "这是之前执行的 SQL 语句和报错结果，请参考并重新生成一条 MySQL 只读 SQL 查询语句：\n" + compact_json(recovery)
         # Serialization and local syntax repairs share this bounded budget.
@@ -662,6 +787,22 @@ class ExcytinBenchWorkflow:
             if error is None:
                 try:
                     sql = ReadOnlySQLValidator.validate(parsed["sql"])
+                    if procedure:
+                        expected = sqlglot.parse_one(procedure["bound_sql"], read="mysql")
+                        if sqlglot.parse_one(sql, read="mysql") != expected:
+                            raise SQLSyntaxError("SQL must preserve the selected procedural bound_sql exactly; return bound_sql without modifying predicates, values or columns")
+                    if semantic and semantic.get("mode") == "schema_probe":
+                        expression = sqlglot.parse_one(sql, read="mysql")
+                        if not re.match(r"\s*(SHOW|DESC(?:RIBE)?)\b", sql, re.I):
+                            tables = list(expression.find_all(sqlglot.exp.Table))
+                            if not tables or any(t.db.casefold() != "information_schema" for t in tables):
+                                raise SQLSyntaxError("schema_probe only allows SHOW/DESCRIBE or information_schema metadata queries")
+                    elif semantic:
+                        from src.memory.longterm_memory.semantic_memory.v2.session import validate_sql_binding
+                        try:
+                            validate_sql_binding(sql, semantic)
+                        except ValueError as exc:
+                            raise SQLSyntaxError(str(exc)) from exc
                 except SQLSyntaxError as exc:
                     error = exc
                     event_type = "executor_sql_invalid"
@@ -760,6 +901,7 @@ class ExcytinBenchWorkflow:
         user_prompt: str,
         *,
         validator: Callable[[Any], object] | None = None,
+        response_parser: Callable[[str], Any] | None = None,
     ) -> dict[str, Any] | list[dict[str, Any]]:
         last_error: Exception | None = None
         prompt = user_prompt
@@ -767,7 +909,7 @@ class ExcytinBenchWorkflow:
             response_text = self._call_role_llm(system_prompt, prompt)
             parsed = None
             try:
-                parsed = parse_planner_response(response_text) if role == "planner" else self._parse_response(response_text)
+                parsed = response_parser(response_text) if response_parser else (parse_planner_response(response_text) if role == "planner" else self._parse_response(response_text))
                 if validator is not None:
                     validator(parsed)
             except Exception as exc:  # noqa: BLE001 - retry malformed model output.
@@ -794,7 +936,7 @@ class ExcytinBenchWorkflow:
                         ({
                             "verifier": '必须含顶层 can_answer。证据充分时输出 can_answer: "yes" 与 answer: "依据证据的答案"；不足时只输出 can_answer: "no"。此处是格式说明，不代表证据充分。不要用 malicious_url 等自创字段替代 can_answer。',
                             "reviewer": "必须输出 summary（字符串）、facts（字段字典列表）、limitations（字符串列表）；facts 内每个字段只能是字符串、数字、布尔或 null，禁止数组或对象。元数据查询按实际 TABLE_NAME/COLUMN_NAME 行保留，不聚合成列名数组。只总结本次真实结果，不自行写 source。",
-                            "planner": "顶层必须是 operations 列表；每项必须用 op 字段指定 add_goal/add_entity/add_task/select_task，字段遵循系统示例，不能把操作名作为映射键。",
+                            "planner": "按系统协议输出 operations（每项用 op 指定操作）。启用 Semantic Memory v2 时也可单独输出 semantic_query 请求概念检索；不要把操作名作为映射键。",
                         }.get(role, "")),
                     ]
                 )

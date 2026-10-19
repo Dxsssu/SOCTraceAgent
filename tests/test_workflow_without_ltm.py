@@ -1,4 +1,4 @@
-"""Workflow startup must stay independent of the LTM being reconstructed."""
+"""The explicit no-memory baseline and local workflow do not import LTM."""
 import os
 from pathlib import Path
 import subprocess
@@ -31,13 +31,13 @@ plan = ''' + repr('''operations:
 ''') + r'''
 with patch('src.agent.planner.call_llm', return_value=plan) as model:
     local.planner._generate_initial_ttt(event)
-    assert 'Procedural Memory' not in model.call_args.args[0]
+    assert 'procedural_memory' not in model.call_args.args[1]
 calls = []
 def llm(system, user):
     calls.append((system, user))
     assert memory_output_limit(system) is None
     return plan
-workflow = ExcytinBenchWorkflow(llm=llm)
+workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
 workflow.start({'context': 'Alert', 'question': 'Find alert'})
 assert len(calls) == 1
 assert workflow.get_logging()['ltm_enabled'] is False

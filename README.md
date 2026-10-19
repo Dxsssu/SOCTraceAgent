@@ -2,7 +2,11 @@
 
 SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Planner、Executor、Reviewer** 围绕渐进式 TTT（Traceback Task Tree，溯源任务树）协作调查。项目包含本地 Splunk/BOTS 调查、ExCyTIn-Bench 测评、三类长期记忆，以及外部 Agent 对比实验。Python 包名和部分运行时标识沿用 `socagent` / `SOCAgent`。
 
-当前 LTM 正在重建：本地调查和 SQL workflow 均已断开长期记忆接入，旧环境开关不会重新启用。知识库与离线工具保留；接入前版本已保存至 Git 提交 `dfb8646`。
+当前 SQL workflow 默认启用训练轨迹 Procedural Memory 与 Semantic Memory v2；系统先按实体类型和意图检索片段，Planner 选择适用步骤，Executor 接收模板和绑定参数；未命中或不适用时回退到 Semantic 选表。旧版 SM、PM、EM 与程序卡片继续停用，本地 Splunk workflow 仍未接入 LTM。旧环境开关不会重新启用旧记忆；接入前版本已保存至 Git 提交 `dfb8646`。
+
+Semantic Memory v2：[两张扁平字典、workflow 接入协议与示例验证](src/memory/longterm_memory/semantic_memory/v2/README.md)。通过 `ExcytinBenchWorkflow(procedural_memory_enabled=False)` 可运行仅 Semantic 对照；`semantic_memory_enabled=False` 同时关闭两个新记忆路径。
+
+Procedural Memory：[从 237 条完整训练轨迹提取、合并和验证的调查片段](src/memory/longterm_memory/procedural_memory/trajectory_snippets/README.md)，包含原子查询、多步证据关联、条件路线及独立恢复经验；已接入 SQL workflow；片段仍标记 candidate，运行时校验当前 Schema、输入和真实上游依赖。[原 40 条版本](src/memory/longterm_memory/procedural_memory/snippets/README.md)保留为预设意图规则的历史基线，不代表完整轨迹提取结果。
 
 当前仅启用 SQL workflow 的四个角色主提示词。旧 Executor 执行与 MCP 路由提示词已注释，本地 Splunk 调查的工具路由暂时停用；Web 可启动，但该调查路径目前不能执行工具。
 
@@ -10,7 +14,7 @@ SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Pla
 
 - **告警调查**：LLM 规划任务、选择 MCP 工具，通过 Splunk REST API 查询真实日志，逐步复盘和重规划。
 - **共享工作记忆**：SQLite 持久化事件、版本化 TTT、执行证据、轮次复盘和审计消息。
-- **长期记忆（暂时移出 workflow）**：SM / PM / EM 及程序卡片保留供重建，当前调查不加载、不检索、不注入。
+- **长期记忆**：SQL workflow 使用 SM v2 的概念字段检索；旧 SM / PM / EM 及程序卡片保留供重建。
 - **Web 作战室**：创建和查看事件，展示任务树、执行记录与复盘，通过 Socket.IO 推送更新。
 - **测评与基线**：ExCyTIn SQL 调查流程、并行测评、结果落盘，以及 OpenCode、Qwen Code、Cline 和论文 BaselineAgent 的配对实验入口。
 
@@ -93,7 +97,7 @@ Planner 输入只保留 `context` 与 `question`。运行时构建事件 ID、�
 - Planner 只输出 `operations` 对象，支持 `add_goal`（仅首轮）、`add_entity`、`add_task`、`select_task`。完整树输出不再作为模型响应接受。
 - 程序分配正式 G/E/T ID。`ref` 是本批次唯一的临时别名，通过 `$alias` 引用；后续轮次直接引用输入中的正式 ID。别名不保存到快照。
 - Planner 不输出或改写 `children`、`status`、`execution_code`、`execution_result`。程序保留已有目标、父子关系、执行记录和终态任务，需要继续调查时新增 T。
-- `add_task` 可携带 `semantic_refs: [{table: 表名, fields: [字段名]}]` 或已提供 PM 的 `template_id`；未知结构时省略。模板由程序装载，历史任务的记忆引用保留。
+- 当前 SQL workflow 的 `add_task` 使用 `table: 候选表名` 选择已检索表；字段上下文由程序绑定，无需输出 `semantic_refs`。partial 候选可作为中间步骤；任务明确点名的字段由字典核实补齐，未知字段需补充检索。旧引用与模板字段仅保留底层兼容。
 - 默认按树顺序选择首个可执行任务；`select_task` 可显式优先选择一个 todo T，不重排或改写历史树。已有可执行任务时可返回 `operations: []`。SQL workflow 中 Verifier 尚未确认答案且没有待执行任务时，必须新增 T。
 - 整批操作在内存中校验，失败不修改原快照；SQLite 写入继续检查期望版本。版本、轮次、状态与证据引用由程序维护。
 - Planner / Verifier 的 ITT 输入采用 YAML 嵌套树：G→E→T 通过 `children` 展示层级，各节点使用具名字段。保留节点 ID、目标及任务状态、SQL 和结构化证据，不裁剪历史；不使用列名加行数组的扁平表示。
@@ -160,12 +164,12 @@ curl -X POST http://127.0.0.1:5008/api/event/create \
 
 Web 提供事件列表、详情、执行记录、复盘与层级查询；具体路由见 [src/webapp/server.py](src/webapp/server.py)。实时消息来自本地 SQLite watcher。
 
-## 长期记忆（重建期间暂停接入）
+## 长期记忆（新版本逐步接入）
 
-本地 `SOCTraceWorkflow` 与 SQL `ExcytinBenchWorkflow` 不再创建 `MemoryContextService`，也不检索 SM、PM、EM 或程序卡片。`SOCAGENT_LTM_ENABLED`、`SOCAGENT_PLANNER_PM_ENABLED`、`SOCAGENT_MEMORY_PROFILE` 和 Neo4j 配置不会启用 workflow 的长期记忆。
+本地 `SOCTraceWorkflow` 不启用长期记忆；SQL `ExcytinBenchWorkflow` 使用新版本 PM/SM，不创建旧 `MemoryContextService`，也不检索旧版 SM、PM、EM 或程序卡片。`SOCAGENT_LTM_ENABLED`、`SOCAGENT_PLANNER_PM_ENABLED`、`SOCAGENT_MEMORY_PROFILE` 和 Neo4j 配置不会启用 workflow 的长期记忆。
 
 - SQLite 工作记忆、ITT、原始执行记录、Reviewer 证据和 Verifier 判断保持原有流程。
-- SQL 报错仍允许一次基于失败 SQL 和真实错误的重试，无 EM 检索。
+- Semantic 路径 SQL 报错仍允许一次基于真实错误的修复；PM 模板失败交回 Planner 重新选路，不直接改写模板；无 EM 检索。
 - workflow 构造参数 `memory_contexts`、`planner_memory`、`planner_pm_enabled` 已移除；旧调用会显式报错。
 - `src/memory/longterm_memory/`、`src/workflow/context.py`、知识库及离线构建/检索工具保留，方便重建。角色接口与空上下文实现独立位于 `src/workflow/providers.py`。
 - PM 在线对照实验暂停；`scripts.evaluate_procedure_cards` 仅可使用 `--modes baseline`。历史分析工具仍可读取已有结果。

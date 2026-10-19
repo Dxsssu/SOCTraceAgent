@@ -33,7 +33,7 @@ def sleep(monkeypatch):
 @pytest.mark.parametrize('kind', ['timeout', 'connection', 'httpx_timeout', 408, 409, 429, 500, 502, 503, 504])
 def test_transport_retries_twice_with_unchanged_payload(kind, sleep):
     model = Mock(side_effect=[api_error(kind), api_error(kind), 'sql: SELECT 1'])
-    workflow = ExcytinBenchWorkflow(llm=model)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model)
     assert workflow._call_role_llm(SQL_EXECUTOR_SYSTEM_PROMPT, 'original input') == 'sql: SELECT 1'
     assert model.call_count == 3 and sleep.call_count == 2
     assert all(5 <= c.args[0] <= 10 for c in sleep.call_args_list)
@@ -46,7 +46,7 @@ def test_transport_retries_twice_with_unchanged_payload(kind, sleep):
 def test_exhausted_transport_retries_propagate_last_error(sleep):
     error = api_error(502)
     model = Mock(side_effect=error)
-    workflow = ExcytinBenchWorkflow(llm=model)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model)
     with pytest.raises(APIStatusError) as caught:
         workflow._call_role_llm('system', 'input')
     assert caught.value is error
@@ -57,7 +57,7 @@ def test_exhausted_transport_retries_propagate_last_error(sleep):
 @pytest.mark.parametrize('error', [api_error(400), api_error(401), api_error(403), api_error(404), ValueError('bad output')])
 def test_nontransient_errors_do_not_retry(error, sleep):
     model = Mock(side_effect=error)
-    workflow = ExcytinBenchWorkflow(llm=model)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model)
     with pytest.raises(type(error)):
         workflow._call_role_llm('system', 'input')
     assert model.call_count == 1
@@ -88,7 +88,7 @@ def test_executor_format_retry_has_separate_transport_budget(sleep):
         if isinstance(response, Exception):
             raise response
         return response
-    workflow = ExcytinBenchWorkflow(llm=model)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model)
     action = workflow.act('Investigate')
     assert action.content == 'SELECT 1;'
     assert len(inputs) == 6 and sleep.call_count == 4
@@ -108,7 +108,7 @@ def test_sql_error_context_survives_format_correction(sleep):
         payload = json.loads(user)
         inputs.append(payload)
         return 'not yaml' if len(inputs) == 2 else 'sql: SELECT 1'
-    workflow = ExcytinBenchWorkflow(llm=model)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model)
     workflow.act('Investigate')
     workflow.accept_observation('Unknown column x', query_success=False)
     assert workflow.propose_next_action().content == 'SELECT 1;'

@@ -120,6 +120,14 @@ class MySQLQueryExecutor:
         except Exception as exc:  # noqa: BLE001 - connector error hierarchy varies.
             return f"{type(exc).__name__}: {exc}", False, 0
 
+    def semantic_schema(self) -> dict[str, dict[str, str]]:
+        """Initialization metadata; the full snapshot is never sent to an agent."""
+        self.cursor.execute("SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()")
+        schema: dict[str, dict[str, str]] = {}
+        for table, column, dtype in self.cursor.fetchall():
+            schema.setdefault(table, {})[column] = dtype
+        return schema
+
     def close(self) -> None:
         self.cursor.close()
         self.connection.close()
@@ -355,6 +363,9 @@ class ExcytinBenchmarkRunner:
         _write_json(case_path, base_record)
 
         try:
+            executor = self.executor_factory(case.incident)
+            if getattr(workflow, "semantic_memory_enabled", False) and callable(getattr(executor, "semantic_schema", None)):
+                workflow.set_semantic_schema(executor.semantic_schema())
             workflow.start(
                 {
                     "context": case.question.get("context", ""),
@@ -366,7 +377,6 @@ class ExcytinBenchmarkRunner:
                     "split": split,
                 },
             )
-            executor = self.executor_factory(case.incident)
             for _ in range(self.max_steps):
                 action_started = time.perf_counter()
                 action = workflow.propose_next_action()

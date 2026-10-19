@@ -110,7 +110,7 @@ def test_benchmark_progressive_two_query_investigation():
             {"op": "add_entity", "ref": "process", "goal_id": "G1", "objective": "进程 42"},
             {"op": "add_task", "entity_id": "$process", "objective": "读取进程 42 的创建记录"},
         ]}, allow_unicode=True)
-    workflow = ExcytinBenchWorkflow(max_steps=5, llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, max_steps=5, llm=llm)
     first = workflow.act({'context': '告警 A', 'question': '进程 ID 和创建时间是什么？'})
     assert first.node_id == 'T1'
     second = workflow.act('[{"ProcessId":42}]')

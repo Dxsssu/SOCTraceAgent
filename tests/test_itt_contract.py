@@ -98,7 +98,7 @@ def test_runtime_metadata_excluded_from_every_model_call():
         if "你是 Executor" in system: return "sql: SELECT 1"
         if "你是 Reviewer" in system: return 'summary: device identified\nfacts: []\nlimitations: []'
         return "answer: device"
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     workflow.start({"context": "Alert A", "question": "Locate device", "answer": "ANSWER_SECRET", "runtime_info": "RUNTIME_SECRET"},
                    runtime_info={"attack": "RUNTIME_SECRET", "qid": "RUNTIME_SECRET"})
     workflow.propose_next_action()
@@ -122,7 +122,7 @@ def test_reviewer_retry_reports_character_count_and_preserves_evidence():
         prompts.append(prompt)
         return yaml.safe_dump({"summary": "x" * 300 if len(prompts) == 1 else "One process record.",
                                "facts": facts, "limitations": []})
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     result = workflow._call_yaml_role("reviewer", REVIEWER_SYSTEM_PROMPT, "original observation", validator=parse_review)
     assert len(prompts) == 2
     assert "300 字符" in prompts[1]
@@ -188,7 +188,7 @@ def test_benchmark_executor_omits_stored_pm_metadata():
     pm = {"name": "Process lookup", "status": "active", "goal": "Find process command line",
           "input_slots": {}, "operations": "Read process events", "semantic_refs": PM_REFS}
     with patch.object(ExcytinBenchSnapshotRepository, "retrieve_procedures", return_value=[pm]):
-        workflow = ExcytinBenchWorkflow(llm=llm)
+        workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
         workflow.start({"context": "device A", "question": "What is the process command line?"})
     action = workflow.propose_next_action()
     assert "ProcessCommandLine" in action.content
@@ -210,7 +210,7 @@ def test_background_planner_accepts_pm_refs():
 def test_planner_template_without_memory_fields_accepts_initial_plan():
     from src.agent.planner import PLANNER_SYSTEM_PROMPT
     from src.schema.planner_operations import parse_planner_response, apply_planner_operations
-    payload = parse_planner_response("operations:" + PLANNER_SYSTEM_PROMPT.split("\noperations:", 1)[1])
+    payload = parse_planner_response(PLANNER_SYSTEM_PROMPT.split("# 输出格式模板\n", 1)[1])
     tree = apply_planner_operations(payload, "event", 1)
     assert next_task(tree).node_id == "T1"
     assert next_task(tree).metadata["semantic_refs"] == []

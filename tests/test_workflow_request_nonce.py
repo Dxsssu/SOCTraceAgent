@@ -15,7 +15,7 @@ def test_role_retry_refreshes_system_prefix_and_preserves_user(monkeypatch):
         calls.append((system, user))
         return "invalid" if len(calls) == 1 else 'summary: reviewed\nfacts: []\nlimitations: []'
 
-    workflow = ExcytinBenchWorkflow(
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False,
         llm=model
     )
     result = workflow._call_yaml_role(

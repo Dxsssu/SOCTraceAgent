@@ -66,7 +66,7 @@ answer: alert-1
 
 
 def test_default_workflow_and_agent_limits() -> None:
-    workflow = ExcytinBenchWorkflow(llm=role_llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=role_llm)
     agent = ExcytinBenchAgent(workflow=workflow)
 
     assert workflow.max_steps == 25
@@ -85,7 +85,8 @@ def test_disabled_ltm_never_loads_repositories_or_retrieves_recovery(monkeypatch
     def llm(system, user):
         calls.append((system, user))
         assert "# 适用的 Procedural Memory" not in system
-        assert "# Semantic Memory" not in system
+        assert "# Semantic Memory L2" not in system
+        assert "semantic_memory_v2" not in user
         if "你是 Executor" in system:
             payload = json.loads(user)
             assert set(payload) == ({"id", "objective", "error"} if "error" in payload else {"id", "objective"})
@@ -93,7 +94,7 @@ def test_disabled_ltm_never_loads_repositories_or_retrieves_recovery(monkeypatch
                 assert set(json.loads(payload["error"].rsplit("\n", 1)[1])) == {"failed_sql", "error"}
             return "sql: SELECT UnknownField FROM SecurityAlert LIMIT 1"
         return INITIAL_OPERATIONS
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     workflow.act("Investigate the alert")
     workflow.act("ProgrammingError: Unknown column 'UnknownField' in 'field list'")
     assert workflow.get_logging()["ltm_enabled"] is False
@@ -117,7 +118,7 @@ def test_planner_yaml_with_explanatory_wrapper_is_retried() -> None:
             return INITIAL_OPERATIONS if len(calls) > 1 else f"Here is the requested YAML:\n{INITIAL_OPERATIONS}\nNo other changes."
         return role_llm(system_prompt, user_prompt)
 
-    workflow = ExcytinBenchWorkflow(max_steps=5, llm=wrapped_llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, max_steps=5, llm=wrapped_llm)
     ttt = workflow.start("Investigate the alert")
 
     assert ttt.root_nodes[0].title == "Investigate the alert"
@@ -132,7 +133,7 @@ def test_initial_planner_failure_preserves_raw_responses_in_trace() -> None:
         ]
     )
 
-    workflow = ExcytinBenchWorkflow(
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False,
         max_steps=5,
         llm=lambda _system, _user: "[]" if _system.startswith("你正在为当前 Agent") or "SM 表选择助手" in _system else next(responses),
         yaml_response_attempts=2,
@@ -156,14 +157,14 @@ def test_over_nested_planner_branch_is_rejected_without_renumbering() -> None:
     payload = yaml.safe_load(INITIAL_OPERATIONS)
     payload["operations"].append({"op": "add_entity", "ref": "invalid", "goal_id": "T1", "objective": "Invalid nesting"})
     over_nested = yaml.safe_dump(payload)
-    workflow = ExcytinBenchWorkflow(max_steps=5, llm=lambda _system, _user: "[]" if _system.startswith("你正在为当前 Agent") else over_nested)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, max_steps=5, llm=lambda _system, _user: "[]" if _system.startswith("你正在为当前 Agent") else over_nested)
 
     with pytest.raises(ValueError, match="level"):
         workflow.start("Identify the AadDeviceId")
 
 
 def test_external_action_workflow_waits_for_environment_observation() -> None:
-    workflow = ExcytinBenchWorkflow(max_steps=5, llm=role_llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, max_steps=5, llm=role_llm)
 
     first = workflow.act("Alert context. Which alert id is involved?")
     assert first.action_type == BenchmarkActionType.QUERY
@@ -194,7 +195,7 @@ def test_external_action_workflow_waits_for_environment_observation() -> None:
 
 
 def test_initial_dict_uses_allowlist_and_excludes_ground_truth() -> None:
-    workflow = ExcytinBenchWorkflow(max_steps=5, llm=role_llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, max_steps=5, llm=role_llm)
     workflow.start(
         {
             "context": "Investigate this alert.",
@@ -211,7 +212,7 @@ def test_initial_dict_uses_allowlist_and_excludes_ground_truth() -> None:
 
 
 def test_agent_can_preload_question_dict_without_consuming_it_as_sql_result() -> None:
-    workflow = ExcytinBenchWorkflow(max_steps=5, llm=role_llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, max_steps=5, llm=role_llm)
     agent = ExcytinBenchAgent(max_steps=5, workflow=workflow)
 
     agent.reset(
@@ -276,7 +277,7 @@ sql: SELECT AlertId FROM AlertEvidence LIMIT 1
             return INITIAL_OPERATIONS
         return INITIAL_OPERATIONS
 
-    workflow = ExcytinBenchWorkflow(max_steps=4, llm=retry_llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, max_steps=4, llm=retry_llm)
     first = workflow.act("Investigate the alert")
     assert calls["executor"] == 1
     second = workflow.act("ProgrammingError: Unknown column 'AlertId'")
@@ -313,7 +314,7 @@ def test_empty_result_goes_directly_to_reviewer_without_memory(monkeypatch) -> N
             return 'summary: No matching rows and no further leads.\nfacts: []\nlimitations: []'
         return role_llm(system, user)
 
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     first = workflow.act("Investigate the alert")
     final = workflow.act("[]")
     assert first.action_type == BenchmarkActionType.QUERY
@@ -352,7 +353,7 @@ def test_executor_errors_allow_only_one_em_repair() -> None:
         calls["planner"] += 1
         return INITIAL_OPERATIONS
 
-    workflow = ExcytinBenchWorkflow(
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False,
         max_steps=10,
         llm=capped_llm,
         max_error_repairs=10,
@@ -403,7 +404,7 @@ def test_query_budget_exhaustion_skips_replanning_and_submits() -> None:
         calls["planner"] += 1
         return INITIAL_OPERATIONS
 
-    workflow = ExcytinBenchWorkflow(max_steps=2, llm=budget_llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, max_steps=2, llm=budget_llm)
     query = workflow.act("Which host is involved?")
     assert query.action_type == BenchmarkActionType.QUERY
 
@@ -450,7 +451,7 @@ def test_benchmark_planner_documented_initial_contract_is_executable():
     import yaml
     from src.agent.planner import PLANNER_SYSTEM_PROMPT
 
-    example = "operations:" + PLANNER_SYSTEM_PROMPT.split("\noperations:", 1)[1]
+    example = PLANNER_SYSTEM_PROMPT.split("# 输出格式模板\n", 1)[1]
     tree = ExcytinBenchWorkflow._parse_ttt(yaml.safe_load(example), "contract-test", round_id=1)
     assert tree.next_task_id == "T1"
     assert ExcytinBenchWorkflow._next_todo_leaf(tree).node_id == "T1"
@@ -480,7 +481,7 @@ def test_executor_repair_adds_error_without_changing_objective(monkeypatch):
             return "response_type: EXECUTE_SQL\nsql: SELECT AlertId FROM AlertEvidence LIMIT 1"
         return role_llm(system, user)
 
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     workflow.start({"context": "private-context-marker", "question": "private-question-marker"})
     first = workflow.propose_next_action()
     assert set(prompts[0]) == {"id", "objective"}
@@ -536,7 +537,7 @@ def test_error_recovery_uses_actual_error_without_ltm(monkeypatch):
             return "response_type: EXECUTE_SQL\nsql: SELECT AlertName FROM SecurityAlert WHERE SystemAlertId = 'alert-1'"
         return role_llm(system, user)
 
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     workflow.act("Find alert name")
     assert retrievals == []
     action = workflow.act("ProgrammingError: Unknown column 'Title' in 'field list'")
@@ -559,7 +560,7 @@ def test_reviewer_receives_only_current_executor_result():
             captured.append(json.loads(user))
             return 'summary: Current result reviewed.\nfacts: []\nlimitations: []'
         return role_llm(system, user)
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     workflow.start("Investigate the alert")
     old = BenchmarkExecution(1, "T1", "Old attempt", "SELECT 1", "OLD_RESULT", True, "rows_returned")
     current = BenchmarkExecution(2, "T1", "Current attempt", "SELECT 2", "CURRENT_RESULT", True, "rows_returned")
@@ -592,7 +593,7 @@ def test_empty_result_continue_replans_new_task():
                                                    "objective": "Inspect another source"}]})
         return role_llm(system, user)
 
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     first = workflow.act("Investigate the alert")
     second = workflow.act("[]")
     assert first.node_id == "T1" and second.node_id == "T2"
@@ -613,7 +614,7 @@ def test_reviewer_retries_overlong_summary_before_accepting():
             return 'summary: "E1 确认告警 ID 为 alert-1。"\nfacts: []\nlimitations: []'
         return role_llm(system, user)
 
-    workflow = ExcytinBenchWorkflow(llm=llm)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     workflow.act("Find alert ID")
     result = workflow.act("[('alert-1',)]")
     assert result.action_type == BenchmarkActionType.SUBMIT
@@ -634,7 +635,7 @@ def test_executor_format_retries_once_but_unsafe_sql_does_not(response, expected
             calls.append(user)
             return response
         raise AssertionError(system)
-    workflow = ExcytinBenchWorkflow(llm=llm, yaml_response_attempts=5,
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm, yaml_response_attempts=5,
         )
     with pytest.raises((ValueError, yaml.YAMLError)):
         workflow.act('Investigate the alert')
@@ -652,7 +653,7 @@ def test_optional_local_sql_syntax_repair_does_not_execute_rejected_query():
             return INITIAL_OPERATIONS
         calls.append(json.loads(user))
         return 'sql: "SELECT (1"' if len(calls) == 1 else 'sql: SELECT 1'
-    workflow = ExcytinBenchWorkflow(llm=llm, executor_format_attempts=2,
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm, executor_format_attempts=2,
                                    )
     action = workflow.act('Investigate the alert')
     assert action.content == 'SELECT 1;'
@@ -672,7 +673,7 @@ def test_unsafe_sql_is_not_retried_even_with_optional_syntax_repair():
             return INITIAL_OPERATIONS
         calls.append(user)
         return 'sql: DELETE FROM SecurityAlert'
-    workflow = ExcytinBenchWorkflow(llm=llm, executor_format_attempts=2,
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm, executor_format_attempts=2,
                                    )
     with pytest.raises(ValueError):
         workflow.act('Investigate the alert')

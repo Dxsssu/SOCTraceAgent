@@ -137,7 +137,7 @@ def test_workflow_ignores_legacy_pm_environment(monkeypatch):
 - {op: add_entity, ref: url, goal_id: $goal, objective: URL https://example.invalid/a}
 - {op: add_task, entity_id: $url, objective: 在 EmailUrlInfo 按 Url 查询邮件标识}
 '''
-    workflow = ExcytinBenchWorkflow(llm=fake)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=fake)
     workflow.start({"context": "https://example.invalid/a", "question": "Who sent the email?"})
     assert "url_to_message" not in calls[0][0]
     assert "needs_prior_observation" not in calls[0][0]
@@ -161,7 +161,7 @@ def test_optional_executor_format_repair_preserves_two_field_input():
         assert set(payload) == {"id", "objective"}
         calls.append(payload)
         return "Here is a KQL explanation" if len(calls) == 1 else "sql: SELECT 1"
-    workflow = ExcytinBenchWorkflow(llm=fake,
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=fake,
                                    executor_format_attempts=2)
     workflow.start({"context": "", "question": "查邮件"})
     action = workflow.propose_next_action()

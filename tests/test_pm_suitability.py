@@ -75,7 +75,7 @@ def test_executor_uses_sql_contract_even_with_legacy_template_metadata():
     stored_tree=parse_itt(payload, 'restored', 1, procedures=[p])
     from src.benchmarks.excytin_bench.workflow import WorkflowState
     from src.schema import Event
-    workflow=ExcytinBenchWorkflow(llm=llm)
+    workflow=ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=llm)
     workflow.state=WorkflowState(event=Event(event_id='restored', event_name='test', message='Find sender'),
                                  ttt=stored_tree, initial_input='Find sender')
     action=workflow.propose_next_action()

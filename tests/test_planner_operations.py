@@ -36,7 +36,7 @@ from src.workflow.orchestrator import SOCTraceWorkflow
 
 
 def initial():
-    return parse_planner_response("operations:" + PLANNER_SYSTEM_PROMPT.split("\noperations:", 1)[1])
+    return parse_planner_response(PLANNER_SYSTEM_PROMPT.split("# 输出格式模板\n", 1)[1])
 
 
 def tree():
@@ -197,7 +197,7 @@ def test_sql_verifier_cannot_be_bypassed_by_empty_operations():
         if "你是 Reviewer" in system:
             return 'summary: Candidate only\nfacts: []\nlimitations: []'
         return 'can_answer: "no"'
-    workflow = ExcytinBenchWorkflow(llm=model)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model)
     workflow.act("Locate target")
     with pytest.raises(ValueError, match="add a new todo T"):
         workflow.act("[(1,)]")

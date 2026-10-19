@@ -127,7 +127,7 @@ def test_two_round_workflow_preserves_evidence_through_planner_and_verifier():
         assert tasks[0]['execution_result']['facts'] == FACTS
         assert tasks[0]['execution_result']['source']['execution_id'] == 'E1'
         return 'can_answer: "no"' if len(tasks) == 1 else 'can_answer: "yes"\nanswer: /tmp/first'
-    workflow = ExcytinBenchWorkflow(llm=model)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model)
     action = workflow.act({'context': 'host-A alert', 'question': 'Find executable'})
     assert workflow.state.pending_node.metadata['execution_code'] == action.content
     second = workflow.act(compact_json(FACTS))

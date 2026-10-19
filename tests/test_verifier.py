@@ -55,7 +55,7 @@ def test_verifier_controls_loop_and_supplies_final_answer():
                 assert tasks[1]["execution_result"]["summary"] == "Result reviewed"
             return json.dumps({"can_answer": "yes", "answer": "browsercore.exe"} if confirmed else {"can_answer": "no"})
         raise AssertionError("Unexpected role: " + system)
-    workflow = ExcytinBenchWorkflow(llm=model)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model)
     workflow.act({"context": "Investigation context", "question": "Which process?"})
     second = workflow.act("Only a lead")
     assert not second.submit and second.node_id == "T2"
@@ -72,7 +72,7 @@ def test_budget_exit_does_not_invent_answer():
         if "你是 Verifier" in system:
             return 'can_answer: "no"'
         raise AssertionError(system)
-    workflow = ExcytinBenchWorkflow(llm=model, max_steps=2)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model, max_steps=2)
     workflow.act("Find target")
     final = workflow.act("candidate")
     assert final.submit and final.content == "无法确认答案：调查结束，尚无充分证据。"
@@ -113,7 +113,7 @@ def test_terminal_tree_cannot_bypass_verifier(execution_success, correct_on_retr
         if '你是 Verifier' in system:
             return 'can_answer: "no"'
         raise AssertionError(system)
-    workflow = ExcytinBenchWorkflow(llm=model, max_error_repairs=0)
+    workflow = ExcytinBenchWorkflow(semantic_memory_enabled=False, llm=model, max_error_repairs=0)
     workflow.act('Find target')
     observation = '[]' if execution_success else 'ProgrammingError: missing table'
     if correct_on_retry:

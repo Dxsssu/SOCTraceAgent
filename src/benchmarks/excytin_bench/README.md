@@ -7,8 +7,9 @@ Reviewer 审查和 Planner 重规划。
 
 ```text
 initial observation
-  -> Planner operations -> runtime G/E/T ITT
-  -> {id, objective} -> Executor one read-only SQL -> program writes execution_code
+  -> Planner semantic_query -> SM v2 candidate table/field views
+  -> Planner operations + add_task.table -> runtime G/E/T ITT
+  -> {id, objective, semantic_context} -> Executor one read-only SQL -> program writes execution_code
   -> ExcytinEnv.step(SQL)
   -> observation -> Reviewer (current task + current execution only) -> program writes structured execution_result
   -> Verifier (context + question + nested ITT)
@@ -20,7 +21,9 @@ Verifier 在每轮 Reviewer 后同步调用，接收 `context + question + itt`�
 
 Verifier 输出 `can_answer: "yes"` 或 `can_answer: "no"`，仅 yes 时附加 `answer`。能回答时直接生成最终答案，程序退出循环提交，不再调用最终答案整理器或反证审查。不能回答时，把包含结构化证据的 ITT 及 Verifier 的未确认状态交给 Planner 继续规划；Reviewer 的提交/停止建议不直接终止调查，Planner 的完成状态也不能替代 Verifier 确认。预算耗尽而仍未确认时，程序提交“无法确认答案：调查结束，尚无充分证据。”。Verifier 未确认时，Planner 的重规划必须包含可执行的 todo T；G/E 的推导状态不再触发提前提交。缺少可执行任务按现有有限校验重试要求补充，耗尽后记录规划失败，不递归空转或提交。格式校验失败按有限重试处理，耗尽后显式失败。核验记录保存在 `verifications` 和 `answer_verified` trace 中；答案是否有充分证据由模型判断。
 
-LTM 重建期间，workflow 不加载或检索 SM/PM/EM 与程序卡片。旧环境开关无效，日志保留 false/空列表；历史元数据仍可读取。
+SQL workflow 默认启用 SM v2，仅使用两份扁平 JSON。旧 SM/PM/EM 与程序卡片仍停用。Planner 的检索请求与选表写入 trace、memory_retrievals、task_semantic_contexts；ltm_enabled/semantic_memory_v2_enabled 为 true，planner_pm_enabled 为 false。显式 `semantic_memory_enabled=False` 保留无记忆基线。
+
+本地 runner 在开始规划前读取当前数据库 information_schema 快照，仅用于后台过滤映射，完整 schema 不进入提示词。这次初始化读取不计入模型调查 SQL 次数。SecGym adapter 未提供数据库快照时采用目录并集并标记 catalog_union，实际可用性仍以执行反馈为准。
 
 核心接口：
 
@@ -52,9 +55,9 @@ for _ in range(env.max_steps):
 注意：
 
 - 初始字典只读取 `context` 和 `question`，不会读取答案、solution 或 Ground Truth。
-- Executor 仅收到当前 T 的 id/objective。Planner 必须在 objective 中写齐实体、参数和查询范围。SQL error 后新增独立 error 字段，包含重新生成说明、失败 SQL 和报错结果，objective 保持原样；程序校验 SQL 并在执行前写入 execution_code。
+- Executor 收到当前 T 的 id/objective 和选中的 semantic_context。Planner 必须在 objective 中写齐实体、参数和查询范围。SQL error 后新增独立 error 字段，包含重新生成说明、失败 SQL 和报错结果，objective 与 semantic_context 保持原样；程序校验 SQL 并在执行前写入 execution_code。
 - 历史 PM 模板引用和元数据保持可读取；当前 Executor 不接收 query_template，不再走 template_id/bindings 填参协议。
-- Planner 首轮仅接收 context/question，后续接收 ITT 与未确认状态。runtime_info 仅供运行记录使用，不传给模型。
+- Planner 首轮接收 context/question、概念词汇及检索协议，随后接收自己检索到的候选摘要；后续还接收 ITT 与未确认状态。runtime_info 仅供运行记录使用，不传给模型。每次规划最多 5 次检索、每次调查最多 32 次，不占 SQL 动作预算。
 - Reviewer 不检索 SM/PM/EM。仅接收当前 task（id/objective）和本次 executor_result，不传全树、全局背景/问题或累计执行记录。
 - Reviewer 输出 summary（最多 240 字符）、facts（记录对象列表，保留关联键、主机、PID/GUID、时间和路径等原值）、limitations（缺失、歧义或省略范围）。程序补充 source，整体写入 T.execution_result；原始结果保留在 executions。错误/空结果的 facts 强制为空；截断强制补充限制。
 - 每轮 Reviewer 后调用 Verifier；仅 Verifier 确认可以作答时跳过 Planner 并提交其 answer。
@@ -123,9 +126,9 @@ cases/*.json        # 每道题逐步 action/observation、TTT、Review 和记�
 
 ## PM 对照实验暂停
 
-LTM 重建期间，`pm_workflow_check` 与程序卡片 PM 在线实验显式拒绝运行。历史版本见 `dfb8646`；现有报告仍可用 `pm_workflow_report` 分析。当前日志中的 PM/EM 命中为零。
+LTM 重建期间，`pm_workflow_check` 与程序卡片 PM 在线实验显式拒绝运行。历史版本见 `dfb8646`；现有报告仍可用 `pm_workflow_report` 分析。这仅指旧程序卡片实验。新训练轨迹 PM 已接入默认 SQL workflow，日志记录 procedural_retrievals 与 task_procedural_contexts；EM 仍关闭。
 
-Benchmark 与通用后台共用 Planner 增量操作协议，定义于 `src/schema/planner_operations.py`。输出仅含 `operations` 列表，支持 `add_goal`（仅首轮）、`add_entity`、`add_task`、`select_task`；程序分配 G/E/T ID、构建完整树并保留历史。临时 `ref` 通过 `$alias` 关联本批次新增节点，后续使用正式 ID。`add_task` 可提供 semantic_refs 或 template_id；SQL、结果与任务状态均由运行时维护。校验整批通过后才应用，SQL workflow 仍要求 Verifier 确认答案前存在可执行任务。成功操作记录于 `planner_operations_applied` trace。
+Benchmark 与通用后台共用 Planner 增量操作协议，定义于 `src/schema/planner_operations.py`。输出仅含 `operations` 列表，支持 `add_goal`（仅首轮）、`add_entity`、`add_task`、`select_task`；程序分配 G/E/T ID、构建完整树并保留历史。临时 `ref` 通过 `$alias` 关联本批次新增节点，后续使用正式 ID。当前 SQL workflow 的 `add_task` 使用 table 选择已检索候选，程序合并同表已返回的字段片段；不要求 semantic_refs，旧字段仅保留兼容；SQL、结果与任务状态均由运行时维护。校验整批通过后才应用，SQL workflow 仍要求 Verifier 确认答案前存在可执行任务。成功操作记录于 `planner_operations_applied` trace。
 
 重规划 user message 为 YAML（context、question、itt、review.can_answer）；ITT 使用具名字段及 children 嵌套展示 G/E/T 层级，保留拓扑、目标及所有 T 的状态、SQL/证据。Verifier 同样使用 YAML 和这一嵌套 ITT 视图。内部完整快照格式和 SQLite 版本检查保留，execution_result 支持结构化对象及历史字符串。
 
@@ -138,3 +141,27 @@ uv run python -m scripts.check_planner_operations \
 ```
 
 比较同一背景、问题和重规划前状态下，旧版完整树与新版操作协议的校验结果、输入/输出 token、耗时与重试；每项最多两次请求。默认关闭 `--live` 时只准备输入统计。输出为 `report.json` 和真实请求记录 `requests.jsonl`。小样本协议对照不代表端到端调查准确率提升。
+
+
+## Fancybag + 两类 LTM 全量并行与续跑
+
+```bash
+FANCYBAG_MODEL=deepseek-v4.1-flash \
+.venv/bin/python scripts/run_procedural_workflow_fancybag.py \
+  --all --workers 10 --max-steps 25 \
+  --output runtime/procedural_workflow_fancybag/deepseek_all
+```
+
+从项目根目录执行，读取 `docker/excytin-mysql/.env`，需要对应事件 MySQL 容器运行。当前测试集共 589 题；默认启用 Semantic Memory 和 Procedural Memory。每线程处理一道题，客户端、数据库连接及 workflow 状态独立。没有启动全量运行时也可用 `--cases incident_134-q0036` 指定单题。
+
+同一命令、同一输出目录再次执行即续跑：仅跳过已正常提交答案的 `completed` 题目，失败、运行中、缺失或损坏的结果重新运行。答案评分不正确仍算运行完成，不会反复重试到正确；本脚本保留原来的确定性评分，未启用 LLM 裁判。新代码或模型在旧目录续跑会提示配置差异；独立对照实验应使用新输出目录。
+
+进度条显示总进度、已跳过、本次完成、失败、运行中与耗时。每题完成后立即原子保存 checkpoint，单题异常不终止其他题目。Ctrl+C 停止派发新题，等待正在进行的请求返回后落盘。一个输出目录同时只允许一个批量进程。
+
+- `summary.json`：当前选择题目的最新汇总。
+- `progress.json`：本轮进度计数。
+- `<case_id>/summary.json`：题目最新状态，续跑依据。
+- `<case_id>/attempts/<attempt_id>/`：每次尝试的完整调用、workflow 记录与摘要；失败重跑不覆盖历史。
+- `manifests/`：每次启动的模型、参数和源码指纹。
+
+`--max-steps 25` 与本项目 baseline 批量入口默认预算一致，是每题最多 25 个 workflow 动作（SQL 查询和提交答案），不是最多 10 次模型调用。程序退出码：0 表示本轮无运行失败，1 表示存在失败题，130 表示中断。

@@ -1,0 +1,4201 @@
+{
+  "format_version": "investigation-snippets-1",
+  "environment_id": "excytin-azure-mysql",
+  "catalog_id": "42346680ceab147a3f42",
+  "schema_snapshot": {
+    "EmailEvents": {
+      "NetworkMessageId": "string",
+      "SenderFromAddress": "string",
+      "RecipientEmailAddress": "string",
+      "SenderIPv4": "string",
+      "InternetMessageId": "string",
+      "SenderDisplayName": "string",
+      "Subject": "string"
+    },
+    "EmailPostDeliveryEvents": {
+      "InternetMessageId": "string",
+      "NetworkMessageId": "string",
+      "Action": "string",
+      "RecipientEmailAddress": "string"
+    },
+    "EmailUrlInfo": {
+      "NetworkMessageId": "string",
+      "Url": "string"
+    },
+    "UrlClickEvents": {
+      "AccountUpn": "string",
+      "IPAddress": "string",
+      "Url": "string"
+    },
+    "DeviceProcessEvents": {
+      "DeviceName": "string",
+      "FileName": "string",
+      "ProcessCommandLine": "string",
+      "ProcessId": "long",
+      "InitiatingProcessCommandLine": "string",
+      "InitiatingProcessId": "long"
+    },
+    "DeviceFileEvents": {
+      "DeviceName": "string",
+      "FileName": "string",
+      "FileOriginIP": "string",
+      "FileOriginUrl": "string"
+    },
+    "DeviceNetworkEvents": {
+      "InitiatingProcessCommandLine": "string",
+      "InitiatingProcessFileName": "string",
+      "RemoteIP": "string",
+      "RemoteUrl": "string",
+      "LocalIP": "string"
+    },
+    "AlertEvidence": {
+      "AccountSid": "string",
+      "AlertId": "string",
+      "DeviceName": "string",
+      "EntityType": "string",
+      "EvidenceRole": "string",
+      "FileName": "string",
+      "NetworkMessageId": "string",
+      "RemoteIP": "string",
+      "Timestamp": "datetime",
+      "AccountDomain": "string",
+      "AccountName": "string",
+      "ProcessCommandLine": "string",
+      "RemoteUrl": "string",
+      "Title": "string",
+      "FolderPath": "string"
+    },
+    "AlertInfo": {
+      "AlertId": "string",
+      "AttackTechniques": "string",
+      "Category": "string",
+      "Title": "string"
+    },
+    "SecurityAlert": {
+      "AlertName": "string",
+      "Entities": "string",
+      "ExtendedProperties": "string",
+      "SystemAlertId": "string"
+    },
+    "SigninLogs": {
+      "AppDisplayName": "string",
+      "CreatedDateTime": "datetime",
+      "IPAddress": "string",
+      "UserPrincipalName": "string",
+      "RiskLevel": "string",
+      "TimeGenerated": "datetime"
+    },
+    "IdentityLogonEvents": {
+      "AccountSid": "string",
+      "AccountUpn": "string"
+    },
+    "DeviceInfo": {
+      "AadDeviceId": "string",
+      "DeviceId": "string",
+      "DeviceName": "string"
+    },
+    "AADUserRiskEvents": {
+      "IpAddress": "string",
+      "RiskEventType": "string",
+      "RiskLevel": "string",
+      "ActivityDateTime": "datetime",
+      "Location": "dynamic",
+      "UserId": "string"
+    },
+    "AADRiskyUsers": {
+      "UserDisplayName": "string",
+      "UserPrincipalName": "string"
+    },
+    "OfficeActivity": {
+      "ClientIP": "string",
+      "Operation": "string"
+    }
+  },
+  "snippets": [
+    {
+      "id": "proc_mail_sender",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Email_ID",
+        "kind": "network_message_id"
+      },
+      "intent": "查询邮件发件人",
+      "intent_aliases": [
+        "邮件发件人",
+        "发件人",
+        "sender",
+        "sending address"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "network_message_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailEvents 按 NetworkMessageId 查询SenderFromAddress，保留 NetworkMessageId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "SenderFromAddress": {
+              "description": "邮件 From 信头中显示的发件人地址。评估身份冒用时可与信封发件人及身份验证结果比较；地址不一致本身不能证明欺骗。",
+              "entity_concept": "Email_Sender",
+              "entity_kind": "header_from"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_2ddb5255c0af80f50eac",
+              "status": "active",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string",
+                  "description": "Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, SenderFromAddress FROM EmailEvents WHERE NetworkMessageId = :value LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "SenderFromAddress"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "SenderFromAddress"
+              ]
+            },
+            {
+              "id": "tpl_d910bfe77be12640c639",
+              "status": "candidate",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string[]",
+                  "description": "Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, SenderFromAddress FROM EmailEvents WHERE NetworkMessageId IN (:value) LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "SenderFromAddress"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "SenderFromAddress"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "From 信头地址不等于信封地址，也不证明真实操作者身份。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_mail_recipient",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Email_ID",
+        "kind": "network_message_id"
+      },
+      "intent": "查询邮件收件人",
+      "intent_aliases": [
+        "邮件收件人",
+        "收件人",
+        "recipient"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "network_message_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailEvents 按 NetworkMessageId 查询RecipientEmailAddress，保留 NetworkMessageId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "RecipientEmailAddress": {
+              "description": "该邮件事件的收件人电子邮件地址，如适用则为通讯组展开后的地址。用于标识目标邮箱；一行代表该地址的邮件事件，不代表用户交互。",
+              "entity_concept": "Email_Recipient",
+              "entity_kind": "mailbox_address"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_2f2b6e3f066b36541865",
+              "status": "candidate",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string",
+                  "description": "Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId = :value LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "RecipientEmailAddress"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "RecipientEmailAddress"
+              ]
+            },
+            {
+              "id": "tpl_30dd64c6f66b2999644f",
+              "status": "candidate",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string[]",
+                  "description": "Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, RecipientEmailAddress FROM EmailEvents WHERE NetworkMessageId IN (:value) LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "RecipientEmailAddress"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "RecipientEmailAddress"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "收件人不等于点击者；保留各收件人的独立记录。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_mail_sender_ip",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Email_ID",
+        "kind": "network_message_id"
+      },
+      "intent": "查询邮件发送 IP",
+      "intent_aliases": [
+        "发送IP",
+        "发送 IP",
+        "sender ip",
+        "sending ip"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "network_message_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailEvents 按 NetworkMessageId 查询SenderIPv4，保留 NetworkMessageId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "SenderIPv4": {
+              "description": "最后检测到的中继该邮件的邮件服务器 IPv4 地址。可与发件人和邮件标识符一起追踪发送基础设施；它只是中继元数据，不能证明行为者身份。",
+              "entity_concept": "IP",
+              "entity_kind": "sender_ipv4"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_3dfc6df20837bf277388",
+              "status": "active",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string",
+                  "description": "Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, SenderIPv4 FROM EmailEvents WHERE NetworkMessageId = :value LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "SenderIPv4"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "SenderIPv4"
+              ]
+            },
+            {
+              "id": "tpl_c3671c425ed05afd1d1a",
+              "status": "candidate",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string[]",
+                  "description": "Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, SenderIPv4 FROM EmailEvents WHERE NetworkMessageId IN (:value) LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "SenderIPv4"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "SenderIPv4"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "发送 IPv4 不等于用户登录 IP；IPv6 需要另查相应字段。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_header_mail_sender",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Email_ID",
+        "kind": "internet_message_id"
+      },
+      "intent": "查询邮件发件人",
+      "intent_aliases": [
+        "邮件发件人",
+        "发件人",
+        "sender"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "internet_message_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailEvents 按 InternetMessageId 查询SenderFromAddress、SenderDisplayName，保留 InternetMessageId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "SenderFromAddress": {
+              "description": "邮件 From 信头中显示的发件人地址。评估身份冒用时可与信封发件人及身份验证结果比较；地址不一致本身不能证明欺骗。",
+              "entity_concept": "Email_Sender",
+              "entity_kind": "header_from"
+            },
+            "SenderDisplayName": {
+              "description": "邮件中显示的发件人显示名称，代表可见的 From 身份。可与 SenderFromAddress 一起识别伪造或误导性发件人名称，注意该名称由发件方控制。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_8e62d78854edc48f1fcc",
+              "status": "candidate",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "InternetMessageId",
+                  "type": "string[]",
+                  "description": "由发送方邮件系统为该邮件设置的对外可见标识符。可用于在邮件系统或外部报告间关联同一邮件；该标识符并非 Office 365 生成。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT InternetMessageId, SenderFromAddress, SenderDisplayName FROM EmailEvents WHERE InternetMessageId IN (:value) LIMIT 100",
+              "outputs": [
+                "InternetMessageId",
+                "SenderFromAddress",
+                "SenderDisplayName"
+              ],
+              "schema_fields": [
+                "InternetMessageId",
+                "SenderDisplayName",
+                "SenderFromAddress"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "仅接受邮件头 Message-ID；不得把 NetworkMessageId 填入此参数。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_header_to_network_id",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Email_ID",
+        "kind": "internet_message_id"
+      },
+      "intent": "转换为平台邮件标识",
+      "intent_aliases": [
+        "平台邮件标识",
+        "network message id",
+        "服务邮件ID"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "internet_message_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailPostDeliveryEvents 按 InternetMessageId 查询NetworkMessageId，保留 InternetMessageId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "NetworkMessageId": {
+              "description": "与此投递后事件关联邮件的 Office 365 生成唯一标识符。将本表与同一封邮件的投递、威胁或点击遥测关联时的主要关联键。",
+              "entity_concept": "Email_ID",
+              "entity_kind": "network_message_id"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_1e1c176f8130c23cea85",
+              "status": "candidate",
+              "table": "EmailPostDeliveryEvents",
+              "inputs": {
+                "value": {
+                  "field": "InternetMessageId",
+                  "type": "string[]",
+                  "description": "此投递后事件所涉邮件的发送方公开标识符。用于在不同邮件系统及其他安全表之间关联同一封邮件。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT InternetMessageId, NetworkMessageId FROM EmailPostDeliveryEvents WHERE InternetMessageId IN (:value) LIMIT 100",
+              "outputs": [
+                "InternetMessageId",
+                "NetworkMessageId"
+              ],
+              "schema_fields": [
+                "InternetMessageId",
+                "NetworkMessageId"
+              ]
+            },
+            {
+              "id": "tpl_7a285fa694fe51e02abd",
+              "status": "candidate",
+              "table": "EmailPostDeliveryEvents",
+              "inputs": {
+                "value": {
+                  "field": "InternetMessageId",
+                  "type": "string",
+                  "description": "此投递后事件所涉邮件的发送方公开标识符。用于在不同邮件系统及其他安全表之间关联同一封邮件。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT InternetMessageId, NetworkMessageId FROM EmailPostDeliveryEvents WHERE InternetMessageId = :value LIMIT 100",
+              "outputs": [
+                "InternetMessageId",
+                "NetworkMessageId"
+              ],
+              "schema_fields": [
+                "InternetMessageId",
+                "NetworkMessageId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "此表仅记录投递后事件；空结果不能证明邮件不存在，应回退邮件日志。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_mail_urls",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Email_ID",
+        "kind": "network_message_id"
+      },
+      "intent": "查询邮件内链接",
+      "intent_aliases": [
+        "邮件链接",
+        "邮件内链接",
+        "mail url",
+        "email links"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "network_message_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailUrlInfo 按 NetworkMessageId 查询Url，保留 NetworkMessageId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "Url": {
+              "description": "在 Office 365 电子邮件消息中发现的完整 URL 字符串。可用于检查完整链接目标、与已知恶意指标比对，并透视到 UrlDomain 进行分组；仅出现并不证明被点击。",
+              "entity_concept": "URL",
+              "entity_kind": "url"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_71edb421eda69bd5dde6",
+              "status": "active",
+              "table": "EmailUrlInfo",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string",
+                  "description": "Office 365 生成的、包含此 URL 的电子邮件消息标识符。可用于将同一邮件中的所有 URL 归组，并与其他邮件表关联；它不是 URL 级别的标识符。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, Url FROM EmailUrlInfo WHERE NetworkMessageId = :value LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "Url"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "Url"
+              ]
+            },
+            {
+              "id": "tpl_af28d20e50d374655639",
+              "status": "candidate",
+              "table": "EmailUrlInfo",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string[]",
+                  "description": "Office 365 生成的、包含此 URL 的电子邮件消息标识符。可用于将同一邮件中的所有 URL 归组，并与其他邮件表关联；它不是 URL 级别的标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, Url FROM EmailUrlInfo WHERE NetworkMessageId IN (:value) LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "Url"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "Url"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "邮件包含链接不代表有人点击，也不证明该链接恶意。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_url_mail_ids",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "URL",
+        "kind": "url"
+      },
+      "intent": "定位包含链接的邮件",
+      "intent_aliases": [
+        "邮件标识",
+        "包含链接的邮件",
+        "message id",
+        "email containing"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "url",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailUrlInfo 按 Url 查询NetworkMessageId，保留 Url 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "NetworkMessageId": {
+              "description": "Office 365 生成的、包含此 URL 的电子邮件消息标识符。可用于将同一邮件中的所有 URL 归组，并与其他邮件表关联；它不是 URL 级别的标识符。",
+              "entity_concept": "Email_ID",
+              "entity_kind": "network_message_id"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_3146b26d5a2aa3847200",
+              "status": "candidate",
+              "table": "EmailUrlInfo",
+              "inputs": {
+                "value": {
+                  "field": "Url",
+                  "type": "string[]",
+                  "description": "在 Office 365 电子邮件消息中发现的完整 URL 字符串。可用于检查完整链接目标、与已知恶意指标比对，并透视到 UrlDomain 进行分组；仅出现并不证明被点击。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT Url, NetworkMessageId FROM EmailUrlInfo WHERE Url IN (:value) LIMIT 100",
+              "outputs": [
+                "Url",
+                "NetworkMessageId"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "Url"
+              ]
+            },
+            {
+              "id": "tpl_dbb5c3b88fe557a0d2e5",
+              "status": "active",
+              "table": "EmailUrlInfo",
+              "inputs": {
+                "value": {
+                  "field": "Url",
+                  "type": "string",
+                  "description": "在 Office 365 电子邮件消息中发现的完整 URL 字符串。可用于检查完整链接目标、与已知恶意指标比对，并透视到 UrlDomain 进行分组；仅出现并不证明被点击。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT Url, NetworkMessageId FROM EmailUrlInfo WHERE Url = :value LIMIT 100",
+              "outputs": [
+                "Url",
+                "NetworkMessageId"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "Url"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "同一 URL 可以关联多封邮件；按完整 URL 匹配，不把域名当作完整链接。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_sender_mails",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Email_Sender",
+        "kind": "header_from"
+      },
+      "intent": "查找发件人的邮件",
+      "intent_aliases": [
+        "发出的邮件",
+        "发件人的邮件",
+        "messages sent",
+        "sent emails"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "header_from",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailEvents 按 SenderFromAddress 查询NetworkMessageId、RecipientEmailAddress、Subject，保留 SenderFromAddress 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "NetworkMessageId": {
+              "description": "Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。",
+              "entity_concept": "Email_ID",
+              "entity_kind": "network_message_id"
+            },
+            "RecipientEmailAddress": {
+              "description": "该邮件事件的收件人电子邮件地址，如适用则为通讯组展开后的地址。用于标识目标邮箱；一行代表该地址的邮件事件，不代表用户交互。",
+              "entity_concept": "Email_Recipient",
+              "entity_kind": "mailbox_address"
+            },
+            "Subject": {
+              "description": "该投递事件中邮件的主题行。可用于关键词或活动聚类、识别诱饵，并关联具有相同主题的相关邮件。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_703d2d994c03238dc922",
+              "status": "candidate",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "SenderFromAddress",
+                  "type": "string",
+                  "description": "邮件 From 信头中显示的发件人地址。评估身份冒用时可与信封发件人及身份验证结果比较；地址不一致本身不能证明欺骗。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT SenderFromAddress, NetworkMessageId, RecipientEmailAddress, Subject FROM EmailEvents WHERE SenderFromAddress = :value LIMIT 100",
+              "outputs": [
+                "SenderFromAddress",
+                "NetworkMessageId",
+                "RecipientEmailAddress",
+                "Subject"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "RecipientEmailAddress",
+                "SenderFromAddress",
+                "Subject"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "From 地址可能伪造；保留每封邮件与收件人的对应关系。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_recipient_mails",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Email_Recipient",
+        "kind": "mailbox_address"
+      },
+      "intent": "查找收件人的邮件",
+      "intent_aliases": [
+        "收到的邮件",
+        "收件人的邮件",
+        "received emails"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "mailbox_address",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailEvents 按 RecipientEmailAddress 查询NetworkMessageId、SenderFromAddress、Subject，保留 RecipientEmailAddress 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "NetworkMessageId": {
+              "description": "Office 365 为该邮件生成的唯一标识符。是跨相关邮件表与事件进行消息级关联的主要键；由服务生成，而非发件人。",
+              "entity_concept": "Email_ID",
+              "entity_kind": "network_message_id"
+            },
+            "SenderFromAddress": {
+              "description": "邮件 From 信头中显示的发件人地址。评估身份冒用时可与信封发件人及身份验证结果比较；地址不一致本身不能证明欺骗。",
+              "entity_concept": "Email_Sender",
+              "entity_kind": "header_from"
+            },
+            "Subject": {
+              "description": "该投递事件中邮件的主题行。可用于关键词或活动聚类、识别诱饵，并关联具有相同主题的相关邮件。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_8b3d8a294976ffe2f75d",
+              "status": "candidate",
+              "table": "EmailEvents",
+              "inputs": {
+                "value": {
+                  "field": "RecipientEmailAddress",
+                  "type": "string",
+                  "description": "该邮件事件的收件人电子邮件地址，如适用则为通讯组展开后的地址。用于标识目标邮箱；一行代表该地址的邮件事件，不代表用户交互。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT RecipientEmailAddress, NetworkMessageId, SenderFromAddress, Subject FROM EmailEvents WHERE RecipientEmailAddress = :value LIMIT 100",
+              "outputs": [
+                "RecipientEmailAddress",
+                "NetworkMessageId",
+                "SenderFromAddress",
+                "Subject"
+              ],
+              "schema_fields": [
+                "NetworkMessageId",
+                "RecipientEmailAddress",
+                "SenderFromAddress",
+                "Subject"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "收件记录不等于用户实际打开或点击。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_mail_postdelivery",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Email_ID",
+        "kind": "network_message_id"
+      },
+      "intent": "查询邮件投递后处置",
+      "intent_aliases": [
+        "投递后处置",
+        "移除邮件",
+        "post delivery",
+        "removed",
+        "quarantine"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "network_message_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 EmailPostDeliveryEvents 按 NetworkMessageId 查询Action、RecipientEmailAddress，保留 NetworkMessageId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "Action": {
+              "description": "该投递后处置记录中对邮件执行的操作（如隔离、删除或移动）。结合 ActionResult 判断尝试了什么以及是否生效。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "RecipientEmailAddress": {
+              "description": "此投递后事件中接收该邮件的邮箱（经过通讯组扩展后）。评估收件人是否接触过被处置邮件时，可用它限定到具体用户。",
+              "entity_concept": "Email_Recipient",
+              "entity_kind": "mailbox_address"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_ec0031773715b549ac97",
+              "status": "candidate",
+              "table": "EmailPostDeliveryEvents",
+              "inputs": {
+                "value": {
+                  "field": "NetworkMessageId",
+                  "type": "string",
+                  "description": "与此投递后事件关联邮件的 Office 365 生成唯一标识符。将本表与同一封邮件的投递、威胁或点击遥测关联时的主要关联键。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT NetworkMessageId, Action, RecipientEmailAddress FROM EmailPostDeliveryEvents WHERE NetworkMessageId = :value LIMIT 100",
+              "outputs": [
+                "NetworkMessageId",
+                "Action",
+                "RecipientEmailAddress"
+              ],
+              "schema_fields": [
+                "Action",
+                "NetworkMessageId",
+                "RecipientEmailAddress"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "按照实际 Action 判断处置；出现记录不自动等于已成功隔离。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_url_clickers",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "URL",
+        "kind": "url"
+      },
+      "intent": "查询链接点击账户",
+      "intent_aliases": [
+        "点击账户",
+        "点击者",
+        "clicked",
+        "clicker"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "url",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 UrlClickEvents 按 Url 查询AccountUpn、IPAddress，保留 Url 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "AccountUpn": {
+              "description": "点击该 URL 的账户的用户主体名称，将点击事件与具体身份关联。按此字段限定范围可回答谁与可疑链接发生了交互。",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "IPAddress": {
+              "description": "用户点击链接所用设备的公网 IP 地址。可按此字段关联地理位置或网络上下文；这是客户端公网 IP，不是内部主机地址。",
+              "entity_concept": "IP",
+              "entity_kind": "click_ip"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_9ae08e33529951ba26c0",
+              "status": "active",
+              "table": "UrlClickEvents",
+              "inputs": {
+                "value": {
+                  "field": "Url",
+                  "type": "string",
+                  "description": "用户点击的完整 URL。可按此字段查找点击同一链接的其他用户；点击只是尝试，并非载荷已投递的证明。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT Url, AccountUpn, IPAddress FROM UrlClickEvents WHERE Url = :value LIMIT 100",
+              "outputs": [
+                "Url",
+                "AccountUpn",
+                "IPAddress"
+              ],
+              "schema_fields": [
+                "AccountUpn",
+                "IPAddress",
+                "Url"
+              ]
+            },
+            {
+              "id": "tpl_d07d3cdc3a56be298d42",
+              "status": "candidate",
+              "table": "UrlClickEvents",
+              "inputs": {
+                "value": {
+                  "field": "Url",
+                  "type": "string",
+                  "description": "用户点击的完整 URL。可按此字段查找点击同一链接的其他用户；点击只是尝试，并非载荷已投递的证明。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                  "operator": "LIKE",
+                  "source": "trigger.value",
+                  "binding_note": "LIKE requires an explicit SQL pattern; do not silently add wildcards"
+                }
+              },
+              "sql": "SELECT Url, AccountUpn, IPAddress FROM UrlClickEvents WHERE Url LIKE :value LIMIT 100",
+              "outputs": [
+                "Url",
+                "AccountUpn",
+                "IPAddress"
+              ],
+              "schema_fields": [
+                "AccountUpn",
+                "IPAddress",
+                "Url"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "点击事件账户不等于邮件收件人；不将点击 IP 当成代理日志的 IP。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_account_clicks",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Account_UPN",
+        "kind": "upn"
+      },
+      "intent": "查询账户点击链接",
+      "intent_aliases": [
+        "点击链接",
+        "clicked links",
+        "click history"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "upn",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 UrlClickEvents 按 AccountUpn 查询Url、IPAddress，保留 AccountUpn 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "Url": {
+              "description": "用户点击的完整 URL。可按此字段查找点击同一链接的其他用户；点击只是尝试，并非载荷已投递的证明。",
+              "entity_concept": "URL",
+              "entity_kind": "url"
+            },
+            "IPAddress": {
+              "description": "用户点击链接所用设备的公网 IP 地址。可按此字段关联地理位置或网络上下文；这是客户端公网 IP，不是内部主机地址。",
+              "entity_concept": "IP",
+              "entity_kind": "click_ip"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_33ed1abc96dd6c03626c",
+              "status": "candidate",
+              "table": "UrlClickEvents",
+              "inputs": {
+                "value": {
+                  "field": "AccountUpn",
+                  "type": "string",
+                  "description": "点击该 URL 的账户的用户主体名称，将点击事件与具体身份关联。按此字段限定范围可回答谁与可疑链接发生了交互。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT DISTINCT AccountUpn, Url, IPAddress FROM UrlClickEvents WHERE AccountUpn = :value LIMIT 100",
+              "outputs": [
+                "AccountUpn",
+                "Url",
+                "IPAddress"
+              ],
+              "schema_fields": [
+                "AccountUpn",
+                "IPAddress",
+                "Url"
+              ]
+            },
+            {
+              "id": "tpl_e6d3950c380a11f88287",
+              "status": "candidate",
+              "table": "UrlClickEvents",
+              "inputs": {
+                "value": {
+                  "field": "AccountUpn",
+                  "type": "string",
+                  "description": "点击该 URL 的账户的用户主体名称，将点击事件与具体身份关联。按此字段限定范围可回答谁与可疑链接发生了交互。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT AccountUpn, Url, IPAddress FROM UrlClickEvents WHERE AccountUpn = :value LIMIT 100",
+              "outputs": [
+                "AccountUpn",
+                "Url",
+                "IPAddress"
+              ],
+              "schema_fields": [
+                "AccountUpn",
+                "IPAddress",
+                "Url"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "保留各次点击及对应 IP；不能仅由点击判定主机被攻陷。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_ip_clicks",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "click_ip"
+      },
+      "intent": "查询 IP 对应点击事件",
+      "intent_aliases": [
+        "点击事件",
+        "click events"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "click_ip",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 UrlClickEvents 按 IPAddress 查询Url、AccountUpn，保留 IPAddress 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "Url": {
+              "description": "用户点击的完整 URL。可按此字段查找点击同一链接的其他用户；点击只是尝试，并非载荷已投递的证明。",
+              "entity_concept": "URL",
+              "entity_kind": "url"
+            },
+            "AccountUpn": {
+              "description": "点击该 URL 的账户的用户主体名称，将点击事件与具体身份关联。按此字段限定范围可回答谁与可疑链接发生了交互。",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_49fc2964cfa337a84139",
+              "status": "candidate",
+              "table": "UrlClickEvents",
+              "inputs": {
+                "value": {
+                  "field": "IPAddress",
+                  "type": "string",
+                  "description": "用户点击链接所用设备的公网 IP 地址。可按此字段关联地理位置或网络上下文；这是客户端公网 IP，不是内部主机地址。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT IPAddress, Url, AccountUpn FROM UrlClickEvents WHERE IPAddress = :value LIMIT 100",
+              "outputs": [
+                "IPAddress",
+                "Url",
+                "AccountUpn"
+              ],
+              "schema_fields": [
+                "AccountUpn",
+                "IPAddress",
+                "Url"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "此处 IP 是点击客户端地址；NAT 或代理可能对应多个用户。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_filename_commands",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "File_Name",
+        "kind": "file_name"
+      },
+      "intent": "查询程序命令行",
+      "intent_aliases": [
+        "程序命令行",
+        "进程命令行",
+        "command line",
+        "commandline"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "file_name",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceProcessEvents 按 FileName 查询ProcessCommandLine、ProcessId、DeviceName，保留 FileName 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "ProcessCommandLine": {
+              "description": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。",
+              "entity_concept": "Process_Command",
+              "entity_kind": "target_command"
+            },
+            "ProcessId": {
+              "description": "新建进程的进程 ID。PID 会复用且仅运行期间对同一机器唯一；需结合 DeviceId 与 ProcessCreationTime 限定，并与 InitiatingProcessId 关联谱系。",
+              "entity_concept": "Process_ID",
+              "entity_kind": "target_pid"
+            },
+            "DeviceName": {
+              "description": "报告此进程事件的端点的完全限定域名。可用于人工可读的范围限定和报告，但跨表精确连接时应以 DeviceId 为透视键。",
+              "entity_concept": "Device_Name",
+              "entity_kind": "device_name"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_2867cb4addbe36cc76f1",
+              "status": "candidate",
+              "table": "DeviceProcessEvents",
+              "inputs": {
+                "value": {
+                  "field": "FileName",
+                  "type": "string[]",
+                  "description": "在此记录的进程事件中所操作文件的名称。应与 InitiatingProcessFileName 区分，后者表示导致该事件的进程名称。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT FileName, ProcessCommandLine, ProcessId, DeviceName FROM DeviceProcessEvents WHERE FileName IN (:value) LIMIT 100",
+              "outputs": [
+                "FileName",
+                "ProcessCommandLine",
+                "ProcessId",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "DeviceName",
+                "FileName",
+                "ProcessCommandLine",
+                "ProcessId"
+              ]
+            },
+            {
+              "id": "tpl_7f9a479913a4626f982c",
+              "status": "active",
+              "table": "DeviceProcessEvents",
+              "inputs": {
+                "value": {
+                  "field": "FileName",
+                  "type": "string",
+                  "description": "在此记录的进程事件中所操作文件的名称。应与 InitiatingProcessFileName 区分，后者表示导致该事件的进程名称。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT FileName, ProcessCommandLine, ProcessId, DeviceName FROM DeviceProcessEvents WHERE FileName = :value LIMIT 100",
+              "outputs": [
+                "FileName",
+                "ProcessCommandLine",
+                "ProcessId",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "DeviceName",
+                "FileName",
+                "ProcessCommandLine",
+                "ProcessId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "同名文件可在多台设备运行；PID 需结合设备和创建时间核对。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_filename_parents",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "File_Name",
+        "kind": "file_name"
+      },
+      "intent": "查询程序父进程",
+      "intent_aliases": [
+        "父进程",
+        "parent process"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "file_name",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceProcessEvents 按 FileName 查询InitiatingProcessCommandLine、InitiatingProcessId，保留 FileName 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "InitiatingProcessCommandLine": {
+              "description": "启动导致此事件的进程所用的命令行。是检测可疑参数、编码脚本或 LOLBin 滥用的核心，应始终结合其父进程和目标进程上下文。",
+              "entity_concept": "Initiating_Process_Command",
+              "entity_kind": "initiating_command"
+            },
+            "InitiatingProcessId": {
+              "description": "导致此事件的进程的进程 ID。PID 可复用，因此应结合设备和时间限定范围；重建进程树时与创建时间或父 ID 配合使用。",
+              "entity_concept": "Initiating_Process_ID",
+              "entity_kind": "initiating_pid"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_487b6dd948dd30b7a418",
+              "status": "candidate",
+              "table": "DeviceProcessEvents",
+              "inputs": {
+                "value": {
+                  "field": "FileName",
+                  "type": "string[]",
+                  "description": "在此记录的进程事件中所操作文件的名称。应与 InitiatingProcessFileName 区分，后者表示导致该事件的进程名称。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT FileName, InitiatingProcessCommandLine, InitiatingProcessId FROM DeviceProcessEvents WHERE FileName IN (:value) LIMIT 100",
+              "outputs": [
+                "FileName",
+                "InitiatingProcessCommandLine",
+                "InitiatingProcessId"
+              ],
+              "schema_fields": [
+                "FileName",
+                "InitiatingProcessCommandLine",
+                "InitiatingProcessId"
+              ]
+            },
+            {
+              "id": "tpl_eda23b1c14fe7b70c4a4",
+              "status": "active",
+              "table": "DeviceProcessEvents",
+              "inputs": {
+                "value": {
+                  "field": "FileName",
+                  "type": "string",
+                  "description": "在此记录的进程事件中所操作文件的名称。应与 InitiatingProcessFileName 区分，后者表示导致该事件的进程名称。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT FileName, InitiatingProcessCommandLine, InitiatingProcessId FROM DeviceProcessEvents WHERE FileName = :value LIMIT 100",
+              "outputs": [
+                "FileName",
+                "InitiatingProcessCommandLine",
+                "InitiatingProcessId"
+              ],
+              "schema_fields": [
+                "FileName",
+                "InitiatingProcessCommandLine",
+                "InitiatingProcessId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "InitiatingProcess 是发起方，不能当作目标进程；跨行关联需设备和时间。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_command_processes",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Process_Command",
+        "kind": "target_command"
+      },
+      "intent": "定位执行命令的进程",
+      "intent_aliases": [
+        "执行命令的进程",
+        "定位执行进程",
+        "process executing",
+        "execution process"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "target_command",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceProcessEvents 按 ProcessCommandLine 查询ProcessCommandLine、ProcessId、DeviceName，保留 ProcessCommandLine 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "ProcessCommandLine": {
+              "description": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。",
+              "entity_concept": "Process_Command",
+              "entity_kind": "target_command"
+            },
+            "ProcessId": {
+              "description": "新建进程的进程 ID。PID 会复用且仅运行期间对同一机器唯一；需结合 DeviceId 与 ProcessCreationTime 限定，并与 InitiatingProcessId 关联谱系。",
+              "entity_concept": "Process_ID",
+              "entity_kind": "target_pid"
+            },
+            "DeviceName": {
+              "description": "报告此进程事件的端点的完全限定域名。可用于人工可读的范围限定和报告，但跨表精确连接时应以 DeviceId 为透视键。",
+              "entity_concept": "Device_Name",
+              "entity_kind": "device_name"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_1395fb1ffda487f56ddc",
+              "status": "active",
+              "table": "DeviceProcessEvents",
+              "inputs": {
+                "value": {
+                  "field": "ProcessCommandLine",
+                  "type": "string",
+                  "description": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                  "operator": "LIKE",
+                  "source": "trigger.value",
+                  "binding_note": "LIKE requires an explicit SQL pattern; do not silently add wildcards"
+                }
+              },
+              "sql": "SELECT ProcessCommandLine, ProcessId, DeviceName FROM DeviceProcessEvents WHERE ProcessCommandLine LIKE :value LIMIT 100",
+              "outputs": [
+                "ProcessCommandLine",
+                "ProcessId",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "DeviceName",
+                "ProcessCommandLine",
+                "ProcessId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "模式匹配只是候选发现；保留完整命令行，不改变大小写或编码内容。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_pid_process_context",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Process_ID",
+        "kind": "target_pid"
+      },
+      "intent": "查询进程上下文",
+      "intent_aliases": [
+        "进程上下文",
+        "process context"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "target_pid",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceProcessEvents 按 ProcessId 查询ProcessCommandLine、DeviceName，保留 ProcessId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "ProcessCommandLine": {
+              "description": "用于创建新进程的命令行。对发现可疑参数、编码脚本或 LOLBins 至关重要；应与进程及发起进程的文件名和路径结合分析。",
+              "entity_concept": "Process_Command",
+              "entity_kind": "target_command"
+            },
+            "DeviceName": {
+              "description": "报告此进程事件的端点的完全限定域名。可用于人工可读的范围限定和报告，但跨表精确连接时应以 DeviceId 为透视键。",
+              "entity_concept": "Device_Name",
+              "entity_kind": "device_name"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_4ad850a181dd8781eea6",
+              "status": "candidate",
+              "table": "DeviceProcessEvents",
+              "inputs": {
+                "value": {
+                  "field": "ProcessId",
+                  "type": "number[]",
+                  "description": "新建进程的进程 ID。PID 会复用且仅运行期间对同一机器唯一；需结合 DeviceId 与 ProcessCreationTime 限定，并与 InitiatingProcessId 关联谱系。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT ProcessId, ProcessCommandLine, DeviceName FROM DeviceProcessEvents WHERE ProcessId IN (:value) LIMIT 100",
+              "outputs": [
+                "ProcessId",
+                "ProcessCommandLine",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "DeviceName",
+                "ProcessCommandLine",
+                "ProcessId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "PID 可重用且跨主机不唯一；此查询返回候选，需主机和创建时间才能唯一定位。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_filename_origins",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "File_Name",
+        "kind": "file_name"
+      },
+      "intent": "查询文件下载来源",
+      "intent_aliases": [
+        "下载来源",
+        "文件来源",
+        "download origin",
+        "file origin"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "file_name",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceFileEvents 按 FileName 查询FileOriginUrl、FileOriginIP、DeviceName，保留 FileName 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "FileOriginUrl": {
+              "description": "文件被下载来源的 URL，指示 Web 或远程投放来源。调查浏览器或下载器活动时，可与发起进程及 FileOriginIP 关联。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "FileOriginIP": {
+              "description": "据数据来源的溯源信息，文件被下载时的来源 IP。可用其调查外部投放基础设施；该字段为空并不证明文件是本地创建的。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "DeviceName": {
+              "description": "记录的文件操作所在设备的完全限定名称。用于按主机分组和报告；应与 DeviceId 配合，因为名称可能随时间变化或重复。",
+              "entity_concept": "Device_Name",
+              "entity_kind": "device_name"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_44a08be420e11c3ce017",
+              "status": "candidate",
+              "table": "DeviceFileEvents",
+              "inputs": {
+                "value": {
+                  "field": "FileName",
+                  "type": "string[]",
+                  "description": "本事件所作用文件的名称，无论其被创建、更改还是重命名。可与 FolderPath 组合，跨设备、跨时间追踪同一文件。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT FileName, FileOriginUrl, FileOriginIP, DeviceName FROM DeviceFileEvents WHERE FileName IN (:value) LIMIT 100",
+              "outputs": [
+                "FileName",
+                "FileOriginUrl",
+                "FileOriginIP",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "DeviceName",
+                "FileName",
+                "FileOriginIP",
+                "FileOriginUrl"
+              ]
+            },
+            {
+              "id": "tpl_5eb20d2078204e67d958",
+              "status": "candidate",
+              "table": "DeviceFileEvents",
+              "inputs": {
+                "value": {
+                  "field": "FileName",
+                  "type": "string",
+                  "description": "本事件所作用文件的名称，无论其被创建、更改还是重命名。可与 FolderPath 组合，跨设备、跨时间追踪同一文件。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT FileName, FileOriginUrl, FileOriginIP, DeviceName FROM DeviceFileEvents WHERE FileName = :value LIMIT 100",
+              "outputs": [
+                "FileName",
+                "FileOriginUrl",
+                "FileOriginIP",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "DeviceName",
+                "FileName",
+                "FileOriginIP",
+                "FileOriginUrl"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "同名文件不保证同一内容；来源字段可为空，需哈希确认文件身份。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_remote_ip_processes",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "remote_ip"
+      },
+      "intent": "查询远端连接发起进程",
+      "intent_aliases": [
+        "连接发起进程",
+        "network initiating process",
+        "connection process"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "remote_ip",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceNetworkEvents 按 RemoteIP 查询InitiatingProcessCommandLine、InitiatingProcessFileName、RemoteUrl，保留 RemoteIP 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "InitiatingProcessCommandLine": {
+              "description": "启动此网络事件对应进程的命令行，可揭示启动参数、脚本或 URL。对发现可疑执行很有价值，但内容可能较长或被截断。",
+              "entity_concept": "Initiating_Process_Command",
+              "entity_kind": "initiating_command"
+            },
+            "InitiatingProcessFileName": {
+              "description": "发起此网络事件的进程映像文件名（如可执行文件名）。主要的进程关联点；结合路径与哈希可区分合法程序与伪装程序。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "RemoteUrl": {
+              "description": "所连接的 URL 或完全限定域名。在网络调查中用于域名和 URL 透视；此处出现表示连接目标，而非确认用户点击。",
+              "entity_concept": "URL",
+              "entity_kind": "remote_url"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_be039fbbb6adfed36507",
+              "status": "candidate",
+              "table": "DeviceNetworkEvents",
+              "inputs": {
+                "value": {
+                  "field": "RemoteIP",
+                  "type": "string",
+                  "description": "端点连接到的远程 IP 地址。可用于识别外部基础设施、内部横向目标或跨设备与时间的重复目标。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT RemoteIP, InitiatingProcessCommandLine, InitiatingProcessFileName, RemoteUrl FROM DeviceNetworkEvents WHERE RemoteIP = :value LIMIT 100",
+              "outputs": [
+                "RemoteIP",
+                "InitiatingProcessCommandLine",
+                "InitiatingProcessFileName",
+                "RemoteUrl"
+              ],
+              "schema_fields": [
+                "InitiatingProcessCommandLine",
+                "InitiatingProcessFileName",
+                "RemoteIP",
+                "RemoteUrl"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "RemoteIP 是远端地址；返回的进程是连接发起方，不自动判定连接方向。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_remote_url_network",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "URL",
+        "kind": "remote_url"
+      },
+      "intent": "查询远端地址网络连接",
+      "intent_aliases": [
+        "网络连接",
+        "network connection",
+        "proxy connection"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "remote_url",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceNetworkEvents 按 RemoteUrl 查询LocalIP、RemoteIP、RemoteUrl，保留 RemoteUrl 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "LocalIP": {
+              "description": "连接中使用的本地机器 IP 地址。调查时可将连接限定到主机 IP，并与设备身份及相邻网络事件关联。",
+              "entity_concept": "IP",
+              "entity_kind": "local_ip"
+            },
+            "RemoteIP": {
+              "description": "端点连接到的远程 IP 地址。可用于识别外部基础设施、内部横向目标或跨设备与时间的重复目标。",
+              "entity_concept": "IP",
+              "entity_kind": "remote_ip"
+            },
+            "RemoteUrl": {
+              "description": "所连接的 URL 或完全限定域名。在网络调查中用于域名和 URL 透视；此处出现表示连接目标，而非确认用户点击。",
+              "entity_concept": "URL",
+              "entity_kind": "remote_url"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_3c59d99db04077358d74",
+              "status": "candidate",
+              "table": "DeviceNetworkEvents",
+              "inputs": {
+                "value": {
+                  "field": "RemoteUrl",
+                  "type": "string",
+                  "description": "所连接的 URL 或完全限定域名。在网络调查中用于域名和 URL 透视；此处出现表示连接目标，而非确认用户点击。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                  "operator": "LIKE",
+                  "source": "trigger.value",
+                  "binding_note": "LIKE requires an explicit SQL pattern; do not silently add wildcards"
+                }
+              },
+              "sql": "SELECT RemoteUrl, LocalIP, RemoteIP FROM DeviceNetworkEvents WHERE RemoteUrl LIKE :value LIMIT 100",
+              "outputs": [
+                "RemoteUrl",
+                "LocalIP",
+                "RemoteIP"
+              ],
+              "schema_fields": [
+                "LocalIP",
+                "RemoteIP",
+                "RemoteUrl"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "终端网络事件不等于代理服务器日志；核对 RemoteUrl 存储的是域名还是完整 URL。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_alert_entities",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Alert_ID",
+        "kind": "defender_alert_id"
+      },
+      "intent": "查询告警关联实体",
+      "intent_aliases": [
+        "关联实体",
+        "alert entities",
+        "evidence entities"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "defender_alert_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AlertEvidence 按 AlertId 查询EntityType、EvidenceRole、DeviceName、FileName、AccountSid、RemoteIP、NetworkMessageId，保留 AlertId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "EntityType": {
+              "description": "本证据行所代表对象的类型，例如文件、进程、设备、用户或 IP。它决定其余证据列中哪些有意义，因此应先按它筛选，再解读实体相关字段。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "EvidenceRole": {
+              "description": "描述该实体在警报中的参与方式，例如是受影响还是仅相关。可用于区分真正受影响的资产与上下文实体，避免调查范围过度扩大。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "DeviceName": {
+              "description": "本证据行所引用计算机的完全限定域名。可用作便于阅读的设备转向点，但应结合 DeviceId 和时间范围解析，因为名称可能在不同资产间被复用或重新分配。",
+              "entity_concept": "Device_Name",
+              "entity_kind": "device_name"
+            },
+            "FileName": {
+              "description": "所记录证据操作作用的文件名。应将其视为文件实体属性，并使用 SHA256 或 FolderPath 进行转向；仅凭名称不能说明其被执行或具恶意性。",
+              "entity_concept": "File_Name",
+              "entity_kind": "file_name"
+            },
+            "AccountSid": {
+              "description": "本证据行中账户的 Windows 安全标识符。可用它区分不同域或主机上的同名账户；在假定该 SID 对应同一身份前，应结合设备或时间范围限定。",
+              "entity_concept": "Account_SID",
+              "entity_kind": "sid"
+            },
+            "RemoteIP": {
+              "description": "本证据行中被警报实体连接的对端 IP 地址，描述的是网络对端而非本机地址。可用 DeviceId 或 LocalIP 确定内部端点。",
+              "entity_concept": "IP",
+              "entity_kind": "remote_ip"
+            },
+            "NetworkMessageId": {
+              "description": "本证据行所引用邮件项的 Office 365 生成唯一标识符。可用其连接邮件与邮件跟踪数据；它的存在将邮件与警报关联，但不证明用户交互。",
+              "entity_concept": "Email_ID",
+              "entity_kind": "network_message_id"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_264d30e5d05340aa9976",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, EntityType, EvidenceRole, DeviceName, FileName, AccountSid, RemoteIP, NetworkMessageId FROM AlertEvidence WHERE AlertId IN (:value) LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "EntityType",
+                "EvidenceRole",
+                "DeviceName",
+                "FileName",
+                "AccountSid",
+                "RemoteIP",
+                "NetworkMessageId"
+              ],
+              "schema_fields": [
+                "AccountSid",
+                "AlertId",
+                "DeviceName",
+                "EntityType",
+                "EvidenceRole",
+                "FileName",
+                "NetworkMessageId",
+                "RemoteIP"
+              ]
+            },
+            {
+              "id": "tpl_b03e86e414c208b27cdc",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT AlertId, EntityType, EvidenceRole, DeviceName, FileName, AccountSid, RemoteIP, NetworkMessageId FROM AlertEvidence WHERE AlertId = :value LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "EntityType",
+                "EvidenceRole",
+                "DeviceName",
+                "FileName",
+                "AccountSid",
+                "RemoteIP",
+                "NetworkMessageId"
+              ],
+              "schema_fields": [
+                "AccountSid",
+                "AlertId",
+                "DeviceName",
+                "EntityType",
+                "EvidenceRole",
+                "FileName",
+                "NetworkMessageId",
+                "RemoteIP"
+              ]
+            },
+            {
+              "id": "tpl_e76e91191dce009f5895",
+              "status": "candidate",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, EntityType, EvidenceRole, DeviceName, FileName, AccountSid, RemoteIP, NetworkMessageId FROM AlertEvidence WHERE AlertId IN (:value) ORDER BY Timestamp ASC LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "EntityType",
+                "EvidenceRole",
+                "DeviceName",
+                "FileName",
+                "AccountSid",
+                "RemoteIP",
+                "NetworkMessageId"
+              ],
+              "schema_fields": [
+                "AccountSid",
+                "AlertId",
+                "DeviceName",
+                "EntityType",
+                "EvidenceRole",
+                "FileName",
+                "NetworkMessageId",
+                "RemoteIP",
+                "Timestamp"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "告警实体可能分散在多行；不同实体类型的空字段不能视为证据缺失。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_alert_accounts",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Alert_ID",
+        "kind": "defender_alert_id"
+      },
+      "intent": "查询告警账户证据",
+      "intent_aliases": [
+        "账户证据",
+        "alert accounts"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "defender_alert_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AlertEvidence 按 AlertId 查询AccountName、AccountSid、AccountDomain，保留 AlertId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "AccountName": {
+              "description": "本证据行所描述账户的用户名。它是与警报实体关联的账户，未必是进程发起者；应结合 SID、UPN 或域来解析正确身份。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountSid": {
+              "description": "本证据行中账户的 Windows 安全标识符。可用它区分不同域或主机上的同名账户；在假定该 SID 对应同一身份前，应结合设备或时间范围限定。",
+              "entity_concept": "Account_SID",
+              "entity_kind": "sid"
+            },
+            "AccountDomain": {
+              "description": "本证据行所涉账户的域部分，例如 NetBIOS 或 DNS 域。当同名用户存在于多个域时，需与 AccountName 一起限定，才能将其视为同一身份。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_227696fe07fef856cef6",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT AlertId, AccountName, AccountSid, AccountDomain FROM AlertEvidence WHERE AlertId = :value LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "AccountName",
+                "AccountSid",
+                "AccountDomain"
+              ],
+              "schema_fields": [
+                "AccountDomain",
+                "AccountName",
+                "AccountSid",
+                "AlertId"
+              ]
+            },
+            {
+              "id": "tpl_3c38ee9f00bbf2c56605",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, AccountName, AccountSid, AccountDomain FROM AlertEvidence WHERE AlertId IN (:value) LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "AccountName",
+                "AccountSid",
+                "AccountDomain"
+              ],
+              "schema_fields": [
+                "AccountDomain",
+                "AccountName",
+                "AccountSid",
+                "AlertId"
+              ]
+            },
+            {
+              "id": "tpl_4f8fff52d3782a3f0052",
+              "status": "candidate",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, AccountName, AccountSid, AccountDomain FROM AlertEvidence WHERE AlertId IN (:value) ORDER BY Timestamp ASC LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "AccountName",
+                "AccountSid",
+                "AccountDomain"
+              ],
+              "schema_fields": [
+                "AccountDomain",
+                "AccountName",
+                "AccountSid",
+                "AlertId",
+                "Timestamp"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "SID 与名称需保留域信息；告警关联账户不自动等于攻击者。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_alert_processes",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Alert_ID",
+        "kind": "defender_alert_id"
+      },
+      "intent": "查询告警进程证据",
+      "intent_aliases": [
+        "进程证据",
+        "alert processes"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "defender_alert_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AlertEvidence 按 AlertId 查询FileName、ProcessCommandLine、DeviceName，保留 AlertId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "FileName": {
+              "description": "所记录证据操作作用的文件名。应将其视为文件实体属性，并使用 SHA256 或 FolderPath 进行转向；仅凭名称不能说明其被执行或具恶意性。",
+              "entity_concept": "File_Name",
+              "entity_kind": "file_name"
+            },
+            "ProcessCommandLine": {
+              "description": "创建或启动本证据行所标记进程实体的命令行。用于了解执行意图与参数；需结合 DeviceId 和 TimeGenerated 关联，并与同一主机上其他进程区分。",
+              "entity_concept": "Process_Command",
+              "entity_kind": "target_command"
+            },
+            "DeviceName": {
+              "description": "本证据行所引用计算机的完全限定域名。可用作便于阅读的设备转向点，但应结合 DeviceId 和时间范围解析，因为名称可能在不同资产间被复用或重新分配。",
+              "entity_concept": "Device_Name",
+              "entity_kind": "device_name"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_1662277eed45c9e64566",
+              "status": "candidate",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, FileName, ProcessCommandLine, DeviceName FROM AlertEvidence WHERE AlertId IN (:value) ORDER BY Timestamp ASC LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "FileName",
+                "ProcessCommandLine",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "DeviceName",
+                "FileName",
+                "ProcessCommandLine",
+                "Timestamp"
+              ]
+            },
+            {
+              "id": "tpl_6281809cf1b63e87b4e9",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, FileName, ProcessCommandLine, DeviceName FROM AlertEvidence WHERE AlertId IN (:value) LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "FileName",
+                "ProcessCommandLine",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "DeviceName",
+                "FileName",
+                "ProcessCommandLine"
+              ]
+            },
+            {
+              "id": "tpl_d7b61801711309e90d98",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT AlertId, FileName, ProcessCommandLine, DeviceName FROM AlertEvidence WHERE AlertId = :value LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "FileName",
+                "ProcessCommandLine",
+                "DeviceName"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "DeviceName",
+                "FileName",
+                "ProcessCommandLine"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "告警摘要可能只包含部分进程字段；缺失信息应到终端进程日志补查。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_alert_network",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Alert_ID",
+        "kind": "defender_alert_id"
+      },
+      "intent": "查询告警网络证据",
+      "intent_aliases": [
+        "网络证据",
+        "alert network"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "defender_alert_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AlertEvidence 按 AlertId 查询RemoteIP、RemoteUrl，保留 AlertId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "RemoteIP": {
+              "description": "本证据行中被警报实体连接的对端 IP 地址，描述的是网络对端而非本机地址。可用 DeviceId 或 LocalIP 确定内部端点。",
+              "entity_concept": "IP",
+              "entity_kind": "remote_ip"
+            },
+            "RemoteUrl": {
+              "description": "被警报实体连接的 URL 或 FQDN，记录于网络或邮件类证据行。需结合 EvidenceDirection 与 TimeGenerated 解读；URL 出现本身并不证明用户与其交互。",
+              "entity_concept": "URL",
+              "entity_kind": "remote_url"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_44c2e998c6454ca3e100",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT AlertId, RemoteIP, RemoteUrl FROM AlertEvidence WHERE AlertId = :value LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "RemoteIP",
+                "RemoteUrl"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "RemoteIP",
+                "RemoteUrl"
+              ]
+            },
+            {
+              "id": "tpl_7911b8233126d00417a0",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, RemoteIP, RemoteUrl FROM AlertEvidence WHERE AlertId IN (:value) LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "RemoteIP",
+                "RemoteUrl"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "RemoteIP",
+                "RemoteUrl"
+              ]
+            },
+            {
+              "id": "tpl_e2ea1cddddb1c9323dbd",
+              "status": "candidate",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, RemoteIP, RemoteUrl FROM AlertEvidence WHERE AlertId IN (:value) ORDER BY Timestamp ASC LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "RemoteIP",
+                "RemoteUrl"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "RemoteIP",
+                "RemoteUrl",
+                "Timestamp"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "告警中远端地址是关联线索，不能替代完整网络连接记录。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_remote_ip_alerts",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "remote_ip"
+      },
+      "intent": "查找 IP 关联告警",
+      "intent_aliases": [
+        "关联告警",
+        "related alerts"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "remote_ip",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AlertEvidence 按 RemoteIP 查询AlertId、Title，保留 RemoteIP 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "AlertId": {
+              "description": "这些证据行所属父级警报的标识符。按它分组可查看单个警报的全部实体，并连接警报表获取严重性、状态与调查上下文；它不是事件标识符。",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "与本证据行关联的警报标题，提供检测的可读摘要。便于分组和初筛，但因标题可能在多个警报间重复，应按 AlertId 限定范围。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_90a5e052f9979cf66aca",
+              "status": "active",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "RemoteIP",
+                  "type": "string",
+                  "description": "本证据行中被警报实体连接的对端 IP 地址，描述的是网络对端而非本机地址。可用 DeviceId 或 LocalIP 确定内部端点。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT RemoteIP, AlertId, Title FROM AlertEvidence WHERE RemoteIP = :value LIMIT 100",
+              "outputs": [
+                "RemoteIP",
+                "AlertId",
+                "Title"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "RemoteIP",
+                "Title"
+              ]
+            },
+            {
+              "id": "tpl_d6a8fdcb84457ca10014",
+              "status": "candidate",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "RemoteIP",
+                  "type": "string[]",
+                  "description": "本证据行中被警报实体连接的对端 IP 地址，描述的是网络对端而非本机地址。可用 DeviceId 或 LocalIP 确定内部端点。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT DISTINCT RemoteIP, AlertId, Title FROM AlertEvidence WHERE RemoteIP IN (:value) LIMIT 100",
+              "outputs": [
+                "RemoteIP",
+                "AlertId",
+                "Title"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "RemoteIP",
+                "Title"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "同一 IP 可关联不同事件；需要时间、设备和告警主题进一步筛选。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_command_alerts",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Process_Command",
+        "kind": "target_command"
+      },
+      "intent": "查询命令关联告警证据",
+      "intent_aliases": [
+        "命令关联告警",
+        "command alert evidence"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "target_command",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AlertEvidence 按 ProcessCommandLine 查询FileName、FolderPath、ProcessCommandLine，保留 ProcessCommandLine 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "FileName": {
+              "description": "所记录证据操作作用的文件名。应将其视为文件实体属性，并使用 SHA256 或 FolderPath 进行转向；仅凭名称不能说明其被执行或具恶意性。",
+              "entity_concept": "File_Name",
+              "entity_kind": "file_name"
+            },
+            "FolderPath": {
+              "description": "所记录证据操作作用文件所在目录。可用于推断位置上下文，如临时或启动目录，并配合 FileName 与哈希进行转向；它不证明文件被执行。",
+              "entity_concept": "Folder_Path",
+              "entity_kind": "folder_path"
+            },
+            "ProcessCommandLine": {
+              "description": "创建或启动本证据行所标记进程实体的命令行。用于了解执行意图与参数；需结合 DeviceId 和 TimeGenerated 关联，并与同一主机上其他进程区分。",
+              "entity_concept": "Process_Command",
+              "entity_kind": "target_command"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_1c2accf8f1a51c1b5004",
+              "status": "candidate",
+              "table": "AlertEvidence",
+              "inputs": {
+                "value": {
+                  "field": "ProcessCommandLine",
+                  "type": "string",
+                  "description": "创建或启动本证据行所标记进程实体的命令行。用于了解执行意图与参数；需结合 DeviceId 和 TimeGenerated 关联，并与同一主机上其他进程区分。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                  "operator": "LIKE",
+                  "source": "trigger.value",
+                  "binding_note": "LIKE requires an explicit SQL pattern; do not silently add wildcards"
+                }
+              },
+              "sql": "SELECT ProcessCommandLine, FileName, FolderPath FROM AlertEvidence WHERE ProcessCommandLine LIKE :value LIMIT 100",
+              "outputs": [
+                "ProcessCommandLine",
+                "FileName",
+                "FolderPath"
+              ],
+              "schema_fields": [
+                "FileName",
+                "FolderPath",
+                "ProcessCommandLine"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "命令片段匹配可能误命中；核对完整命令及文件路径。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_topic_alerts",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Alert_Topic",
+        "kind": "topic"
+      },
+      "intent": "定位主题相关告警",
+      "intent_aliases": [
+        "主题相关告警",
+        "find alerts",
+        "alert topic"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "topic",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AlertInfo 按 Title 查询AlertId、Title、Category、AttackTechniques，保留 Title 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "AlertId": {
+              "description": "分配给该警报记录的标识符；可用于关联警报与相关事件，或跨服务关联重复警报。架构未保证其唯一性。",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "该警报的可读标题，描述检测到的威胁；可用于快速分诊、归并相似警报以及跨服务按关键字搜索。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Category": {
+              "description": "该警报标识的威胁或入侵活动类型，即检测到的可疑行为类别；可用于跨服务对警报进行分类和趋势分析。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AttackTechniques": {
+              "description": "归因于触发该警报活动的 MITRE ATT&CK 技术编号，可用于将检测映射到攻击者战术，辅助事件优先级排序和分组。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_ad74fc5a335554e4555c",
+              "status": "active",
+              "table": "AlertInfo",
+              "inputs": {
+                "value": {
+                  "field": "Title",
+                  "type": "string",
+                  "description": "该警报的可读标题，描述检测到的威胁；可用于快速分诊、归并相似警报以及跨服务按关键字搜索。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                  "operator": "LIKE",
+                  "source": "trigger.value",
+                  "binding_note": "LIKE requires an explicit SQL pattern; do not silently add wildcards"
+                }
+              },
+              "sql": "SELECT Title, AlertId, Category, AttackTechniques FROM AlertInfo WHERE Title LIKE :value LIMIT 100",
+              "outputs": [
+                "Title",
+                "AlertId",
+                "Category",
+                "AttackTechniques"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "AttackTechniques",
+                "Category",
+                "Title"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "标题关键词只用于发现候选；不能由关键词断定攻击技术已发生。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_topic_security_entities",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "Alert_Topic",
+        "kind": "topic"
+      },
+      "intent": "查询安全告警实体详情",
+      "intent_aliases": [
+        "安全告警实体",
+        "security alert entities"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "topic",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 SecurityAlert 按 AlertName 查询Entities、ExtendedProperties、SystemAlertId，保留 AlertName 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "Entities": {
+              "description": "列出警报所引用实体（账户、主机、进程、文件、IP）的结构化载荷；可解析后用于跳转至活动日志，实体只是被涉及，并非已确认恶意。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "ExtendedProperties": {
+              "description": "提供方自定义的告警元数据，可能包含分析员分配、自动调查标识或状态以及修复详情。提取调查或手动发起调查信息前，应先检查实际存在的键。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "SystemAlertId": {
+              "description": "安全系统为该告警记录分配的标识符。可用于跨查询、连接和事件关联中关联同一告警；它标识的是告警，而不是底层事件或设备。",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "sentinel_system_alert_id"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_d80ab9f01e9add92ab9d",
+              "status": "active",
+              "table": "SecurityAlert",
+              "inputs": {
+                "value": {
+                  "field": "AlertName",
+                  "type": "string",
+                  "description": "触发该警报的规则名称，由提供程序定义，可用于分组、计数以及跨环境比较检测。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                  "operator": "LIKE",
+                  "source": "trigger.value",
+                  "binding_note": "LIKE requires an explicit SQL pattern; do not silently add wildcards"
+                }
+              },
+              "sql": "SELECT AlertName, Entities, ExtendedProperties, SystemAlertId FROM SecurityAlert WHERE AlertName LIKE :value LIMIT 100",
+              "outputs": [
+                "AlertName",
+                "Entities",
+                "ExtendedProperties",
+                "SystemAlertId"
+              ],
+              "schema_fields": [
+                "AlertName",
+                "Entities",
+                "ExtendedProperties",
+                "SystemAlertId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "Entities 与 ExtendedProperties 需按实际结构解析；SystemAlertId 不假定等于 AlertId。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_entity_security_alerts",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Entity_Text",
+        "kind": "text_fragment"
+      },
+      "intent": "搜索包含实体的安全告警",
+      "intent_aliases": [
+        "包含实体的安全告警",
+        "entity in security alert"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "text_fragment",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 SecurityAlert 按 Entities 查询Entities、AlertName，保留 Entities 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "Entities": {
+              "description": "列出警报所引用实体（账户、主机、进程、文件、IP）的结构化载荷；可解析后用于跳转至活动日志，实体只是被涉及，并非已确认恶意。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "触发该警报的规则名称，由提供程序定义，可用于分组、计数以及跨环境比较检测。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_1fbc111536ac860a17d3",
+              "status": "candidate",
+              "table": "SecurityAlert",
+              "inputs": {
+                "value": {
+                  "field": "Entities",
+                  "type": "string",
+                  "description": "列出警报所引用实体（账户、主机、进程、文件、IP）的结构化载荷；可解析后用于跳转至活动日志，实体只是被涉及，并非已确认恶意。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                  "operator": "LIKE",
+                  "source": "trigger.value",
+                  "binding_note": "LIKE requires an explicit SQL pattern; do not silently add wildcards"
+                }
+              },
+              "sql": "SELECT Entities, AlertName FROM SecurityAlert WHERE Entities LIKE :value LIMIT 100",
+              "outputs": [
+                "Entities",
+                "AlertName"
+              ],
+              "schema_fields": [
+                "AlertName",
+                "Entities"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "文本包含匹配不是结构化实体等值匹配；必须解析返回实体再核对。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_alert_details",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Alert_ID",
+        "kind": "defender_alert_id"
+      },
+      "intent": "查询告警主题和类别",
+      "intent_aliases": [
+        "主题和类别",
+        "alert title",
+        "alert category"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "defender_alert_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AlertInfo 按 AlertId 查询Title、Category、AttackTechniques，保留 AlertId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "Title": {
+              "description": "该警报的可读标题，描述检测到的威胁；可用于快速分诊、归并相似警报以及跨服务按关键字搜索。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Category": {
+              "description": "该警报标识的威胁或入侵活动类型，即检测到的可疑行为类别；可用于跨服务对警报进行分类和趋势分析。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AttackTechniques": {
+              "description": "归因于触发该警报活动的 MITRE ATT&CK 技术编号，可用于将检测映射到攻击者战术，辅助事件优先级排序和分组。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_6cb347f0a481f6e95cc9",
+              "status": "candidate",
+              "table": "AlertInfo",
+              "inputs": {
+                "value": {
+                  "field": "AlertId",
+                  "type": "string[]",
+                  "description": "分配给该警报记录的标识符；可用于关联警报与相关事件，或跨服务关联重复警报。架构未保证其唯一性。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT AlertId, Title, Category, AttackTechniques FROM AlertInfo WHERE AlertId IN (:value) LIMIT 100",
+              "outputs": [
+                "AlertId",
+                "Title",
+                "Category",
+                "AttackTechniques"
+              ],
+              "schema_fields": [
+                "AlertId",
+                "AttackTechniques",
+                "Category",
+                "Title"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "告警分类和技术标签是检测结论；仍需日志证据确认实际行为。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_ip_signins",
+      "version": 1,
+      "status": "active",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "login_ip"
+      },
+      "intent": "查询 IP 登录账户和应用",
+      "intent_aliases": [
+        "登录账户",
+        "认证时间",
+        "登录应用",
+        "sign in",
+        "signin",
+        "authentication",
+        "login"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "login_ip",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 SigninLogs 按 IPAddress 查询UserPrincipalName、AppDisplayName、CreatedDateTime，保留 IPAddress 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "UserPrincipalName": {
+              "description": "本次事件中账户使用的登录名（通常为 user@domain）；是构建单用户登录时间线、识别密码喷洒目标以及关联邮箱或身份表的主要透视字段。",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AppDisplayName": {
+              "description": "本次登录尝试所访问应用的易读名称；按它分组可发现异常的目标应用，或在名称缺失或被伪造时与 AppId 关联核对。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "CreatedDateTime": {
+              "description": "登录发起的 UTC 时间；作为事件时间线锚点，并与 TimeGenerated 对比以查看该行的摄取或导出延迟。",
+              "entity_concept": "Login_Time",
+              "entity_kind": "login_time"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_d7ba31471d15661c151d",
+              "status": "active",
+              "table": "SigninLogs",
+              "inputs": {
+                "value": {
+                  "field": "IPAddress",
+                  "type": "string",
+                  "description": "登录来源的客户端 IP 地址。可用于定位或比较登录来源；由于地址可能共享或被伪造，需结合时间和用户进行范围限定。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT IPAddress, UserPrincipalName, AppDisplayName, CreatedDateTime FROM SigninLogs WHERE IPAddress = :value LIMIT 100",
+              "outputs": [
+                "IPAddress",
+                "UserPrincipalName",
+                "AppDisplayName",
+                "CreatedDateTime"
+              ],
+              "schema_fields": [
+                "AppDisplayName",
+                "CreatedDateTime",
+                "IPAddress",
+                "UserPrincipalName"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "CreatedDateTime 是认证时间，TimeGenerated 是日志时间；不得互换。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_account_signins",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Account_UPN",
+        "kind": "upn"
+      },
+      "intent": "查询账户登录来源和风险",
+      "intent_aliases": [
+        "登录来源",
+        "登录风险",
+        "login source",
+        "signin risk"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "upn",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 SigninLogs 按 UserPrincipalName 查询IPAddress、TimeGenerated、RiskLevel，保留 UserPrincipalName 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "IPAddress": {
+              "description": "登录来源的客户端 IP 地址。可用于定位或比较登录来源；由于地址可能共享或被伪造，需结合时间和用户进行范围限定。",
+              "entity_concept": "IP",
+              "entity_kind": "login_ip"
+            },
+            "TimeGenerated": {
+              "description": "该登录事件生成并可进行分析的时间戳，用于时间窗口过滤以及与其他认证事件排序。与其他表关联时需注意时区换算与对齐。",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "RiskLevel": {
+              "description": "记录在该登录行上的风险等级；官方未给出具体说明，应视为基于名称推导的汇总风险指示，并结合 RiskLevelDuringSignIn 与 RiskLevelAggregated 核对所需的检测上下文。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_5a53d70a63992d4f787a",
+              "status": "candidate",
+              "table": "SigninLogs",
+              "inputs": {
+                "value": {
+                  "field": "UserPrincipalName",
+                  "type": "string",
+                  "description": "本次事件中账户使用的登录名（通常为 user@domain）；是构建单用户登录时间线、识别密码喷洒目标以及关联邮箱或身份表的主要透视字段。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT UserPrincipalName, IPAddress, TimeGenerated, RiskLevel FROM SigninLogs WHERE UserPrincipalName = :value LIMIT 100",
+              "outputs": [
+                "UserPrincipalName",
+                "IPAddress",
+                "TimeGenerated",
+                "RiskLevel"
+              ],
+              "schema_fields": [
+                "IPAddress",
+                "RiskLevel",
+                "TimeGenerated",
+                "UserPrincipalName"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "此片段返回日志时间，不将它声称为精确认证发生时间。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_upn_sid",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Account_UPN",
+        "kind": "upn"
+      },
+      "intent": "查询账户 SID",
+      "intent_aliases": [
+        "账户SID",
+        "账户 SID",
+        "account sid"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "upn",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 IdentityLogonEvents 按 AccountUpn 查询AccountSid，保留 AccountUpn 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "AccountSid": {
+              "description": "本次认证事件中账户的安全标识符（SID）。用于精确解析 Windows 身份，尤其在仅凭账户名有歧义时。",
+              "entity_concept": "Account_SID",
+              "entity_kind": "sid"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_0b5e57d0cdc0feed654c",
+              "status": "candidate",
+              "table": "IdentityLogonEvents",
+              "inputs": {
+                "value": {
+                  "field": "AccountUpn",
+                  "type": "string",
+                  "description": "执行或尝试本次登录的账户的用户主体名称（UPN）。可用于跨服务关联身份活动，但应与账户标识符交叉验证。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT AccountUpn, AccountSid FROM IdentityLogonEvents WHERE AccountUpn = :value LIMIT 100",
+              "outputs": [
+                "AccountUpn",
+                "AccountSid"
+              ],
+              "schema_fields": [
+                "AccountSid",
+                "AccountUpn"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "UPN 与 SID 是不同标识；保留多条映射，不假定全局一对一。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_device_aad",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Device_ID",
+        "kind": "defender_device_id"
+      },
+      "intent": "查询 AAD 设备标识",
+      "intent_aliases": [
+        "AAD设备",
+        "AAD 设备",
+        "aad device"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "defender_device_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceInfo 按 DeviceId 查询AadDeviceId，保留 DeviceId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "AadDeviceId": {
+              "description": "本行所描述终结点在 Microsoft Entra ID 中的设备标识符。可用于将设备与 Entra 已加入的身份对象、登录或条件访问上下文关联；非 Entra 设备可能为空，该字段本身不能证明设备在使用中。",
+              "entity_concept": "Device_ID",
+              "entity_kind": "aad_device_id"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_a3446c4b5a6f25488b3b",
+              "status": "candidate",
+              "table": "DeviceInfo",
+              "inputs": {
+                "value": {
+                  "field": "DeviceId",
+                  "type": "string",
+                  "description": "服务为本行所描述设备分配的唯一标识符。是关联告警、登录及其他终结点表的主要连接键；可用于限定设备级查询，并借助相关合并字段发现设备标识合并。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT DeviceId, AadDeviceId FROM DeviceInfo WHERE DeviceId = :value LIMIT 100",
+              "outputs": [
+                "DeviceId",
+                "AadDeviceId"
+              ],
+              "schema_fields": [
+                "AadDeviceId",
+                "DeviceId"
+              ]
+            },
+            {
+              "id": "tpl_edf7dd29aae1e62514c4",
+              "status": "candidate",
+              "table": "DeviceInfo",
+              "inputs": {
+                "value": {
+                  "field": "DeviceId",
+                  "type": "string[]",
+                  "description": "服务为本行所描述设备分配的唯一标识符。是关联告警、登录及其他终结点表的主要连接键；可用于限定设备级查询，并借助相关合并字段发现设备标识合并。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT DeviceId, AadDeviceId FROM DeviceInfo WHERE DeviceId IN (:value) LIMIT 100",
+              "outputs": [
+                "DeviceId",
+                "AadDeviceId"
+              ],
+              "schema_fields": [
+                "AadDeviceId",
+                "DeviceId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "Defender 设备 ID 与 AAD 设备 ID 不可直接互换。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_aad_device",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Device_ID",
+        "kind": "aad_device_id"
+      },
+      "intent": "查询 Defender 设备标识",
+      "intent_aliases": [
+        "Defender设备",
+        "Defender 设备",
+        "defender device"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "aad_device_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceInfo 按 AadDeviceId 查询DeviceId，保留 AadDeviceId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "DeviceId": {
+              "description": "服务为本行所描述设备分配的唯一标识符。是关联告警、登录及其他终结点表的主要连接键；可用于限定设备级查询，并借助相关合并字段发现设备标识合并。",
+              "entity_concept": "Device_ID",
+              "entity_kind": "defender_device_id"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_a5502c8973de2f2fefb0",
+              "status": "candidate",
+              "table": "DeviceInfo",
+              "inputs": {
+                "value": {
+                  "field": "AadDeviceId",
+                  "type": "string",
+                  "description": "本行所描述终结点在 Microsoft Entra ID 中的设备标识符。可用于将设备与 Entra 已加入的身份对象、登录或条件访问上下文关联；非 Entra 设备可能为空，该字段本身不能证明设备在使用中。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT AadDeviceId, DeviceId FROM DeviceInfo WHERE AadDeviceId = :value LIMIT 100",
+              "outputs": [
+                "AadDeviceId",
+                "DeviceId"
+              ],
+              "schema_fields": [
+                "AadDeviceId",
+                "DeviceId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "反向映射可能有历史记录，保留候选并确认设备身份。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_hostname_device_ids",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Device_Name",
+        "kind": "device_name"
+      },
+      "intent": "查询主机设备标识",
+      "intent_aliases": [
+        "设备标识",
+        "device identifiers"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "device_name",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 DeviceInfo 按 DeviceName 查询DeviceId、AadDeviceId，保留 DeviceName 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "DeviceId": {
+              "description": "服务为本行所描述设备分配的唯一标识符。是关联告警、登录及其他终结点表的主要连接键；可用于限定设备级查询，并借助相关合并字段发现设备标识合并。",
+              "entity_concept": "Device_ID",
+              "entity_kind": "defender_device_id"
+            },
+            "AadDeviceId": {
+              "description": "本行所描述终结点在 Microsoft Entra ID 中的设备标识符。可用于将设备与 Entra 已加入的身份对象、登录或条件访问上下文关联；非 Entra 设备可能为空，该字段本身不能证明设备在使用中。",
+              "entity_concept": "Device_ID",
+              "entity_kind": "aad_device_id"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_c3f4a61278d0dfb82c0a",
+              "status": "candidate",
+              "table": "DeviceInfo",
+              "inputs": {
+                "value": {
+                  "field": "DeviceName",
+                  "type": "string",
+                  "description": "本行所代表计算机的完全限定域名。可用于人类可读的识别、按主机名过滤以及交叉引用日志或告警文本；名称可能重复或被重用，应结合 DeviceId 确认。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT DeviceName, DeviceId, AadDeviceId FROM DeviceInfo WHERE DeviceName = :value LIMIT 100",
+              "outputs": [
+                "DeviceName",
+                "DeviceId",
+                "AadDeviceId"
+              ],
+              "schema_fields": [
+                "AadDeviceId",
+                "DeviceId",
+                "DeviceName"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "短主机名可能不等于完整域名；精确匹配为空时回退并核对名称形式。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_ip_risk_events",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "risk_ip"
+      },
+      "intent": "查询 IP 风险事件",
+      "intent_aliases": [
+        "风险事件",
+        "risk events"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "risk_ip",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AADUserRiskEvents 按 IpAddress 查询RiskEventType、RiskLevel，保留 IpAddress 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "RiskEventType": {
+              "description": "检测到的风险事件类型，如 leakedCredentials 或 atypicalTravel。可用于分类和优先处理检测，并在用户风险调查中筛选特定威胁模式。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "RiskLevel": {
+              "description": "检测到的风险严重级别，如 low、medium 或 high。可用于分级事件、优先关注高风险用户活动，并在调查中支持基于风险的访问决策。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_b1d741d40d9fd68cd397",
+              "status": "candidate",
+              "table": "AADUserRiskEvents",
+              "inputs": {
+                "value": {
+                  "field": "IpAddress",
+                  "type": "string[]",
+                  "description": "风险活动来源的客户端 IP 地址。可用于地理定位或转向同一地址的其他事件，并评估该 IP 对用户而言是否异常。",
+                  "operator": "IN",
+                  "source": "trigger.value",
+                  "binding_note": "IN requires a list; a single entity may be wrapped as a one-item list"
+                }
+              },
+              "sql": "SELECT IpAddress, RiskEventType, RiskLevel FROM AADUserRiskEvents WHERE IpAddress IN (:value) LIMIT 100",
+              "outputs": [
+                "IpAddress",
+                "RiskEventType",
+                "RiskLevel"
+              ],
+              "schema_fields": [
+                "IpAddress",
+                "RiskEventType",
+                "RiskLevel"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "风险检测关联 IP 不等于已经确认的登录来源。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_user_id_risk_ips",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Account_ID",
+        "kind": "entra_user_id"
+      },
+      "intent": "查询用户风险 IP 和位置",
+      "intent_aliases": [
+        "风险IP",
+        "风险 IP",
+        "risk ip",
+        "risk location"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "entra_user_id",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AADUserRiskEvents 按 UserId 查询IpAddress、Location、ActivityDateTime，保留 UserId 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "IpAddress": {
+              "description": "风险活动来源的客户端 IP 地址。可用于地理定位或转向同一地址的其他事件，并评估该 IP 对用户而言是否异常。",
+              "entity_concept": "IP",
+              "entity_kind": "risk_ip"
+            },
+            "Location": {
+              "description": "描述登录位置的动态 JSON，如城市、国家或坐标。基于名称推断：需检查对象结构以提取地理细节，用于评估不可能旅行或陌生登录位置。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "ActivityDateTime": {
+              "description": "风险用户活动实际发生的 UTC 时间，可能早于 DetectedDateTime。可用于建立活动时间线、与其他日志关联并评估检测延迟。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_1403cfcbafdf920596b1",
+              "status": "candidate",
+              "table": "AADUserRiskEvents",
+              "inputs": {
+                "value": {
+                  "field": "UserId",
+                  "type": "string",
+                  "description": "与风险检测关联的用户的唯一标识符。可用于将风险事件与其他表中的用户活动关联，并可靠地跟踪单个用户的风险历史。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT UserId, IpAddress, Location, ActivityDateTime FROM AADUserRiskEvents WHERE UserId = :value LIMIT 100",
+              "outputs": [
+                "UserId",
+                "IpAddress",
+                "Location",
+                "ActivityDateTime"
+              ],
+              "schema_fields": [
+                "ActivityDateTime",
+                "IpAddress",
+                "Location",
+                "UserId"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "风险位置来自日志，不据此推断攻击者的真实物理位置。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_display_risky_user",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Account_Name",
+        "kind": "display_name"
+      },
+      "intent": "定位风险用户账户",
+      "intent_aliases": [
+        "风险用户账户",
+        "risky user account"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "display_name",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 AADRiskyUsers 按 UserDisplayName 查询UserPrincipalName，保留 UserDisplayName 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "UserPrincipalName": {
+              "description": "该风险账户的用户主体名称（登录标识符）。可用它关联到同一账户的登录、审计或其他身份表。",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_34ce94a4af3e7b4fc12a",
+              "status": "candidate",
+              "table": "AADRiskyUsers",
+              "inputs": {
+                "value": {
+                  "field": "UserDisplayName",
+                  "type": "string",
+                  "description": "该风险用户账户的显示名称。可与用户主体名称一起帮助分析人员识别账户，但显示名称并不唯一，应加以核实。",
+                  "operator": "EQ",
+                  "source": "trigger.value",
+                  "binding_note": "Use the observed entity value exactly"
+                }
+              },
+              "sql": "SELECT UserDisplayName, UserPrincipalName FROM AADRiskyUsers WHERE UserDisplayName = :value LIMIT 100",
+              "outputs": [
+                "UserDisplayName",
+                "UserPrincipalName"
+              ],
+              "schema_fields": [
+                "UserDisplayName",
+                "UserPrincipalName"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "显示名可重复；结果仅用于寻找候选 UPN。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    },
+    {
+      "id": "proc_office_operation_ips",
+      "version": 1,
+      "status": "candidate",
+      "trigger_entity": {
+        "concept": "Operation",
+        "kind": "office_operation"
+      },
+      "intent": "查询 Office 操作来源",
+      "intent_aliases": [
+        "Office操作来源",
+        "Office 操作来源",
+        "office operation source",
+        "inbox rule"
+      ],
+      "applicability": {
+        "environment": "excytin-azure-mysql",
+        "required_inputs": [
+          "value"
+        ],
+        "identifier_kind": "office_operation",
+        "target_schema_check": "required",
+        "scope": "candidate_discovery; verify incident relevance after query"
+      },
+      "steps": [
+        {
+          "id": "lookup",
+          "depends_on": [],
+          "planner_guide": "在 OfficeActivity 按 Operation 查询ClientIP、Operation，保留 Operation 作为关联键。选用输入形式相符的模板；缺少输入先获取实体。",
+          "outputs": {
+            "ClientIP": {
+              "description": "发起本行所审核 Office 365 操作的设备或客户端 IP 地址；可与 TimeGenerated、UserId 结合，追溯活动来源位置。",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Operation": {
+              "description": "本事件中用户或管理员执行操作的名称；在工作负载专项调查中，是按活动类型分组和筛选的关键字段。",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          },
+          "executor_sql_templates": [
+            {
+              "id": "tpl_231c7d2362da99851cf0",
+              "status": "candidate",
+              "table": "OfficeActivity",
+              "inputs": {
+                "value": {
+                  "field": "Operation",
+                  "type": "string",
+                  "description": "本事件中用户或管理员执行操作的名称；在工作负载专项调查中，是按活动类型分组和筛选的关键字段。；提供 SQL LIKE 模式，按需包含 % 通配符",
+                  "operator": "LIKE",
+                  "source": "trigger.value",
+                  "binding_note": "LIKE requires an explicit SQL pattern; do not silently add wildcards"
+                }
+              },
+              "sql": "SELECT Operation, ClientIP FROM OfficeActivity WHERE Operation LIKE :value LIMIT 100",
+              "outputs": [
+                "Operation",
+                "ClientIP"
+              ],
+              "schema_fields": [
+                "ClientIP",
+                "Operation"
+              ]
+            }
+          ]
+        }
+      ],
+      "caution": [
+        "操作名称模式匹配可能涉及多种动作；ClientIP 可含端口，保留原始值。",
+        "最多返回 100 行；达到上限时结果可能不完整，需按已知时间或实体缩小范围。",
+        "空结果不证明实体不存在；核对标识类型、数据覆盖和参数后回退 Semantic Memory。",
+        "多条结果保留为候选，不自动取第一条；SQL 成功不等于调查结论正确。"
+      ],
+      "fallback": {
+        "no_match": "semantic",
+        "missing_input": "planner_acquire_input",
+        "schema_mismatch": "semantic",
+        "empty": "semantic",
+        "sql_error": "semantic",
+        "ambiguous_rows": "planner_disambiguate",
+        "row_cap_reached": "planner_refine_scope"
+      }
+    }
+  ]
+}
