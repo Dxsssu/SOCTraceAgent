@@ -18,6 +18,8 @@ from openai import APIConnectionError, APIStatusError
 
 import sqlglot
 
+from .procedural_execution import ProceduralExecutionMixin
+from .staged_planning import StagedPlanningMixin
 from src.agent.llm import LLMClient, LLMConfig, parse_yaml_response
 from src.agent.executor import SQL_EXECUTOR_SYSTEM_PROMPT
 from src.agent.planner import PLANNER_SYSTEM_PROMPT
@@ -174,7 +176,7 @@ class ReadOnlySQLValidator:
 LLMCallable = Callable[[str, str], str]
 
 
-class ExcytinBenchWorkflow:
+class ExcytinBenchWorkflow(StagedPlanningMixin, ProceduralExecutionMixin):
     """Synchronous, environment-stepped workflow for ExCyTIn-Bench.
 
     The workflow never executes SQL itself. ``propose_next_action`` returns one
@@ -195,6 +197,7 @@ class ExcytinBenchWorkflow:
         compact_evidence: bool = False,
         semantic_memory_enabled: bool = True,
         procedural_memory_enabled: bool = True,
+        staged_planning: bool = True,
     ) -> None:
         if max_steps < 2:
             raise ValueError("max_steps must reserve at least one query and one submit")
@@ -208,6 +211,8 @@ class ExcytinBenchWorkflow:
         self.compact_evidence = compact_evidence
         self.semantic_memory_enabled = semantic_memory_enabled
         self.procedural_memory_enabled = procedural_memory_enabled and semantic_memory_enabled
+        self.staged_planning = staged_planning
+        self._entity_snapshots = []
         self._procedural_session = None
         self._task_procedural_contexts: dict[str, dict] = {}
         self._semantic_schema = None
@@ -278,6 +283,7 @@ class ExcytinBenchWorkflow:
         self._task_semantic_contexts.clear()
         self._task_procedural_contexts.clear()
         self._procedural_session = None
+        self._entity_snapshots.clear()
 
     def set_semantic_schema(self, schema) -> None:
         """Bind a target database schema before start; never expose its full content."""
@@ -326,6 +332,7 @@ class ExcytinBenchWorkflow:
         self._task_semantic_contexts.clear()
         self._task_procedural_contexts.clear()
         self._procedural_session = None
+        self._entity_snapshots.clear()
         if self.semantic_memory_enabled:
             from src.memory.longterm_memory.semantic_memory.v2 import SemanticMemoryV2
             from src.memory.longterm_memory.semantic_memory.v2.session import SemanticPlanningSession
@@ -353,6 +360,7 @@ class ExcytinBenchWorkflow:
         self.state.trace.extend(bootstrap_trace)
         self._bootstrap_trace.clear()
         self._bootstrap_status = "idle"
+        self.state.ttt_history.extend(self._entity_snapshots)
         self.state.ttt_history.append(ttt.to_dict())
         self._record_trace(
             "workflow_started",
@@ -420,7 +428,7 @@ class ExcytinBenchWorkflow:
         )
         state.executions.append(execution)
         if self._procedural_session:
-            self._procedural_session.observe(node.node_id, raw_observation, success, observation_truncated)
+            self._procedural_session.observe(node.node_id, raw_observation, success, observation_truncated, execution.execution_id)
         current = self._find_node(state.ttt, node.node_id)
         code, result, _ = execution_fields(state.executions, node.node_id)
         state.ttt = change_node(state.ttt, node.node_id,
@@ -487,6 +495,10 @@ class ExcytinBenchWorkflow:
             result_summary="")
         state.reviews.append(review)
         self._record_trace("review_completed", {"review": review})
+        # A selected PM owns the sequence until completion or a binding/evidence gap.
+        # Reviewer still records every step; Verifier judges the completed flow.
+        if self._advance_procedural_flow(execution):
+            return execution
         verdict = self._verify_progress(review)
         state.ready_to_submit = verdict["can_answer"] == "yes"
         state.cannot_continue = False
@@ -591,7 +603,9 @@ class ExcytinBenchWorkflow:
         records = session.retrievals if session else []
         contexts = self._task_procedural_contexts
         return {
-            "memory_architecture": "planner_pm_flows_em_snippets_sm_v1",
+            "memory_architecture": "entities_direct_pm_composed_pm_em_sm_v3" if self.staged_planning else "scheduled_pm_flows_em_recheck_sm_v2",
+            "entity_planning_snapshots": list(self._entity_snapshots),
+            "procedural_flow_runs": session.active_runs() if session else [],
             "planner_em_enabled": bool(session),
             "memory_catalog_ids": session.store.document.get("memory_catalog_ids", {}) if session else {},
             "procedural_retrievals": [r for r in records if r["memory_type"] == "procedural"],
@@ -700,14 +714,21 @@ class ExcytinBenchWorkflow:
         session = self._semantic_session
         pm = self._procedural_session
         adapter = pm or session
-        session.default_intent = str(inputs.get("question", ""))
+        session.default_intent = " ".join(str(inputs.get(k, "")) for k in ("context", "question"))
+        session.goal_intent = str(inputs.get("question", ""))
+        if pm and self.staged_planning:
+            previous = self._plan_entity_stage(inputs, event_id, round_id, previous=previous, executions=executions)
+            inputs = {**inputs, "itt": itt_payload(previous, executions, planner_view=True),
+                      "planning_phase": "select_memory_and_tasks"}
         prompt_payload = {**inputs, "semantic_memory_v2": {"concepts": session.vocabulary(),
             "instruction": "先输出 memory_query: {known: [概念], wanted: [概念], intent: 调查目标}；再用 operations 的 add_task.table 选表。允许 partial 候选作为中间步骤，不输出 semantic_refs。"},
             "semantic_results": []}
         if pm:
+            prompt_payload['known_entities'] = list(pm.entity_nodes.values())
             prompt_payload["procedural_memory"] = {
-                "instruction": "memory_query 按 Procedural 多步流程 → Episodic 单步片段 → Semantic 表字段的顺序检索。PM 适用时用 add_task.procedure，EM 适用时用 add_task.episode。重复相同请求表示放弃当前层，检索下一层；未命中自动向下。流程依赖步骤仅在真实上游结果返回后创建。",
+                "instruction": "G/E已建立。memory_query先严格匹配known与终点wanted的直接PM，无合适直接PM则组合最多3条PM，再查EM，再SM。known只写ITT中真实E的概念。可用layer: composed/episodic/semantic明确放弃当前层，不必重复完全相同措辞。PM用procedure，EM用episode；系统关联所有实际输入E，自动展开并顺序执行T。EM新线索先更新E再重新查PM。",
                 "active_runs": pm.active_runs(),
+                "must_query_after_new_em_evidence": pm.needs_pm_recheck,
                 "concepts": pm.vocabulary("procedural"),
             }
             prompt_payload["procedural_results"] = []
@@ -721,19 +742,26 @@ class ExcytinBenchWorkflow:
         def validate(value):
             if "memory_query" in value:
                 session.queries(value["memory_query"])
+                self._validate_known_entities(value["memory_query"])
                 return
+            if pm and self.staged_planning and any(op['op'] == 'add_entity' for op in value.get('operations', [])):
+                if not all(op['op'] == 'add_entity' for op in value['operations']):
+                    raise ValueError('Update E in a separate operation batch, then check PM before creating T')
+                return self._apply_entity_updates(value, inputs, event_id, round_id, previous=previous, executions=executions)
             clean, _ = adapter.prepare(value)
             return apply_planner_operations(clean, event_id, round_id,
-                previous=previous, executions=executions, require_next_task=True)
+                previous=previous, executions=executions, require_next_task=True,
+                allow_pending_entities=bool(pm and self.staged_planning))
 
-        for turn in range(6):
-            if turn == 5:
+        planning_budget = 12 if pm and self.staged_planning else 6
+        for turn in range(planning_budget):
+            if turn >= planning_budget - 3:
                 prompt_payload["semantic_memory_v2"]["instruction"] = "本次规划检索预算已用完，使用已返回候选输出 operations；无覆盖时新增 schema_probe 任务。"
             parsed = self._call_yaml_role("planner", PLANNER_SYSTEM_PROMPT,
                 compact_json(prompt_payload), validator=validate, response_parser=adapter.parse)
             if "memory_query" in parsed:
-                if turn == 5:
-                    raise ValueError("Planner exceeded 5 semantic lookups per planning round")
+                if turn >= planning_budget - 1:
+                    raise ValueError("Planner did not select a task after exhausting the memory planning budget")
                 if pm:
                     before = len(pm.retrievals)
                     pm_view = pm.retrieve(parsed["memory_query"])
@@ -748,15 +776,29 @@ class ExcytinBenchWorkflow:
                 self._record_trace("semantic_memory_retrieved", session.retrievals[-1])
                 prompt_payload["semantic_results"].append(view)
                 continue
+            if pm and self.staged_planning and parsed.get("operations") and all(op["op"] == "add_entity" for op in parsed["operations"]):
+                previous = validate(parsed)
+                pm.set_entities(previous)
+                prompt_payload["itt"] = itt_payload(previous, executions, planner_view=True)
+                prompt_payload['known_entities'] = list(pm.entity_nodes.values())
+                self._entity_snapshots.append(previous.to_dict())
+                continue
             clean, contexts = adapter.prepare(parsed)
             tree = validate(parsed)
             from src.schema.ttt_updates import walk
             old_ids = {n.node_id for n, _ in walk(previous)} if previous else set()
             new_tasks = {n.node_id: n for n, _ in walk(tree) if n.level == 3 and n.node_id not in old_ids}
             ids = sorted(new_tasks, key=lambda value: int(value[1:]))
-            if len(ids) != len(contexts):
+            new_contexts = [c for c in contexts if "task_id" not in c]
+            updates = [c for c in contexts if "task_id" in c]
+            if len(ids) != len(new_contexts):
                 raise ValueError("Semantic context/task count mismatch")
-            for node_id, context in zip(ids, contexts):
+            for context in new_contexts:
+                if "plan_group" in context:
+                    context["run"] = ids[context["plan_group"]]
+                    context["spec"]["run"] = context["run"]
+            assignments = list(zip(ids, new_contexts)) + [(c["task_id"], c) for c in updates]
+            for node_id, context in assignments:
                 if context.get("mode") == "procedure":
                     pm.register(node_id, context)
                     self._task_procedural_contexts[node_id] = context
@@ -764,8 +806,16 @@ class ExcytinBenchWorkflow:
                 else:
                     self._task_semantic_contexts[node_id] = context
                     self._record_trace("planner_semantic_table_selected", {"node_id": node_id, "context": context})
+            for node_id, context in assignments:
+                if context.get("scheduled"):
+                    tree = self._annotate_procedural_task(tree, node_id, context)
+            if pm:
+                for run_id, run in pm.runs.items():
+                    if run["status"] == "paused" and tree.next_task_id not in run["tasks"].values():
+                        tree = self._stop_procedural_run(tree, run_id, "planner_chose_another_path")
             self._record_trace("planner_operations_applied", {"operations": parsed["operations"], "version": tree.version})
             return tree
+        raise ValueError("Planner exhausted the task selection budget")
 
     def _generate_sql(self, node: TTTNode) -> str:
         state = self._require_state()
@@ -779,6 +829,8 @@ class ExcytinBenchWorkflow:
         payload = task_payload(node)
         procedure = self._task_procedural_contexts.get(node.node_id)
         if procedure is not None:
+            if procedure.get("deferred"):
+                raise RuntimeError("A scheduled procedural step must bind real upstream results before execution")
             memory_type = procedure["memory_type"]
             payload[memory_type + "_context"] = {k: procedure[k] for k in ("snippet_id", "step_id", "episodic_id", "sql_template", "bindings", "bound_sql", "caution")}
             payload[memory_type + "_instruction"] = "执行此已选片段步骤。bound_sql 已按当前输入与真实上游结果绑定，直接以 sql 字段返回该语句；不得增删过滤条件、换表、改值或改变 LIMIT。注意事项用于理解范围，不是额外事实。"

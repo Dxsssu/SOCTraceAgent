@@ -7,6 +7,31 @@ import json
 from .core import compile_sql, digest, json_values_with_paths
 
 
+def dependency_candidates(edge, rows):
+    raw_values = [r[edge["from_column"]] for r in rows
+                  if r.get(edge["from_column"]) not in ("", None)]
+    transform = edge.get("transform", "identity")
+    if transform == "parse_json":
+        extracted = []
+        for raw in raw_values:
+            try:
+                data = json.loads(raw) if isinstance(raw, str) else raw
+            except (ValueError, TypeError) as exc:
+                raise ValueError("dependency_json_invalid") from exc
+            extracted.extend(v for path, v in json_values_with_paths(data)
+                             if list(path) == edge["json_path"] and isinstance(v, (str, int, float)))
+        raw_values = extracted
+    elif transform == "entity_identifier":
+        from .entity_identifiers import entity_identifier_values
+        if not edge.get("entity_type") or not edge.get("identifier_fields"):
+            raise ValueError("dependency_entity_contract_missing")
+        raw_values = [value for raw in raw_values
+                      for value in entity_identifier_values(raw, edge["entity_type"], edge["identifier_fields"])]
+    elif transform != "identity":
+        raise ValueError("unsupported_dependency_transform")
+    return list(dict.fromkeys(raw_values))
+
+
 class TrajectorySnippetStore:
     def __init__(self, document):
         expected = document["catalog_id"]
@@ -127,26 +152,7 @@ class TrajectorySnippetStore:
             if not upstream or not upstream.get("success") or upstream.get("truncated"):
                 raise ValueError("dependency_missing_failed_or_truncated")
             rows = upstream.get("rows", [])
-            raw_values = [
-                r[edge["from_column"]]
-                for r in rows
-                if r.get(edge["from_column"]) not in ("", None)
-            ]
-            if edge.get("transform") == "parse_json":
-                extracted = []
-                for raw in raw_values:
-                    try:
-                        data = json.loads(raw) if isinstance(raw, str) else raw
-                    except (ValueError, TypeError):
-                        raise ValueError("dependency_json_invalid")
-                    extracted.extend(
-                        v
-                        for path, v in json_values_with_paths(data)
-                        if list(path) == edge["json_path"]
-                        and isinstance(v, (str, int, float))
-                    )
-                raw_values = extracted
-            candidates = list(dict.fromkeys(raw_values))
+            candidates = dependency_candidates(edge, rows)
             if not candidates:
                 raise ValueError("dependency_has_no_values")
             selected = selections.get(edge["from"] + "." + edge["from_column"])

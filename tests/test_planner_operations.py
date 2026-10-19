@@ -36,7 +36,10 @@ from src.workflow.orchestrator import SOCTraceWorkflow
 
 
 def initial():
-    return parse_planner_response(PLANNER_SYSTEM_PROMPT.split("# 输出格式模板\n", 1)[1])
+    payload = parse_planner_response(PLANNER_SYSTEM_PROMPT.split("# 输出格式模板\n", 1)[1])
+    # These history/atomicity tests start after the new G/E-only bootstrap.
+    payload['operations'].append({'op':'add_task','entity_id':'$alert','objective':'Query alert process'})
+    return payload
 
 
 def tree():

@@ -211,9 +211,9 @@ def test_planner_template_without_memory_fields_accepts_initial_plan():
     from src.agent.planner import PLANNER_SYSTEM_PROMPT
     from src.schema.planner_operations import parse_planner_response, apply_planner_operations
     payload = parse_planner_response(PLANNER_SYSTEM_PROMPT.split("# 输出格式模板\n", 1)[1])
-    tree = apply_planner_operations(payload, "event", 1)
-    assert next_task(tree).node_id == "T1"
-    assert next_task(tree).metadata["semantic_refs"] == []
+    tree = apply_planner_operations(payload, "event", 1, allow_pending_entities=True)
+    assert next_task(tree) is None
+    assert tree.root_nodes[0].children[0].metadata['entity']['value']=='alert-001'
 
 
 def test_omitted_memory_fields_preserve_existing_task_metadata():

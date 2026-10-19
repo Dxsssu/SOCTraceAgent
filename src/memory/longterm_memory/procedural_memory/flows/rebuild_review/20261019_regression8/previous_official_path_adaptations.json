@@ -1,0 +1,4765 @@
+{
+  "format_version": "evaluation-adaptations-1",
+  "provenance": "evaluation_failure_adaptation",
+  "origin": "evaluation_zero_score_official_path_adaptation",
+  "source_batch": "runtime/procedural_workflow_fancybag/deepseek_all_25",
+  "reviewed_cases": 220,
+  "scope": "source_status=completed AND paper_evaluation.reward=0",
+  "new_templates": {
+    "sql_eec9c92e2c746b61f0068801": {
+      "sql": "SELECT DISTINCT a.AlertId,a.Title,a.TimeGenerated,a.AccountObjectId,a.AccountSid,a.AccountUpn,a.AccountName,JSON_UNQUOTE(JSON_EXTRACT(CASE WHEN JSON_VALID(a.AdditionalFields) THEN a.AdditionalFields ELSE '{}' END, '$.DisplayName')) AS AccountDisplayName FROM AlertEvidence k JOIN AlertEvidence a ON k.AlertId=a.AlertId WHERE k.RemoteIP=:p1 AND k.Title LIKE :p2 AND a.AccountObjectId<>'' LIMIT 100",
+      "inputs": {
+        "p1": {
+          "field": "RemoteIP",
+          "operator": "EQ",
+          "type": "string"
+        },
+        "p2": {
+          "field": "Title",
+          "operator": "LIKE",
+          "type": "string"
+        }
+      },
+      "outputs": [
+        "AlertId",
+        "Title",
+        "TimeGenerated",
+        "AccountObjectId",
+        "AccountSid",
+        "AccountUpn",
+        "AccountName",
+        "AccountDisplayName"
+      ],
+      "schema_fields": {
+        "AlertEvidence": [
+          "TimeGenerated",
+          "AccountObjectId",
+          "AccountName",
+          "RemoteIP",
+          "AccountSid",
+          "AlertId",
+          "AdditionalFields",
+          "AccountUpn",
+          "Title"
+        ]
+      },
+      "row_cap": 100,
+      "scope": "filtered",
+      "id": "sql_eec9c92e2c746b61f0068801"
+    },
+    "sql_cd2d419f12f7b9413ae13125": {
+      "sql": "SELECT DISTINCT e.AlertId,e.Title,e.TimeGenerated,e.EntityType,e.EvidenceRole,e.AccountObjectId,e.AccountSid,e.AccountUpn,e.AccountName,e.RemoteIP,e.ApplicationId,e.Application,e.NetworkMessageId,JSON_UNQUOTE(JSON_EXTRACT(CASE WHEN JSON_VALID(e.AdditionalFields) THEN e.AdditionalFields ELSE '{}' END, '$.DisplayName')) AS AccountDisplayName FROM AlertEvidence a JOIN AlertEvidence e ON a.AlertId=e.AlertId WHERE a.AccountObjectId=:p1 AND e.Title LIKE :p2 LIMIT 100",
+      "inputs": {
+        "p1": {
+          "field": "AccountObjectId",
+          "operator": "EQ",
+          "type": "string"
+        },
+        "p2": {
+          "field": "Title",
+          "operator": "LIKE",
+          "type": "string"
+        }
+      },
+      "outputs": [
+        "AlertId",
+        "Title",
+        "TimeGenerated",
+        "EntityType",
+        "EvidenceRole",
+        "AccountObjectId",
+        "AccountSid",
+        "AccountUpn",
+        "AccountName",
+        "RemoteIP",
+        "ApplicationId",
+        "Application",
+        "NetworkMessageId",
+        "AccountDisplayName"
+      ],
+      "schema_fields": {
+        "AlertEvidence": [
+          "AccountName",
+          "AccountObjectId",
+          "AccountSid",
+          "AccountUpn",
+          "AdditionalFields",
+          "AlertId",
+          "Application",
+          "ApplicationId",
+          "EntityType",
+          "EvidenceRole",
+          "NetworkMessageId",
+          "RemoteIP",
+          "TimeGenerated",
+          "Title"
+        ]
+      },
+      "row_cap": 100,
+      "scope": "filtered",
+      "id": "sql_cd2d419f12f7b9413ae13125"
+    },
+    "sql_2fb5183dc315cfbf721aecae": {
+      "sql": "SELECT DISTINCT s.SystemAlertId,s.AlertName,s.TimeGenerated,s.StartTime,JSON_EXTRACT(CASE WHEN JSON_VALID(s.Entities) THEN s.Entities ELSE '[]' END, '$[*].Address') AS IPAddresses FROM SecurityAlert s JOIN JSON_TABLE(CASE WHEN JSON_VALID(s.Entities) THEN s.Entities ELSE '[]' END, '$[*]' COLUMNS(EntityType VARCHAR(64) PATH '$.Type', AccountObjectId VARCHAR(255) PATH '$.AadUserId')) a ON a.EntityType='account' WHERE a.AccountObjectId=:p1 AND s.AlertName LIKE :p2 LIMIT 100",
+      "inputs": {
+        "p1": {
+          "field": "AccountObjectId",
+          "operator": "EQ",
+          "type": "string"
+        },
+        "p2": {
+          "field": "Title",
+          "operator": "LIKE",
+          "type": "string"
+        }
+      },
+      "outputs": [
+        "SystemAlertId",
+        "AlertName",
+        "TimeGenerated",
+        "StartTime",
+        "IPAddresses"
+      ],
+      "schema_fields": {
+        "SecurityAlert": [
+          "SystemAlertId",
+          "AlertName",
+          "TimeGenerated",
+          "StartTime",
+          "Entities"
+        ]
+      },
+      "row_cap": 100,
+      "scope": "filtered",
+      "id": "sql_2fb5183dc315cfbf721aecae"
+    },
+    "sql_550f93ed8baae22b273cad25": {
+      "sql": "SELECT DISTINCT a.AlertId,a.Title,a.TimeGenerated,a.AccountObjectId,a.AccountSid,a.AccountUpn,a.AccountName,JSON_UNQUOTE(JSON_EXTRACT(CASE WHEN JSON_VALID(a.AdditionalFields) THEN a.AdditionalFields ELSE '{}' END, '$.DisplayName')) AS AccountDisplayName FROM AlertEvidence k JOIN AlertEvidence a ON k.AlertId=a.AlertId WHERE JSON_UNQUOTE(JSON_EXTRACT(CASE WHEN JSON_VALID(k.AdditionalFields) THEN k.AdditionalFields ELSE '{}' END, '$.DisplayName'))=:p1 AND k.Title LIKE :p2 AND a.AccountObjectId<>'' LIMIT 100",
+      "inputs": {
+        "p1": {
+          "field": "AccountDisplayName",
+          "operator": "EQ",
+          "type": "string"
+        },
+        "p2": {
+          "field": "Title",
+          "operator": "LIKE",
+          "type": "string"
+        }
+      },
+      "outputs": [
+        "AlertId",
+        "Title",
+        "TimeGenerated",
+        "AccountObjectId",
+        "AccountSid",
+        "AccountUpn",
+        "AccountName",
+        "AccountDisplayName"
+      ],
+      "schema_fields": {
+        "AlertEvidence": [
+          "TimeGenerated",
+          "AccountObjectId",
+          "AccountName",
+          "AccountSid",
+          "AlertId",
+          "AdditionalFields",
+          "AccountUpn",
+          "Title"
+        ]
+      },
+      "row_cap": 100,
+      "scope": "filtered",
+      "id": "sql_550f93ed8baae22b273cad25"
+    },
+    "sql_9447c700679b5f5518ce8f58": {
+      "sql": "SELECT DISTINCT s.SystemAlertId,s.AlertName,s.TimeGenerated,a.AccountObjectId FROM SecurityAlert s JOIN JSON_TABLE(CASE WHEN JSON_VALID(s.Entities) THEN s.Entities ELSE '[]' END, '$[*]' COLUMNS(EntityType VARCHAR(64) PATH '$.Type', AccountObjectId VARCHAR(255) PATH '$.AadUserId')) a ON a.EntityType='account' WHERE JSON_SEARCH(CASE WHEN JSON_VALID(s.Entities) THEN s.Entities ELSE '[]' END,'one',:p1,NULL,'$**.Address') IS NOT NULL AND s.AlertName LIKE :p2 AND a.AccountObjectId IS NOT NULL LIMIT 100",
+      "inputs": {
+        "p1": {
+          "field": "RemoteIP",
+          "operator": "EQ",
+          "type": "string"
+        },
+        "p2": {
+          "field": "Title",
+          "operator": "LIKE",
+          "type": "string"
+        }
+      },
+      "outputs": [
+        "SystemAlertId",
+        "AlertName",
+        "TimeGenerated",
+        "AccountObjectId"
+      ],
+      "schema_fields": {
+        "SecurityAlert": [
+          "SystemAlertId",
+          "AlertName",
+          "TimeGenerated",
+          "Entities"
+        ]
+      },
+      "row_cap": 100,
+      "scope": "filtered",
+      "id": "sql_9447c700679b5f5518ce8f58"
+    },
+    "sql_6f55fdce3b2f227e15748f38": {
+      "sql": "SELECT SystemAlertId, AlertName, TimeGenerated, CompromisedEntity, Entities, Description FROM SecurityAlert WHERE AlertName = :p1 AND LOCATE(LOWER(:p2), LOWER(Entities)) > 0 LIMIT 100",
+      "inputs": {
+        "p1": {
+          "field": "AlertName",
+          "operator": "EQ",
+          "type": "string"
+        },
+        "p2": {
+          "field": "Entities",
+          "operator": "INSTR",
+          "type": "string"
+        }
+      },
+      "outputs": [
+        "SystemAlertId",
+        "AlertName",
+        "TimeGenerated",
+        "CompromisedEntity",
+        "Entities",
+        "Description"
+      ],
+      "schema_fields": {
+        "SecurityAlert": [
+          "AlertName",
+          "CompromisedEntity",
+          "Description",
+          "Entities",
+          "SystemAlertId",
+          "TimeGenerated"
+        ]
+      },
+      "row_cap": 100,
+      "scope": "filtered",
+      "id": "sql_6f55fdce3b2f227e15748f38"
+    }
+  },
+  "new_episodes": [
+    {
+      "id": "em_zero220_securityalert_scoped_entities",
+      "kind": "atomic",
+      "name": "按告警主题与已知实体文本预筛并保留取证来源",
+      "intent": "根据告警名称和已知实体值召回SecurityAlert候选，读取最小来源字段及Entities原文以核对类型、角色和依赖",
+      "trigger_entity": {
+        "concept": "Alert_Title",
+        "kind": "alert_name"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "SecurityAlert",
+          "field": "Entities",
+          "concept": "Field:Entities",
+          "kind": "physical_field_or_scope"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "根据告警名称和已知实体值召回SecurityAlert候选，读取最小来源字段及Entities原文以核对类型、角色和依赖",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "CompromisedEntity": {
+              "description": "CompromisedEntity",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            }
+          }
+        }
+      ],
+      "bindings": [],
+      "caution": [
+        "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+        "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+        "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+        "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+        "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。",
+        "必须同时指定调查阶段与已观察实体；INSTR只是候选预筛，后续须逐实体类型校验标识关系。",
+        "Entities包含父子进程和Source/Destination/Contextual角色，不能将同行所有实体自动判定为攻击者。",
+        "严格JSON解析失败或结果截断不得继续绑定；不可用官方答案替代缺失上游值。",
+        "Name、AccountName、UserPrincipalName与图派生Email不可相互猜测替换。"
+      ],
+      "intent_aliases": [
+        "按告警主题及已观察的IP标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的IP标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的IP标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的IP标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的IP标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的IP标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的URL标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的URL标识读取关联证据；提取URL.Url，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的URL标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的URL标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的URL标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取Azure资源.ResourceGroup，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取URL.Url，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取账户.AadUserId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的主机标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的文件标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取Azure资源.ResourceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的账户标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的进程标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的进程标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的进程标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的进程标识读取关联证据；提取账户.AadUserId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的进程标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的进程标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题及已观察的邮件标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "按告警主题读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+        "account host IP URL file alert entity evidence correlation"
+      ],
+      "status": "active",
+      "support": {
+        "episodes": 61,
+        "incidents": 2
+      },
+      "provenance": "evaluation_failure_adaptation",
+      "source_cases": [
+        "incident_322-q0006",
+        "incident_322-q0007",
+        "incident_322-q0015",
+        "incident_322-q0018",
+        "incident_322-q0020",
+        "incident_322-q0021",
+        "incident_322-q0022",
+        "incident_322-q0025",
+        "incident_322-q0027",
+        "incident_322-q0029",
+        "incident_322-q0030",
+        "incident_322-q0032",
+        "incident_322-q0037",
+        "incident_322-q0043",
+        "incident_322-q0044",
+        "incident_322-q0049",
+        "incident_322-q0050",
+        "incident_322-q0051",
+        "incident_322-q0054",
+        "incident_5-q0001",
+        "incident_5-q0002",
+        "incident_5-q0004",
+        "incident_5-q0008",
+        "incident_5-q0009",
+        "incident_5-q0010",
+        "incident_5-q0014",
+        "incident_5-q0016",
+        "incident_5-q0017",
+        "incident_5-q0019",
+        "incident_5-q0021",
+        "incident_5-q0024",
+        "incident_5-q0028",
+        "incident_5-q0029",
+        "incident_5-q0031",
+        "incident_5-q0032",
+        "incident_5-q0036",
+        "incident_5-q0041",
+        "incident_5-q0042",
+        "incident_5-q0043",
+        "incident_5-q0047",
+        "incident_5-q0048",
+        "incident_5-q0050",
+        "incident_5-q0051",
+        "incident_5-q0054",
+        "incident_5-q0057",
+        "incident_5-q0058",
+        "incident_5-q0066",
+        "incident_5-q0067",
+        "incident_5-q0068",
+        "incident_5-q0069",
+        "incident_5-q0070",
+        "incident_5-q0073",
+        "incident_5-q0075",
+        "incident_5-q0076",
+        "incident_5-q0079",
+        "incident_5-q0080",
+        "incident_5-q0081",
+        "incident_5-q0083",
+        "incident_5-q0092",
+        "incident_5-q0093",
+        "incident_5-q0095",
+        "incident_134-q0000",
+        "incident_134-q0007",
+        "incident_134-q0011",
+        "incident_134-q0013",
+        "incident_134-q0021",
+        "incident_134-q0030",
+        "incident_134-q0039",
+        "incident_134-q0042",
+        "incident_134-q0043",
+        "incident_134-q0045",
+        "incident_134-q0053",
+        "incident_134-q0054",
+        "incident_134-q0055",
+        "incident_38-q0001",
+        "incident_38-q0003",
+        "incident_39-q0005",
+        "incident_39-q0007",
+        "incident_39-q0009",
+        "incident_39-q0010",
+        "incident_39-q0011",
+        "incident_39-q0013",
+        "incident_39-q0014",
+        "incident_39-q0015",
+        "incident_39-q0019",
+        "incident_39-q0023",
+        "incident_39-q0024",
+        "incident_39-q0025",
+        "incident_39-q0026",
+        "incident_39-q0027",
+        "incident_39-q0028",
+        "incident_39-q0030",
+        "incident_39-q0034",
+        "incident_39-q0037",
+        "incident_39-q0038",
+        "incident_39-q0039",
+        "incident_39-q0040",
+        "incident_39-q0046",
+        "incident_39-q0048",
+        "incident_39-q0051",
+        "incident_39-q0052",
+        "incident_39-q0054",
+        "incident_39-q0056",
+        "incident_39-q0057",
+        "incident_39-q0062",
+        "incident_39-q0063",
+        "incident_39-q0065",
+        "incident_39-q0066",
+        "incident_39-q0067",
+        "incident_39-q0069",
+        "incident_39-q0070",
+        "incident_39-q0071",
+        "incident_39-q0073",
+        "incident_39-q0078",
+        "incident_39-q0079",
+        "incident_39-q0082",
+        "incident_39-q0085",
+        "incident_39-q0089",
+        "incident_39-q0090",
+        "incident_39-q0091",
+        "incident_39-q0092",
+        "incident_39-q0094",
+        "incident_39-q0096",
+        "incident_39-q0097"
+      ],
+      "validation": {
+        "level": "schema_readonly_and_actual_mysql_replay",
+        "chain_binding": false,
+        "raw_text_only": true,
+        "not_an_answer_correctness_guarantee": true,
+        "explain_checks": [
+          {
+            "incident": "incident_5",
+            "explain_success": true,
+            "schema_checked": true,
+            "plan_rows": "[(1, 'SIMPLE', 'SecurityAlert', None, 'ALL', None, None, None, None, 1, 100.0, 'Using where')]"
+          },
+          {
+            "incident": "incident_322",
+            "explain_success": true,
+            "schema_checked": true,
+            "plan_rows": "[(1, 'SIMPLE', 'SecurityAlert', None, 'ALL', None, None, None, None, 58, 10.0, 'Using where')]"
+          }
+        ]
+      },
+      "intent_variants": [
+        {
+          "id": "variant_30fdabafba1076564611adfa",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Account_UPN",
+            "kind": "upn"
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_bf9c469a79ffc6dc97435957",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "process.ExtractedFileName（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_b03ea7bd1adcaded5f651a7a",
+          "name": "按告警主题及已观察的进程标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的进程标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的进程标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "File_Name",
+            "kind": "file_name"
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_d78431d1f5ebba642115edbb",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取账户.AadUserId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取账户.AadUserId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取账户.AadUserId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "account.AadUserId（需类型与引用解析）",
+            "entity_concept": "Field:AccountObjectId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_0664328aa6475346e243df7a",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "account.Email（需类型与引用解析）",
+            "entity_concept": "Account_UPN",
+            "entity_kind": "upn"
+          }
+        },
+        {
+          "id": "variant_af794435b4ffd1c3907a9807",
+          "name": "按告警主题及已观察的URL标识读取关联证据；提取URL.Url，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的URL标识读取关联证据；提取URL.Url，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的URL标识读取关联证据；提取URL.Url，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "URL",
+            "kind": "url"
+          },
+          "requested_output": {
+            "description": "url.Url（需类型与引用解析）",
+            "entity_concept": "URL",
+            "entity_kind": "url"
+          }
+        },
+        {
+          "id": "variant_0ec84ecef359235dd42346bd",
+          "name": "按告警主题及已观察的URL标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的URL标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的URL标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "URL",
+            "kind": "url"
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_1fe113aa257b9e9d8e071fa7",
+          "name": "按告警主题及已观察的URL标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的URL标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的URL标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "URL",
+            "kind": "url"
+          },
+          "requested_output": {
+            "description": "account.Name（需类型与引用解析）",
+            "entity_concept": "Account_Name",
+            "entity_kind": "account_name"
+          }
+        },
+        {
+          "id": "variant_eb66cc1db8af7d4e89035967",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Account_Name",
+            "kind": "account_name"
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_f82fa7a3009132a26a2b49cd",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "process.ProcessId__CreatedTimeUtc__CommandLine（需类型与引用解析）",
+            "entity_concept": "Process_Command",
+            "entity_kind": "target_command"
+          }
+        },
+        {
+          "id": "variant_35f9026c81c42b8998558b79",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取Azure资源.ResourceGroup，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取Azure资源.ResourceGroup，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取Azure资源.ResourceGroup，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "azure-resource.ResourceGroup（需类型与引用解析）",
+            "entity_concept": "Field:ResourceGroup",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_f233629f918b23dbb5595165",
+          "name": "按告警主题及已观察的URL标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的URL标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的URL标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "URL",
+            "kind": "url"
+          },
+          "requested_output": {
+            "description": "account.Email（需类型与引用解析）",
+            "entity_concept": "Account_UPN",
+            "entity_kind": "upn"
+          }
+        },
+        {
+          "id": "variant_ed0abe35179502aa1123f288",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取Azure资源.ResourceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取Azure资源.ResourceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取Azure资源.ResourceId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Account_UPN",
+            "kind": "upn"
+          },
+          "requested_output": {
+            "description": "azure-resource.ResourceId（需类型与引用解析）",
+            "entity_concept": "Field:ResourceId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_715df95bed007c71f6f4135a",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取URL.Url，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取URL.Url，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取URL.Url，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "url.Url（需类型与引用解析）",
+            "entity_concept": "URL",
+            "entity_kind": "url"
+          }
+        },
+        {
+          "id": "variant_f7ce4ba43cb576f998a2450f",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_b6e5147d1875218962225d3f",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "mailmessage.Recipient（需类型与引用解析）",
+            "entity_concept": "Email_Recipient",
+            "entity_kind": "mailbox_address"
+          }
+        },
+        {
+          "id": "variant_47e3d37ab5f95c5422fa5ea8",
+          "name": "按告警主题及已观察的邮件标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的邮件标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的邮件标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Email_Recipient",
+            "kind": "mailbox_address"
+          },
+          "requested_output": {
+            "description": "mailmessage.Recipient（需类型与引用解析）",
+            "entity_concept": "Email_Recipient",
+            "entity_kind": "mailbox_address"
+          }
+        },
+        {
+          "id": "variant_9ebd13b98476ce9e0031e608",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AadDeviceId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_caf9394bcbd4c607cad32115",
+          "name": "按告警主题及已观察的IP标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的IP标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的IP标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "IP",
+            "kind": null
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_52503ecc10afee857303485a",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "account.Name（需类型与引用解析）",
+            "entity_concept": "Account_Name",
+            "entity_kind": "account_name"
+          }
+        },
+        {
+          "id": "variant_f79ede0031f1de09ee3bcce5",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "account.Sid（需类型与引用解析）",
+            "entity_concept": "Field:AccountSid",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_9f9aa4e7f2653bd8129acb92",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取邮件.Recipient，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountSid",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "mailmessage.Recipient（需类型与引用解析）",
+            "entity_concept": "Email_Recipient",
+            "entity_kind": "mailbox_address"
+          }
+        },
+        {
+          "id": "variant_a6518f273ffe608d72f65f7d",
+          "name": "按告警主题及已观察的URL标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的URL标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的URL标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "URL",
+            "kind": "url"
+          },
+          "requested_output": {
+            "description": "account.Sid（需类型与引用解析）",
+            "entity_concept": "Field:AccountSid",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_81d202c22c93c436a9cd406a",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountSid",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_bfe3f3ecb8e0f40125c1a461",
+          "name": "按告警主题及已观察的IP标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的IP标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的IP标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "IP",
+            "kind": null
+          },
+          "requested_output": {
+            "description": "account.Email（需类型与引用解析）",
+            "entity_concept": "Account_UPN",
+            "entity_kind": "upn"
+          }
+        },
+        {
+          "id": "variant_121878aa5b73e048e53def09",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountSid",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_6d05c8cc9cd770320860fbab",
+          "name": "按告警主题读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Alert_Title",
+            "kind": "alert_name"
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_d2edfe823e4915a6f0ea7a03",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取账户.Email，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "account.Email（需类型与引用解析）",
+            "entity_concept": "Account_UPN",
+            "entity_kind": "upn"
+          }
+        },
+        {
+          "id": "variant_1896342309ed17ec8d3a7a1d",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_1d3c44b291fadfa1e8925940",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountSid",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "process.ProcessId__CreatedTimeUtc__CommandLine（需类型与引用解析）",
+            "entity_concept": "Process_Command",
+            "entity_kind": "target_command"
+          }
+        },
+        {
+          "id": "variant_44186b0348981d347e68c5be",
+          "name": "按告警主题及已观察的文件标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的文件标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的文件标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "File_Name",
+            "kind": "file_name"
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_58e31d1d604cf7bb00675bce",
+          "name": "按告警主题及已观察的IP标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的IP标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的IP标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "IP",
+            "kind": null
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_4d01aada35dc3e8f8c54cd8e",
+          "name": "按告警主题及已观察的进程标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的进程标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的进程标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "File_Name",
+            "kind": "file_name"
+          },
+          "requested_output": {
+            "description": "account.Sid（需类型与引用解析）",
+            "entity_concept": "Field:AccountSid",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_8ffdb23bf137edaacc8afb9a",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountSid",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "file.Name（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_414d3404aa61f56338f2fb6e",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "file.Name（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_8e3fd05e6905ee030451a18d",
+          "name": "按告警主题读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Alert_Title",
+            "kind": "alert_name"
+          },
+          "requested_output": {
+            "description": "host.AadDeviceId（需类型与引用解析）",
+            "entity_concept": "Field:AadDeviceId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_bfc984ee77871ca7ced39428",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AadDeviceId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "file.Name（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_4ea39226d0def9f27f33ce43",
+          "name": "按告警主题读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Alert_Title",
+            "kind": "alert_name"
+          },
+          "requested_output": {
+            "description": "account.Sid（需类型与引用解析）",
+            "entity_concept": "Field:AccountSid",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_c44afd6cd2b0556ffd806c25",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountSid",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "host.AadDeviceId（需类型与引用解析）",
+            "entity_concept": "Field:AadDeviceId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_cbd36aa1c35ebceadf21b512",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Account_Name",
+            "kind": "account_name"
+          },
+          "requested_output": {
+            "description": "account.Sid（需类型与引用解析）",
+            "entity_concept": "Field:AccountSid",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_76294be278b30776553e7edb",
+          "name": "按告警主题及已观察的进程标识读取关联证据；提取账户.AadUserId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的进程标识读取关联证据；提取账户.AadUserId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的进程标识读取关联证据；提取账户.AadUserId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "File_Name",
+            "kind": "file_name"
+          },
+          "requested_output": {
+            "description": "account.AadUserId（需类型与引用解析）",
+            "entity_concept": "Field:AccountObjectId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_e23c52589dc94207475061d4",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "process.ProcessId__CreatedTimeUtc__CommandLine（需类型与引用解析）",
+            "entity_concept": "Process_Command",
+            "entity_kind": "target_command"
+          }
+        },
+        {
+          "id": "variant_6be8764d81c493b6a5a1bda6",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取主机.HostName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "host.HostName（需类型与引用解析）",
+            "entity_concept": "Device_Name",
+            "entity_kind": "device_name"
+          }
+        },
+        {
+          "id": "variant_249bcab0b29c039b54603455",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountSid",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "process.ExtractedFileName（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_ed1cb87b25499532d361bbfe",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Account_Name",
+            "kind": "account_name"
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_b7c459c8c0dfe3f2b699e50f",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取账户.Sid，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "account.Sid（需类型与引用解析）",
+            "entity_concept": "Field:AccountSid",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_62c34d01ed2ac0d8236c2119",
+          "name": "按告警主题及已观察的IP标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的IP标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的IP标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "IP",
+            "kind": null
+          },
+          "requested_output": {
+            "description": "file.Name（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_da5640f2c7654cb63b9d5061",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "host.AadDeviceId（需类型与引用解析）",
+            "entity_concept": "Field:AadDeviceId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_3d14be2500c66b3f911285d9",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "host.AadDeviceId（需类型与引用解析）",
+            "entity_concept": "Field:AadDeviceId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_237123cf26cdb97a96dd68c6",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AadDeviceId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "process.ExtractedFileName（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_836879c85e9a773aa5c3d896",
+          "name": "按告警主题及已观察的进程标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的进程标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的进程标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "File_Name",
+            "kind": "file_name"
+          },
+          "requested_output": {
+            "description": "host.AadDeviceId（需类型与引用解析）",
+            "entity_concept": "Field:AadDeviceId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_6856eefd97500e31de117f52",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "process.ExtractedFileName（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_ecb1e8569c736083e12ac599",
+          "name": "按告警主题及已观察的进程标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的进程标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的进程标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "File_Name",
+            "kind": "file_name"
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_5c5ac5540af5cf729a6100f9",
+          "name": "按告警主题及已观察的IP标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的IP标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的IP标识读取关联证据；提取进程.ExtractedFileName，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "IP",
+            "kind": null
+          },
+          "requested_output": {
+            "description": "process.ExtractedFileName（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_1efad38365eecfbc5ee005fd",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AadDeviceId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_e7b3fa986511d5f1c2510735",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Device_Name",
+            "kind": "device_name"
+          },
+          "requested_output": {
+            "description": "file.Name（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_346a75f802b9b043897c01e9",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取IP.Address，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AccountObjectId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "ip.Address（需类型与引用解析）",
+            "entity_concept": "IP",
+            "entity_kind": null
+          }
+        },
+        {
+          "id": "variant_7d449fb63ca1492cac73adb4",
+          "name": "按告警主题及已观察的IP标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的IP标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的IP标识读取关联证据；提取主机.AadDeviceId，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "IP",
+            "kind": null
+          },
+          "requested_output": {
+            "description": "host.AadDeviceId（需类型与引用解析）",
+            "entity_concept": "Field:AadDeviceId",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        {
+          "id": "variant_d502189796e8d32df49147a5",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AadDeviceId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "process.ProcessId__CreatedTimeUtc__CommandLine（需类型与引用解析）",
+            "entity_concept": "Process_Command",
+            "entity_kind": "target_command"
+          }
+        },
+        {
+          "id": "variant_6a77e440932950063d992d5a",
+          "name": "按告警主题及已观察的主机标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的主机标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的主机标识读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Field:AadDeviceId",
+            "kind": "physical_field_or_scope"
+          },
+          "requested_output": {
+            "description": "account.Name（需类型与引用解析）",
+            "entity_concept": "Account_Name",
+            "entity_kind": "account_name"
+          }
+        },
+        {
+          "id": "variant_c1f0069421570896a0c86df2",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Account_Name",
+            "kind": "account_name"
+          },
+          "requested_output": {
+            "description": "process.ProcessId__CreatedTimeUtc__CommandLine（需类型与引用解析）",
+            "entity_concept": "Process_Command",
+            "entity_kind": "target_command"
+          }
+        },
+        {
+          "id": "variant_5de8b4d017b7a1948b900dff",
+          "name": "按告警主题读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题读取关联证据；提取账户.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Alert_Title",
+            "kind": "alert_name"
+          },
+          "requested_output": {
+            "description": "account.Name（需类型与引用解析）",
+            "entity_concept": "Account_Name",
+            "entity_kind": "account_name"
+          }
+        },
+        {
+          "id": "variant_ff9986e93a08c065e0efe1de",
+          "name": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的账户标识读取关联证据；提取文件.Name，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "Account_Name",
+            "kind": "account_name"
+          },
+          "requested_output": {
+            "description": "file.Name（需类型与引用解析）",
+            "entity_concept": "File_Name",
+            "entity_kind": "file_name"
+          }
+        },
+        {
+          "id": "variant_e8fdb0863871f71d9ff557a8",
+          "name": "按告警主题及已观察的进程标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "intent": "按告警主题及已观察的进程标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。",
+          "caution": [
+            "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+            "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+            "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+            "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+            "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。"
+          ],
+          "step_guides": [
+            {
+              "step": "s1",
+              "guide": "按告警主题及已观察的进程标识读取关联证据；提取进程.ProcessId__CreatedTimeUtc__CommandLine，保留实体类型和对象关联，不把全文同值视为同一实体。"
+            }
+          ],
+          "trigger_entity": {
+            "concept": "File_Name",
+            "kind": "file_name"
+          },
+          "requested_output": {
+            "description": "process.ProcessId__CreatedTimeUtc__CommandLine（需类型与引用解析）",
+            "entity_concept": "Process_Command",
+            "entity_kind": "target_command"
+          }
+        }
+      ],
+      "trigger_aliases": [
+        {
+          "concept": "Account_UPN",
+          "kind": "upn"
+        },
+        {
+          "concept": "Device_Name",
+          "kind": "device_name"
+        },
+        {
+          "concept": "File_Name",
+          "kind": "file_name"
+        },
+        {
+          "concept": "Field:AccountObjectId",
+          "kind": "physical_field_or_scope"
+        },
+        {
+          "concept": "URL",
+          "kind": "url"
+        },
+        {
+          "concept": "Account_Name",
+          "kind": "account_name"
+        },
+        {
+          "concept": "Email_Recipient",
+          "kind": "mailbox_address"
+        },
+        {
+          "concept": "Field:AadDeviceId",
+          "kind": "physical_field_or_scope"
+        },
+        {
+          "concept": "IP",
+          "kind": null
+        },
+        {
+          "concept": "Field:AccountSid",
+          "kind": "physical_field_or_scope"
+        },
+        {
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        },
+        {
+          "concept": "File_Name",
+          "kind": "file_name"
+        },
+        {
+          "concept": "Entities",
+          "kind": "physical_field_or_scope"
+        }
+      ],
+      "candidate_output_concepts": [
+        "Account_Name",
+        "Account_UPN",
+        "Device_Name",
+        "Email_Recipient",
+        "Field:AadDeviceId",
+        "Field:AccountObjectId",
+        "Field:AccountSid",
+        "Field:ResourceGroup",
+        "Field:ResourceId",
+        "File_Name",
+        "IP",
+        "Process_Command",
+        "URL",
+        "Process_ID",
+        "Process_Start"
+      ],
+      "candidate_output_mode": "raw_evidence_requires_role_verification"
+    },
+    {
+      "id": "em_zero_cloud_e1b6a3991bec07f748143871",
+      "kind": "atomic",
+      "name": "由已知RemoteIP及告警主题确认同告警账户标识",
+      "intent": "由已知RemoteIP及告警主题确认同告警账户标识",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "AlertEvidence",
+          "field": "RemoteIP",
+          "concept": "IP",
+          "kind": "evidence_remote_ip"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_eec9c92e2c746b61f0068801",
+          "planner_guide": "由已知RemoteIP及告警主题确认同告警账户标识",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          }
+        }
+      ],
+      "bindings": [],
+      "caution": [
+        "仅使用context/question或此前SQL取得的实体值。保留全部候选，不能按隐藏答案选择。",
+        "显示名、登录名和UPN分别保留；应用数值ID不等于OAuth GUID。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0004",
+        "incident_166-q0009",
+        "incident_166-q0010",
+        "incident_166-q0014",
+        "incident_166-q0029",
+        "incident_166-q0042",
+        "incident_166-q0043",
+        "incident_166-q0052",
+        "incident_166-q0064",
+        "incident_166-q0067",
+        "incident_166-q0075",
+        "incident_166-q0077",
+        "incident_166-q0079",
+        "incident_166-q0083"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "em_zero_cloud_660ce6bda2d9d181bd2f660c",
+      "kind": "atomic",
+      "name": "按稳定账户ID关联目标告警，保留阶段角色与目标实体",
+      "intent": "按稳定账户ID关联目标告警，保留阶段角色与目标实体",
+      "trigger_entity": {
+        "concept": "Field:AccountObjectId",
+        "kind": "physical_field_or_scope"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "AlertEvidence",
+          "field": "AccountObjectId",
+          "concept": "Field:AccountObjectId",
+          "kind": "physical_field_or_scope"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_cd2d419f12f7b9413ae13125",
+          "planner_guide": "按稳定账户ID关联目标告警，保留阶段角色与目标实体",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "EntityType": {
+              "description": "EntityType",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "EvidenceRole": {
+              "description": "EvidenceRole",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "RemoteIP": {
+              "description": "RemoteIP",
+              "entity_concept": "IP",
+              "entity_kind": "evidence_remote_ip"
+            },
+            "ApplicationId": {
+              "description": "ApplicationId",
+              "entity_concept": "Field:ApplicationId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "Application": {
+              "description": "Application",
+              "entity_concept": "Application",
+              "entity_kind": "application_name"
+            },
+            "NetworkMessageId": {
+              "description": "NetworkMessageId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          }
+        }
+      ],
+      "bindings": [],
+      "caution": [
+        "仅使用context/question或此前SQL取得的实体值。保留全部候选，不能按隐藏答案选择。",
+        "显示名、登录名和UPN分别保留；应用数值ID不等于OAuth GUID。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0004",
+        "incident_166-q0010",
+        "incident_166-q0014",
+        "incident_166-q0018",
+        "incident_166-q0042",
+        "incident_166-q0043",
+        "incident_166-q0052",
+        "incident_166-q0064",
+        "incident_166-q0072",
+        "incident_166-q0075",
+        "incident_166-q0079"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "em_zero_cloud_2ed5f12d63cf84559798ec3f",
+      "kind": "atomic",
+      "name": "按稳定账户ID关联目标告警，保留阶段角色与目标实体",
+      "intent": "按稳定账户ID关联目标告警，保留阶段角色与目标实体",
+      "trigger_entity": {
+        "concept": "Field:AccountObjectId",
+        "kind": "physical_field_or_scope"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "Entities",
+          "concept": "Field:AccountObjectId",
+          "kind": "physical_field_or_scope"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_2fb5183dc315cfbf721aecae",
+          "planner_guide": "按稳定账户ID关联目标告警，保留阶段角色与目标实体",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "StartTime": {
+              "description": "StartTime",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "IPAddresses": {
+              "description": "IPAddresses",
+              "entity_concept": "IP",
+              "entity_kind": "login_ip"
+            }
+          }
+        }
+      ],
+      "bindings": [],
+      "caution": [
+        "仅使用context/question或此前SQL取得的实体值。保留全部候选，不能按隐藏答案选择。",
+        "显示名、登录名和UPN分别保留；应用数值ID不等于OAuth GUID。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0009",
+        "incident_166-q0015",
+        "incident_166-q0024",
+        "incident_166-q0029",
+        "incident_166-q0046",
+        "incident_166-q0053",
+        "incident_166-q0067",
+        "incident_166-q0077",
+        "incident_166-q0083"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "em_zero_cloud_cab1f4c2678c90130d7192b4",
+      "kind": "atomic",
+      "name": "由已知AccountDisplayName及告警主题确认同告警账户标识",
+      "intent": "由已知AccountDisplayName及告警主题确认同告警账户标识",
+      "trigger_entity": {
+        "concept": "Field:AccountDisplayName",
+        "kind": "physical_field_or_scope"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "AlertEvidence",
+          "field": "AdditionalFields",
+          "concept": "Field:AccountDisplayName",
+          "kind": "physical_field_or_scope"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_550f93ed8baae22b273cad25",
+          "planner_guide": "由已知AccountDisplayName及告警主题确认同告警账户标识",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          }
+        }
+      ],
+      "bindings": [],
+      "caution": [
+        "仅使用context/question或此前SQL取得的实体值。保留全部候选，不能按隐藏答案选择。",
+        "显示名、登录名和UPN分别保留；应用数值ID不等于OAuth GUID。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0015",
+        "incident_166-q0024"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "em_zero_cloud_c06e16af17a0f4c50db3d440",
+      "kind": "atomic",
+      "name": "由已知RemoteIP及告警主题确认同告警账户标识",
+      "intent": "由已知RemoteIP及告警主题确认同告警账户标识",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "Entities",
+          "concept": "IP",
+          "kind": "evidence_remote_ip"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_9447c700679b5f5518ce8f58",
+          "planner_guide": "由已知RemoteIP及告警主题确认同告警账户标识",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            }
+          }
+        }
+      ],
+      "bindings": [],
+      "caution": [
+        "仅使用context/question或此前SQL取得的实体值。保留全部候选，不能按隐藏答案选择。",
+        "显示名、登录名和UPN分别保留；应用数值ID不等于OAuth GUID。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0018",
+        "incident_166-q0046",
+        "incident_166-q0053",
+        "incident_166-q0072"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    }
+  ],
+  "new_flows": [
+    {
+      "id": "pm_eval_zero220_identity_7ff55ecfe268a9c3ddfd6674",
+      "kind": "evidence_chain",
+      "name": "收件箱规则操控 → 匿名登录：实体关联溯源",
+      "intent": "收件箱规则操控 → 匿名登录：实体关联溯源",
+      "trigger_entity": {
+        "concept": "Field:UserDisplayName",
+        "kind": "physical_field_or_scope"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "SecurityAlert",
+          "field": "Entities",
+          "concept": "Field:UserDisplayName",
+          "kind": "physical_field_or_scope"
+        },
+        {
+          "step": "s2",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“收件箱规则操控”阶段（AlertName/p1 = Suspicious inbox manipulation rule）；仅用上下文已知实体预筛，并核对类型与角色。提取account/AadUserId继续关联。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“匿名登录”阶段（AlertName/p1 = Anonymous IP address）；用上一步account/AadUserId实际标识预筛，并核对类型与角色。按问题目标核验实体角色；返回必要证据，不能把所有候选当唯一答案。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities",
+          "evidence_outputs": [
+            {
+              "column": "Entities",
+              "entity_type": "ip",
+              "identifier_fields": "Address",
+              "concept": "IP",
+              "kind": "physical_field_or_scope"
+            }
+          ]
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "Entities",
+          "to_field": "Entities",
+          "to_parameter": "p2",
+          "transform": "entity_identifier",
+          "entity_type": "account",
+          "identifier_fields": "AadUserId"
+        }
+      ],
+      "caution": [
+        "必须同时指定调查阶段与已观察实体；INSTR只是候选预筛，后续须逐实体类型校验标识关系。",
+        "Entities包含父子进程和Source/Destination/Contextual角色，不能将同行所有实体自动判定为攻击者。",
+        "严格JSON解析失败或结果截断不得继续绑定；不可用官方答案替代缺失上游值。",
+        "Name、AccountName、UserPrincipalName与图派生Email不可相互猜测替换。",
+        "告警图最短路径不等于因果链：共享文件名/IP仅提供候选关联，不可据此声称同一攻击者或同一设备。"
+      ],
+      "intent_aliases": [
+        "Can you identify the anonymous IP address involved in the sign-in attempt related to this alert?"
+      ],
+      "status": "active",
+      "support": {
+        "episodes": 1,
+        "incidents": 1
+      },
+      "source_cases": [
+        "incident_134-q0000"
+      ],
+      "provenance": "evaluation_failure_adaptation",
+      "validation": {
+        "level": "readonly_mysql_path_replay",
+        "chain_binding": true,
+        "not_an_answer_correctness_guarantee": true,
+        "store_prepare_step_passed": true
+      },
+      "evidence_outputs": [
+        {
+          "column": "Entities",
+          "entity_type": "ip",
+          "identifier_fields": "Address",
+          "concept": "IP",
+          "kind": "physical_field_or_scope"
+        }
+      ]
+    },
+    {
+      "id": "pm_eval_zero220_identity_521ca65594f130a3984f386f",
+      "kind": "evidence_chain",
+      "name": "BEC可疑发信 → BEC规则欺诈：实体关联溯源",
+      "intent": "BEC可疑发信 → BEC规则欺诈：实体关联溯源",
+      "trigger_entity": {
+        "concept": "Email_Sender",
+        "kind": null
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "SecurityAlert",
+          "field": "Entities",
+          "concept": "Email_Sender",
+          "kind": null
+        },
+        {
+          "step": "s2",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“BEC可疑发信”阶段（AlertName/p1 = Suspicious emails sent by BEC-related user）；仅用上下文已知实体预筛，并核对类型与角色。提取account/Name继续关联。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“BEC规则欺诈”阶段（AlertName/p1 = BEC financial fraud）；用上一步account/Name实际标识预筛，并核对类型与角色。按问题目标核验实体角色；返回必要证据，不能把所有候选当唯一答案。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities",
+          "evidence_outputs": [
+            {
+              "column": "Entities",
+              "entity_type": "account",
+              "identifier_fields": "Name",
+              "concept": "Field:UserDisplayName",
+              "kind": "physical_field_or_scope"
+            }
+          ]
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "Entities",
+          "to_field": "Entities",
+          "to_parameter": "p2",
+          "transform": "entity_identifier",
+          "entity_type": "account",
+          "identifier_fields": "Name"
+        }
+      ],
+      "caution": [
+        "必须同时指定调查阶段与已观察实体；INSTR只是候选预筛，后续须逐实体类型校验标识关系。",
+        "Entities包含父子进程和Source/Destination/Contextual角色，不能将同行所有实体自动判定为攻击者。",
+        "严格JSON解析失败或结果截断不得继续绑定；不可用官方答案替代缺失上游值。",
+        "Name、AccountName、UserPrincipalName与图派生Email不可相互猜测替换。",
+        "告警图最短路径不等于因果链：共享文件名/IP仅提供候选关联，不可据此声称同一攻击者或同一设备。"
+      ],
+      "intent_aliases": [
+        "What is the name of the account involved in the BEC financial fraud where the suspicious inbox rule was created?"
+      ],
+      "status": "active",
+      "support": {
+        "episodes": 1,
+        "incidents": 1
+      },
+      "source_cases": [
+        "incident_134-q0043"
+      ],
+      "provenance": "evaluation_failure_adaptation",
+      "validation": {
+        "level": "readonly_mysql_path_replay",
+        "chain_binding": true,
+        "not_an_answer_correctness_guarantee": true,
+        "store_prepare_step_passed": true
+      },
+      "evidence_outputs": [
+        {
+          "column": "Entities",
+          "entity_type": "account",
+          "identifier_fields": "Name",
+          "concept": "Field:UserDisplayName",
+          "kind": "physical_field_or_scope"
+        }
+      ],
+      "entry_evidence": {
+        "column": "Entities",
+        "entity_type": "mailMessage",
+        "identifier_fields": "Sender",
+        "concept": "Email_Sender",
+        "kind": null
+      }
+    },
+    {
+      "id": "pm_eval_zero220_identity_b1ef046ad1adf4811a7862c0",
+      "kind": "evidence_chain",
+      "name": "DCSync复制攻击 → 票据身份盗用 → 疑似横向移动：实体关联溯源",
+      "intent": "DCSync复制攻击 → 票据身份盗用 → 疑似横向移动：实体关联溯源",
+      "trigger_entity": {
+        "concept": "Field:UserDisplayName",
+        "kind": "physical_field_or_scope"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "SecurityAlert",
+          "field": "Entities",
+          "concept": "Field:UserDisplayName",
+          "kind": "physical_field_or_scope"
+        },
+        {
+          "step": "s2",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        },
+        {
+          "step": "s3",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“DCSync复制攻击”阶段（AlertName/p1 = Suspected DCSync attack (replication of directory services)）；仅用上下文已知实体预筛，并核对类型与角色。提取account/Name继续关联。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“票据身份盗用”阶段（AlertName/p1 = Suspected identity theft (pass-the-ticket)）；用上一步account/Name实际标识预筛，并核对类型与角色。提取ip/Address继续关联。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities"
+        },
+        {
+          "id": "s3",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“疑似横向移动”阶段（AlertName/p1 = Possible lateral movement）；用上一步ip/Address实际标识预筛，并核对类型与角色。按问题目标核验实体角色；返回必要证据，不能把所有候选当唯一答案。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities",
+          "evidence_outputs": [
+            {
+              "column": "Entities",
+              "entity_type": "host",
+              "identifier_fields": "AadDeviceId",
+              "concept": "Field:AadDeviceId",
+              "kind": "physical_field_or_scope"
+            }
+          ]
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "Entities",
+          "to_field": "Entities",
+          "to_parameter": "p2",
+          "transform": "entity_identifier",
+          "entity_type": "account",
+          "identifier_fields": "Name"
+        },
+        {
+          "from": "s2",
+          "to": "s3",
+          "from_column": "Entities",
+          "to_field": "Entities",
+          "to_parameter": "p2",
+          "transform": "entity_identifier",
+          "entity_type": "ip",
+          "identifier_fields": "Address"
+        }
+      ],
+      "caution": [
+        "必须同时指定调查阶段与已观察实体；INSTR只是候选预筛，后续须逐实体类型校验标识关系。",
+        "Entities包含父子进程和Source/Destination/Contextual角色，不能将同行所有实体自动判定为攻击者。",
+        "严格JSON解析失败或结果截断不得继续绑定；不可用官方答案替代缺失上游值。",
+        "Name、AccountName、UserPrincipalName与图派生Email不可相互猜测替换。",
+        "告警图最短路径不等于因果链：共享文件名/IP仅提供候选关联，不可据此声称同一攻击者或同一设备。"
+      ],
+      "intent_aliases": [
+        "What is the Azure AD Device ID of the host where possible lateral movement was detected?"
+      ],
+      "status": "active",
+      "support": {
+        "episodes": 1,
+        "incidents": 1
+      },
+      "source_cases": [
+        "incident_39-q0009"
+      ],
+      "provenance": "evaluation_failure_adaptation",
+      "validation": {
+        "level": "readonly_mysql_path_replay",
+        "chain_binding": true,
+        "not_an_answer_correctness_guarantee": true,
+        "store_prepare_step_passed": true
+      },
+      "evidence_outputs": [
+        {
+          "column": "Entities",
+          "entity_type": "host",
+          "identifier_fields": "AadDeviceId",
+          "concept": "Field:AadDeviceId",
+          "kind": "physical_field_or_scope"
+        }
+      ]
+    },
+    {
+      "id": "pm_eval_zero220_identity_f3d2e3acd22496dd2b27d60e",
+      "kind": "evidence_chain",
+      "name": "Kerberos哈希传递 → 哈希传递成功登录：实体关联溯源",
+      "intent": "Kerberos哈希传递 → 哈希传递成功登录：实体关联溯源",
+      "trigger_entity": {
+        "concept": "Device_Name",
+        "kind": "device_name"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "SecurityAlert",
+          "field": "Entities",
+          "concept": "Device_Name",
+          "kind": "device_name"
+        },
+        {
+          "step": "s2",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“Kerberos哈希传递”阶段（AlertName/p1 = Suspected overpass-the-hash attack (Kerberos)）；仅用上下文已知实体预筛，并核对类型与角色。提取account/Sid继续关联。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_6f55fdce3b2f227e15748f38",
+          "planner_guide": "定位“哈希传递成功登录”阶段（AlertName/p1 = Successful logon using overpass-the-hash with potentially stolen credentials）；用上一步account/Sid实际标识预筛，并核对类型与角色。按问题目标核验实体角色；返回必要证据，不能把所有候选当唯一答案。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "Description": {
+              "description": "Description",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "Entities": {
+              "description": "Entities",
+              "entity_concept": "Entities",
+              "entity_kind": null
+            }
+          },
+          "episodic_id": "em_zero220_securityalert_scoped_entities",
+          "evidence_outputs": [
+            {
+              "column": "Entities",
+              "entity_type": "account",
+              "identifier_fields": "Sid",
+              "concept": "Field:AccountSid",
+              "kind": "physical_field_or_scope"
+            }
+          ]
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "Entities",
+          "to_field": "Entities",
+          "to_parameter": "p2",
+          "transform": "entity_identifier",
+          "entity_type": "account",
+          "identifier_fields": "Sid"
+        }
+      ],
+      "caution": [
+        "必须同时指定调查阶段与已观察实体；INSTR只是候选预筛，后续须逐实体类型校验标识关系。",
+        "Entities包含父子进程和Source/Destination/Contextual角色，不能将同行所有实体自动判定为攻击者。",
+        "严格JSON解析失败或结果截断不得继续绑定；不可用官方答案替代缺失上游值。",
+        "Name、AccountName、UserPrincipalName与图派生Email不可相互猜测替换。",
+        "告警图最短路径不等于因果链：共享文件名/IP仅提供候选关联，不可据此声称同一攻击者或同一设备。",
+        "最终保留全部真实SID候选并区分账户角色；该流程只验证候选收集，不保证唯一答案，不按官方答案预选system或任何其他账户。"
+      ],
+      "intent_aliases": [
+        "What is the security identifier (Sid) of the account that had a successful logon using overpass-the-hash with potentially stolen credentials?"
+      ],
+      "status": "active",
+      "support": {
+        "episodes": 1,
+        "incidents": 1
+      },
+      "source_cases": [
+        "incident_39-q0014"
+      ],
+      "provenance": "evaluation_failure_adaptation",
+      "validation": {
+        "level": "readonly_mysql_path_replay",
+        "chain_binding": true,
+        "not_an_answer_correctness_guarantee": true,
+        "store_prepare_step_passed": true,
+        "unique_answer_validated": false
+      },
+      "evidence_outputs": [
+        {
+          "column": "Entities",
+          "entity_type": "account",
+          "identifier_fields": "Sid",
+          "concept": "Field:AccountSid",
+          "kind": "physical_field_or_scope"
+        }
+      ]
+    },
+    {
+      "id": "pm_zero_cloud_e3bf59a587207ffa2e24909c",
+      "kind": "evidence_chain",
+      "name": "可疑收件箱规则 → 稳定账户关联 → BEC关联SAP登录",
+      "intent": "可疑收件箱规则 → 稳定账户关联 → BEC关联SAP登录 | Suspicious inbox manipulation rule → correlate the account → BEC-related user signed in to SAP; inspect sign-in IP evidence.",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "AlertEvidence",
+          "field": "RemoteIP",
+          "concept": "IP",
+          "kind": "evidence_remote_ip"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        },
+        {
+          "step": "s2",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_eec9c92e2c746b61f0068801",
+          "planner_guide": "根据当前已知实体和Suspicious inbox manipulation rule主题查询同告警账户，不提前填写未知账户ID。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_e1b6a3991bec07f748143871"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_cd2d419f12f7b9413ae13125",
+          "planner_guide": "沿上一步真实AccountObjectId查BEC-related user signed in to SAP；保留全部匹配记录，依据问题时间和角色判定。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "EntityType": {
+              "description": "EntityType",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "EvidenceRole": {
+              "description": "EvidenceRole",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "RemoteIP": {
+              "description": "RemoteIP",
+              "entity_concept": "IP",
+              "entity_kind": "evidence_remote_ip"
+            },
+            "ApplicationId": {
+              "description": "ApplicationId",
+              "entity_concept": "Field:ApplicationId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "Application": {
+              "description": "Application",
+              "entity_concept": "Application",
+              "entity_kind": "application_name"
+            },
+            "NetworkMessageId": {
+              "description": "NetworkMessageId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_660ce6bda2d9d181bd2f660c"
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "AccountObjectId",
+          "to_field": "AccountObjectId",
+          "to_parameter": "p1",
+          "transform": "identity"
+        }
+      ],
+      "caution": [
+        "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+        "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+        "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0010"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "pm_zero_cloud_7dd30e3539857832f1fd1be4",
+      "kind": "evidence_chain",
+      "name": "匿名IP登录 → 稳定账户关联 → 风险SAP认证",
+      "intent": "匿名IP登录 → 稳定账户关联 → 风险SAP认证 | Anonymous IP address sign-in → correlate the account → suspicious SAP authentication; inspect account display-name evidence.",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "SecurityAlert",
+          "field": "Entities",
+          "concept": "IP",
+          "kind": "evidence_remote_ip"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "SecurityAlert",
+          "field": "AlertName",
+          "concept": "Alert_Title",
+          "kind": "alert_name"
+        },
+        {
+          "step": "s2",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_9447c700679b5f5518ce8f58",
+          "planner_guide": "根据当前已知实体和Anonymous IP address主题查询同告警账户，不提前填写未知账户ID。",
+          "outputs": {
+            "SystemAlertId": {
+              "description": "SystemAlertId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AlertName": {
+              "description": "AlertName",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "alert_name"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_c06e16af17a0f4c50db3d440"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_cd2d419f12f7b9413ae13125",
+          "planner_guide": "沿上一步真实AccountObjectId查Suspicious SAP authentication；保留全部匹配记录，依据问题时间和角色判定。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "EntityType": {
+              "description": "EntityType",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "EvidenceRole": {
+              "description": "EvidenceRole",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "RemoteIP": {
+              "description": "RemoteIP",
+              "entity_concept": "IP",
+              "entity_kind": "evidence_remote_ip"
+            },
+            "ApplicationId": {
+              "description": "ApplicationId",
+              "entity_concept": "Field:ApplicationId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "Application": {
+              "description": "Application",
+              "entity_concept": "Application",
+              "entity_kind": "application_name"
+            },
+            "NetworkMessageId": {
+              "description": "NetworkMessageId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_660ce6bda2d9d181bd2f660c"
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "AccountObjectId",
+          "to_field": "AccountObjectId",
+          "to_parameter": "p1",
+          "transform": "identity"
+        }
+      ],
+      "caution": [
+        "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+        "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+        "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0072"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "pm_zero_cloud_93b9c4a7e59e5f85b206cb86",
+      "kind": "evidence_chain",
+      "name": "BEC关联SAP登录 → 稳定账户关联 → BEC财务欺诈",
+      "intent": "BEC关联SAP登录 → 稳定账户关联 → BEC财务欺诈 | BEC-related user signed in to SAP → correlate the account → BEC financial fraud; inspect fraud IP evidence.",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "AlertEvidence",
+          "field": "RemoteIP",
+          "concept": "IP",
+          "kind": "evidence_remote_ip"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        },
+        {
+          "step": "s2",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_eec9c92e2c746b61f0068801",
+          "planner_guide": "根据当前已知实体和BEC-related user signed in to SAP主题查询同告警账户，不提前填写未知账户ID。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_e1b6a3991bec07f748143871"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_cd2d419f12f7b9413ae13125",
+          "planner_guide": "沿上一步真实AccountObjectId查BEC financial fraud；保留全部匹配记录，依据问题时间和角色判定。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "EntityType": {
+              "description": "EntityType",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "EvidenceRole": {
+              "description": "EvidenceRole",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "RemoteIP": {
+              "description": "RemoteIP",
+              "entity_concept": "IP",
+              "entity_kind": "evidence_remote_ip"
+            },
+            "ApplicationId": {
+              "description": "ApplicationId",
+              "entity_concept": "Field:ApplicationId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "Application": {
+              "description": "Application",
+              "entity_concept": "Application",
+              "entity_kind": "application_name"
+            },
+            "NetworkMessageId": {
+              "description": "NetworkMessageId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_660ce6bda2d9d181bd2f660c"
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "AccountObjectId",
+          "to_field": "AccountObjectId",
+          "to_parameter": "p1",
+          "transform": "identity"
+        }
+      ],
+      "caution": [
+        "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+        "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+        "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0042"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "pm_zero_cloud_5a0cf3ed2c2215206abd7caa",
+      "kind": "evidence_chain",
+      "name": "风险SAP认证 → 稳定账户关联 → BEC财务欺诈",
+      "intent": "风险SAP认证 → 稳定账户关联 → BEC财务欺诈 | Suspicious SAP authentication → correlate the account → BEC financial fraud; inspect fraud IP evidence.",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "AlertEvidence",
+          "field": "RemoteIP",
+          "concept": "IP",
+          "kind": "evidence_remote_ip"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        },
+        {
+          "step": "s2",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_eec9c92e2c746b61f0068801",
+          "planner_guide": "根据当前已知实体和Suspicious SAP authentication主题查询同告警账户，不提前填写未知账户ID。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_e1b6a3991bec07f748143871"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_cd2d419f12f7b9413ae13125",
+          "planner_guide": "沿上一步真实AccountObjectId查BEC financial fraud；保留全部匹配记录，依据问题时间和角色判定。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "EntityType": {
+              "description": "EntityType",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "EvidenceRole": {
+              "description": "EvidenceRole",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "RemoteIP": {
+              "description": "RemoteIP",
+              "entity_concept": "IP",
+              "entity_kind": "evidence_remote_ip"
+            },
+            "ApplicationId": {
+              "description": "ApplicationId",
+              "entity_concept": "Field:ApplicationId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "Application": {
+              "description": "Application",
+              "entity_concept": "Application",
+              "entity_kind": "application_name"
+            },
+            "NetworkMessageId": {
+              "description": "NetworkMessageId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_660ce6bda2d9d181bd2f660c"
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "AccountObjectId",
+          "to_field": "AccountObjectId",
+          "to_parameter": "p1",
+          "transform": "identity"
+        }
+      ],
+      "caution": [
+        "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+        "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+        "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0043"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "pm_zero_cloud_9367258dfcd0f64032f41f55",
+      "kind": "evidence_chain",
+      "name": "可疑收件箱规则 → 稳定账户关联 → 风险SAP认证",
+      "intent": "可疑收件箱规则 → 稳定账户关联 → 风险SAP认证 | Suspicious inbox manipulation rule → correlate the account → suspicious SAP authentication; inspect authentication IP evidence.",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "AlertEvidence",
+          "field": "RemoteIP",
+          "concept": "IP",
+          "kind": "evidence_remote_ip"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        },
+        {
+          "step": "s2",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_eec9c92e2c746b61f0068801",
+          "planner_guide": "根据当前已知实体和Suspicious inbox manipulation rule主题查询同告警账户，不提前填写未知账户ID。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_e1b6a3991bec07f748143871"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_cd2d419f12f7b9413ae13125",
+          "planner_guide": "沿上一步真实AccountObjectId查Suspicious SAP authentication；保留全部匹配记录，依据问题时间和角色判定。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "EntityType": {
+              "description": "EntityType",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "EvidenceRole": {
+              "description": "EvidenceRole",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "RemoteIP": {
+              "description": "RemoteIP",
+              "entity_concept": "IP",
+              "entity_kind": "evidence_remote_ip"
+            },
+            "ApplicationId": {
+              "description": "ApplicationId",
+              "entity_concept": "Field:ApplicationId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "Application": {
+              "description": "Application",
+              "entity_concept": "Application",
+              "entity_kind": "application_name"
+            },
+            "NetworkMessageId": {
+              "description": "NetworkMessageId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_660ce6bda2d9d181bd2f660c"
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "AccountObjectId",
+          "to_field": "AccountObjectId",
+          "to_parameter": "p1",
+          "transform": "identity"
+        }
+      ],
+      "caution": [
+        "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+        "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+        "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0052"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    },
+    {
+      "id": "pm_zero_cloud_11b2391c983622244014a339",
+      "kind": "evidence_chain",
+      "name": "BEC财务欺诈 → 稳定账户关联 → BEC关联SAP登录",
+      "intent": "BEC财务欺诈 → 稳定账户关联 → BEC关联SAP登录 | BEC financial fraud → correlate the account → BEC-related user signed in to SAP; inspect application identifier evidence.",
+      "trigger_entity": {
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      "required_inputs": [
+        {
+          "step": "s1",
+          "parameter": "p1",
+          "table": "AlertEvidence",
+          "field": "RemoteIP",
+          "concept": "IP",
+          "kind": "evidence_remote_ip"
+        },
+        {
+          "step": "s1",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        },
+        {
+          "step": "s2",
+          "parameter": "p2",
+          "table": "AlertEvidence",
+          "field": "Title",
+          "concept": "Alert_Title",
+          "kind": "title"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "template_id": "sql_eec9c92e2c746b61f0068801",
+          "planner_guide": "根据当前已知实体和BEC financial fraud主题查询同告警账户，不提前填写未知账户ID。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_e1b6a3991bec07f748143871"
+        },
+        {
+          "id": "s2",
+          "template_id": "sql_cd2d419f12f7b9413ae13125",
+          "planner_guide": "沿上一步真实AccountObjectId查BEC-related user signed in to SAP；保留全部匹配记录，依据问题时间和角色判定。",
+          "outputs": {
+            "AlertId": {
+              "description": "AlertId",
+              "entity_concept": "Alert_ID",
+              "entity_kind": "defender_alert_id"
+            },
+            "Title": {
+              "description": "Title",
+              "entity_concept": "Alert_Title",
+              "entity_kind": "title"
+            },
+            "TimeGenerated": {
+              "description": "TimeGenerated",
+              "entity_concept": "Event_Time",
+              "entity_kind": "log_time"
+            },
+            "EntityType": {
+              "description": "EntityType",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "EvidenceRole": {
+              "description": "EvidenceRole",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountObjectId": {
+              "description": "AccountObjectId",
+              "entity_concept": "Field:AccountObjectId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountSid": {
+              "description": "AccountSid",
+              "entity_concept": "Field:AccountSid",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "AccountUpn": {
+              "description": "AccountUpn",
+              "entity_concept": "Account_UPN",
+              "entity_kind": "upn"
+            },
+            "AccountName": {
+              "description": "AccountName",
+              "entity_concept": "Account_Name",
+              "entity_kind": "account_name"
+            },
+            "RemoteIP": {
+              "description": "RemoteIP",
+              "entity_concept": "IP",
+              "entity_kind": "evidence_remote_ip"
+            },
+            "ApplicationId": {
+              "description": "ApplicationId",
+              "entity_concept": "Field:ApplicationId",
+              "entity_kind": "physical_field_or_scope"
+            },
+            "Application": {
+              "description": "Application",
+              "entity_concept": "Application",
+              "entity_kind": "application_name"
+            },
+            "NetworkMessageId": {
+              "description": "NetworkMessageId",
+              "entity_concept": null,
+              "entity_kind": null
+            },
+            "AccountDisplayName": {
+              "description": "AccountDisplayName",
+              "entity_concept": "Field:AccountDisplayName",
+              "entity_kind": "physical_field_or_scope"
+            }
+          },
+          "episodic_id": "em_zero_cloud_660ce6bda2d9d181bd2f660c"
+        }
+      ],
+      "bindings": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "from_column": "AccountObjectId",
+          "to_field": "AccountObjectId",
+          "to_parameter": "p1",
+          "transform": "identity"
+        }
+      ],
+      "caution": [
+        "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+        "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+        "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。"
+      ],
+      "status": "active",
+      "source_cases": [
+        "incident_166-q0079"
+      ],
+      "provenance": "evaluation_failure_adaptation"
+    }
+  ],
+  "guidance_patches": [],
+  "episode_guidance_patches": [
+    {
+      "id": "patch_zero220_endpoint_4c8f3783eca3ffbc2a042b87",
+      "episode_id": "proc_92acb76447c8059e16f22467",
+      "source_cases": [
+        "incident_322-q0006",
+        "incident_322-q0007",
+        "incident_322-q0015",
+        "incident_322-q0018",
+        "incident_322-q0020",
+        "incident_322-q0021",
+        "incident_322-q0022",
+        "incident_322-q0025",
+        "incident_322-q0027",
+        "incident_322-q0029",
+        "incident_322-q0030",
+        "incident_322-q0032",
+        "incident_322-q0037",
+        "incident_322-q0043",
+        "incident_322-q0044",
+        "incident_322-q0049",
+        "incident_322-q0050",
+        "incident_322-q0051",
+        "incident_322-q0054",
+        "incident_5-q0001",
+        "incident_5-q0002",
+        "incident_5-q0004",
+        "incident_5-q0008",
+        "incident_5-q0009",
+        "incident_5-q0010",
+        "incident_5-q0014",
+        "incident_5-q0016",
+        "incident_5-q0017",
+        "incident_5-q0019",
+        "incident_5-q0021",
+        "incident_5-q0024",
+        "incident_5-q0028",
+        "incident_5-q0029",
+        "incident_5-q0031",
+        "incident_5-q0032",
+        "incident_5-q0036",
+        "incident_5-q0041",
+        "incident_5-q0042",
+        "incident_5-q0043",
+        "incident_5-q0047",
+        "incident_5-q0048",
+        "incident_5-q0050",
+        "incident_5-q0051",
+        "incident_5-q0054",
+        "incident_5-q0057",
+        "incident_5-q0058",
+        "incident_5-q0066",
+        "incident_5-q0067",
+        "incident_5-q0068",
+        "incident_5-q0069",
+        "incident_5-q0070",
+        "incident_5-q0073",
+        "incident_5-q0075",
+        "incident_5-q0076",
+        "incident_5-q0079",
+        "incident_5-q0080",
+        "incident_5-q0081",
+        "incident_5-q0083",
+        "incident_5-q0092",
+        "incident_5-q0093",
+        "incident_5-q0095"
+      ],
+      "guide": "按明确目标告警召回原始Entities，先核对类型与对象关联再回答。账户Email可能是Name+UPNSuffix派生，不能替换为其他UPN；PID、创建时间、命令必须来自同一Process对象；主机AadDeviceId与MdatpDeviceId不可互换。",
+      "caution_add": [
+        "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+        "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+        "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+        "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+        "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。",
+        "PRT进程、父PowerShell启动器、WMI宿主与创建的子进程角色不同；没有唯一证据时列出对应角色，不依据工具常识猜测文件名。",
+        "最短图路径只证明关联，不证明时间先后或因果；TimeGenerated与CreationTimeUtc分别处理，不能偷偷平移日期。"
+      ]
+    },
+    {
+      "id": "patch_zero220_endpoint_bce1e50d85f39099756209c8",
+      "episode_id": "proc_094c976092a751b15da030dc",
+      "source_cases": [
+        "incident_322-q0006",
+        "incident_322-q0007",
+        "incident_322-q0015",
+        "incident_322-q0018",
+        "incident_322-q0020",
+        "incident_322-q0021",
+        "incident_322-q0022",
+        "incident_322-q0025",
+        "incident_322-q0027",
+        "incident_322-q0029",
+        "incident_322-q0030",
+        "incident_322-q0032",
+        "incident_322-q0037",
+        "incident_322-q0043",
+        "incident_322-q0044",
+        "incident_322-q0049",
+        "incident_322-q0050",
+        "incident_322-q0051",
+        "incident_322-q0054",
+        "incident_5-q0001",
+        "incident_5-q0002",
+        "incident_5-q0004",
+        "incident_5-q0008",
+        "incident_5-q0009",
+        "incident_5-q0010",
+        "incident_5-q0014",
+        "incident_5-q0016",
+        "incident_5-q0017",
+        "incident_5-q0019",
+        "incident_5-q0021",
+        "incident_5-q0024",
+        "incident_5-q0028",
+        "incident_5-q0029",
+        "incident_5-q0031",
+        "incident_5-q0032",
+        "incident_5-q0036",
+        "incident_5-q0041",
+        "incident_5-q0042",
+        "incident_5-q0043",
+        "incident_5-q0047",
+        "incident_5-q0048",
+        "incident_5-q0050",
+        "incident_5-q0051",
+        "incident_5-q0054",
+        "incident_5-q0057",
+        "incident_5-q0058",
+        "incident_5-q0066",
+        "incident_5-q0067",
+        "incident_5-q0068",
+        "incident_5-q0069",
+        "incident_5-q0070",
+        "incident_5-q0073",
+        "incident_5-q0075",
+        "incident_5-q0076",
+        "incident_5-q0079",
+        "incident_5-q0080",
+        "incident_5-q0081",
+        "incident_5-q0083",
+        "incident_5-q0092",
+        "incident_5-q0093",
+        "incident_5-q0095"
+      ],
+      "guide": "按明确目标告警召回原始Entities，先核对类型与对象关联再回答。账户Email可能是Name+UPNSuffix派生，不能替换为其他UPN；PID、创建时间、命令必须来自同一Process对象；主机AadDeviceId与MdatpDeviceId不可互换。",
+      "caution_add": [
+        "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+        "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+        "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+        "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+        "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。",
+        "PRT进程、父PowerShell启动器、WMI宿主与创建的子进程角色不同；没有唯一证据时列出对应角色，不依据工具常识猜测文件名。",
+        "最短图路径只证明关联，不证明时间先后或因果；TimeGenerated与CreationTimeUtc分别处理，不能偷偷平移日期。"
+      ]
+    },
+    {
+      "id": "patch_zero220_endpoint_ffeabfeb66b91f117b7794c5",
+      "episode_id": "proc_ce22a43efb5c3bd7fe6168bc",
+      "source_cases": [
+        "incident_322-q0006",
+        "incident_322-q0007",
+        "incident_322-q0015",
+        "incident_322-q0018",
+        "incident_322-q0020",
+        "incident_322-q0021",
+        "incident_322-q0022",
+        "incident_322-q0025",
+        "incident_322-q0027",
+        "incident_322-q0029",
+        "incident_322-q0030",
+        "incident_322-q0032",
+        "incident_322-q0037",
+        "incident_322-q0043",
+        "incident_322-q0044",
+        "incident_322-q0049",
+        "incident_322-q0050",
+        "incident_322-q0051",
+        "incident_322-q0054",
+        "incident_5-q0001",
+        "incident_5-q0002",
+        "incident_5-q0004",
+        "incident_5-q0008",
+        "incident_5-q0009",
+        "incident_5-q0010",
+        "incident_5-q0014",
+        "incident_5-q0016",
+        "incident_5-q0017",
+        "incident_5-q0019",
+        "incident_5-q0021",
+        "incident_5-q0024",
+        "incident_5-q0028",
+        "incident_5-q0029",
+        "incident_5-q0031",
+        "incident_5-q0032",
+        "incident_5-q0036",
+        "incident_5-q0041",
+        "incident_5-q0042",
+        "incident_5-q0043",
+        "incident_5-q0047",
+        "incident_5-q0048",
+        "incident_5-q0050",
+        "incident_5-q0051",
+        "incident_5-q0054",
+        "incident_5-q0057",
+        "incident_5-q0058",
+        "incident_5-q0066",
+        "incident_5-q0067",
+        "incident_5-q0068",
+        "incident_5-q0069",
+        "incident_5-q0070",
+        "incident_5-q0073",
+        "incident_5-q0075",
+        "incident_5-q0076",
+        "incident_5-q0079",
+        "incident_5-q0080",
+        "incident_5-q0081",
+        "incident_5-q0083",
+        "incident_5-q0092",
+        "incident_5-q0093",
+        "incident_5-q0095"
+      ],
+      "guide": "按明确目标告警召回原始Entities，先核对类型与对象关联再回答。账户Email可能是Name+UPNSuffix派生，不能替换为其他UPN；PID、创建时间、命令必须来自同一Process对象；主机AadDeviceId与MdatpDeviceId不可互换。",
+      "caution_add": [
+        "INSTR大小写不敏感字面子串仅做召回，不等于typed实体精确关联。",
+        "必须使用已知/观察到的实体值；Email是Name+UPNSuffix派生时，完整邮箱未必存在原文，先走现有按标题读取Entities，不能把零行当不存在。",
+        "Entities可能因导入损坏而非合法JSON；严格解析失败不得修复猜测、不得自动向后绑定。",
+        "保持SystemAlertId与AlertName来源；此ID必须从实际查询返回，不能提前取官方隐藏ID。",
+        "所有候选保留；禁止以首行、最高频、标准答案或上下文主机替代目标事件消歧。",
+        "PRT进程、父PowerShell启动器、WMI宿主与创建的子进程角色不同；没有唯一证据时列出对应角色，不依据工具常识猜测文件名。",
+        "最短图路径只证明关联，不证明时间先后或因果；TimeGenerated与CreationTimeUtc分别处理，不能偷偷平移日期。"
+      ]
+    }
+  ],
+  "deferred": []
+}

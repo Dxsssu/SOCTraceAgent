@@ -3,25 +3,27 @@
 这个目录提供一个与通用后台 workflow 分离的同步测评流程。它严格遵守
 ExCyTIn-Bench 的外部动作协议：Workflow 生成一条 SQL，SQL 由
 `ExcytinEnv.step()` 执行，Workflow 在下一轮收到 observation 后才进行
-Reviewer 审查和 Planner 重规划。
+Reviewer 审查，然后自动推进 PM 或进入核验与重规划。
 
 ```text
 initial observation
-  -> Planner memory_query -> PM multi-step flows -> EM single-step snippets -> SM v2 table/field views
-  -> Planner operations + add_task.procedure / episode / table -> runtime G/E/T ITT
+  -> Planner creates typed G/E only (no T)
+  -> memory_query -> direct PM -> typed PM composition -> EM -> SM v2
+  -> Planner selects procedure / episode / table -> allocate T nodes and input E edges
   -> {id, objective, selected memory context} -> Executor one read-only SQL -> program writes execution_code
   -> ExcytinEnv.step(SQL)
   -> observation -> Reviewer (current task + current execution only) -> program writes structured execution_result
-  -> Verifier (context + question + nested ITT)
+  -> pending PM step: bind observed inputs -> next Executor
+  -> single step / PM completion or interruption: Verifier (context + question + nested ITT)
   -> confirmed: submit answer / unconfirmed: Planner update -> next T
   -> ExcytinEnv.step(submit=True)
 ```
 
-Verifier 在每轮 Reviewer 后同步调用，接收 `context + question + itt`。ITT 为通过 children 连接的 G/E/T 三层嵌套树，包含每个 T 的实际 SQL 和结构化证据（summary/facts/limitations/source），不重复传最新总结。不传独立 executions 列表，不检索长期记忆。
+EM/SM 单步结束，以及 PM 完成、暂停、中断或预算耗尽时，Verifier 在 Reviewer 后同步调用；PM 正常衔接下一步时跳过 Planner 和 Verifier。Verifier 接收 `context + question + itt`。ITT 为通过 children 连接的 G/E/T 三层嵌套树，包含每个 T 的实际 SQL 和结构化证据（summary/facts/limitations/source），不重复传最新总结。不传独立 executions 列表，不检索长期记忆。
 
 Verifier 输出 `can_answer: "yes"` 或 `can_answer: "no"`，仅 yes 时附加 `answer`。能回答时直接生成最终答案，程序退出循环提交，不再调用最终答案整理器或反证审查。不能回答时，把包含结构化证据的 ITT 及 Verifier 的未确认状态交给 Planner 继续规划；Reviewer 的提交/停止建议不直接终止调查，Planner 的完成状态也不能替代 Verifier 确认。预算耗尽而仍未确认时，程序提交“无法确认答案：调查结束，尚无充分证据。”。Verifier 未确认时，Planner 的重规划必须包含可执行的 todo T；G/E 的推导状态不再触发提前提交。缺少可执行任务按现有有限校验重试要求补充，耗尽后记录规划失败，不递归空转或提交。格式校验失败按有限重试处理，耗尽后显式失败。核验记录保存在 `verifications` 和 `answer_verified` trace 中；答案是否有充分证据由模型判断。
 
-SQL workflow 默认启用 PM 多步流程、EM 单步片段、SM v2 表字段字典。99 条 PM / 320 条 EM 是训练基底；运行时应用 57 条 PM 屏蔽清单和独立失败案例调整层，有效数量见[记忆审计](../../memory/longterm_memory/procedural_memory/flows/failure_review/audit.json)。Planner 请求依次检索：本层没有候选时自动下探；有候选但不适用时重复同一 `memory_query` 拒绝本层、进入下一层。流程使用 `add_task.procedure`，单步使用 `add_task.episode`，选表使用 `add_task.table`。检索及选择分别记入三类日志，目录指纹记入 `memory_catalog_ids`。`procedural_memory_enabled=False` 保留 SM-only 对照；`semantic_memory_enabled=False` 保留无记忆基线。详见 [三层协议](../../memory/longterm_memory/procedural_memory/flows/README.md)。
+SQL workflow 默认启用 PM 多步流程、EM 单步片段、SM v2 表字段字典。99 条 PM / 320 条 EM 是训练基底；运行时应用 57 条 PM 屏蔽清单和独立失败案例调整层，有效数量见[记忆审计](../../memory/longterm_memory/procedural_memory/flows/failure_review/audit.json)。Planner 请求依次检索：本层没有候选时自动下探；有候选但不适用时可用 `memory_query.layer` 进入 composed、episodic 或 semantic；保持 known/wanted 的重复请求也会继续下一层，不要求意图逐字相同。流程使用 `add_task.procedure`，单步使用 `add_task.episode`，选表使用 `add_task.table`。选定 PM 首步后自动预建全部 T，后续 SQL 在执行前才绑定真实结果。EM 发现新线索后，下一轮规划必须重新从 PM 检索。检索及选择分别记入三类日志，目录指纹记入 `memory_catalog_ids`。`procedural_memory_enabled=False` 保留 SM-only 对照；`semantic_memory_enabled=False` 保留无记忆基线。详见 [三层协议](../../memory/longterm_memory/procedural_memory/flows/README.md)。
 
 本地 runner 在开始规划前读取当前数据库 information_schema 快照，仅用于后台过滤映射，完整 schema 不进入提示词。这次初始化读取不计入模型调查 SQL 次数。SecGym adapter 未提供数据库快照时采用目录并集并标记 catalog_union，实际可用性仍以执行反馈为准。
 
@@ -56,8 +58,8 @@ for _ in range(env.max_steps):
 
 - 初始字典只读取 `context` 和 `question`，不会读取答案、solution 或 Ground Truth。
 - Executor 收到当前 T 的 id/objective 和选中的 procedural_context、episodic_context 或 semantic_context。Planner 必须在 objective 中写齐实体、参数和查询范围。SQL error 后新增独立 error 字段，包含重新生成说明、失败 SQL 和报错结果，objective 与 semantic_context 保持原样；程序校验 SQL 并在执行前写入 execution_code。
-- PM/EM 路径由运行时验证输入和真实上游结果，生成 bound_sql；Executor 返回该语句，AST 校验禁止改写。PM 通过 active_runs 继续后续步骤，依赖步骤在上一步真实返回后才建立 T。
-- Planner 首轮接收 context/question、概念词汇及检索协议，随后接收自己检索到的候选摘要；后续还接收 ITT 与未确认状态。runtime_info 仅供运行记录使用，不传给模型。每次规划最多 5 次检索请求；每次调查最多 32 次实际 SM 检索，不占 SQL 动作预算。
+- PM/EM 路径由运行时验证输入和真实上游结果，生成 bound_sql；Executor 返回该语句，AST 校验禁止改写。PM 通过 active_runs 继续后续步骤，所有步骤先建立 T，依赖步骤的参数与 SQL 在上游真实返回后才绑定。
+- Planner 首轮接收 context/question、概念词汇及检索协议，随后接收自己检索到的候选摘要；后续还接收 ITT 与未确认状态。runtime_info 仅供运行记录使用，不传给模型。默认 G/E-first 规划阶段最多 12 次模型交互（包括检索、实体更新和任务选择），必须保留最后一次用于选 T；SM-only 对照仍为最多 5 次检索请求；每次调查最多 32 次实际 SM 检索，不占 SQL 动作预算。
 - Reviewer 不检索 SM/PM/EM。仅接收当前 task（id/objective）和本次 executor_result，不传全树、全局背景/问题或累计执行记录。
 - Reviewer 输出 summary（最多 240 字符）、facts（记录对象列表，保留关联键、主机、PID/GUID、时间和路径等原值）、limitations（缺失、歧义或省略范围）。程序补充 source，整体写入 T.execution_result；原始结果保留在 executions。错误/空结果的 facts 强制为空；截断强制补充限制。
 - 每轮 Reviewer 后调用 Verifier；仅 Verifier 确认可以作答时跳过 Planner 并提交其 answer。

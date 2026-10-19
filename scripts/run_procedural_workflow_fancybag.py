@@ -125,6 +125,7 @@ def run_case(case, case_dir, config, max_steps, stop_event):
         "episodic_selections": log.get("task_episodic_contexts", {}),
         "episodic_retrievals": log.get("episodic_retrievals", []),
         "memory_architecture": log.get("memory_architecture"),
+        "procedural_flow_runs": log.get("procedural_flow_runs", []),
         "memory_catalog_ids": log.get("memory_catalog_ids", {}),
         "memory_routing_history": log.get("memory_routing_history", []),
         "procedural_fallbacks": log.get("procedural_fallbacks", []),
@@ -272,6 +273,8 @@ def run_batch(cases, output, config, *, workers=10, max_steps=25, worker=run_cas
 
 def source_hashes():
     paths = [Path(__file__), ROOT / "src/benchmarks/excytin_bench/workflow.py",
+             ROOT / "src/benchmarks/excytin_bench/procedural_execution.py",
+             ROOT / "src/benchmarks/excytin_bench/staged_planning.py",
              ROOT / "src/benchmarks/excytin_bench/runner.py", *sorted((ROOT / "src/agent").glob("*.py"))]
     for directory in [ROOT / "src/memory/longterm_memory/semantic_memory/v2",
                       ROOT / "src/memory/longterm_memory/procedural_memory/trajectory_snippets",
@@ -317,6 +320,7 @@ def main():
                     "max_steps": args.max_steps, "workers": args.workers,
                     "cases": [c.case_id for c in cases], "llm_eval": False,
                     "semantic_memory_enabled": True, "procedural_memory_enabled": True,
+                    "staged_planning": True, "memory_architecture": "entities_direct_pm_composed_pm_em_sm_v3",
                     "sources_sha256": source_hashes()}
         previous = read_json(output / "manifest.json")
         if previous and any(previous.get(k) != manifest[k] for k in ("model", "base_url", "max_steps", "sources_sha256")):

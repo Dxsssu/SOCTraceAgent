@@ -144,7 +144,7 @@ def test_predicate_only_field_does_not_count_as_retrievable_output(training_stor
     session, fid = output_annotation_router(training_store)
     result = session.retrieve({'known': ['Field:Title'], 'wanted': ['Field:Category'], 'intent': '按告警标题查询类别'})
     assert not any(fid == item['id'] for record in session.retrievals for item in record['candidates'])
-    assert result['route'] == 'semantic'
+    assert all('Field:Category' not in c['coverage']['covered_wanted'] for c in result['candidates'])
 
 
 @pytest.mark.parametrize('entry', ['Field:UserDisplayName', 'Account_UPN'])
@@ -170,6 +170,11 @@ def test_display_name_search_entry_retains_confirmed_upn_entry(training_store, e
             schema.setdefault(table, {}).update({field: 'text' for field in fields})
     session = ProceduralPlanningSession(SemanticPlanningSession(SemanticMemoryV2.load(schema=schema)), store)
     result = session.retrieve({'known': [entry], 'wanted': ['IP'], 'intent': '查询用户登录IP和风险'})
-    assert result['memory_type'] == 'procedural'
-    assert flow['id'] in {item['id'] for item in result['candidates']}
+    # Both SQL placeholders are external. A display-name-only E must not be
+    # silently converted into a confirmed UPN (or vice versa). Use SM to write
+    # the single-input variant instead.
+    assert not any(item['id'] == flow['id'] for r in session.retrievals for item in r['candidates'])
+    session = ProceduralPlanningSession(SemanticPlanningSession(SemanticMemoryV2.load(schema=schema)), store)
+    both = session.retrieve({'known':['Field:UserDisplayName','Account_UPN'], 'wanted':['IP'], 'intent':'查询用户登录IP和风险'})
+    assert both['memory_type'] == 'procedural'
     assert flow['trigger_entity']['concept'] != 'Account_Name'

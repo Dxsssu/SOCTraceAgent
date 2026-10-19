@@ -1,0 +1,25 @@
+{
+  "case_id": "incident_5-q0019",
+  "template_id": "sql_ba512834e772b601c3e8461c",
+  "bindings_source": "all actual upstream ShortHostName values",
+  "bindings": {
+    "p1": [
+      "vnevado-win10v",
+      "vnevado-win10s",
+      "vnevado-win10r",
+      "vnevado-win11t",
+      "vnevado-win11u"
+    ],
+    "p2": "Possible lateral movement"
+  },
+  "sql": "SELECT DISTINCT s.SystemAlertId, s.AlertName, h.HostName, i.Address, (SELECT COUNT(*) FROM SecurityAlert AS bad WHERE bad.AlertName = %s AND COALESCE(JSON_VALID(bad.Entities), 0) = 0) AS UnparsedAlertCount FROM SecurityAlert AS s JOIN JSON_TABLE(CASE WHEN JSON_VALID(s.Entities) THEN s.Entities ELSE '[]' END, '$[*]' COLUMNS(EntityType VARCHAR(32) PATH '$.Type', HostName VARCHAR(255) PATH '$.HostName')) AS h ON h.EntityType = 'host' JOIN JSON_TABLE(CASE WHEN JSON_VALID(s.Entities) THEN s.Entities ELSE '[]' END, '$[*]' COLUMNS(EntityType VARCHAR(32) PATH '$.Type', Address VARCHAR(255) PATH '$.Address')) AS i ON i.EntityType = 'ip' WHERE h.HostName IN (%s, %s, %s, %s, %s) AND s.AlertName = %s LIMIT 100",
+  "rows": [
+    {
+      "SystemAlertId": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+      "AlertName": "Possible lateral movement",
+      "HostName": "vnevado-win11u",
+      "Address": "38.142.109.10",
+      "UnparsedAlertCount": 0
+    }
+  ]
+}

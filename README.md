@@ -2,7 +2,7 @@
 
 SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Planner、Executor、Reviewer** 围绕渐进式 TTT（Traceback Task Tree，溯源任务树）协作调查。项目包含本地 Splunk/BOTS 调查、ExCyTIn-Bench 测评、三类长期记忆，以及外部 Agent 对比实验。Python 包名和部分运行时标识沿用 `socagent` / `SOCAgent`。
 
-当前 SQL workflow 默认按 **Procedural → Episodic → Semantic** 检索。训练基底保留 **99 条多步流程、320 条单步片段**；运行时另外应用流程屏蔽清单和失败案例调整层，当前有效数量见[记忆审计](src/memory/longterm_memory/procedural_memory/flows/failure_review/audit.json)。多步流程的步骤引用 Episodic 单步片段。Planner 优先选择适用流程，没有适用流程时选择单步片段，再无适用片段时通过 Semantic v2 选表和字段。Executor 接收当前步骤的绑定模板或精简 Schema，输出一条只读 SQL。
+当前 SQL workflow 默认按 **Procedural → Episodic → Semantic** 检索。训练基底保留 **99 条多步流程、320 条单步片段**；运行时另外应用流程屏蔽清单和失败案例调整层，当前有效数量见[记忆审计](src/memory/longterm_memory/procedural_memory/flows/failure_review/audit.json)。多步流程的步骤引用 Episodic 单步片段。Planner 优先选择适用流程，没有适用流程时选择单步片段，再无适用片段时通过 Semantic v2 选表和字段。选中 PM 后一次建立全部 T，按顺序使用真实上游结果绑定并执行；EM 发现新线索后重新检索 PM。Executor 接收当前步骤的绑定模板或精简 Schema，输出一条只读 SQL。
 
 - [Procedural 多步流程与三层检索协议](src/memory/longterm_memory/procedural_memory/flows/README.md)
 - [Episodic 单步调查片段](src/memory/longterm_memory/episodic_memory/investigation_snippets/README.md)
@@ -17,7 +17,7 @@ SOCTraceAgent 是面向安全告警溯源的多智能体研究原型，由 **Pla
 
 - **告警调查**：LLM 规划任务、选择 MCP 工具，通过 Splunk REST API 查询真实日志，逐步复盘和重规划。
 - **共享工作记忆**：SQLite 持久化事件、版本化 TTT、执行证据、轮次复盘和审计消息。
-- **长期记忆**：SQL workflow 按 PM 多步流程 → EM 单步片段 → SM v2 概念字段检索。
+- **长期记忆**：SQL workflow 先构建 G/E，再按直接 PM → 组合 PM → EM 单步片段 → SM v2 概念字段检索。
 - **Web 作战室**：创建和查看事件，展示任务树、执行记录与复盘，通过 Socket.IO 推送更新。
 - **测评与基线**：ExCyTIn SQL 调查流程、并行测评、结果落盘，以及 OpenCode、Qwen Code、Cline 和论文 BaselineAgent 的配对实验入口。
 
@@ -75,7 +75,7 @@ uv run python main.py -role reviewer
 | Planner | 建立目标与问题、展开任务、选择下一步、更新 TTT | 无 |
 | Executor | 仅根据当前 T 构造查询；程序执行并回写 ITT | 无；SQL error 后仅使用真实错误重试 |
 | Reviewer | 提取本次查询的结构化事实和信息限制，由程序写回 ITT | 不检索记忆；仅当前任务和本次执行记录 |
-| Verifier（SQL workflow） | 每轮 Reviewer 后判断能否回答；能则直接输出答案，否则继续调查 | 不检索记忆 |
+| Verifier（SQL workflow） | EM/SM 单步后或 PM 完成/中断时核验；能则输出答案，否则继续调查 | 不检索记忆 |
 
 本地调查每轮执行一个 L3，再进入复盘与重规划。业务事实以 SQLite 持久化状态为准，`MessageEnvelope` 是审计与展示层。默认数据库为 `runtime/socagent.db`，包含 `events`、`ttt_snapshots`、`executions`、`round_reviews`、`messages`。
 
@@ -92,7 +92,7 @@ pending -> planned -> executing -> reviewing -> replanning
 
 Planner 输入只保留 `context` 与 `question`。运行时构建事件 ID、轮次等管理信息；`runtime_info` 仅用于运行记录，不传入模型或 PM 选择助手。
 
-SQL Planner 通过检索获得 PM/EM 候选或 SM 表字段视图，选择后下发当前 T；Executor 不自行检索记忆。未知结构可通过只读结构查询调查。
+SQL Planner 首轮只建立带类型和值的 G/E，再通过检索获得直接 PM、组合 PM、EM 候选或 SM 表字段视图，选择 PM 后预建整个流程的 T，选择 EM/SM 后下发单个 T；Executor 不自行检索记忆。未知结构可通过只读结构查询调查。
 
 普通 SQLite 调查与 ExCyTIn 使用相同的 Planner **增量操作协议**，存储与展示仍保留完整 G/E/T 调查树：
 
@@ -186,7 +186,7 @@ Web 提供事件列表、详情、执行记录、复盘与层级查询；具体�
 
 ```text
 context + question -> Planner / ITT -> 当前 T -> Executor 生成只读 SQL
-    -> 环境执行 -> 程序回写 T 的 SQL/结果/状态 -> Reviewer -> Verifier -> Planner 更新 / 提交答案
+    -> 环境执行 -> 程序回写 T 的 SQL/结果/状态 -> Reviewer -> PM 下一步 / Verifier -> Planner 更新 / 提交答案
 ```
 
 [src/benchmarks/excytin_bench/agent.py](src/benchmarks/excytin_bench/agent.py) 提供 SecGym 的 `reset()`、`act()`、`get_logging()` 接口，可由官方 `ExcytinEnv.step()` 执行 SQL。仓库自己的 runner 使用兼容的 MySQL 执行边界，负责抽题、并行运行和落盘；应区分自有 runner 与官方环境的成绩。
@@ -210,7 +210,7 @@ uv run python -m src.benchmarks.excytin_bench.runner \
 
 可用 `--incident incident_5` 限定抽题范围，`--question-dir` 和 `--output-dir` 覆盖输入、输出目录。runner **默认开启 LLM 裁判**；上例显式关闭，仅计算匹配和查询指标。需要模糊答案与部分步骤评分时改为 `--llm-eval`，会额外调用模型。
 
-默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 2 条 SQL；每次仅传当前 T，首次 SQL error 后使用失败 SQL 和实际错误重试一次，空结果直接交给 Reviewer，不在 Executor 内重试；Reviewer 不检索 SM/PM。Verifier 在每轮 Reviewer 后判断能否回答：能则直接生成并提交答案，不能则继续规划；预算耗尽且仍不能回答时提交“无法确认答案：调查结束，尚无充分证据。”
+默认每题最多 25 个 action，预留最后一步提交答案，即最多 24 次 SQL。每个 L3 内最多尝试 2 条 SQL；每次仅传当前 T，首次 SQL error 后使用失败 SQL 和实际错误重试一次，空结果直接交给 Reviewer，不在 Executor 内重试；Reviewer 不检索 SM/PM。PM 正常执行期间，每步 Reviewer 后直接绑定下一 T；EM/SM 单步后或 PM 完成、暂停、中断时由 Verifier 判断能否回答：能则直接生成并提交答案，不能则继续规划；预算耗尽且仍不能回答时提交“无法确认答案：调查结束，尚无充分证据。”
 
 SQL workflow 的所有角色遇到接口超时、连接失败、HTTP 408/409/429 或 5xx 时，随机等待 5–10 秒，最多重试两次；默认模型调用关闭 SDK 内部重试，避免重复叠加。Executor 输出格式错误会附上校验错误再请求一次。两类重试独立计数，不增加 SQL 动作数，耗尽后记录本题失败。401/403 等非临时错误直接报错。
 

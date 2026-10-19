@@ -18,8 +18,8 @@ from .ttt_updates import next_task
 MAX_OPERATIONS = 64
 _FIELDS = {
     "add_goal": ({"op", "ref", "objective"}, set()),
-    "add_entity": ({"op", "ref", "goal_id", "objective"}, set()),
-    "add_task": ({"op", "entity_id", "objective"}, {"ref", "semantic_refs", "template_id"}),
+    "add_entity": ({"op", "ref", "goal_id", "objective"}, {"concept", "kind", "value", "source_refs"}),
+    "add_task": ({"op", "entity_id", "objective"}, {"ref", "semantic_refs", "template_id", "input_entity_ids"}),
     "select_task": ({"op", "task_id"}, set()),
 }
 
@@ -46,6 +46,13 @@ def validate_operations(payload: Any) -> list[dict[str, Any]]:
                 raise ValueError(f"operations[{i}].{key} must be a nonempty string")
         if "ref" in operation and (not isinstance(operation["ref"], str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,63}", operation["ref"])):
             raise ValueError(f"operations[{i}].ref must be a lowercase alias such as goal or process")
+        if "concept" in operation or "value" in operation:
+            if not isinstance(operation.get("concept"), str) or not operation["concept"].strip() or type(operation.get("value")) not in (str, int, float):
+                raise ValueError("Typed E requires a nonempty concept and a scalar value")
+        if 'kind' in operation and (not isinstance(operation['kind'], str) or not operation['kind'].strip()):
+            raise ValueError('E kind must be a nonempty string or omitted')
+        if "input_entity_ids" in operation and (not isinstance(operation["input_entity_ids"], list) or not operation["input_entity_ids"] or any(not isinstance(x, str) for x in operation["input_entity_ids"])):
+            raise ValueError("input_entity_ids must be a nonempty list of E references")
     return operations
 
 
@@ -65,6 +72,7 @@ def apply_planner_operations(
     payload: dict[str, Any], event_id: str, round_id: int, *,
     previous: TracebackTaskTree | None = None, executions=(), procedures=(),
     require_next_task: bool = False,
+    allow_pending_entities: bool = False,
 ) -> TracebackTaskTree:
     """Validate and apply a complete batch without mutating its input snapshot.
 
@@ -123,22 +131,28 @@ def apply_planner_operations(
         value = {"id": allocate(prefix), "objective": operation["objective"].strip()}
         if level < 3:
             value["children"] = []
+            if level == 2 and "concept" in operation:
+                value["entity"] = {k: deepcopy(operation[k]) for k in ("concept", "kind", "value", "source_refs") if k in operation}
         else:
             value.update(status="todo", execution_code="", execution_result="",
                          semantic_refs=deepcopy(operation.get("semantic_refs", [])))
             if "template_id" in operation:
                 value["template_id"] = operation["template_id"]
+            if "input_entity_ids" in operation:
+                inputs = [resolve(reference, 2)["id"] for reference in operation["input_entity_ids"]]
+                value["input_entity_ids"] = list(dict.fromkeys([parent["id"], *inputs]))
         nodes[value["id"]] = (value, level)
         if alias is not None:
             aliases[alias] = value["id"]
         (roots if parent is None else parent["children"]).append(value)
 
     candidate = parse_itt(roots, event_id, round_id, previous=previous,
-                          executions=executions, procedures=procedures)
+                          executions=executions, procedures=procedures,
+                          allow_pending_entities=allow_pending_entities)
     if selected is not None:
         candidate = replace(candidate, next_task_id=selected)
         if next_task(candidate) is None:
             raise ValueError("select_task must reference an actionable todo T")
-    if (previous is None or require_next_task) and next_task(candidate) is None:
+    if (require_next_task or previous is None and not allow_pending_entities) and next_task(candidate) is None:
         raise ValueError("Investigation requires an actionable task; add a new todo T or select an existing one")
     return candidate

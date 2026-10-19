@@ -452,9 +452,10 @@ def test_benchmark_planner_documented_initial_contract_is_executable():
     from src.agent.planner import PLANNER_SYSTEM_PROMPT
 
     example = PLANNER_SYSTEM_PROMPT.split("# 输出格式模板\n", 1)[1]
-    tree = ExcytinBenchWorkflow._parse_ttt(yaml.safe_load(example), "contract-test", round_id=1)
-    assert tree.next_task_id == "T1"
-    assert ExcytinBenchWorkflow._next_todo_leaf(tree).node_id == "T1"
+    from src.schema.planner_operations import apply_planner_operations
+    tree = apply_planner_operations(yaml.safe_load(example), "contract-test", 1, allow_pending_entities=True)
+    assert tree.next_task_id is None
+    assert tree.root_nodes[0].children[0].metadata['entity']['value']=='alert-001'
     assert "仅输出合法 YAML 对象" in PLANNER_SYSTEM_PROMPT
     assert "base_version" not in PLANNER_SYSTEM_PROMPT
 

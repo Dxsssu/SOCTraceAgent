@@ -44,6 +44,8 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
         out = {"id": n.node_id, "objective": n.title, "status": status}
         if n.level < 3:
             out["children"] = [node(c) for c in n.children]
+            if n.level == 2 and n.metadata.get("entity"):
+                out["entity"] = deepcopy(n.metadata["entity"])
         else:
             code, result, refs = execution_fields(executions, n.node_id)
             out["semantic_refs"] = deepcopy(n.metadata.get("semantic_refs", []))
@@ -53,6 +55,8 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
                        execution_result=n.metadata.get("execution_result", "") if n.metadata.get("execution_result_source") == "reviewer" else (result if refs else n.metadata.get("execution_result", "")))
         if n.level == 3:
             out["execution_result"] = deepcopy(out["execution_result"])
+            if n.metadata.get("input_entity_ids"):
+                out["input_entity_ids"] = list(n.metadata["input_entity_ids"])
         if planner_view:
             if n.level < 3:
                 out.pop("status")
@@ -60,6 +64,8 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
                 out["status"] = "error" if status == "failed" else status
                 out.pop("semantic_refs", None)
                 out.pop("template_id", None)
+                if n.metadata.get("procedure"):
+                    out["procedure"] = deepcopy(n.metadata["procedure"])
         return out
     return [node(n) for n in tree.root_nodes]
 
@@ -77,7 +83,7 @@ def review_payload(tree: TracebackTaskTree, execution) -> dict[str, Any]:
             "executor_result": {k: v for k, v in record.items() if k in fields}}
 
 
-def parse_itt(payload, event_id: str, round_id: int, *, previous=None, executions=(), procedures=()) -> TracebackTaskTree:
+def parse_itt(payload, event_id: str, round_id: int, *, previous=None, executions=(), procedures=(), allow_pending_entities=False) -> TracebackTaskTree:
     if not isinstance(payload, list) or not payload:
         raise ValueError("ITT output must be a nonempty YAML list")
     old = {}
@@ -93,12 +99,14 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
         if template:
             templates.setdefault(template["id"], template)
     seen = set()
+    levels, parents = {}, {}
     eligible = []
     def read(value, depth, parent=None, active=True):
         if not isinstance(value, dict) or depth > 3:
             raise ValueError("ITT requires exactly three nested G/E/T levels")
         required = {"id", "objective", "children"} if depth < 3 else {"id", "objective", "status", "execution_code", "execution_result"}
-        if set(value) - ({"template_id", "semantic_refs"} if depth == 3 else {"status"}) != required:
+        optional = {"template_id", "semantic_refs", "input_entity_ids"} if depth == 3 else ({"status", "entity"} if depth == 2 else {"status"})
+        if set(value) - optional != required:
             raise ValueError(f"ITT level {depth} requires fields: {sorted(required)}")
         ident, title, status = value["id"], value["objective"], value.get("status", "todo")
         if status == "error":
@@ -108,6 +116,7 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
         if not isinstance(title, str) or not title.strip() or status not in ("todo", "done", "failed"):
             raise ValueError("ITT requires a nonempty objective and todo/done/failed status")
         seen.add(ident)
+        levels[ident], parents[ident] = depth, parent
         prior = old.get(ident)
         if prior and (prior[0].title != title or prior[1] != parent):
             raise ValueError("Existing ITT node identity/objective/parent must be preserved")
@@ -120,12 +129,19 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
         refs = prior[0].evidence_refs if prior else ()
         if depth < 3:
             children = value["children"]
-            if not isinstance(children, list) or not children:
+            if not isinstance(children, list) or not children and not (depth == 2 and allow_pending_entities):
                 raise ValueError("Every G/E needs at least one child")
+            if depth == 2 and "entity" in value:
+                entity = value["entity"]
+                if not isinstance(entity, dict) or set(entity) - {"concept", "kind", "value", "source_refs"} or not isinstance(entity.get("concept"), str) or type(entity.get("value")) not in (str, int, float):
+                    raise ValueError("Invalid typed E entity contract")
+                if prior and prior[0].metadata.get("entity") not in (None, entity):
+                    raise ValueError("Existing entity identity cannot change")
+                metadata["entity"] = deepcopy(entity)
             children = tuple(read(c, depth + 1, ident, active) for c in children)
             if "status" not in value:
                 # Parent states are runtime bookkeeping, absent from Planner output.
-                if any(c.status in {S.OPEN, S.TODO, S.IN_PROGRESS} for c in children):
+                if not children or any(c.status in {S.OPEN, S.TODO, S.IN_PROGRESS} for c in children):
                     status = "todo"
                 elif all(c.status in {S.DONE, S.RESOLVED} for c in children):
                     status = "done"
@@ -137,6 +153,13 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
                 raise ValueError("Completed goals/frontiers require executed evidence")
         else:
             children = ()
+            entity_ids = value.get("input_entity_ids", metadata.get("input_entity_ids", []))
+            if entity_ids:
+                if not isinstance(entity_ids, list) or any(not isinstance(x, str) for x in entity_ids) or len(entity_ids) != len(set(entity_ids)) or parent not in entity_ids:
+                    raise ValueError("T input_entity_ids must be distinct E IDs including its parent")
+                if prior and prior[0].metadata.get("input_entity_ids", []) != entity_ids:
+                    raise ValueError("Existing T input entities cannot change")
+                metadata["input_entity_ids"] = list(entity_ids)
             template_id = value.get("template_id", (metadata.get("query_template") or {}).get("id"))
             if template_id is not None and (not isinstance(template_id, str) or template_id not in templates):
                 raise ValueError("template_id must reference an available query template")
@@ -185,6 +208,12 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
                        metadata=metadata, evidence_refs=refs,
                        result_summary=prior[0].result_summary if prior else "")
     roots = tuple(read(v, 1) for v in payload)
+    for task_id, level in levels.items():
+        if level == 3:
+            task = next(n for root in roots for entity in root.children for n in entity.children if n.node_id == task_id)
+            for entity_id in task.metadata.get("input_entity_ids", []):
+                if levels.get(entity_id) != 2 or parents[entity_id] != parents[parents[task_id]]:
+                    raise ValueError("T inputs must reference existing E nodes of the same G")
     if set(old) - seen:
         raise ValueError("ITT updates cannot delete existing investigation paths")
     tree = TracebackTaskTree(event_id=event_id, round_id=round_id, root_nodes=roots,
@@ -192,7 +221,7 @@ def parse_itt(payload, event_id: str, round_id: int, *, previous=None, execution
                             next_task_id=eligible[0] if eligible else None)
     if previous:
         tree = replace(tree, created_at=previous.created_at)
-    if next_task(tree) is None and any(n.status == S.OPEN for n in roots):
+    if not allow_pending_entities and next_task(tree) is None and any(n.status == S.OPEN for n in roots):
         raise ValueError("Open goals require an actionable task or a terminal status")
     return tree
 

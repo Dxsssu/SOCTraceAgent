@@ -1,3 +1,4 @@
+# Historical transport fixtures use the pre-bootstrap adapter; default G/E-first execution is covered by test_staged_memory_planning.py.
 import json
 from copy import deepcopy
 
@@ -99,7 +100,7 @@ def test_default_workflow_uses_retrieved_template_and_repairs_drift():
             )
         return yaml.safe_dump({"can_answer": "yes", "answer": "a@test"})
 
-    w = ExcytinBenchWorkflow(llm=llm)
+    w = ExcytinBenchWorkflow(staged_planning=False, llm=llm)
     w.set_semantic_schema(SCHEMA)
     w.start({"question": "Find sender", "context": "mail-1", "answer": "DO_NOT_LEAK"})
     action = w.propose_next_action()
@@ -131,12 +132,12 @@ def test_rejected_candidate_falls_back_to_semantic_in_workflow():
             },
         ]
     )
-    w = ExcytinBenchWorkflow(llm=lambda s, u: yaml.safe_dump(next(replies)))
+    w = ExcytinBenchWorkflow(staged_planning=False, llm=lambda s, u: yaml.safe_dump(next(replies)))
     w.set_semantic_schema(SCHEMA)
     w.start("查发件人")
     assert w.propose_next_action().content.startswith("SELECT")
     log = w.get_logging()
-    assert len(log["procedural_retrievals"]) == 1 and len(log["memory_retrievals"]) == 1
+    assert len(log["procedural_retrievals"]) == 2 and len(log["memory_retrievals"]) == 1
     assert not log["task_procedural_contexts"]
 
 
@@ -236,7 +237,7 @@ def test_failed_template_hands_control_to_planner_instead_of_rewriting_memory():
             },
         ]
     )
-    w = ExcytinBenchWorkflow(llm=lambda s, u: yaml.safe_dump(next(replies)))
+    w = ExcytinBenchWorkflow(staged_planning=False, llm=lambda s, u: yaml.safe_dump(next(replies)))
     w.set_semantic_schema(SCHEMA)
     w.start("Find sender")
     w.propose_next_action()
@@ -256,7 +257,7 @@ def test_table_choice_after_episodic_candidates_automatically_uses_semantic():
             },
         ]
     )
-    w = ExcytinBenchWorkflow(llm=lambda s, u: yaml.safe_dump(next(replies)))
+    w = ExcytinBenchWorkflow(staged_planning=False, llm=lambda s, u: yaml.safe_dump(next(replies)))
     w.set_semantic_schema(SCHEMA)
     w.start("Find sender")
     w.propose_next_action()
@@ -354,7 +355,7 @@ def test_workflow_replan_continues_same_run_using_raw_results(monkeypatch):
             }
         )
 
-    w = ExcytinBenchWorkflow(llm=llm)
+    w = ExcytinBenchWorkflow(staged_planning=False, llm=llm)
     w.set_semantic_schema(schema)
     w.start("查隔离邮件发件人")
     w.propose_next_action()

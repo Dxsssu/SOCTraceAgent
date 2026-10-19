@@ -1,0 +1,349 @@
+{
+  "scope": "10个official-path PM按模板、依赖、入口与目标语义检查",
+  "members": [
+    "pm_zero_cloud_e3bf59a587207ffa2e24909c",
+    "pm_zero_cloud_93b9c4a7e59e5f85b206cb86",
+    "pm_zero_cloud_5a0cf3ed2c2215206abd7caa",
+    "pm_zero_cloud_9367258dfcd0f64032f41f55"
+  ],
+  "retained_id": "pm_zero_cloud_e3bf59a587207ffa2e24909c",
+  "retire_ids": [
+    "pm_zero_cloud_93b9c4a7e59e5f85b206cb86",
+    "pm_zero_cloud_5a0cf3ed2c2215206abd7caa",
+    "pm_zero_cloud_9367258dfcd0f64032f41f55"
+  ],
+  "shared_signature": {
+    "templates": [
+      "sql_eec9c92e2c746b61f0068801",
+      "sql_cd2d419f12f7b9413ae13125"
+    ],
+    "bindings": [
+      {
+        "from": "s1",
+        "to": "s2",
+        "from_column": "AccountObjectId",
+        "to_field": "AccountObjectId",
+        "to_parameter": "p1",
+        "transform": "identity"
+      }
+    ],
+    "entry": "IP",
+    "target": "IP"
+  },
+  "not_merged": [
+    {
+      "id": "pm_zero_cloud_7dd30e3539857832f1fd1be4",
+      "reason": "显示名目标不同且首步模板不同，独立保留"
+    },
+    {
+      "id": "pm_zero_cloud_11b2391c983622244014a339",
+      "reason": "相同SQL骨架但问ApplicationId而非IP，保留独立目标契约"
+    },
+    {
+      "id": "pm_eval_zero220_identity_521ca65594f130a3984f386f",
+      "reason": "SecurityAlert实体桥接字段/路径长度/输出角色不同，不能因SQL相同就合并"
+    },
+    {
+      "id": "pm_eval_zero220_identity_f3d2e3acd22496dd2b27d60e",
+      "reason": "SecurityAlert实体桥接字段/路径长度/输出角色不同，不能因SQL相同就合并"
+    }
+  ],
+  "before": 10,
+  "after": 7,
+  "candidate_merged_flow": {
+    "id": "pm_zero_cloud_e3bf59a587207ffa2e24909c",
+    "kind": "evidence_chain",
+    "name": "起点告警IP → 稳定账户 → 目标告警IP",
+    "intent": "从已知起点告警IP经同告警账户对象ID关联另一个目标阶段，区分SAP认证、收件箱规则和BEC财务欺诈的IP。Correlate source alert IP through stable account object ID to target-stage IP.",
+    "trigger_entity": {
+      "concept": "IP",
+      "kind": "evidence_remote_ip"
+    },
+    "required_inputs": [
+      {
+        "step": "s1",
+        "parameter": "p1",
+        "table": "AlertEvidence",
+        "field": "RemoteIP",
+        "concept": "IP",
+        "kind": "evidence_remote_ip"
+      },
+      {
+        "step": "s1",
+        "parameter": "p2",
+        "table": "AlertEvidence",
+        "field": "Title",
+        "concept": "Alert_Title",
+        "kind": "title"
+      },
+      {
+        "step": "s2",
+        "parameter": "p2",
+        "table": "AlertEvidence",
+        "field": "Title",
+        "concept": "Alert_Title",
+        "kind": "title"
+      }
+    ],
+    "steps": [
+      {
+        "id": "s1",
+        "template_id": "sql_eec9c92e2c746b61f0068801",
+        "planner_guide": "根据当前已知实体和Suspicious inbox manipulation rule主题查询同告警账户，不提前填写未知账户ID。",
+        "outputs": {
+          "AlertId": {
+            "description": "AlertId",
+            "entity_concept": "Alert_ID",
+            "entity_kind": "defender_alert_id"
+          },
+          "Title": {
+            "description": "Title",
+            "entity_concept": "Alert_Title",
+            "entity_kind": "title"
+          },
+          "TimeGenerated": {
+            "description": "TimeGenerated",
+            "entity_concept": "Event_Time",
+            "entity_kind": "log_time"
+          },
+          "AccountObjectId": {
+            "description": "AccountObjectId",
+            "entity_concept": "Field:AccountObjectId",
+            "entity_kind": "physical_field_or_scope"
+          },
+          "AccountSid": {
+            "description": "AccountSid",
+            "entity_concept": "Field:AccountSid",
+            "entity_kind": "physical_field_or_scope"
+          },
+          "AccountUpn": {
+            "description": "AccountUpn",
+            "entity_concept": "Account_UPN",
+            "entity_kind": "upn"
+          },
+          "AccountName": {
+            "description": "AccountName",
+            "entity_concept": "Account_Name",
+            "entity_kind": "account_name"
+          },
+          "AccountDisplayName": {
+            "description": "AccountDisplayName",
+            "entity_concept": "Field:AccountDisplayName",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        "episodic_id": "em_zero_cloud_e1b6a3991bec07f748143871"
+      },
+      {
+        "id": "s2",
+        "template_id": "sql_cd2d419f12f7b9413ae13125",
+        "planner_guide": "沿上一步真实AccountObjectId查BEC-related user signed in to SAP；保留全部匹配记录，依据问题时间和角色判定。",
+        "outputs": {
+          "AlertId": {
+            "description": "AlertId",
+            "entity_concept": "Alert_ID",
+            "entity_kind": "defender_alert_id"
+          },
+          "Title": {
+            "description": "Title",
+            "entity_concept": "Alert_Title",
+            "entity_kind": "title"
+          },
+          "TimeGenerated": {
+            "description": "TimeGenerated",
+            "entity_concept": "Event_Time",
+            "entity_kind": "log_time"
+          },
+          "EntityType": {
+            "description": "EntityType",
+            "entity_concept": null,
+            "entity_kind": null
+          },
+          "EvidenceRole": {
+            "description": "EvidenceRole",
+            "entity_concept": null,
+            "entity_kind": null
+          },
+          "AccountObjectId": {
+            "description": "AccountObjectId",
+            "entity_concept": "Field:AccountObjectId",
+            "entity_kind": "physical_field_or_scope"
+          },
+          "AccountSid": {
+            "description": "AccountSid",
+            "entity_concept": "Field:AccountSid",
+            "entity_kind": "physical_field_or_scope"
+          },
+          "AccountUpn": {
+            "description": "AccountUpn",
+            "entity_concept": "Account_UPN",
+            "entity_kind": "upn"
+          },
+          "AccountName": {
+            "description": "AccountName",
+            "entity_concept": "Account_Name",
+            "entity_kind": "account_name"
+          },
+          "RemoteIP": {
+            "description": "RemoteIP",
+            "entity_concept": "IP",
+            "entity_kind": "evidence_remote_ip"
+          },
+          "ApplicationId": {
+            "description": "ApplicationId",
+            "entity_concept": "Field:ApplicationId",
+            "entity_kind": "physical_field_or_scope"
+          },
+          "Application": {
+            "description": "Application",
+            "entity_concept": "Application",
+            "entity_kind": "application_name"
+          },
+          "NetworkMessageId": {
+            "description": "NetworkMessageId",
+            "entity_concept": null,
+            "entity_kind": null
+          },
+          "AccountDisplayName": {
+            "description": "AccountDisplayName",
+            "entity_concept": "Field:AccountDisplayName",
+            "entity_kind": "physical_field_or_scope"
+          }
+        },
+        "episodic_id": "em_zero_cloud_660ce6bda2d9d181bd2f660c"
+      }
+    ],
+    "bindings": [
+      {
+        "from": "s1",
+        "to": "s2",
+        "from_column": "AccountObjectId",
+        "to_field": "AccountObjectId",
+        "to_parameter": "p1",
+        "transform": "identity"
+      }
+    ],
+    "caution": [
+      "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+      "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+      "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。",
+      "必须选择符合context起点与question终点的完整阶段variant。",
+      "同账户在不同阶段可以使用不同IP；最终答案只从目标阶段的IP证据行读取。"
+    ],
+    "status": "active",
+    "source_cases": [
+      "incident_166-q0010",
+      "incident_166-q0042",
+      "incident_166-q0043",
+      "incident_166-q0052"
+    ],
+    "provenance": "evaluation_failure_adaptation",
+    "intent_variants": [
+      {
+        "id": "stage_pm_zero_cloud_e3bf59a587207ffa2e24909c",
+        "name": "可疑收件箱规则 → 稳定账户关联 → BEC关联SAP登录",
+        "intent": "可疑收件箱规则 → 稳定账户关联 → BEC关联SAP登录 | Suspicious inbox manipulation rule → correlate the account → BEC-related user signed in to SAP; inspect sign-in IP evidence.",
+        "step_guides": [
+          {
+            "step": "s1",
+            "guide": "根据当前已知实体和Suspicious inbox manipulation rule主题查询同告警账户，不提前填写未知账户ID。"
+          },
+          {
+            "step": "s2",
+            "guide": "沿上一步真实AccountObjectId查BEC-related user signed in to SAP；保留全部匹配记录，依据问题时间和角色判定。"
+          }
+        ],
+        "caution": [
+          "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+          "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+          "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。",
+          "方向由此variant的起点/目标告警阶段决定，不能因同一账户就返回起点IP。"
+        ],
+        "source_cases": [
+          "incident_166-q0010"
+        ],
+        "source_flow_id": "pm_zero_cloud_e3bf59a587207ffa2e24909c",
+        "target_concept": "IP"
+      },
+      {
+        "id": "stage_pm_zero_cloud_93b9c4a7e59e5f85b206cb86",
+        "name": "BEC关联SAP登录 → 稳定账户关联 → BEC财务欺诈",
+        "intent": "BEC关联SAP登录 → 稳定账户关联 → BEC财务欺诈 | BEC-related user signed in to SAP → correlate the account → BEC financial fraud; inspect fraud IP evidence.",
+        "step_guides": [
+          {
+            "step": "s1",
+            "guide": "根据当前已知实体和BEC-related user signed in to SAP主题查询同告警账户，不提前填写未知账户ID。"
+          },
+          {
+            "step": "s2",
+            "guide": "沿上一步真实AccountObjectId查BEC financial fraud；保留全部匹配记录，依据问题时间和角色判定。"
+          }
+        ],
+        "caution": [
+          "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+          "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+          "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。",
+          "方向由此variant的起点/目标告警阶段决定，不能因同一账户就返回起点IP。"
+        ],
+        "source_cases": [
+          "incident_166-q0042"
+        ],
+        "source_flow_id": "pm_zero_cloud_93b9c4a7e59e5f85b206cb86",
+        "target_concept": "IP"
+      },
+      {
+        "id": "stage_pm_zero_cloud_5a0cf3ed2c2215206abd7caa",
+        "name": "风险SAP认证 → 稳定账户关联 → BEC财务欺诈",
+        "intent": "风险SAP认证 → 稳定账户关联 → BEC财务欺诈 | Suspicious SAP authentication → correlate the account → BEC financial fraud; inspect fraud IP evidence.",
+        "step_guides": [
+          {
+            "step": "s1",
+            "guide": "根据当前已知实体和Suspicious SAP authentication主题查询同告警账户，不提前填写未知账户ID。"
+          },
+          {
+            "step": "s2",
+            "guide": "沿上一步真实AccountObjectId查BEC financial fraud；保留全部匹配记录，依据问题时间和角色判定。"
+          }
+        ],
+        "caution": [
+          "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+          "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+          "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。",
+          "方向由此variant的起点/目标告警阶段决定，不能因同一账户就返回起点IP。"
+        ],
+        "source_cases": [
+          "incident_166-q0043"
+        ],
+        "source_flow_id": "pm_zero_cloud_5a0cf3ed2c2215206abd7caa",
+        "target_concept": "IP"
+      },
+      {
+        "id": "stage_pm_zero_cloud_9367258dfcd0f64032f41f55",
+        "name": "可疑收件箱规则 → 稳定账户关联 → 风险SAP认证",
+        "intent": "可疑收件箱规则 → 稳定账户关联 → 风险SAP认证 | Suspicious inbox manipulation rule → correlate the account → suspicious SAP authentication; inspect authentication IP evidence.",
+        "step_guides": [
+          {
+            "step": "s1",
+            "guide": "根据当前已知实体和Suspicious inbox manipulation rule主题查询同告警账户，不提前填写未知账户ID。"
+          },
+          {
+            "step": "s2",
+            "guide": "沿上一步真实AccountObjectId查Suspicious SAP authentication；保留全部匹配记录，依据问题时间和角色判定。"
+          }
+        ],
+        "caution": [
+          "图最短关联路径不是事件因果证明。匿名IP/账户多候选必须保留，不能按隐藏终点选值。",
+          "TimeGenerated是告警日志时间，StartTime是事件开始时间；按问题语义选择。",
+          "显示名派生Email与真实AccountUpn分开说明；邮件Sender与Recipient、OAuth GUID与CloudApp数值ID不可互换。",
+          "方向由此variant的起点/目标告警阶段决定，不能因同一账户就返回起点IP。"
+        ],
+        "source_cases": [
+          "incident_166-q0052"
+        ],
+        "source_flow_id": "pm_zero_cloud_9367258dfcd0f64032f41f55",
+        "target_concept": "IP"
+      }
+    ]
+  },
+  "runtime_safety": "当前检索会按variant替换step_guides；应将selected variant id与source/target stage一同透传，避免只保留主流程默认方向。"
+}

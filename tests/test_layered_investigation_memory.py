@@ -57,15 +57,16 @@ def test_pm_first_decline_then_em_then_semantic():
     assert first['memory_type'] == 'procedural' and first['candidates']
     assert all(len(c['steps']) > 1 for c in first['candidates'])
     assert len(p.retrievals) == 1 and not p.semantic.retrievals
-    with pytest.raises(ValueError, match='Episodic before'):
-        p.prepare({'operations':[{'op':'add_task','entity_id':'E1','table':'EmailPostDeliveryEvents','objective':'Query actions'}]})
-    assert len(p.retrievals) == 1  # validation never advances retrieval state
-    second = p.retrieve(QUERY)
-    assert second['memory_type'] == 'episodic' and second['candidates']
-    assert all(len(c['steps']) == 1 for c in second['candidates'])
+    # A changed intent still declines the same known/wanted contract; the router
+    # checks composition before offering an EM, without exact-string repetition.
+    second = p.retrieve({**QUERY, 'intent':'进一步查询隔离邮件标识'})
+    assert second.get('layer') == 'composed' and second['candidates']
+    third = p.retrieve(QUERY)
+    assert third['memory_type'] == 'episodic' and third['candidates']
+    assert all(len(c['steps']) == 1 for c in third['candidates'])
     assert not p.semantic.retrievals
-    assert p.retrieve(QUERY) is None
-    assert [r['memory_type'] for r in p.retrievals] == ['procedural','episodic']
+    assert p.retrieve({**QUERY, 'layer':'semantic'}) is None
+    assert [r.get('layer', r['memory_type']) for r in p.retrievals] == ['procedural','composed','episodic']
     p.semantic.retrieve(QUERY)
     assert len(p.semantic.retrievals) == 1
 
@@ -98,7 +99,7 @@ def test_pm_miss_automatically_queries_em_and_em_miss_reaches_semantic():
     p=ProceduralPlanningSession(SemanticPlanningSession(SemanticMemoryV2.load(schema={})))
     result=p.retrieve(query)
     assert result['route']=='semantic' and not result['candidates']
-    assert [r['memory_type'] for r in p.retrievals]==['procedural','episodic']
+    assert [r.get('layer',r['memory_type']) for r in p.retrievals]==['procedural','composed','episodic']
 
 
 def test_cross_layer_selection_is_exclusive():

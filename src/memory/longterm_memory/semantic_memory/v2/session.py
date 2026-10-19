@@ -9,9 +9,10 @@ from .store import ConceptQuery, SemanticMemoryV2, executor_context, render_view
 
 
 class SemanticPlanningSession:
-    def __init__(self, memory: SemanticMemoryV2, *, default_intent: str = ""):
+    def __init__(self, memory: SemanticMemoryV2, *, default_intent: str = "", goal_intent: str = ""):
         self.memory = memory
         self.default_intent = default_intent
+        self.goal_intent = goal_intent
         self.retrievals: list[dict] = []
 
     def vocabulary(self):
@@ -23,7 +24,7 @@ class SemanticPlanningSession:
     @staticmethod
     def queries(payload):
         example = 'memory_query: {known: [IP], wanted: [Login_Time], intent: "查询登录认证时间"}'
-        if not isinstance(payload, dict) or set(payload) - {"known", "wanted", "offset", "intent"} or "known" not in payload:
+        if not isinstance(payload, dict) or set(payload) - {"known", "wanted", "offset", "intent", "layer", "exclude_ids", "goal_id"} or "known" not in payload:
             raise ValueError("Use known/wanted/intent, not query/concepts. Example: " + example)
         result = {}
         for role in ("known", "wanted"):
@@ -42,6 +43,12 @@ class SemanticPlanningSession:
         if type(offset) is not int or not 0 <= offset <= 100:
             raise ValueError("offset must be an integer in 0..100")
         intent = payload.get("intent", "")
+        if payload.get("layer", "auto") not in {"auto", "procedural", "composed", "episodic", "semantic"}:
+            raise ValueError("memory_query.layer must be auto/procedural/composed/episodic/semantic")
+        if not isinstance(payload.get("exclude_ids", []), list) or any(not isinstance(x, str) for x in payload.get("exclude_ids", [])):
+            raise ValueError("exclude_ids must be a list of memory IDs")
+        if 'goal_id' in payload and (not isinstance(payload['goal_id'], str) or not re.fullmatch(r'G[1-9]\d*', payload['goal_id'])):
+            raise ValueError('goal_id must name an existing G node, such as G1')
         if not isinstance(intent, str) or len(intent) > 2000:
             raise ValueError("intent must be a short string (max 2000 characters)")
         return {**result, "offset": offset, "intent": intent}

@@ -106,7 +106,7 @@ def test_schema_probe_cannot_query_business_data():
 
 def test_retrieval_loop_has_a_budget():
     w = ExcytinBenchWorkflow(procedural_memory_enabled=False, llm=lambda s, u: yaml.safe_dump(QUERY))
-    with pytest.raises(ValueError, match="exceeded 5"):
+    with pytest.raises(ValueError, match="exhausting the memory planning budget"):
         w.start("Find sender")
     assert len(w.get_logging()["memory_retrievals"]) == 5
 
