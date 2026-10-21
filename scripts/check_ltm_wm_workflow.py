@@ -22,11 +22,24 @@ def audit(logging):
     final=trees[-1]
     nodes={n.node_id:n for n,_ in walk(final)}
     actions=[a for a in logging['action_history'] if a['action_type']=='query']
+    bootstrap_ids={e['node_id'] for e in logging.get('executions',[]) if e['node_id'].startswith('B')}
     for index,a in enumerate(actions):
+        if a['node_id'] in bootstrap_ids:
+            assert a['node_id'] not in nodes, 'Preparation must not be an ITT task'
+            continue
         task=nodes[a['node_id']]
         prior={v['node_id'] for v in actions[:index]}
         assert set(task.metadata['depends_on'])<=prior
-    runs=final.root_nodes[0].metadata['procedure_runs']
+    if bootstrap_ids:
+        assert not trees[0].root_nodes, 'Preparation must precede formal G/E construction'
+        formal=next((t for t in trees if t.root_nodes), None)
+        if formal:
+            assert not any(n.level==3 for n,_ in walk(formal)), 'Build G/E before creating T'
+        trace=logging.get('trace',[])
+        first_task=next((i for i,t in enumerate(trace) if t['event_type']=='action_issued'
+            and str(t.get('payload',{}).get('action',{}).get('node_id','')).startswith('T')),len(trace))
+        assert not any(t['event_type']=='answer_verified' for t in trace[:first_task]), 'Premature Verifier'
+    runs=final.root_nodes[0].metadata['procedure_runs'] if final.root_nodes else []
     return {'passed':True,'snapshot_count':len(trees),'entities':len([n for n in nodes.values() if n.level==2]),
         'tasks':[{'id':n.node_id,'state':n.status.value,'inputs':n.metadata['input_entity_ids'],
                  'depends_on':n.metadata['depends_on'],'outputs':n.metadata['output_entity_ids'],

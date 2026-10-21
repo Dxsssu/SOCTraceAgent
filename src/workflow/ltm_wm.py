@@ -23,13 +23,23 @@ class LTMWMController:
 
     def initialize(self,event,inputs):
         intent=self.retriever.identify(inputs['context'],inputs['question'])
+        self.preparation={'intent':intent,'inputs':inputs,'bootstrap_attempted':[]}
+        self.preparation_entities=[{**e,'id':f'E{i+1}'} for i,e in enumerate(intent['known'])]
+        self.preparation_records=[]
+        self.preparation_node=None
+        self.preparation_exhausted=False
+        return TracebackTaskTree(event_id=event.event_id,round_id=1,root_nodes=())
+
+    def build_tree(self,event_id):
+        """Create the formal G/E tree only after observed bootstrap evidence."""
+        intent=self.preparation['intent'];inputs=self.preparation['inputs']
         entities=tuple(TTTNode(node_id=f'E{i+1}',title=f"{e['concept']}: {e['value']}",level=2,status=S.OPEN,
-            metadata={'concept':e['concept'],'value':e['value'],'scope':event.event_id,
+            metadata={'concept':e['concept'],'value':e['value'],'scope':event_id,
                       'sources':[{'kind':'input','field':'question' if e['value'] in inputs['question'] else 'context','quote':e['value']}], 'identity_claim':'identifier_observed_only'})
             for i,e in enumerate(intent['known']))
         goal=TTTNode(node_id='G1',title=inputs['question'],level=1,status=S.OPEN,children=entities,
-            metadata={'ltm_wm':True,'intent':intent,'inputs':inputs,'procedure_runs':[], 'attempted':[], 'phase':'retrieval'})
-        tree=TracebackTaskTree(event_id=event.event_id,round_id=1,root_nodes=(goal,))
+            metadata={'ltm_wm':True,'intent':intent,'inputs':inputs,'procedure_runs':[], 'attempted':[], 'phase':'retrieval', 'bootstrap_completed':True, 'bootstrap_records':deepcopy(self.preparation_records)})
+        tree=TracebackTaskTree(event_id=event_id,round_id=1,root_nodes=(goal,))
         self.validate(tree)
         return tree
 
@@ -79,32 +89,58 @@ class LTMWMController:
         return self.validate(tree)
 
     def _bootstrap(self, tree):
-        goal=tree.root_nodes[0];meta=deepcopy(goal.metadata)
-        if meta.get('bootstrap_exhausted'):
-            return replace(tree,next_task_id=None)
-        chosen,decision=choose_event(self,tree)
+        if self.preparation_node or self.preparation_exhausted:
+            return tree
+        chosen,decision=choose_event(self,meta=self.preparation,known=self.preparation_entities)
         self.retrievals.append({'version':tree.version,'layer':'BOOTSTRAP','decision':decision,'selected':chosen})
         if not chosen:
-            meta['bootstrap_exhausted']=True
-            meta['phase']='blocked_no_event_match'
-            return replace(change_node(tree,goal.node_id,metadata=meta),next_task_id=None)
-        title=chosen['event_title']
-        eid=self.allocate(tree,'E')
-        anchor=TTTNode(node_id=eid,title=f'候选告警: {title}',level=2,status=S.OPEN,
-            metadata={'concept':'SecurityAlert_Title','value':title,'scope':tree.event_id,
-                'sources':[{'kind':'log_metadata','field':'AlertTitle','value':title}],
-                'identity_claim':'event_candidate_not_confirmed'})
-        meta.setdefault('bootstrap_attempted',[]).append(title)
-        meta['phase']='bootstrap'
-        tree=change_node(tree,goal.node_id,metadata=meta,children=(*goal.children,anchor))
-        episode={'id':'event_bootstrap','signature':{'known':'SecurityAlert_Title','wanted':'*'}}
-        tree=self._task(tree,episode,title,[eid],layer='BOOTSTRAP')
-        task=next(n for n,_ in walk(tree) if n.node_id==tree.next_task_id)
-        return change_node(tree,task.node_id,title=f'根据事件描述定位告警 {title}，提取首批实体并核对关联',
-            metadata={**task.metadata,'output_concepts':chosen['concepts']})
+            self.preparation_exhausted=True
+            return tree
+        self.preparation['bootstrap_attempted'].append(chosen['event_title'])
+        # B identifiers belong to preparation actions, never to the ITT.
+        self.preparation_node=TTTNode(node_id=f"B{len(self.preparation['bootstrap_attempted'])}",
+            title=f"定位候选告警 {chosen['event_title']} 并提取实体",level=0,status=S.TODO,
+            metadata={'ltm_task':True,'layer':'BOOTSTRAP','event_title':chosen['event_title'],
+                'output_concepts':chosen['concepts'],'anchor_entity_ids':chosen.get('anchor_entity_ids',[])})
+        return tree
+
+    def accept_preparation(self,tree,node,execution,raw_observation):
+        records=json.loads(raw_observation) if execution.query_success else []
+        if not isinstance(records,list):raise ValueError('Expected structured SQL records')
+        for row in records:
+            if not {'value','AlertId','SourceRowHash','matched_input','EntityIndex','Concept'}<=row.keys():
+                raise ValueError('Missing evidence lineage')
+            if row.get('AlertTitle')!=node.metadata['event_title'] or row['matched_input']!=node.metadata['event_title']:
+                raise ValueError('Output event mismatch')
+            if row['Concept'] not in node.metadata['output_concepts']:
+                raise ValueError('Unexpected bootstrap entity concept')
+        self.preparation_records.append(execution.to_dict())
+        self.preparation_node=None
+        if not records:return tree
+        tree=self.build_tree(tree.event_id)
+        for row in records:
+            concept=row['Concept'];value=str(row['value'])
+            source={'kind':'bootstrap_query','execution_id':execution.execution_id,
+                'alert_id':row['AlertId'],'alert_title':row['AlertTitle'],
+                'source_row_hash':row['SourceRowHash'],'entity_index':row['EntityIndex']}
+            existing=next((n for n,_ in walk(tree) if n.level==2 and n.metadata['concept']==concept and n.metadata['value']==value),None)
+            if existing:
+                sources=existing.metadata['sources']
+                tree=change_node(tree,existing.node_id,metadata={**existing.metadata,
+                    'sources':sources if source in sources else sources+[source]},
+                    evidence_refs=tuple(dict.fromkeys((*existing.evidence_refs,execution.execution_id))))
+            else:
+                goal=tree.root_nodes[0]
+                entity=TTTNode(node_id=self.allocate(tree,'E'),title=f'{concept}: {value}',level=2,status=S.OPEN,
+                    evidence_refs=(execution.execution_id,),metadata={'concept':concept,'value':value,
+                        'scope':tree.event_id,'sources':[source],'identity_claim':'identifier_observed_only',
+                        'raw_components':row.get('RawComponents')})
+                tree=change_node(tree,goal.node_id,children=(*goal.children,entity))
+        return self.validate(tree)
 
     def plan(self,tree):
         self.validate(tree)
+        if not tree.root_nodes:return self._bootstrap(tree)
         if tree.next_task_id:
             n=next(n for n,_ in walk(tree) if n.node_id==tree.next_task_id)
             if n.status==S.TODO:return tree
@@ -126,7 +162,7 @@ class LTMWMController:
             return change_node(tree,goal.node_id,metadata=meta)
         tree=change_node(tree,goal.node_id,metadata=meta)
         entities=[e for e in self.entities(tree) if e['concept']!='SecurityAlert_Title']
-        if not entities:return self._bootstrap(tree)
+        if not entities:return replace(tree,next_task_id=None)
         before=getattr(self.backend,"query_count",0)
         titles,events=available_events(self.backend,entities)
         self.metadata_queries+=getattr(self.backend,"query_count",0)-before
@@ -171,17 +207,23 @@ class LTMWMController:
 
     def sql(self,tree,node):
         self.validate(tree)
-        entities={e['id']:e for e in self.entities(tree)}
+        entities={e['id']:e for e in (self.entities(tree) if tree.root_nodes else self.preparation_entities)}
         m=node.metadata
-        values=sorted({entities[e]['value'] for e in m['input_entity_ids']})
         if m['layer']=='BOOTSTRAP':
-            template=('SELECT DISTINCT AlertId,AlertTitle,ObservedAt,EntityIndex,Concept, '
-                'GraphValue AS value,RawComponents,Roles,SourceRowHash,AlertTitle AS matched_input '
-                'FROM LTMEntityEvidence WHERE AlertTitle=%s AND Concept IN ('+
-                ','.join(['%s']*len(m['output_concepts']))+') '
-                'ORDER BY AlertId,SourceRowHash,EntityIndex,Concept,GraphValue')
+            template=('SELECT DISTINCT o.AlertId,o.AlertTitle,o.ObservedAt,o.EntityIndex,o.Concept, '
+                'o.GraphValue AS value,o.RawComponents,o.Roles,o.SourceRowHash,o.AlertTitle AS matched_input '
+                'FROM LTMEntityEvidence o WHERE o.AlertTitle=%s AND o.Concept IN ('+
+                ','.join(['%s']*len(m['output_concepts']))+')')
             params=(m['event_title'],*m['output_concepts'])
+            anchors=[entities[eid] for eid in m.get('anchor_entity_ids',[])]
+            if anchors:
+                template += (' AND EXISTS (SELECT 1 FROM LTMInputEvidence a '
+                    'WHERE a.SourceRowHash=o.SourceRowHash AND ('+
+                    ' OR '.join('(a.Concept=%s AND a.GraphValue=%s)' for _ in anchors)+'))')
+                params += tuple(v for e in anchors for v in (e['concept'],e['value']))
+            template += ' ORDER BY o.AlertId,o.SourceRowHash,o.EntityIndex,o.Concept,o.GraphValue'
         else:
+            values=sorted({entities[e]['value'] for e in m['input_entity_ids']})
             episode=new_episode(m['known'],m['wanted']) if m['layer']=='SM' else self.retriever.bundle.em[m['episode_id']]
             template=episode['sql'].rsplit('LIMIT 501',1)[0]
             template=template.replace(':event_title','%s').replace(':input_values',','.join(['%s']*len(values)))
@@ -209,9 +251,6 @@ class LTMWMController:
             if row['matched_input'] not in inputs:raise ValueError('Output has unrelated input')
             if row.get('AlertTitle')!=node.metadata['event_title']:raise ValueError('Output event mismatch')
             concept=node.metadata['wanted']
-            if node.metadata['layer']=='BOOTSTRAP':
-                concept=row.get('Concept')
-                if concept not in node.metadata['output_concepts']:raise ValueError('Unexpected bootstrap entity concept')
             value=str(row['value'])
             source={'kind':'query','task_id':node.node_id,'execution_id':execution.execution_id,
                 'alert_id':row['AlertId'],'source_row_hash':row['SourceRowHash'],'entity_index':row['EntityIndex'],
@@ -247,6 +286,10 @@ class LTMWMController:
         return replace(tree,next_task_id=None)
 
     def stop(self,tree,reason):
+        if not tree.root_nodes:
+            self.preparation_exhausted=True
+            self.preparation_node=None
+            return tree
         goal=tree.root_nodes[0];meta=deepcopy(goal.metadata)
         meta['phase']=reason
         for run in meta['procedure_runs']:

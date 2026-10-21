@@ -331,11 +331,12 @@ class ExcytinBenchWorkflow:
             "workflow_started",
             {"event_id": event.event_id, "round_id": ttt.round_id},
         )
-        self._record_trace("ttt_planned", {"ttt": ttt.to_dict()})
+        self._record_trace("bootstrap_preparing" if self.memory_controller else "ttt_planned", {"ttt": ttt.to_dict()})
         if self.memory_controller:
             self.state.ttt=self.memory_controller.plan(ttt)
             self.state.ttt_history.append(self.state.ttt.to_dict())
-            self._record_trace("ltm_tasks_materialized", {"ttt":self.state.ttt.to_dict()})
+            self._record_trace("bootstrap_candidate_selected", {"preparation_id":
+                self.memory_controller.preparation_node.node_id if self.memory_controller.preparation_node else None})
         return self.state.ttt
 
     def act(
@@ -396,6 +397,21 @@ class ExcytinBenchWorkflow:
             original_observation_chars=len(raw_observation),
         )
         state.executions.append(execution)
+        if self.memory_controller and node.metadata.get('layer') == 'BOOTSTRAP':
+            state.pending_action = None
+            state.pending_node = None
+            self._record_trace("bootstrap_observation_received", {"execution": execution.to_dict()})
+            state.ttt = self.memory_controller.accept_preparation(state.ttt,node,execution,raw_observation)
+            if state.ttt.root_nodes:
+                state.ttt_history.append(state.ttt.to_dict())
+                self._record_trace("itt_initialized_after_bootstrap", {"ttt":state.ttt.to_dict()})
+            # Retrieval happens before any Verifier call, including when the
+            # initial evidence already contains a plausible answer.
+            if state.actions_issued < self.max_steps - 1:
+                state.ttt = self.memory_controller.plan(state.ttt)
+                state.ttt_history.append(state.ttt.to_dict())
+                self._record_trace("ltm_tasks_materialized", {"ttt":state.ttt.to_dict()})
+            return execution
         current = self._find_node(state.ttt, node.node_id)
         code, result, _ = execution_fields(state.executions, node.node_id)
         state.ttt = change_node(state.ttt, node.node_id,
@@ -522,6 +538,19 @@ class ExcytinBenchWorkflow:
         node = self._next_todo_leaf(state.ttt)
         if should_submit:
             return self._issue_submit()
+        if self.memory_controller and not state.ttt.root_nodes:
+            state.ttt=self.memory_controller.plan(state.ttt)
+            prep=self.memory_controller.preparation_node
+            if prep is None:return self._issue_submit()
+            sql=self._generate_sql(prep)
+            action=BenchmarkAction(action_type=BenchmarkActionType.QUERY,content=sql,
+                step_no=state.actions_issued+1,node_id=prep.node_id)
+            state.actions_issued+=1
+            state.pending_action=action
+            state.pending_node=prep
+            state.action_history.append(action.to_dict())
+            self._record_trace("bootstrap_action_issued", {"action":action.to_dict()})
+            return action
         if node is None and self.memory_controller:
             state.ttt=self.memory_controller.plan(state.ttt)
             state.ttt_history.append(state.ttt.to_dict())

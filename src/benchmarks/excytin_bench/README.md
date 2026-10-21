@@ -2,7 +2,7 @@
 
 ## 新 LTM + WM 入口
 
-本地 runner 命令行现在默认启用 `--ltm`：先建 G/E，检索 PM → EM → SM，再按实际证据逐步建立 T 并执行依赖。Reviewer/Verifier 仍使用现有循环。用 `--no-ltm` 运行下面描述的基线。Python API 需显式 `ltm_enabled=True`；远端 SecGym Agent 和通用后台服务仍需单独适配。
+本地 runner 命令行默认启用 `--ltm`：先从输入提取临时意图和线索，无论 known 是否为空，都先结合事件描述与已知实体定位候选告警、查询首批实体；查询得到实体后，才正式建立 G/E（合并输入实体和查询实体，保存来源），随后优先检索 PM → EM → SM。告警定位是独立的 B 准备动作，不是 ITT 的 T 节点，计入 SQL 预算；此阶段不调用 Reviewer/Verifier，也不能直接提交候选答案。定位为空或失败时尝试其他未查告警，不能绕过定位直接检索 PM。定位查询使用真实标题及同一 SourceRowHash 的 EXISTS 条件；多个已知实体按任一匹配召回，不意味着同时共现。正式任务开始后，按实际证据逐步建立 T 并执行依赖；每个 T 执行后 Reviewer 总结、更新 ITT，再由 Verifier 判断是否结束。用 `--no-ltm` 运行基线。Python API 需显式 `ltm_enabled=True`；远端 SecGym Agent 和通用后台服务仍需单独适配。
 
 详见 [集成说明](../../../docs/ltm_wm_integration.md)；训练题验证命令为 `.venv/bin/python -m scripts.check_ltm_wm_workflow`。
 

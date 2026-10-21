@@ -22,8 +22,11 @@ def controller(monkeypatch):
     return LTMWMController(SimpleNamespace(),lambda **kw:'{}',retriever=r)
 
 
-def initial(controller):
-    return controller.initialize(Event(event_id='case',event_name='test',message='q',source='test'),{'context':'url-a','question':'q'})
+def initial(controller, located=False):
+    tree=controller.initialize(Event(event_id='case',event_name='test',message='q',source='test'),{'context':'url-a','question':'q'})
+    if located:
+        tree=controller.build_tree(tree.event_id)
+    return tree
 
 
 def output(controller,tree,value):
@@ -37,13 +40,13 @@ def output(controller,tree,value):
 
 def test_initial_has_only_grounded_ge(controller):
     tree=initial(controller)
-    assert [n.level for n,_ in walk(tree)]==[1,2]
+    assert tree.root_nodes==()
     assert tree.next_task_id is None
-    assert tree.root_nodes[0].metadata['procedure_runs']==[]
+    assert controller.preparation_entities[0]['value']=='url-a'
 
 
 def test_full_pm_materializes_only_after_observation(controller):
-    start=initial(controller)
+    start=initial(controller, located=True)
     first=controller.plan(start)
     assert len([n for n,_ in walk(first) if n.level==3])==1
     assert len(controller.entities(first))==1
@@ -63,7 +66,7 @@ def test_full_pm_materializes_only_after_observation(controller):
 
 
 def test_reject_unobserved_dependency(controller):
-    tree=controller.plan(output(controller,controller.plan(initial(controller)),'sid'))
+    tree=controller.plan(output(controller,controller.plan(initial(controller, located=True)),'sid'))
     task=next(n for n,_ in walk(tree) if n.node_id=='T2')
     invalid=change_node(tree,'T2',metadata={**task.metadata,'input_entity_ids':['E1']})
     with pytest.raises(ValueError):controller.validate(invalid)
@@ -71,7 +74,7 @@ def test_reject_unobserved_dependency(controller):
 
 def test_empty_or_failed_step_cannot_spawn_next(controller):
     for status in (S.DONE,S.BLOCKED):
-        tree=controller.plan(initial(controller))
+        tree=controller.plan(initial(controller, located=True))
         tree=change_node(tree,'T1',status=status)
         after=controller.plan(tree)
         assert len([n for n,_ in walk(after) if n.level==3])==1
@@ -79,7 +82,7 @@ def test_empty_or_failed_step_cannot_spawn_next(controller):
 
 
 def test_observation_wrong_event_rejected_atomically(controller):
-    tree=controller.plan(initial(controller));node=next(n for n,_ in walk(tree) if n.node_id=='T1')
+    tree=controller.plan(initial(controller, located=True));node=next(n for n,_ in walk(tree) if n.node_id=='T1')
     row={'value':'sid','AlertId':'a','AlertTitle':'wrong','EntityIndex':0,'SourceRowHash':'s','matched_input':'url-a'}
     with pytest.raises(ValueError,match='event mismatch'):
         controller.observe(tree,node,SimpleNamespace(query_success=True,execution_id='x'),json.dumps([row]))
@@ -90,7 +93,7 @@ def test_sql_driver_quoting_handles_bytearray(controller):
     from mysql.connector.conversion import MySQLConverter
     from src.benchmarks.excytin_bench.workflow import ReadOnlySQLValidator
     controller.backend=SimpleNamespace(db=SimpleNamespace(connection=SimpleNamespace(converter=MySQLConverter(),sql_mode='')))
-    tree=controller.plan(initial(controller));task=next(n for n,_ in walk(tree) if n.node_id=='T1')
+    tree=controller.plan(initial(controller, located=True));task=next(n for n,_ in walk(tree) if n.node_id=='T1')
     sql=controller.sql(tree,task)
     assert 'bytearray' not in sql
     assert "'url-a'" in sql
@@ -98,7 +101,7 @@ def test_sql_driver_quoting_handles_bytearray(controller):
 
 
 def test_budget_stop_does_not_leave_active_procedure(controller):
-    tree=controller.plan(initial(controller))
+    tree=controller.plan(initial(controller, located=True))
     stopped=controller.stop(tree,'budget_exhausted')
     assert stopped.next_task_id is None
     assert stopped.root_nodes[0].metadata['procedure_runs'][0]['status']=='paused_budget_exhausted'
@@ -110,7 +113,7 @@ def bootstrap_controller(controller):
     controller.retriever.identify=lambda *a:{'known':[], 'wanted':{'concept':'URL'},
         'constraints':[], 'retrieval_query':'blocked C2'}
     class Cursor:
-        def execute(self, sql): self.sql=sql
+        def execute(self, sql, params=None): self.sql=sql; self.params=params
         def fetchall(self): return [("C2 ' alert",'URL'),("C2 ' alert",'Host_Name')]
     controller.backend=SimpleNamespace(query_count=0,db=SimpleNamespace(cursor=Cursor(),
         connection=SimpleNamespace(converter=MySQLConverter(),sql_mode='')))
@@ -118,55 +121,110 @@ def bootstrap_controller(controller):
     return controller
 
 
-def test_empty_known_bootstraps_observed_entities_then_pm(controller):
-    from src.benchmarks.excytin_bench.workflow import ReadOnlySQLValidator
-    controller=bootstrap_controller(controller)
-    start=initial(controller)
-    assert controller.entities(start)==[]
-    tree=controller.plan(start)
-    node=next(n for n,_ in walk(tree) if n.level==3)
-    assert node.metadata['layer']=='BOOTSTRAP'
-    assert node.metadata['output_entity_ids']==[]
-    assert controller.entities(tree)[0]['concept']=='SecurityAlert_Title'
-    sql=controller.sql(tree,node)
-    ReadOnlySQLValidator.validate(sql)
-    assert "Concept IN ('URL')" in sql
-    row={'value':'url-a','Concept':'URL','AlertId':'a','AlertTitle':"C2 ' alert",
+
+def prep_observe(controller, tree, rows, success=True):
+    node=controller.preparation_node
+    execution=SimpleNamespace(query_success=success,execution_id='exec-'+node.node_id,
+        to_dict=lambda:{'node_id':node.node_id,'query_success':success})
+    return controller.accept_preparation(tree,node,execution,json.dumps(rows))
+
+
+def prep_row(value='url-a'):
+    return {'value':value,'Concept':'URL','AlertId':'a','AlertTitle':"C2 ' alert",
         'SourceRowHash':'s','EntityIndex':0,'matched_input':"C2 ' alert"}
-    tree=controller.observe(tree,node,SimpleNamespace(query_success=True,execution_id='exec'),json.dumps([row]))
-    entity=next(e for e in controller.entities(tree) if e['concept']=='URL')
-    assert entity['value']=='url-a'
-    next_tree=controller.plan(tree)
-    task=next(n for n,_ in walk(next_tree) if n.node_id==next_tree.next_task_id)
-    assert task.metadata['layer']=='PM'
-    assert task.metadata['input_entity_ids']==[entity['id']]
-    assert [r['layer'] for r in controller.retrievals]==['BOOTSTRAP','PM']
 
 
-def test_bootstrap_rejects_invented_title(controller):
+def test_prepare_before_ge_then_pm(controller):
     controller=bootstrap_controller(controller)
-    controller.retriever.ask=lambda *a:{'decision':'match','event_title':'invented','output_concepts':['URL']}
-    with pytest.raises(ValueError,match='observed title'):controller.plan(initial(controller))
-
-
-def test_empty_bootstrap_does_not_invent_entities_or_repeat(controller):
-    controller=bootstrap_controller(controller)
-    tree=controller.plan(initial(controller));node=next(n for n,_ in walk(tree) if n.level==3)
-    tree=controller.observe(tree,node,SimpleNamespace(query_success=True,execution_id='exec'),'[]')
-    tree=controller.plan(tree)
-    assert tree.next_task_id is None
-    assert all(e['concept']=='SecurityAlert_Title' for e in controller.entities(tree))
-    assert len([n for n,_ in walk(tree) if n.level==3])==1
-
-
-def test_bootstrap_repairs_invalid_selection_once(controller):
-    controller=bootstrap_controller(controller)
-    requests=[]
-    def ask(prompt,payload):
-        requests.append(payload)
-        return {'decision':'match','event_title':"C2 ' alert",
-                'output_concepts':['URL']*4 if len(requests)==1 else ['URL']}
-    controller.retriever.ask=ask
     tree=controller.plan(initial(controller))
-    assert tree.next_task_id=='T1'
-    assert len(requests)==2 and requests[1]['error']['previous_response']['output_concepts']==['URL']*4
+    assert not tree.root_nodes
+    assert controller.preparation_node.node_id=='B1'
+    from src.benchmarks.excytin_bench.workflow import ReadOnlySQLValidator
+    ReadOnlySQLValidator.validate(controller.sql(tree,controller.preparation_node))
+    tree=prep_observe(controller,tree,[prep_row()])
+    assert [n.level for n,_ in walk(tree)]==[1,2]
+    assert controller.entities(tree)[0]['value']=='url-a'
+    tree=controller.plan(tree)
+    assert [r['layer'] for r in controller.retrievals]==['BOOTSTRAP','PM']
+    assert next(n for n,_ in walk(tree) if n.level==3).node_id=='T1'
+
+
+@pytest.mark.parametrize('success', [True,False])
+def test_empty_or_failed_preparation_never_builds_tree(controller,success):
+    controller=bootstrap_controller(controller)
+    tree=controller.plan(initial(controller))
+    tree=prep_observe(controller,tree,[],success)
+    assert not tree.root_nodes
+    controller.plan(tree)
+    assert controller.preparation_exhausted
+    assert controller.preparation_node is None
+    assert not controller.stop(tree,'no_match').root_nodes
+
+
+def known_bootstrap(controller):
+    controller=bootstrap_controller(controller)
+    controller.retriever.identify=lambda *a:{'known':[{'concept':'URL','value':'url-a'}],
+        'wanted':{'concept':'URL'},'constraints':[],'retrieval_query':'q'}
+    cursor=controller.backend.db.cursor
+    cursor.fetchall=lambda: [("C2 ' alert",)] if cursor.params else [("C2 ' alert",'URL')]
+    return controller
+
+
+def test_known_and_discovered_entities_merged_with_sources(controller):
+    controller=known_bootstrap(controller)
+    controller.retriever.ask=lambda *a:{'decision':'match','event_title':"C2 ' alert",
+        'output_concepts':['URL'],'anchor_entity_ids':['E1']}
+    tree=controller.plan(initial(controller))
+    assert not tree.root_nodes
+    sql=controller.sql(tree,controller.preparation_node)
+    assert 'a.SourceRowHash=o.SourceRowHash' in sql and "a.GraphValue='url-a'" in sql
+    tree=prep_observe(controller,tree,[prep_row(),prep_row(),prep_row('url-b')])
+    assert len(controller.entities(tree))==2
+    e=next(n for n,_ in walk(tree) if n.node_id=='E1')
+    assert [x['kind'] for x in e.metadata['sources']]==['input','bootstrap_query']
+
+
+@pytest.mark.parametrize('anchors', [[], ['E99']])
+def test_bootstrap_requires_observed_anchor_when_available(controller,anchors):
+    controller=known_bootstrap(controller)
+    controller.retriever.ask=lambda *a:{'decision':'match','event_title':"C2 ' alert",
+        'output_concepts':['URL'],'anchor_entity_ids':anchors}
+    with pytest.raises(ValueError,match='anchor_entity_ids'):controller.plan(initial(controller))
+
+
+def test_preparation_rejects_wrong_event(controller):
+    controller=bootstrap_controller(controller);tree=controller.plan(initial(controller))
+    row=prep_row();row['AlertTitle']='wrong'
+    with pytest.raises(ValueError,match='event mismatch'):prep_observe(controller,tree,[row])
+    assert not tree.root_nodes
+
+
+def test_workflow_bootstrap_bypasses_verifier_and_counts_budget(controller):
+    from src.benchmarks.excytin_bench.workflow import ExcytinBenchWorkflow
+    controller=bootstrap_controller(controller)
+    w=ExcytinBenchWorkflow(max_steps=3,llm=lambda *a:pytest.fail('No Reviewer/Verifier during preparation'))
+    w.memory_controller=controller
+    tree=w.start({'context':'url-a','question':'q'})
+    assert not tree.root_nodes
+    a=w.propose_next_action();assert a.node_id=='B1'
+    w.accept_observation(json.dumps([prep_row()]),query_success=True)
+    assert w.state.actions_issued==1 and not w.state.verifications
+    assert [r['layer'] for r in controller.retrievals]==['BOOTSTRAP','PM']
+    assert w.state.ttt.next_task_id=='T1'
+    assert w.propose_next_action().node_id=='T1'
+    from scripts.check_ltm_wm_workflow import audit
+    assert audit(w.get_logging())['passed']
+    from src.schema.itt import itt_payload
+    assert itt_payload(w.state.ttt)[0]['children'][0]['bootstrap_evidence'][0]['alert_id']=='a'
+
+
+def test_budget_exhausted_after_bootstrap_does_not_verify(controller):
+    from src.benchmarks.excytin_bench.workflow import ExcytinBenchWorkflow
+    controller=bootstrap_controller(controller)
+    w=ExcytinBenchWorkflow(max_steps=2,llm=lambda *a:pytest.fail('No premature verification'))
+    w.memory_controller=controller
+    w.start({'context':'url-a','question':'q'});w.propose_next_action()
+    w.accept_observation(json.dumps([prep_row()]),query_success=True)
+    assert not w.state.verifications
+    assert w.propose_next_action().submit
+    assert w.state.actions_issued==2

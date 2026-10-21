@@ -59,6 +59,9 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
         if n.level==2 and 'concept' in n.metadata:
             out.update(concept=n.metadata['concept'], value=n.metadata['value'],
                        identity_claim=n.metadata.get('identity_claim'))
+            bootstrap_sources=[s for s in n.metadata.get('sources',[]) if s.get('kind')=='bootstrap_query']
+            if bootstrap_sources:
+                out['bootstrap_evidence']=deepcopy(bootstrap_sources)
         if n.metadata.get('ltm_task'):
             out.update(input_entity_ids=list(n.metadata['input_entity_ids']),
                        depends_on=list(n.metadata['depends_on']),
