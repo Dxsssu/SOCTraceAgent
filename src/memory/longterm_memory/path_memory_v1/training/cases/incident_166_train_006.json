@@ -1,0 +1,275 @@
+{
+  "id": "incident_166_train_006",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_166_qa_incident_o1-ga_c42.json",
+  "index": 6,
+  "sha256": "57a4491e11e42986ad61360378ea3d1c5b0f1058426bcfb455e8959bb64b3cda",
+  "split": "train",
+  "question_record": {
+    "context": "A password spray attack was detected originating from IP address `95.202.65.202`. This attack is part of a broader security incident. A password spray attack is often used to attempt a large number of passwords against a list of usernames to identify valid credential combinations. It was connected to a suspicious SAP authentication event where a user account with a risky sign-in alert in Microsoft Entra ID signed in to SAP. This user account may have been compromised to search through sensitive SAP financial information.",
+    "question": "Can you identify the name of the user account involved in the suspicious SAP authentication?",
+    "answer": "Jordan P",
+    "solution": [
+      "A password spray attack was detected for the Azure Active Directory user with AadUserId `89e933b9-5b2e-4bd6-bcdf-033db707ef82`.",
+      "A suspicious SAP authentication was detected for the user account named `Jordan P`."
+    ],
+    "start_alert": 28,
+    "end_alert": 26,
+    "start_entities": [
+      2
+    ],
+    "end_entities": [
+      6
+    ],
+    "shortest_alert_path": [
+      28,
+      1,
+      26
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_166.graphml",
+  "graph_sha256": "0b5a949fa824acc0369e8da5a8a612b8987a900571001c1d3ac0ce9581522b24",
+  "path": [
+    "28",
+    "1",
+    "26"
+  ],
+  "nodes": {
+    "2": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "95.202.65.202"
+    },
+    "28": {
+      "type": "alert",
+      "name": "Password Spray",
+      "description": "Password spray attack detected"
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+    },
+    "26": {
+      "type": "alert",
+      "name": "Suspicious SAP authentication",
+      "description": "A user account with a risky sign-in alert in Microsoft Entra ID signed in to SAP, the enterprise application software. An attacker might have taken control of a user account to search through SAP with the intention of recording or modifying sensitive financial information. The gathered information might be used for later stages in the attack, such as phishing or social engineering. This alert was triggered based on a Microsoft Entra ID alert."
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "Jordan P"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "2",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_010bda10c4d81d2f",
+  "merged_ems": [
+    "em_f6a369032e873e00",
+    "em_2c021427290dc77e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3854e06e-bf97-e883-1ac6-530bbf641b74",
+              "time": "2024-07-23 14:23:51.925093+00:00",
+              "matched_inputs": [
+                "95.202.65.202"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "Jordan P"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Suspicious"
+              ],
+              "alert_id": "50fdb9b9-f2fa-a889-7001-b26630863595",
+              "time": "2024-07-22 12:59:26.126190+00:00",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Suspicious"
+              ],
+              "alert_id": "415ebb64-5814-9056-1965-579f7c069472",
+              "time": "2024-07-22 13:19:46.630275+00:00",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_586a8edfd3fd4fba",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_2c021427290dc77e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3854e06e-bf97-e883-1ac6-530bbf641b74",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3854e06e-bf97-e883-1ac6-530bbf641b74",
+              "time": "2024-07-23 14:23:51.925093+00:00",
+              "source_row_hash": "31f358120fd9c475067db49cdabc121ccaa8c00d35eaac160f7d910b58717491",
+              "matched_inputs": [
+                "95.202.65.202"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Password Spray",
+            "95.202.65.202"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_f6a369032e873e00",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "Jordan P"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "415ebb64-5814-9056-1965-579f7c069472",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "roles": [
+                "Suspicious"
+              ],
+              "entity_index": 0,
+              "alert_id": "415ebb64-5814-9056-1965-579f7c069472",
+              "time": "2024-07-22 13:19:46.630275+00:00",
+              "source_row_hash": "73696cb8efa04acb439f7b0a24eada617ed257225ab2f3e2860d90c40fdff1c3",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious SAP authentication",
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

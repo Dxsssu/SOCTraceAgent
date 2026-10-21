@@ -1,0 +1,1098 @@
+{
+  "id": "incident_39_train_096",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 96,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident occurred on 2024-07-04 involving the Mimikatz credential theft tool on a device. Mimikatz is known for harvesting plaintext passwords, password hashes, smartcard PINs, and Kerberos tickets. An attacker might be trying to harvest credentials to log into this or other devices on the network by impersonating a valid user. The detected Mimikatz command lines indicate activities such as dumping logon passwords and Kerberos tickets. Multiple processes involving Mimikatz were identified during this time.",
+    "question": "What is the user account name associated with the malicious credential theft tool execution detected at this time of the incident?",
+    "answer": "tgs2z",
+    "solution": [
+      "The Mimikatz credential theft tool was detected being used on a device, potentially by the user with SID `S-5-7-21-1843151660-3234030288-105586167-1422`.",
+      "A malicious credential theft tool execution was detected, involving the account named `tgs2z`."
+    ],
+    "start_alert": 108,
+    "end_alert": 39,
+    "start_entities": [
+      30,
+      37,
+      45,
+      64,
+      67,
+      68,
+      71
+    ],
+    "end_entities": [
+      27
+    ],
+    "shortest_alert_path": [
+      108,
+      28,
+      39
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "108",
+    "28",
+    "39"
+  ],
+  "nodes": {
+    "30": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+    },
+    "37": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "get-krbticket.ps1"
+    },
+    "45": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+    },
+    "64": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "mimikatz.exe"
+    },
+    "67": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+    },
+    "68": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit"
+    },
+    "71": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+    },
+    "108": {
+      "type": "alert",
+      "name": "Mimikatz credential theft tool",
+      "description": "The Mimikatz hacktool was detected on this device. Mimikatz is a credential theft tool that can harvest plaintext passwords, password hashes, smartcard PINs, and Kerberos tickets.  An attacker might be trying to harvest credentials to log into this or other devices on the network, by impersonating a valid user.\n\nFor more information, read the Mimikatz tool profile Threat Analytics report: https://security.microsoft.com/threatanalytics3/51db19ab-081f-46f3-9fe1-3f5e5d2f8ee0/analystreport? and read the Actor profile: Storm-0875 Threat Analytics report https://security.microsoft.com/threatanalytics3/4f60801d-912e-4bcb-91b2-f46879c8a718/analystreport\n"
+    },
+    "28": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-5-7-21-1843151660-3234030288-105586167-1422"
+    },
+    "39": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "27": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "tgs2z"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "30",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "37",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "45",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "64",
+        "concept": "File_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "67",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "68",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "71",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_b31b4a4925b4b010",
+  "merged_ems": [
+    "em_32376af8807e88b2",
+    "em_80588a18683b0c38",
+    "em_b30f58cf03511b0b",
+    "em_9339ee7c75ce2525"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "28",
+          "expected_present": true,
+          "values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 7,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "532a5162-7573-5642-fd2a-baddc2ed1360",
+              "time": "2024-07-04 22:35:02.584465+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "28",
+          "expected_present": true,
+          "values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 7,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "532a5162-7573-5642-fd2a-baddc2ed1360",
+              "time": "2024-07-04 22:35:02.584465+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "28",
+          "expected_present": true,
+          "values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+                "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+                "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 7,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "532a5162-7573-5642-fd2a-baddc2ed1360",
+              "time": "2024-07-04 22:35:02.584465+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_f6caa37a2b504d9a",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-23 22:34:45.720003+00:00",
+              "source_row_hash": "18697c72083e6898762e956714003ba7ae6d10125f42c5f5bcd4b38e47715101",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-25 22:35:08.183057+00:00",
+              "source_row_hash": "18975f7e28028c0bebb1ade1ec7bdb36681f5999e0f28c761894f534624cadd9",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Mimikatz credential theft tool",
+            "get-krbticket.ps1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_80588a18683b0c38",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-20 22:34:24.508696+00:00",
+              "source_row_hash": "022a413fc9558403410f7c32045a0222f3ee897714324e6023bbd10a60f37962",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-21 22:34:52.541123+00:00",
+              "source_row_hash": "0392d2e40822ef651430fc76c4933a2c93ad6f8aa00bfb4f0402b0e05c6e8b53",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-17 22:34:53.952691+00:00",
+              "source_row_hash": "09d41ff431b6196de7ef6f4ce3288c8e02de3f5ef863d2ec3e7b9ac86d915e77",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_f6caa37a2b504d9a",
+      "seed_concept": "File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_32376af8807e88b2",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-23 22:34:45.720003+00:00",
+              "source_row_hash": "18697c72083e6898762e956714003ba7ae6d10125f42c5f5bcd4b38e47715101",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-25 22:35:08.183057+00:00",
+              "source_row_hash": "18975f7e28028c0bebb1ade1ec7bdb36681f5999e0f28c761894f534624cadd9",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Mimikatz credential theft tool",
+            "mimikatz.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_80588a18683b0c38",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-20 22:34:24.508696+00:00",
+              "source_row_hash": "022a413fc9558403410f7c32045a0222f3ee897714324e6023bbd10a60f37962",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-21 22:34:52.541123+00:00",
+              "source_row_hash": "0392d2e40822ef651430fc76c4933a2c93ad6f8aa00bfb4f0402b0e05c6e8b53",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-17 22:34:53.952691+00:00",
+              "source_row_hash": "09d41ff431b6196de7ef6f4ce3288c8e02de3f5ef863d2ec3e7b9ac86d915e77",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_f6caa37a2b504d9a",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b30f58cf03511b0b",
+          "status": "ok",
+          "candidate_count": 135,
+          "unique_values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              ]
+            }
+          ],
+          "witness_count": 135,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Mimikatz credential theft tool",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_80588a18683b0c38",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-20 22:34:24.508696+00:00",
+              "source_row_hash": "022a413fc9558403410f7c32045a0222f3ee897714324e6023bbd10a60f37962",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-21 22:34:52.541123+00:00",
+              "source_row_hash": "0392d2e40822ef651430fc76c4933a2c93ad6f8aa00bfb4f0402b0e05c6e8b53",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-17 22:34:53.952691+00:00",
+              "source_row_hash": "09d41ff431b6196de7ef6f4ce3288c8e02de3f5ef863d2ec3e7b9ac86d915e77",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 28 (char 27)",
+          "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f"
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 28 (char 27)",
+          "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 28 (char 27)",
+          "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

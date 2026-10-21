@@ -1,0 +1,174 @@
+{
+  "id": "incident_134_train_003",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_134_qa_incident_o1-ga_c42.json",
+  "index": 3,
+  "sha256": "fb25bc9fca4ac7162ab9ff66e35d58a38d1dcbc5e202cfdf258cde432ac8cfaf",
+  "split": "train",
+  "question_record": {
+    "context": "An alert was triggered for a sign-in from an anonymous IP address (e.g. Tor browser, anonymizer VPNs) with IP address `170.54.121.63`. This may indicate a potential security risk or unauthorized access attempt.",
+    "question": "Can you identify the AAD user ID associated with the suspicious sign-in from the anonymous IP address `170.54.121.63`?",
+    "answer": "e036dee7-fa23-42ef-a019-468c8d3401f1",
+    "solution": [
+      "There was a sign-in from an anonymous IP address by the user with AadUserId `e036dee7-fa23-42ef-a019-468c8d3401f1`."
+    ],
+    "start_alert": 11,
+    "end_alert": 11,
+    "start_entities": [
+      12
+    ],
+    "end_entities": [
+      9
+    ],
+    "shortest_alert_path": [
+      11
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_134.graphml",
+  "graph_sha256": "da229e7e70f31eb1dbeed6055254663d68ac2b35504dc243bab8d40cdb0e83ac",
+  "path": [
+    "11"
+  ],
+  "nodes": {
+    "12": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "170.54.121.63"
+    },
+    "11": {
+      "type": "alert",
+      "name": "Anonymous IP address",
+      "description": "Sign-in from an anonymous IP address (e.g. Tor browser, anonymizer VPNs)"
+    },
+    "9": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "e036dee7-fa23-42ef-a019-468c8d3401f1"
+    }
+  },
+  "interpretation": {
+    "alerts": 1,
+    "sql_steps_per_variant": 1,
+    "start_alternatives": [
+      {
+        "node": "12",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_AAD_ID",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_5439e09b616b2205",
+  "merged_ems": [
+    "em_2c021427290dc77e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "9",
+          "expected_present": true,
+          "values": [
+            "e036dee7-fa23-42ef-a019-468c8d3401f1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "e036dee7-fa23-42ef-a019-468c8d3401f1",
+              "raw_components": {
+                "AadUserId": "e036dee7-fa23-42ef-a019-468c8d3401f1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1ae29b32-a9a7-38b7-7bae-4c48498970b9",
+              "time": "2024-07-17 11:01:27.633644+00:00",
+              "matched_inputs": [
+                "170.54.121.63"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "em_2c021427290dc77e",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_2c021427290dc77e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "e036dee7-fa23-42ef-a019-468c8d3401f1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1ae29b32-a9a7-38b7-7bae-4c48498970b9",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "e036dee7-fa23-42ef-a019-468c8d3401f1",
+              "raw_components": {
+                "AadUserId": "e036dee7-fa23-42ef-a019-468c8d3401f1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1ae29b32-a9a7-38b7-7bae-4c48498970b9",
+              "time": "2024-07-17 11:01:27.633644+00:00",
+              "source_row_hash": "adbb7f2b4d583f7f88c1a5b629610f8c772ea68737b60be1eaaf78a810c18c3a",
+              "matched_inputs": [
+                "170.54.121.63"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anonymous IP address",
+            "170.54.121.63"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 6,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

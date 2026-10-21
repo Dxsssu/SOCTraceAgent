@@ -1,5 +1,39 @@
 # ExCyTIn-Bench Workflow
 
+## 新 LTM + WM 入口
+
+本地 runner 命令行现在默认启用 `--ltm`：先建 G/E，检索 PM → EM → SM，再按实际证据逐步建立 T 并执行依赖。Reviewer/Verifier 仍使用现有循环。用 `--no-ltm` 运行下面描述的基线。Python API 需显式 `ltm_enabled=True`；远端 SecGym Agent 和通用后台服务仍需单独适配。
+
+详见 [集成说明](../../../docs/ltm_wm_integration.md)；训练题验证命令为 `.venv/bin/python -m scripts.check_ltm_wm_workflow`。
+
+## 当前 LTM＋WM 全量测试（可续跑）
+
+在项目根目录执行：
+
+```bash
+.venv/bin/python -m scripts.run_ltm_wm_batch --workers 20 --provider fancybag --model deepseek-v4.1-flash --max-steps 12 --output runtime/excytin_bench/ltm-wm-full-test
+```
+
+测试集全部 589 题；默认预算与最近三个题的集成测试一致（12 个动作，预留提交，最多 11 次调查 SQL）。若需基线的 25 动作预算，改为 `--max-steps 25` 并使用新的输出目录。模型请求不设置 max_tokens。接口瞬时失败沿用 workflow 的 5–10 秒等待、最多两次重试。
+
+再次执行同一命令，跳过已完成题，只执行缺失、被中断或报错题。completed 不代表正确：答错和无法确认答案默认不会自动重跑；可显式加 `--retry-incorrect` 或 `--retry-unanswered`。重跑保存历史尝试，汇总仅统计各题最新一次。代码、记忆、数据集或执行配置变化时要求新输出目录，避免混合不同版本结果。同一输出目录有进程锁，禁止两个批处理同时写入。
+
+输出包括 `summary.json`/`summary.md`、逐题简表 `results.json`、失败分类 `failure_groups.json`、`cases/` 最新尝试索引，以及 `attempts/` 下完整 ITT、SQL、检索、模型响应、usage 和 finish_reason。评分使用规范化字符串精确匹配，另保存 containment 参考值；没有调用 LLM judge，未将其称为 reward。usage 缺失的失败请求单独计数。
+
+官方规则评分在调查结束后单独执行（按当前配置默认使用 Fancybag deepseek-v4.1-flash；官方实验默认裁判为 GPT-4o）：
+
+```bash
+.venv/bin/python -m scripts.score_ltm_wm_batch --input runtime/excytin_bench/ltm-wm-full-test --workers 20 --judge-provider fancybag --judge-model deepseek-v4.1-flash
+```
+
+评分直接加载 `data/excytin-bench/github/secgym/evaluator.py` 中的官方提示词和 LLMEvaluator 方法，仅替换 SDK 传输层。与官方实验配置一致启用答案反思、步骤检查、步骤反思，`strict_check=False`。最终答案经 LLM 模糊判定和复核正确则 reward=1，否则针对提交文本检查官方 solution 中的关键线索；忽略最后一步，从倒数第二步起分别累加 0.4、0.16、0.064……。不是对 SQL 执行成功或 ITT 中事实计分，不将轨迹拼入最终答案。
+
+`official_scores/summary.json` 的 `acc` 是 reward==1 的比例，`mean_reward` 是平均 reward。未完成全量评分时两项为 null，同时提供已评分子集指标。评分错误不是零分，同命令可重试；未提交答案的运行失败记零分。官方 `_retry_create`/JSON 格式重试改用 SDK（最多 10 次格式尝试，网络错误额外最多重试两次），不使用 AutoGen cache。当前默认评分模型与官方实验默认模型不同；更换 `--judge-model` 时应使用新评分输出目录，并注明模型不同，不声称与论文分数严格等价。评分 token 独立记录。
+
+不调用接口预览任务：增加 `--dry-run`。停止后仅重建统计：增加 `--report-only`。运行中直接阅读 summary 文件即可，无需另开写入进程。并发数可在续跑时调整。
+
+## 基线模式（--no-ltm）
+
 这个目录提供一个与通用后台 workflow 分离的同步测评流程。它严格遵守
 ExCyTIn-Bench 的外部动作协议：Workflow 生成一条 SQL，SQL 由
 `ExcytinEnv.step()` 执行，Workflow 在下一轮收到 observation 后才进行
@@ -20,7 +54,7 @@ Verifier 在每轮 Reviewer 后同步调用，接收 `context + question + itt`�
 
 Verifier 输出 `can_answer: "yes"` 或 `can_answer: "no"`，仅 yes 时附加 `answer`。能回答时直接生成最终答案，程序退出循环提交，不再调用最终答案整理器或反证审查。不能回答时，把包含结构化证据的 ITT 及 Verifier 的未确认状态交给 Planner 继续规划；Reviewer 的提交/停止建议不直接终止调查，Planner 的完成状态也不能替代 Verifier 确认。预算耗尽而仍未确认时，程序提交“无法确认答案：调查结束，尚无充分证据。”。Verifier 未确认时，Planner 的重规划必须包含可执行的 todo T；G/E 的推导状态不再触发提前提交。缺少可执行任务按现有有限校验重试要求补充，耗尽后记录规划失败，不递归空转或提交。格式校验失败按有限重试处理，耗尽后显式失败。核验记录保存在 `verifications` 和 `answer_verified` trace 中；答案是否有充分证据由模型判断。
 
-LTM 重建期间，workflow 不加载或检索 SM/PM/EM 与程序卡片。旧环境开关无效，日志保留 false/空列表；历史元数据仍可读取。
+基线模式不加载或检索 SM/PM/EM 与程序卡片。旧环境开关无效，日志保留 false/空列表；历史元数据仍可读取。
 
 核心接口：
 
@@ -123,7 +157,7 @@ cases/*.json        # 每道题逐步 action/observation、TTT、Review 和记�
 
 ## PM 对照实验暂停
 
-LTM 重建期间，`pm_workflow_check` 与程序卡片 PM 在线实验显式拒绝运行。历史版本见 `dfb8646`；现有报告仍可用 `pm_workflow_report` 分析。当前日志中的 PM/EM 命中为零。
+LTM 重建期间，`pm_workflow_check` 与程序卡片 PM 在线实验显式拒绝运行。历史版本见 `dfb8646`；现有报告仍可用 `pm_workflow_report` 分析。基线及旧实验入口的 PM/EM 命中为零；新入口通过 memory_retrievals 记录实际选择。
 
 Benchmark 与通用后台共用 Planner 增量操作协议，定义于 `src/schema/planner_operations.py`。输出仅含 `operations` 列表，支持 `add_goal`（仅首轮）、`add_entity`、`add_task`、`select_task`；程序分配 G/E/T ID、构建完整树并保留历史。临时 `ref` 通过 `$alias` 关联本批次新增节点，后续使用正式 ID。`add_task` 可提供 semantic_refs 或 template_id；SQL、结果与任务状态均由运行时维护。校验整批通过后才应用，SQL workflow 仍要求 Verifier 确认答案前存在可执行任务。成功操作记录于 `planner_operations_applied` trace。
 

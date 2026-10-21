@@ -1,0 +1,936 @@
+{
+  "id": "incident_5_train_073",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 73,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "There was a security incident involving system recovery setting tampering on the device `vnevado-win11u`. Adversaries might be attempting to delete or remove built-in operating system data and turn off recovery services to prevent recovering a corrupted system. Specifically, the commands 'vssblatemp.exe delete shadows /all' and 'bcdedit /set recoveryenabled no' were executed on the host `vnevado-win11u` which could indicate an attempt to disable or delete system recovery features.",
+    "question": "What is the name of the host involved in the deletion of file snapshots and shadow copies during the subsequent ransomware infection?",
+    "answer": "vnevado-win11t",
+    "solution": [
+      "There was system recovery setting tampering observed on this device by the user with SID `S-1-5-21-1840191660-8534830288-125585561-1522`. Adversaries may be attempting to delete or remove built-in operating system data and turn off recovery services.",
+      "All file snapshots and shadow copies were deleted on the host `vnevado-win11t`, which is common during ransomware infection."
+    ],
+    "start_alert": 76,
+    "end_alert": 116,
+    "start_entities": [
+      7,
+      8,
+      77,
+      78
+    ],
+    "end_entities": [
+      68
+    ],
+    "shortest_alert_path": [
+      76,
+      2,
+      116
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "76",
+    "2",
+    "116"
+  ],
+  "nodes": {
+    "7": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11u"
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+    },
+    "77": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all"
+    },
+    "78": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no"
+    },
+    "76": {
+      "type": "alert",
+      "name": "System recovery setting tampering",
+      "description": "System recovery setting tampering has been observed on this device. Adversaries might be attempting to delete or remove built-in operating system data and turn off recovery services to prevent recovering a corrupted system. This may deny access to available backups and recovery options.\n\nOperating systems may contain features that can help fix corrupted systems, such as a backup catalog, volume shadow copies, and automatic repair features. Adversaries may stop or delete system recovery features to augment the effects of Data Destruction and Data Encrypted for Impact.\n\nMany native Windows utilities have been used by adversaries to disable or delete system recovery features:\n•\t vssblatemp.exe can be used to delete all volume shadow copies on a system using the following command: [vssblatemp.exe delete shadows /all /quiet]\n•\tWindows Management Instrumentation can be used to delete volume shadow copies using the following command: [wmic shadowcopy delete]\n•\twbblatemp.exe can be used to delete the Windows Backup Catalog using the following command: [wbblatemp.exe delete catalog -quiet]\n•\tbcdedit.exe can be used to disable automatic Windows recovery features by modifying boot configuration data using the following command: [bcdedit.exe /set default bootstatuspolicy ignoreallfailures & bcdedit /set default recoveryenabled no]"
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1840191660-8534830288-125585561-1522"
+    },
+    "116": {
+      "type": "alert",
+      "name": "File backups were deleted",
+      "description": "All file snapshots and shadow copies have been deleted via WMI or VSSAdmin which is common during Ransomware infection.\n\nFor more information, read the Activity Profile: Iranian MOIS operators opportunistically deploy limited-impact wiper in response to Israel-Hamas war Threat Analytics report: https://security.microsoft.com/threatanalytics3/c6674205-df28-453a-9e42-0010b7979bdd/overview?tid4b2462a4-bbee-495a-a0e1-f23ae524cc9c"
+    },
+    "68": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11t"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "7",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "8",
+        "concept": "Device_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "77",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "78",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Host_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e46bb6b623b30c88",
+  "merged_ems": [
+    "em_f328ca5b1574cda5",
+    "em_b108d6b14ba923d1",
+    "em_a968efcb19f242b8",
+    "em_b30f58cf03511b0b"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 15,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "68",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10r",
+            "vnevado-win10s",
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10s",
+              "raw_components": {
+                "HostName": "vnevado-win10s"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "bae8c1e0-0441-dd0f-2466-2b2efbe5dc13",
+              "time": "2024-07-04 22:35:00.451837+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10r",
+              "raw_components": {
+                "HostName": "vnevado-win10r"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-04 22:35:00.943044+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-04 22:35:02.024459+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11u",
+              "raw_components": {
+                "HostName": "vnevado-win11u"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "6e11c3e6-462b-951b-8254-2b12b81bc78f",
+              "time": "2024-07-04 22:35:02.352485+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 15,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "68",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10r",
+            "vnevado-win10s",
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10s",
+              "raw_components": {
+                "HostName": "vnevado-win10s"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "bae8c1e0-0441-dd0f-2466-2b2efbe5dc13",
+              "time": "2024-07-04 22:35:00.451837+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10r",
+              "raw_components": {
+                "HostName": "vnevado-win10r"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-04 22:35:00.943044+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-04 22:35:02.024459+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11u",
+              "raw_components": {
+                "HostName": "vnevado-win11u"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "6e11c3e6-462b-951b-8254-2b12b81bc78f",
+              "time": "2024-07-04 22:35:02.352485+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 15,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+                "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "68",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10r",
+            "vnevado-win10s",
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10s",
+              "raw_components": {
+                "HostName": "vnevado-win10s"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "bae8c1e0-0441-dd0f-2466-2b2efbe5dc13",
+              "time": "2024-07-04 22:35:00.451837+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10r",
+              "raw_components": {
+                "HostName": "vnevado-win10r"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-04 22:35:00.943044+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-04 22:35:02.024459+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11u",
+              "raw_components": {
+                "HostName": "vnevado-win11u"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "6e11c3e6-462b-951b-8254-2b12b81bc78f",
+              "time": "2024-07-04 22:35:02.352485+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_e48789c237d96818",
+      "seed_concept": "Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a968efcb19f242b8",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-07 22:34:15.261693+00:00",
+              "source_row_hash": "256cc91cb883de36086cb63e0a62d645253d11f396276e1caaa9b6c55c54ca1a",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "bc00e484-d0e5-4da4-9472-95568cccc07e"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_b108d6b14ba923d1",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "vnevado-win10r",
+            "vnevado-win10s",
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-09 22:34:24.300643+00:00",
+              "source_row_hash": "135e760dfc94091c068c1d9b03bd4084ffe9e836787842dd20473a2c6217f4c7",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-06 22:34:52.103855+00:00",
+              "source_row_hash": "1668b90b57601caf4f630dea3b3a1f5b19168d819046ee52466ca92ca8285785",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-05 22:34:19.106249+00:00",
+              "source_row_hash": "22c8c49ba9854875333401fccdbf36fe4b2716f8ebc2c08165425bf181fb1bee",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File backups were deleted",
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_e48789c237d96818",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f328ca5b1574cda5",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-07 22:34:15.261693+00:00",
+              "source_row_hash": "256cc91cb883de36086cb63e0a62d645253d11f396276e1caaa9b6c55c54ca1a",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "vnevado-win11u"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_b108d6b14ba923d1",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "vnevado-win10r",
+            "vnevado-win10s",
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-09 22:34:24.300643+00:00",
+              "source_row_hash": "135e760dfc94091c068c1d9b03bd4084ffe9e836787842dd20473a2c6217f4c7",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-06 22:34:52.103855+00:00",
+              "source_row_hash": "1668b90b57601caf4f630dea3b3a1f5b19168d819046ee52466ca92ca8285785",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-05 22:34:19.106249+00:00",
+              "source_row_hash": "22c8c49ba9854875333401fccdbf36fe4b2716f8ebc2c08165425bf181fb1bee",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File backups were deleted",
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_e48789c237d96818",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b30f58cf03511b0b",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all"
+              ]
+            }
+          ],
+          "witness_count": 28,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_b108d6b14ba923d1",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "vnevado-win10r",
+            "vnevado-win10s",
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-09 22:34:24.300643+00:00",
+              "source_row_hash": "135e760dfc94091c068c1d9b03bd4084ffe9e836787842dd20473a2c6217f4c7",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-06 22:34:52.103855+00:00",
+              "source_row_hash": "1668b90b57601caf4f630dea3b3a1f5b19168d819046ee52466ca92ca8285785",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-05 22:34:19.106249+00:00",
+              "source_row_hash": "22c8c49ba9854875333401fccdbf36fe4b2716f8ebc2c08165425bf181fb1bee",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File backups were deleted",
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 197 (char 196)",
+          "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 197 (char 196)",
+          "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 197 (char 196)",
+          "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

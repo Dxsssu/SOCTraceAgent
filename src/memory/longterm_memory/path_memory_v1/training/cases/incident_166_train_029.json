@@ -1,0 +1,922 @@
+{
+  "id": "incident_166_train_029",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_166_qa_incident_o1-ga_c42.json",
+  "index": 29,
+  "sha256": "57a4491e11e42986ad61360378ea3d1c5b0f1058426bcfb455e8959bb64b3cda",
+  "split": "train",
+  "question_record": {
+    "context": "A suspicious email was sent by a potentially compromised user account `tony@avoriaz.alpineskihouse.co` from the IP address `255.246.85.58` as part of an ongoing business email compromise (BEC) fraud attempt. The email had the sender `laylaw@vnevado.alpineskihouse.co`. This alert is related to a BEC incident possibly involving SAP systems.",
+    "question": "Can you identify the IP address associated with the BEC-related user when they signed into SAP in a suspicious manner?",
+    "answer": "107.253.5.27",
+    "solution": [
+      "Suspicious emails were sent by a potentially compromised user account with SID `S-1-5-21-1740051960-3534030288-108486866-1602` related to a business email compromise fraud attempt.",
+      "A BEC-related user signed in to SAP from IP address `107.253.5.27` in a suspicious manner, indicating the account may have been compromised to access or modify sensitive financial information."
+    ],
+    "start_alert": 18,
+    "end_alert": 27,
+    "start_entities": [
+      15,
+      19,
+      20,
+      21,
+      22
+    ],
+    "end_entities": [
+      25
+    ],
+    "shortest_alert_path": [
+      18,
+      8,
+      27
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_166.graphml",
+  "graph_sha256": "0b5a949fa824acc0369e8da5a8a612b8987a900571001c1d3ac0ce9581522b24",
+  "path": [
+    "18",
+    "8",
+    "27"
+  ],
+  "nodes": {
+    "15": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "255.246.85.58"
+    },
+    "19": {
+      "type": "entity",
+      "node_type": "mailbox",
+      "identifier_fields": "MailboxPrimaryAddress",
+      "value": "tony@avoriaz.alpineskihouse.co"
+    },
+    "20": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "Recipient",
+      "value": "tony@avoriaz.alpineskihouse.co"
+    },
+    "21": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "SenderIP",
+      "value": "255.246.85.58"
+    },
+    "22": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "Sender",
+      "value": "laylaw@vnevado.alpineskihouse.co"
+    },
+    "18": {
+      "type": "alert",
+      "name": "Suspicious emails sent by BEC-related user",
+      "description": "Suspicious emails were sent by a possibly compromised user account related to an ongoing BEC (business email compromise) fraud attempt. This alert was triggered based on a previous BEC-related alert."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1740051960-3534030288-108486866-1602"
+    },
+    "27": {
+      "type": "alert",
+      "name": "BEC-related user signed in to SAP",
+      "description": "A user involved in a business email compromise-related alert also signed in to SAP in a suspicious manner. An attacker might have taken control of a user account to search through SAP with the intention of recording or modifying sensitive financial information. The gathered information might be used for later stages in the attack, such as phishing or social engineering. This alert was triggered based on a Microsoft Defender XDR alert."
+    },
+    "25": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "107.253.5.27"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "15",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "19",
+        "concept": "Mailbox_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "20",
+        "concept": "Mail_Recipient",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "21",
+        "concept": "Mail_Sender_IP",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "22",
+        "concept": "Mail_Sender",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_7eda15c1331ca34b",
+  "merged_ems": [
+    "em_1fb69112e61590cd",
+    "em_1a8926f8d3e8a059",
+    "em_1d8b1a2643de6257",
+    "em_076b2fb789bcf6e0",
+    "em_5936c1c7524e9997",
+    "em_2474cf47fd91a742"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "matched_inputs": [
+                "255.246.85.58"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "25",
+          "expected_present": true,
+          "values": [
+            "107.253.5.27"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Recipient",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "matched_inputs": [
+                "tony@avoriaz.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "25",
+          "expected_present": true,
+          "values": [
+            "107.253.5.27"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Sender",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "matched_inputs": [
+                "laylaw@vnevado.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "25",
+          "expected_present": true,
+          "values": [
+            "107.253.5.27"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Sender_IP",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "matched_inputs": [
+                "255.246.85.58"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "25",
+          "expected_present": true,
+          "values": [
+            "107.253.5.27"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Mailbox_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "matched_inputs": [
+                "tony@avoriaz.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "25",
+          "expected_present": true,
+          "values": [
+            "107.253.5.27"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_0564f78c47257102",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1fb69112e61590cd",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "source_row_hash": "2abdcdb0e5ec5912c332175a5eafdea79081b7f37e0ef6961653f84fda1455e0",
+              "matched_inputs": [
+                "255.246.85.58"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious emails sent by BEC-related user",
+            "255.246.85.58"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_2474cf47fd91a742",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "107.253.5.27"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "source_row_hash": "40122eb3f5afdd3557ed89686db714995701faa14e18d872246e910835d0bc87",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC-related user signed in to SAP",
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_0564f78c47257102",
+      "seed_concept": "Mail_Recipient",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_5936c1c7524e9997",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "source_row_hash": "2abdcdb0e5ec5912c332175a5eafdea79081b7f37e0ef6961653f84fda1455e0",
+              "matched_inputs": [
+                "tony@avoriaz.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mail_Recipient' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious emails sent by BEC-related user",
+            "tony@avoriaz.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_2474cf47fd91a742",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "107.253.5.27"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "source_row_hash": "40122eb3f5afdd3557ed89686db714995701faa14e18d872246e910835d0bc87",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC-related user signed in to SAP",
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_0564f78c47257102",
+      "seed_concept": "Mail_Sender",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1d8b1a2643de6257",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "source_row_hash": "2abdcdb0e5ec5912c332175a5eafdea79081b7f37e0ef6961653f84fda1455e0",
+              "matched_inputs": [
+                "laylaw@vnevado.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mail_Sender' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious emails sent by BEC-related user",
+            "laylaw@vnevado.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_2474cf47fd91a742",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "107.253.5.27"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "source_row_hash": "40122eb3f5afdd3557ed89686db714995701faa14e18d872246e910835d0bc87",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC-related user signed in to SAP",
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_0564f78c47257102",
+      "seed_concept": "Mail_Sender_IP",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_076b2fb789bcf6e0",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "source_row_hash": "2abdcdb0e5ec5912c332175a5eafdea79081b7f37e0ef6961653f84fda1455e0",
+              "matched_inputs": [
+                "255.246.85.58"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mail_Sender_IP' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious emails sent by BEC-related user",
+            "255.246.85.58"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_2474cf47fd91a742",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "107.253.5.27"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "source_row_hash": "40122eb3f5afdd3557ed89686db714995701faa14e18d872246e910835d0bc87",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC-related user signed in to SAP",
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_0564f78c47257102",
+      "seed_concept": "Mailbox_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1a8926f8d3e8a059",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1740051960-3534030288-108486866-1602",
+              "raw_components": {
+                "Sid": "S-1-5-21-1740051960-3534030288-108486866-1602"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "source_row_hash": "2abdcdb0e5ec5912c332175a5eafdea79081b7f37e0ef6961653f84fda1455e0",
+              "matched_inputs": [
+                "tony@avoriaz.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mailbox_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious emails sent by BEC-related user",
+            "tony@avoriaz.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_2474cf47fd91a742",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "107.253.5.27"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.253.5.27",
+              "raw_components": {
+                "Address": "107.253.5.27"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "source_row_hash": "40122eb3f5afdd3557ed89686db714995701faa14e18d872246e910835d0bc87",
+              "matched_inputs": [
+                "S-1-5-21-1740051960-3534030288-108486866-1602"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC-related user signed in to SAP",
+            "S-1-5-21-1740051960-3534030288-108486866-1602"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Recipient",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Sender",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Sender_IP",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Mailbox_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

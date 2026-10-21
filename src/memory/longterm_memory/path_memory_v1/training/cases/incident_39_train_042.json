@@ -1,0 +1,1193 @@
+{
+  "id": "incident_39_train_042",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 42,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident was detected involving a SID history injection. This SID history injection is detected on a device and was traced back to the account `lucasb` with a PowerShell command involving `net.exe` and `powershell.exe` on the host `vnevado-dc`. The detected process ids with their respective command lines are `3780` and `7712`. This suggests an attacker might be using SID history changes to achieve elevated privileges. Note: SID history is an attribute that supports migration scenarios and is usually targeted by attackers to gain elevated privileges and persist in the system.",
+    "question": "There is also a suspected DCSync attack (replication of directory services) within the same incident. Can you identify the email of the user involved in the DCSync attack?",
+    "answer": "Julian Burke@vnevado.alpineskihouse.co",
+    "solution": [
+      "A SID history injection was detected on the account with AadUserId `7fcf9695-68fc-4258-864d-e1e5b166c66f`.",
+      "A suspected DCSync attack was performed by `Julian Burke (IT director)` using the email `Julian Burke@vnevado.alpineskihouse.co` on device `VNEVADO-Win10V`, sending a replication request to `VNEVADO-DC`."
+    ],
+    "start_alert": 72,
+    "end_alert": 122,
+    "start_entities": [
+      13,
+      16,
+      17,
+      18,
+      20,
+      73,
+      74
+    ],
+    "end_entities": [
+      124
+    ],
+    "shortest_alert_path": [
+      72,
+      15,
+      122
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "72",
+    "15",
+    "122"
+  ],
+  "nodes": {
+    "13": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "lucasb"
+    },
+    "16": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3780__2024-06-27t14:34:10.5477279z__powershell.exe  -command \"net.exe stop ntds /y; add-addbsidhistory -samaccountname bdadmin -sidhistory \\\"s-1-5-32-544\\\" -databasepath (get-itemproperty -path registry::hklm\\system\\currentcontrolset\\services\\ntds\\parameters).\\\"dsa database file\\\" -force; net.exe start ntds\""
+    },
+    "17": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "powershell.exe"
+    },
+    "18": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "net.exe"
+    },
+    "20": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-dc"
+    },
+    "73": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "dkwj.mze"
+    },
+    "74": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7712__2024-06-27t14:34:10.8729414z__net1 stop ntds /y"
+    },
+    "72": {
+      "type": "alert",
+      "name": "SID history injection",
+      "description": "A Security IDentifcation (SID) history injection was detected on this device. SID history is an attribute that supports migration scenarios. Attackers typically use attack tools to change the SID history of an existing domain user to an SID with elevated privileges. With elevated privileges, the affected process might be able to access sensitive files, ensure persistence, and modify system settings."
+    },
+    "15": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+    },
+    "122": {
+      "type": "alert",
+      "name": "Suspected DCSync attack (replication of directory services)",
+      "description": "Julian Burke (IT director) on VNEVADO-Win10V sent 1 replication request to VNEVADO-DC."
+    },
+    "124": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Email",
+      "value": "Julian Burke@vnevado.alpineskihouse.co"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "13",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "16",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "17",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "18",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "20",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "73",
+        "concept": "File_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "74",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_Derived_Email",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_bb8a080e305d103f",
+  "merged_ems": [
+    "em_4fd9ac723a041ec1",
+    "em_b01c5e8e6379ab3b",
+    "em_b064dbb7606ee24b",
+    "em_eda1a3bda998681e",
+    "em_65d21104249f1c48",
+    "em_bde4ee0e5ccbde3e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "15",
+          "expected_present": true,
+          "values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "matched_inputs": [
+                "lucasb"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "da1e59e4-13c2-1bf9-82c4-179aa3847215",
+              "time": "2024-07-04 22:35:03.078835+00:00",
+              "matched_inputs": [
+                "lucasb"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "124",
+          "expected_present": true,
+          "values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "15",
+          "expected_present": true,
+          "values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "matched_inputs": [
+                "net.exe",
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "da1e59e4-13c2-1bf9-82c4-179aa3847215",
+              "time": "2024-07-04 22:35:03.078835+00:00",
+              "matched_inputs": [
+                "net.exe",
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "124",
+          "expected_present": true,
+          "values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "15",
+          "expected_present": true,
+          "values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "matched_inputs": [
+                "dkwj.mze"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "124",
+          "expected_present": true,
+          "values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "15",
+          "expected_present": true,
+          "values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "da1e59e4-13c2-1bf9-82c4-179aa3847215",
+              "time": "2024-07-04 22:35:03.078835+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "124",
+          "expected_present": true,
+          "values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "15",
+          "expected_present": true,
+          "values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "matched_inputs": [
+                "3780__2024-06-27t14:34:10.5477279z__powershell.exe  -command \"net.exe stop ntds /y; add-addbsidhistory -samaccountname bdadmin -sidhistory \\\"s-1-5-32-544\\\" -databasepath (get-itemproperty -path registry::hklm\\system\\currentcontrolset\\services\\ntds\\parameters).\\\"dsa database file\\\" -force; net.exe start ntds\"",
+                "7712__2024-06-27t14:34:10.8729414z__net1 stop ntds /y"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "da1e59e4-13c2-1bf9-82c4-179aa3847215",
+              "time": "2024-07-04 22:35:03.078835+00:00",
+              "matched_inputs": [
+                "3780__2024-06-27t14:34:10.5477279z__powershell.exe  -command \"net.exe stop ntds /y; add-addbsidhistory -samaccountname bdadmin -sidhistory \\\"s-1-5-32-544\\\" -databasepath (get-itemproperty -path registry::hklm\\system\\currentcontrolset\\services\\ntds\\parameters).\\\"dsa database file\\\" -force; net.exe start ntds\""
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "124",
+          "expected_present": true,
+          "values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_90ebe254f1dfbebe",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_65d21104249f1c48",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-14 22:34:28.645470+00:00",
+              "source_row_hash": "11c2788a56f2b03d0b2d13dca85488b6e3e845d5fb16005128d857f233352b81",
+              "matched_inputs": [
+                "lucasb"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "source_row_hash": "14d18297fe39f580ffafb5da61ecff003a1fb521b1629c2e5afc199af418e7c4",
+              "matched_inputs": [
+                "lucasb"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-19 22:35:14.559397+00:00",
+              "source_row_hash": "16b445d009227fbcda9a01896884a23b5ca57a4d5a7680134e3fbc33873e7774",
+              "matched_inputs": [
+                "lucasb"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "SID history injection",
+            "lucasb"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_eda1a3bda998681e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+          "witnesses": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 2,
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "source_row_hash": "c307804f660d1ff6c498cf0ce727b6ba1dfb716a61625966e632122c3a8bed9f",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_Derived_Email'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspected DCSync attack (replication of directory services)",
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_90ebe254f1dfbebe",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 104,
+          "unique_values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-14 22:34:28.645470+00:00",
+              "source_row_hash": "11c2788a56f2b03d0b2d13dca85488b6e3e845d5fb16005128d857f233352b81",
+              "matched_inputs": [
+                "net.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-14 22:34:28.645470+00:00",
+              "source_row_hash": "11c2788a56f2b03d0b2d13dca85488b6e3e845d5fb16005128d857f233352b81",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "source_row_hash": "14d18297fe39f580ffafb5da61ecff003a1fb521b1629c2e5afc199af418e7c4",
+              "matched_inputs": [
+                "net.exe"
+              ]
+            }
+          ],
+          "witness_count": 52,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "SID history injection",
+            "net.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_eda1a3bda998681e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+          "witnesses": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 2,
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "source_row_hash": "c307804f660d1ff6c498cf0ce727b6ba1dfb716a61625966e632122c3a8bed9f",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_Derived_Email'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspected DCSync attack (replication of directory services)",
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_90ebe254f1dfbebe",
+      "seed_concept": "File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_4fd9ac723a041ec1",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-14 22:34:28.645470+00:00",
+              "source_row_hash": "11c2788a56f2b03d0b2d13dca85488b6e3e845d5fb16005128d857f233352b81",
+              "matched_inputs": [
+                "dkwj.mze"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "source_row_hash": "14d18297fe39f580ffafb5da61ecff003a1fb521b1629c2e5afc199af418e7c4",
+              "matched_inputs": [
+                "dkwj.mze"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-19 22:35:14.559397+00:00",
+              "source_row_hash": "16b445d009227fbcda9a01896884a23b5ca57a4d5a7680134e3fbc33873e7774",
+              "matched_inputs": [
+                "dkwj.mze"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "SID history injection",
+            "dkwj.mze"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_eda1a3bda998681e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+          "witnesses": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 2,
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "source_row_hash": "c307804f660d1ff6c498cf0ce727b6ba1dfb716a61625966e632122c3a8bed9f",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_Derived_Email'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspected DCSync attack (replication of directory services)",
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_90ebe254f1dfbebe",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b064dbb7606ee24b",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-14 22:34:28.645470+00:00",
+              "source_row_hash": "11c2788a56f2b03d0b2d13dca85488b6e3e845d5fb16005128d857f233352b81",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "source_row_hash": "14d18297fe39f580ffafb5da61ecff003a1fb521b1629c2e5afc199af418e7c4",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-19 22:35:14.559397+00:00",
+              "source_row_hash": "16b445d009227fbcda9a01896884a23b5ca57a4d5a7680134e3fbc33873e7774",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "SID history injection",
+            "vnevado-dc"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_eda1a3bda998681e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+          "witnesses": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 2,
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "source_row_hash": "c307804f660d1ff6c498cf0ce727b6ba1dfb716a61625966e632122c3a8bed9f",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_Derived_Email'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspected DCSync attack (replication of directory services)",
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_90ebe254f1dfbebe",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b01c5e8e6379ab3b",
+          "status": "ok",
+          "candidate_count": 78,
+          "unique_values": [
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-14 22:34:28.645470+00:00",
+              "source_row_hash": "11c2788a56f2b03d0b2d13dca85488b6e3e845d5fb16005128d857f233352b81",
+              "matched_inputs": [
+                "3780__2024-06-27t14:34:10.5477279z__powershell.exe  -command \"net.exe stop ntds /y; add-addbsidhistory -samaccountname bdadmin -sidhistory \\\"s-1-5-32-544\\\" -databasepath (get-itemproperty -path registry::hklm\\system\\currentcontrolset\\services\\ntds\\parameters).\\\"dsa database file\\\" -force; net.exe start ntds\""
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-14 22:34:28.645470+00:00",
+              "source_row_hash": "11c2788a56f2b03d0b2d13dca85488b6e3e845d5fb16005128d857f233352b81",
+              "matched_inputs": [
+                "7712__2024-06-27t14:34:10.8729414z__net1 stop ntds /y"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "7fcf9695-68fc-4258-864d-e1e5b166c66f",
+              "raw_components": {
+                "AadUserId": "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443",
+              "time": "2024-07-04 22:35:02.200786+00:00",
+              "source_row_hash": "14d18297fe39f580ffafb5da61ecff003a1fb521b1629c2e5afc199af418e7c4",
+              "matched_inputs": [
+                "3780__2024-06-27t14:34:10.5477279z__powershell.exe  -command \"net.exe stop ntds /y; add-addbsidhistory -samaccountname bdadmin -sidhistory \\\"s-1-5-32-544\\\" -databasepath (get-itemproperty -path registry::hklm\\system\\currentcontrolset\\services\\ntds\\parameters).\\\"dsa database file\\\" -force; net.exe start ntds\""
+              ]
+            }
+          ],
+          "witness_count": 52,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "SID history injection",
+            "3780__2024-06-27t14:34:10.5477279z__powershell.exe  -command \"net.exe stop ntds /y; add-addbsidhistory -samaccountname bdadmin -sidhistory \\\"s-1-5-32-544\\\" -databasepath (get-itemproperty -path registry::hklm\\system\\currentcontrolset\\services\\ntds\\parameters).\\\"dsa database file\\\" -force; net.exe start ntds\"",
+            "7712__2024-06-27t14:34:10.8729414z__net1 stop ntds /y"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_eda1a3bda998681e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Julian Burke@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+          "witnesses": [
+            {
+              "concept": "Account_Derived_Email",
+              "graph_value": "Julian Burke@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Name": "Julian Burke",
+                "UPNSuffix": "vnevado.alpineskihouse.co"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 2,
+              "alert_id": "de874755-db73-8a9a-2b7d-a5bf44ae34a4",
+              "time": "2024-07-10 11:24:45.337245+00:00",
+              "source_row_hash": "c307804f660d1ff6c498cf0ce727b6ba1dfb716a61625966e632122c3a8bed9f",
+              "matched_inputs": [
+                "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_Derived_Email'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspected DCSync attack (replication of directory services)",
+            "7fcf9695-68fc-4258-864d-e1e5b166c66f"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 318 (char 317)",
+          "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 318 (char 317)",
+          "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443"
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 318 (char 317)",
+          "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 318 (char 317)",
+          "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 318 (char 317)",
+          "alert_id": "2f1af028-7f62-9214-2eeb-d0ff8078d443"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

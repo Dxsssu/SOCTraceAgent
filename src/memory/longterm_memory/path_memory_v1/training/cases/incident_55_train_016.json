@@ -1,0 +1,792 @@
+{
+  "id": "incident_55_train_016",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_55_qa_incident_o1-ga_c42.json",
+  "index": 16,
+  "sha256": "d3d22be38c226f61a5ac240a940e0c8901208766ea002b6e4f273361ce61ae80",
+  "split": "train",
+  "question_record": {
+    "context": "A comprehensive investigation reveals multiple suspicious activities related to a security incident. Initially, a suspicious service named DDLOXJDSQSNGMUKKFUXQ was created by the user gsmith on the host MB-ADFS, suggesting potential execution of malicious commands. Further investigation uncovered a suspicious LDAP query indicating an ADFS private key extraction attempt, suggesting lateral movement in the network. Subsequently, it was identified that a process involved in the earlier malicious activity used Task Scheduler to create, modify, or delete a task, which could facilitate the automatic launch of malicious code and establish persistence.",
+    "question": "What is the extracted file name of the process that used Task Scheduler in the suspicious activity?",
+    "answer": "schtasks.exe",
+    "solution": [
+      "The account with SID `S-2-5-21-571436798-3864380397-1837441745-3206` created the service `DDLOXJDSQSNGMUKKFUXQ` on `MB-ADFS` to potentially execute malicious commands.",
+      "There was a suspicious LDAP query on host `mb-adfs` which might be an attempt to steal ADFS private keys or enable lateral movement on the network.",
+      "The process `schtasks.exe` was involved in earlier malicious activity and used Task Scheduler to create, modify, or delete a task likely to launch malicious code and establish persistence."
+    ],
+    "start_alert": 101,
+    "end_alert": 33,
+    "start_entities": [
+      102,
+      103
+    ],
+    "end_entities": [
+      35
+    ],
+    "shortest_alert_path": [
+      101,
+      19,
+      43,
+      26,
+      33
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_55.graphml",
+  "graph_sha256": "c1455d8cf64d45d0e46183a7a347c100476f75193fdf2ae664a2ae2e03f6e8f2",
+  "path": [
+    "101",
+    "19",
+    "43",
+    "26",
+    "33"
+  ],
+  "nodes": {
+    "102": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "MB-ADFS"
+    },
+    "103": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Email",
+      "value": "gsmith@niseko.alpineskihouse.co"
+    },
+    "101": {
+      "type": "alert",
+      "name": "Suspicious service creation",
+      "description": "gsmith created DDLOXJDSQSNGMUKKFUXQ in order to execute potentially malicious commands on MB-ADFS."
+    },
+    "19": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-2-5-21-571436798-3864380397-1837441745-3206"
+    },
+    "43": {
+      "type": "alert",
+      "name": "ADFS private key extraction attempt",
+      "description": "A suspicious LDAP (Lightweight Directory Access Protocol) query was launched. Attackers might be attempting to steal Active Directory Federation Service (ADFS) private keys or move laterally on the network."
+    },
+    "26": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "mb-adfs"
+    },
+    "33": {
+      "type": "alert",
+      "name": "Suspicious Task Scheduler activity",
+      "description": "A process involved in earlier malicious activity used Task Scheduler to create, modify, or delete a task. This might be an attempt launch malicious code automatically and establish persistence.\n\nFor further information on this threat, read the following threat analytics report: https://security.microsoft.com/threatanalytics3/c9709a39-ac8d-493d-9a63-71da3ca1e745/analystreport"
+    },
+    "35": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "schtasks.exe"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "102",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "103",
+        "concept": "Account_Derived_Email",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Command_File_Mention",
+    "weak_links": [
+      "26"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_b25aa32d677e21ef",
+  "merged_ems": [
+    "em_afdcb0e9dc74c4fe",
+    "em_7e2b21c891dd97bb",
+    "em_f328ca5b1574cda5",
+    "em_b108d6b14ba923d1"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "19",
+          "expected_present": true,
+          "values": [
+            "S-2-5-21-571436798-3864380397-1837441745-3206"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-5-21-571436798-3864380397-1837441745-3206",
+              "raw_components": {
+                "Sid": "S-2-5-21-571436798-3864380397-1837441745-3206"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+              "time": "2024-07-10 11:24:45.488649+00:00",
+              "matched_inputs": [
+                "gsmith@niseko.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+              "time": "2024-07-04 22:35:02.751926+00:00",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "35",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "schtasks.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /CREATE /RU NISEKO\\ADFSAdmin /RP toptC88CoOb3XVxtPbr8 /SC DAILY /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23 /TR \"iy2orr1e.rrg.exe -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA=\" /ST 00:00:00 /F"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /CREATE /RU NISEKO\\ADFSAdmin /RP toptC88CoOb3XVxtPbr8 /SC DAILY /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23 /TR \"iy2orr1e.rrg.exe -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA=\" /ST 00:00:00 /F"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /RUN /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "19",
+          "expected_present": true,
+          "values": [
+            "S-2-5-21-571436798-3864380397-1837441745-3206"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-5-21-571436798-3864380397-1837441745-3206",
+              "raw_components": {
+                "Sid": "S-2-5-21-571436798-3864380397-1837441745-3206"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+              "time": "2024-07-10 11:24:45.488649+00:00",
+              "matched_inputs": [
+                "MB-ADFS"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+              "time": "2024-07-04 22:35:02.751926+00:00",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "35",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "schtasks.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /CREATE /RU NISEKO\\ADFSAdmin /RP toptC88CoOb3XVxtPbr8 /SC DAILY /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23 /TR \"iy2orr1e.rrg.exe -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA=\" /ST 00:00:00 /F"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /CREATE /RU NISEKO\\ADFSAdmin /RP toptC88CoOb3XVxtPbr8 /SC DAILY /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23 /TR \"iy2orr1e.rrg.exe -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA=\" /ST 00:00:00 /F"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /RUN /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_331cc7827da5447e",
+      "seed_concept": "Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7e2b21c891dd97bb",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-2-5-21-571436798-3864380397-1837441745-3206"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-5-21-571436798-3864380397-1837441745-3206",
+              "raw_components": {
+                "Sid": "S-2-5-21-571436798-3864380397-1837441745-3206"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 1,
+              "alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+              "time": "2024-07-10 11:24:45.488649+00:00",
+              "source_row_hash": "6ac93377a7a0bcbc67bf41de1de2b9fe06509ac178df66ac37723fe7f254c62e",
+              "matched_inputs": [
+                "gsmith@niseko.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Derived_Email' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service creation",
+            "gsmith@niseko.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_b108d6b14ba923d1",
+          "status": "ok",
+          "candidate_count": 32,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+              "time": "2024-07-28 22:34:31.813146+00:00",
+              "source_row_hash": "2ba8479993cd16040f554c88d858131afc5257e41e846a4ad89b708c01293d1e",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+              "time": "2024-07-29 22:35:06.376935+00:00",
+              "source_row_hash": "2ddbc73298d09811469fec51cfedf8dab7aba0d6476294b761712d04289d2106",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+              "time": "2024-07-07 22:34:16.973944+00:00",
+              "source_row_hash": "3197ec4220a62c2a51d7f3e7cba4d074c8f9e9a3df57d11341b7cfcd9d65b1df",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            }
+          ],
+          "witness_count": 32,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "ADFS private key extraction attempt",
+            "S-2-5-21-571436798-3864380397-1837441745-3206"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 124,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "schtasks.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /CREATE /RU NISEKO\\ADFSAdmin /RP toptC88CoOb3XVxtPbr8 /SC DAILY /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23 /TR \"iy2orr1e.rrg.exe -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA=\" /ST 00:00:00 /F"
+              },
+              "roles": [],
+              "entity_index": 10,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-25 22:35:06.634034+00:00",
+              "source_row_hash": "05036f378f41b056693a60d6ff1bfa583567a09f17a96f8f8be8267b9c908ce7",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /RUN /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-25 22:35:06.634034+00:00",
+              "source_row_hash": "05036f378f41b056693a60d6ff1bfa583567a09f17a96f8f8be8267b9c908ce7",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /CREATE /RU NISEKO\\ADFSAdmin /RP toptC88CoOb3XVxtPbr8 /SC DAILY /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23 /TR \"iy2orr1e.rrg.exe -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA=\" /ST 00:00:00 /F"
+              },
+              "roles": [],
+              "entity_index": 10,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-21 22:34:53.183885+00:00",
+              "source_row_hash": "17d07a347cc5f9cda6f582fbafa2356c9cd68dcf21b11c118007bc650adc14e8",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 62,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Task Scheduler activity",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_331cc7827da5447e",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f328ca5b1574cda5",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-2-5-21-571436798-3864380397-1837441745-3206"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-5-21-571436798-3864380397-1837441745-3206",
+              "raw_components": {
+                "Sid": "S-2-5-21-571436798-3864380397-1837441745-3206"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 1,
+              "alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+              "time": "2024-07-10 11:24:45.488649+00:00",
+              "source_row_hash": "6ac93377a7a0bcbc67bf41de1de2b9fe06509ac178df66ac37723fe7f254c62e",
+              "matched_inputs": [
+                "MB-ADFS"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service creation",
+            "MB-ADFS"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_b108d6b14ba923d1",
+          "status": "ok",
+          "candidate_count": 32,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+              "time": "2024-07-28 22:34:31.813146+00:00",
+              "source_row_hash": "2ba8479993cd16040f554c88d858131afc5257e41e846a4ad89b708c01293d1e",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+              "time": "2024-07-29 22:35:06.376935+00:00",
+              "source_row_hash": "2ddbc73298d09811469fec51cfedf8dab7aba0d6476294b761712d04289d2106",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "851a9a78-9b56-0b8c-5ceb-17d0e439605a",
+              "time": "2024-07-07 22:34:16.973944+00:00",
+              "source_row_hash": "3197ec4220a62c2a51d7f3e7cba4d074c8f9e9a3df57d11341b7cfcd9d65b1df",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            }
+          ],
+          "witness_count": 32,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "ADFS private key extraction attempt",
+            "S-2-5-21-571436798-3864380397-1837441745-3206"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 124,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "schtasks.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /CREATE /RU NISEKO\\ADFSAdmin /RP toptC88CoOb3XVxtPbr8 /SC DAILY /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23 /TR \"iy2orr1e.rrg.exe -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA=\" /ST 00:00:00 /F"
+              },
+              "roles": [],
+              "entity_index": 10,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-25 22:35:06.634034+00:00",
+              "source_row_hash": "05036f378f41b056693a60d6ff1bfa583567a09f17a96f8f8be8267b9c908ce7",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /RUN /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-25 22:35:06.634034+00:00",
+              "source_row_hash": "05036f378f41b056693a60d6ff1bfa583567a09f17a96f8f8be8267b9c908ce7",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "schtasks.exe",
+              "raw_components": {
+                "CommandLine": "\"schtasks.exe\" /CREATE /RU NISEKO\\ADFSAdmin /RP toptC88CoOb3XVxtPbr8 /SC DAILY /TN Run-ExportADFSTokenSigninCert.2024-07-02_09_48_23 /TR \"iy2orr1e.rrg.exe -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA=\" /ST 00:00:00 /F"
+              },
+              "roles": [],
+              "entity_index": 10,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-21 22:34:53.183885+00:00",
+              "source_row_hash": "17d07a347cc5f9cda6f582fbafa2356c9cd68dcf21b11c118007bc650adc14e8",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 62,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Task Scheduler activity",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_Derived_Email",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

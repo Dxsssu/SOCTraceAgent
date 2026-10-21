@@ -1,0 +1,112 @@
+{
+  "timestamp": "2026-10-19T18:36:04.199246+00:00",
+  "model": "deepseek-v4.1-flash",
+  "provider": "fancybag",
+  "recall": "lexical+LLM",
+  "scope": "Training-memory resubstitution tests, not held-out accuracy. No official seed/path/index passed to retriever. Ablations explicitly hide memory layers.",
+  "tests": [
+    {
+      "case": "incident_55_train_000",
+      "mode": "SM_only",
+      "context": "We have detected that one of your users has recently clicked on a link that was found to be malicious: `http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/`. This is part of a broader security incident involving suspicious exploration activities including the use of multiple Windows commands which can be used by attackers to identify assets of value and coordinate lateral movement after compromising a machine.",
+      "question": "A recent security incident included another instance of potentially malicious URL click on the same device. Can you identify the URL?",
+      "result": {
+        "status": "no_match",
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "识别同一设备上另一起潜在恶意URL点击事件中涉及的URL"
+          },
+          "constraints": [
+            "目标URL应属于同一设备上的另一起事件",
+            "该事件为潜在恶意URL点击事件"
+          ],
+          "event_context": [
+            "检测到某用户最近点击了一个被判定为恶意的链接",
+            "该事件属于更广泛的安全事件，涉及可疑探测活动，包括使用多个Windows命令以识别有价值资产并在入侵后进行横向移动协调"
+          ],
+          "retrieval_query": "查找同一设备上另一起潜在恶意URL点击事件中涉及的URL"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "SM",
+            "decision": {
+              "decision": "needs_evidence",
+              "candidate_id": null,
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "目标URL应属于同一设备上的另一起事件",
+                  "supported": false,
+                  "reason": "当前仅有恶意URL点击告警及相关账户/邮件实体，尚未获得设备实体，无法验证另一起事件是否发生在同一设备上；需先查询与E1关联的设备或主机以桥接。"
+                },
+                {
+                  "constraint": "该事件为潜在恶意URL点击事件",
+                  "supported": false,
+                  "reason": "候选项均为从恶意URL点击告警中派生账户或邮件标识的步骤，不产生新的URL或事件标识，无法验证目标事件性质。"
+                }
+              ],
+              "reason": "目标是同一设备上另一起潜在恶意URL点击事件中的URL；候选项全部返回账户或邮件属性，均不产生设备桥接实体或新的URL/事件线索，且无法核实同一设备与事件类型约束，故需先获取关联设备信息。",
+              "candidates": [
+                "SM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "SM/em_a3221b25c137cf72/2aacabb3bd0e",
+                "SM/em_acf4bcfca67f0e2b/2aacabb3bd0e",
+                "SM/em_e516c468f5783731/2aacabb3bd0e",
+                "SM/em_36b2add63380b678/2aacabb3bd0e",
+                "SM/em_6759d8de5459a35e/2aacabb3bd0e",
+                "SM/em_282d44abd73e9a92/36e2c6b79fbb",
+                "SM/em_a3221b25c137cf72/36e2c6b79fbb"
+              ]
+            }
+          }
+        ],
+        "trace": []
+      },
+      "evaluation": {
+        "expected": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+        "exact": false,
+        "normalized_single_answer": false,
+        "answer_in_candidates": false
+      },
+      "sql_queries_including_metadata": 2,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 443,
+            "prompt_tokens": 1094,
+            "total_tokens": 1537,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 896
+            }
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"识别同一设备上另一起潜在恶意URL点击事件中涉及的URL\"},\"constraints\":[\"目标URL应属于同一设备上的另一起事件\",\"该事件为潜在恶意URL点击事件\"],\"event_context\":[\"检测到某用户最近点击了一个被判定为恶意的链接\",\"该事件属于更广泛的安全事件，涉及可疑探测活动，包括使用多个Windows命令以识别有价值资产并在入侵后进行横向移动协调\"],\"retrieval_query\":\"查找同一设备上另一起潜在恶意URL点击事件中涉及的URL\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 202,
+            "prompt_tokens": 3958,
+            "total_tokens": 4160,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"needs_evidence\",\"candidate_id\":null,\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"目标URL应属于同一设备上的另一起事件\",\"supported\":false,\"reason\":\"当前仅有恶意URL点击告警及相关账户/邮件实体，尚未获得设备实体，无法验证另一起事件是否发生在同一设备上；需先查询与E1关联的设备或主机以桥接。\"},{\"constraint\":\"该事件为潜在恶意URL点击事件\",\"supported\":false,\"reason\":\"候选项均为从恶意URL点击告警中派生账户或邮件标识的步骤，不产生新的URL或事件标识，无法验证目标事件性质。\"}],\"reason\":\"目标是同一设备上另一起潜在恶意URL点击事件中的URL；候选项全部返回账户或邮件属性，均不产生设备桥接实体或新的URL/事件线索，且无法核实同一设备与事件类型约束，故需先获取关联设备信息。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 5697
+    }
+  ]
+}

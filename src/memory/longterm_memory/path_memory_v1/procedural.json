@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "procedures": [
+    {
+      "id": "pm_url_account_device_url",
+      "name": "通过账户与主机关联追踪另一条URL点击事件",
+      "known": {
+        "url": {
+          "concept": "URL",
+          "kind": "url",
+          "cardinality": "one"
+        },
+        "start_title": {
+          "concept": "Alert_Title",
+          "kind": "title",
+          "cardinality": "one"
+        },
+        "bridge_title": {
+          "concept": "Alert_Title",
+          "kind": "title",
+          "cardinality": "one"
+        },
+        "target_title": {
+          "concept": "Alert_Title",
+          "kind": "title",
+          "cardinality": "one"
+        }
+      },
+      "wanted": {
+        "RemoteUrl": {
+          "concept": "URL",
+          "kind": "url",
+          "cardinality": "one"
+        }
+      },
+      "guide": "从已知URL及起点事件提取账户SID；按SID定位指定中间事件的主机；在目标事件中查询这些主机关联的URL。保留候选及告警来源，不把关联路径当作已证明的攻击时序。",
+      "steps": [
+        {
+          "id": "T1",
+          "episode_id": "em_url_to_sid",
+          "bindings": {
+            "url": {
+              "input": "url"
+            },
+            "title": {
+              "input": "start_title"
+            }
+          }
+        },
+        {
+          "id": "T2",
+          "episode_id": "em_sid_to_device",
+          "bindings": {
+            "sids": {
+              "step": "T1",
+              "field": "AccountSid"
+            },
+            "title": {
+              "input": "bridge_title"
+            }
+          }
+        },
+        {
+          "id": "T3",
+          "episode_id": "em_device_to_url",
+          "bindings": {
+            "devices": {
+              "step": "T2",
+              "field": "DeviceName"
+            },
+            "title": {
+              "input": "target_title"
+            }
+          }
+        }
+      ],
+      "policies": {
+        "empty": "pause",
+        "truncated": "pause",
+        "sql_error": "pause",
+        "multiple_candidates": "传递全部去重候选，禁止取首行",
+        "completion": "仅输出候选与证据；不替代Verifier判定",
+        "temporal_claim": "未验证事件先后"
+      },
+      "source_refs": [
+        "train_incident55_index0"
+      ],
+      "matching": {
+        "required_known": {
+          "url": "URL"
+        },
+        "wanted_concept": "URL",
+        "retrieval_text": "已知一次恶意URL点击，通过账户与探索活动关联主机，查找同一设备上的另一次恶意URL点击。Known malicious URL click to another malicious clicked URL on the same device via account and suspicious exploration activities.",
+        "applicability": [
+          "已知URL点击线索",
+          "寻找同设备另一次恶意URL点击",
+          "背景存在可疑探索活动；账户到设备关联须由查询验证"
+        ],
+        "not_applicable": [
+          "查询邮件发件人",
+          "查询URL重定向目标",
+          "已知设备直接查URL而没有起点URL"
+        ],
+        "event_parameters": {
+          "start_title": "potential_malicious_url_click",
+          "bridge_title": "suspicious_exploration",
+          "target_title": "malicious_url_click_on_device"
+        },
+        "postconditions": [
+          "确认目标事件和起点事件不同",
+          "确认候选设备与起点事件关联证据充分；账户共现本身不能证明同设备",
+          "多候选时保留分支，不把首条当作答案"
+        ]
+      }
+    }
+  ]
+}

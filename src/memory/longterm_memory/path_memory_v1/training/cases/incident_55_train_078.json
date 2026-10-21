@@ -1,0 +1,1314 @@
+{
+  "id": "incident_55_train_078",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_55_qa_incident_o1-ga_c42.json",
+  "index": 78,
+  "sha256": "d3d22be38c226f61a5ac240a940e0c8901208766ea002b6e4f273361ce61ae80",
+  "split": "train",
+  "question_record": {
+    "context": "A suspicious LDAP query was executed by user `pwilson`, indicating potential reconnaissance activity. The associated process was `ldaprequest.ps1` executed via `powershell.exe`. LDAP queries can be used by attackers to learn an organization's structure, which can lead to gaining higher privileges and access to important assets.",
+    "question": "Which account SID was identified in the sensitive credential memory read alert indicating a potential attack on lsass.exe?",
+    "answer": "S-1-5-21-561436748-3867387497-1732241745-3701",
+    "solution": [
+      "A suspicious LDAP query was executed using the process `powershell.exe`, indicating potential reconnaissance activity.",
+      "A process accessed the memory of lsass.exe to read sensitive credentials. The compromised account has the SID `S-1-5-21-561436748-3867387497-1732241745-3701`."
+    ],
+    "start_alert": 64,
+    "end_alert": 67,
+    "start_entities": [
+      9,
+      10,
+      11,
+      65,
+      66
+    ],
+    "end_entities": [
+      2
+    ],
+    "shortest_alert_path": [
+      64,
+      8,
+      67
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_55.graphml",
+  "graph_sha256": "c1455d8cf64d45d0e46183a7a347c100476f75193fdf2ae664a2ae2e03f6e8f2",
+  "path": [
+    "64",
+    "8",
+    "67"
+  ],
+  "nodes": {
+    "9": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "pwilson"
+    },
+    "10": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-551436448-9871687716-9837441745-1903"
+    },
+    "11": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "2de70991-2799-4a95-b734-8e3df3a50118"
+    },
+    "65": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "11116__2024-07-02t09:47:42.6848617z__\"powershell.exe\" c:\\script\\ldaprequest.ps1 "
+    },
+    "66": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "ldaprequest.ps1"
+    },
+    "64": {
+      "type": "alert",
+      "name": "Suspicious LDAP query",
+      "description": "A suspect LDAP (Lightweight Directory Access Protocol) query was executed, indicating potential reconnaissance activity. \n\nLDAP queries are often used by attackers in attempt to learn the organization's structure, by querying the domain controller for blatempistrative users and groups and interesting assets. \nUsing this information, an attacker can gain higher privileges and access important assets in the organization."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "powershell.exe"
+    },
+    "67": {
+      "type": "alert",
+      "name": "Sensitive credential memory read",
+      "description": "A process scanned or dumped memory from the Local Security Authority Subsystem Service (lsass.exe).  Accessing this process memory allows the attacker to extract secrets such as authentication hashes or passwords.  A copy of this memory may be written to the file system and exfiltrated to extract these credentials offline."
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-561436748-3867387497-1732241745-3701"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "9",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "10",
+        "concept": "Account_SID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "11",
+        "concept": "Account_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "65",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "66",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_SID",
+    "weak_links": [
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_28dbc7d445c5ef8c",
+  "merged_ems": [
+    "em_0df0df84e926e5d1",
+    "em_786437addb3952bb",
+    "em_6b040dd1616cc12b",
+    "em_3207d456cf954197",
+    "em_7d31cf1616eb2422",
+    "em_9339ee7c75ce2525"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ldaprequest.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "pwilson"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ldaprequest.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "pwilson"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "S-1-5-21-551436448-9871687716-9837441745-1903"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ldaprequest.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "S-1-5-21-551436448-9871687716-9837441745-1903"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "ldaprequest.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ldaprequest.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "ldaprequest.ps1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "11116__2024-07-02t09:47:42.6848617z__\"powershell.exe\" c:\\script\\ldaprequest.ps1 "
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ldaprequest.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-04 22:35:03.848291+00:00",
+              "matched_inputs": [
+                "11116__2024-07-02t09:47:42.6848617z__\"powershell.exe\" c:\\script\\ldaprequest.ps1 "
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_8160a4c433a8a7f1",
+      "seed_concept": "Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-28 22:34:32.178797+00:00",
+              "source_row_hash": "1f6c8f9a30604ee8cccaee3dc06fdffdb3d32878c6288dec0106e6f8b5337752",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-09 07:30:01.792863+00:00",
+              "source_row_hash": "2966ae1e61bdfdc0dbcb7eceb28bccd0afcb8dc6e41d1edac5422f5486913810",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-07 22:34:18.143066+00:00",
+              "source_row_hash": "3359d09a68b8c9b74c84501dae740559876fc40ef3cf831a4e5406bc640d54d8",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "2de70991-2799-4a95-b734-8e3df3a50118"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_8160a4c433a8a7f1",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_6b040dd1616cc12b",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-28 22:34:32.178797+00:00",
+              "source_row_hash": "1f6c8f9a30604ee8cccaee3dc06fdffdb3d32878c6288dec0106e6f8b5337752",
+              "matched_inputs": [
+                "pwilson"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-09 07:30:01.792863+00:00",
+              "source_row_hash": "2966ae1e61bdfdc0dbcb7eceb28bccd0afcb8dc6e41d1edac5422f5486913810",
+              "matched_inputs": [
+                "pwilson"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-07 22:34:18.143066+00:00",
+              "source_row_hash": "3359d09a68b8c9b74c84501dae740559876fc40ef3cf831a4e5406bc640d54d8",
+              "matched_inputs": [
+                "pwilson"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "pwilson"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_8160a4c433a8a7f1",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_0df0df84e926e5d1",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-28 22:34:32.178797+00:00",
+              "source_row_hash": "1f6c8f9a30604ee8cccaee3dc06fdffdb3d32878c6288dec0106e6f8b5337752",
+              "matched_inputs": [
+                "S-1-5-21-551436448-9871687716-9837441745-1903"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-09 07:30:01.792863+00:00",
+              "source_row_hash": "2966ae1e61bdfdc0dbcb7eceb28bccd0afcb8dc6e41d1edac5422f5486913810",
+              "matched_inputs": [
+                "S-1-5-21-551436448-9871687716-9837441745-1903"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-07 22:34:18.143066+00:00",
+              "source_row_hash": "3359d09a68b8c9b74c84501dae740559876fc40ef3cf831a4e5406bc640d54d8",
+              "matched_inputs": [
+                "S-1-5-21-551436448-9871687716-9837441745-1903"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "S-1-5-21-551436448-9871687716-9837441745-1903"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_8160a4c433a8a7f1",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_3207d456cf954197",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-28 22:34:32.178797+00:00",
+              "source_row_hash": "1f6c8f9a30604ee8cccaee3dc06fdffdb3d32878c6288dec0106e6f8b5337752",
+              "matched_inputs": [
+                "ldaprequest.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-09 07:30:01.792863+00:00",
+              "source_row_hash": "2966ae1e61bdfdc0dbcb7eceb28bccd0afcb8dc6e41d1edac5422f5486913810",
+              "matched_inputs": [
+                "ldaprequest.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-07 22:34:18.143066+00:00",
+              "source_row_hash": "3359d09a68b8c9b74c84501dae740559876fc40ef3cf831a4e5406bc640d54d8",
+              "matched_inputs": [
+                "ldaprequest.ps1"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "ldaprequest.ps1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_8160a4c433a8a7f1",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-28 22:34:32.178797+00:00",
+              "source_row_hash": "1f6c8f9a30604ee8cccaee3dc06fdffdb3d32878c6288dec0106e6f8b5337752",
+              "matched_inputs": [
+                "11116__2024-07-02t09:47:42.6848617z__\"powershell.exe\" c:\\script\\ldaprequest.ps1 "
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-09 07:30:01.792863+00:00",
+              "source_row_hash": "2966ae1e61bdfdc0dbcb7eceb28bccd0afcb8dc6e41d1edac5422f5486913810",
+              "matched_inputs": [
+                "11116__2024-07-02t09:47:42.6848617z__\"powershell.exe\" c:\\script\\ldaprequest.ps1 "
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ldaprequest.ps1 "
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "dff7f8f4-6b0d-4ad7-a5b1-61007545de1a",
+              "time": "2024-07-07 22:34:18.143066+00:00",
+              "source_row_hash": "3359d09a68b8c9b74c84501dae740559876fc40ef3cf831a4e5406bc640d54d8",
+              "matched_inputs": [
+                "11116__2024-07-02t09:47:42.6848617z__\"powershell.exe\" c:\\script\\ldaprequest.ps1 "
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "11116__2024-07-02t09:47:42.6848617z__\"powershell.exe\" c:\\script\\ldaprequest.ps1 "
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "ldaprequest.ps1",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "eae2f3e8-b61d-8081-0e2e-675c70c4aac1"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "eae2f3e8-b61d-8081-0e2e-675c70c4aac1"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "eae2f3e8-b61d-8081-0e2e-675c70c4aac1"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "eae2f3e8-b61d-8081-0e2e-675c70c4aac1"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "eae2f3e8-b61d-8081-0e2e-675c70c4aac1"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

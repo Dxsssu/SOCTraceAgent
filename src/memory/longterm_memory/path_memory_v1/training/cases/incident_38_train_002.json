@@ -1,0 +1,329 @@
+{
+  "id": "incident_38_train_002",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_38_qa_incident_o1-ga_c42.json",
+  "index": 2,
+  "sha256": "32a38ed62884552afc21824ce5b605fed97a821f591188826c1f832a343fa31b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident involved gathering information on a device using a known tool or technique. This was detected when a process with ID 7472 and the command line `powershell.exe` was executed at `2024-06-26T15:49:15.7860486Z`. This is an indication that attackers might be attempting to collect information about the target device or network for future attacks.",
+    "question": "As part of this incident, suspicious process injection was also observed. Can you find the URL associated with this process injection?",
+    "answer": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt",
+    "solution": [
+      "The account with AadUserId `12185914-91dd-4fb9-94f9-3252203b0426` was involved in a suspicious application window discovery activity.",
+      "A suspicious process injection was observed involving the URL `https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt`."
+    ],
+    "start_alert": 0,
+    "end_alert": 14,
+    "start_entities": [
+      5
+    ],
+    "end_entities": [
+      13
+    ],
+    "shortest_alert_path": [
+      0,
+      3,
+      14
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_38.graphml",
+  "graph_sha256": "740c5641e2ee770182a0bb99f0fc5c0d7b0fdaafc4eddcc144168a1bfe9366fc",
+  "path": [
+    "0",
+    "3",
+    "14"
+  ],
+  "nodes": {
+    "5": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+    },
+    "0": {
+      "type": "alert",
+      "name": "Suspicious Application Window Discovery",
+      "description": "A known tool or technique was used to gather information on this device. Attackers might be trying to gather information about the target device or network for later attacks."
+    },
+    "3": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "12185914-91dd-4fb9-94f9-3252203b0426"
+    },
+    "14": {
+      "type": "alert",
+      "name": "Suspicious process injection observed",
+      "description": "A process abnormally injected code into another process, As a result, unexpected code may be running in the target process memory. Injection is often used to hide malicious code execution within a trusted process. \nAs a result, the target process may exhibit abnormal behaviors such as opening a listening port or connecting to a command and control server."
+    },
+    "13": {
+      "type": "entity",
+      "node_type": "url",
+      "identifier_fields": "Url",
+      "value": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "5",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "URL",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_ec6ea83df0c44ad8",
+  "merged_ems": [
+    "em_b01c5e8e6379ab3b",
+    "em_49c129a6ecfa9aa4"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "12185914-91dd-4fb9-94f9-3252203b0426"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "12185914-91dd-4fb9-94f9-3252203b0426",
+              "raw_components": {
+                "AadUserId": "12185914-91dd-4fb9-94f9-3252203b0426"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-04 22:35:00.593840+00:00",
+              "matched_inputs": [
+                "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "13",
+          "expected_present": true,
+          "values": [
+            "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+          ],
+          "evidence": [
+            {
+              "concept": "URL",
+              "graph_value": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt",
+              "raw_components": {
+                "Url": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "d368aa79-4d7a-0d19-84a0-fbae77571b6e",
+              "time": "2024-07-04 22:35:00.869748+00:00",
+              "matched_inputs": [
+                "12185914-91dd-4fb9-94f9-3252203b0426"
+              ]
+            },
+            {
+              "concept": "URL",
+              "graph_value": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt",
+              "raw_components": {
+                "Url": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "d2bec7ed-3c42-62b7-685f-93a501e52d16",
+              "time": "2024-07-04 22:35:01.343148+00:00",
+              "matched_inputs": [
+                "12185914-91dd-4fb9-94f9-3252203b0426"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_89f0ceaec87d422a",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b01c5e8e6379ab3b",
+          "status": "ok",
+          "candidate_count": 29,
+          "unique_values": [
+            "12185914-91dd-4fb9-94f9-3252203b0426"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "12185914-91dd-4fb9-94f9-3252203b0426",
+              "raw_components": {
+                "AadUserId": "12185914-91dd-4fb9-94f9-3252203b0426"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-25 22:39:11.894269+00:00",
+              "source_row_hash": "03f66e7a216aee4770ac0a7b48e2a360f9f1162328a40fff6f168fbf745c2440",
+              "matched_inputs": [
+                "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "12185914-91dd-4fb9-94f9-3252203b0426",
+              "raw_components": {
+                "AadUserId": "12185914-91dd-4fb9-94f9-3252203b0426"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-22 22:39:51.192545+00:00",
+              "source_row_hash": "03facabee10f1d39cfd5777ab408a4a9e904f4d8889da60784571d1d72ee103f",
+              "matched_inputs": [
+                "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "12185914-91dd-4fb9-94f9-3252203b0426",
+              "raw_components": {
+                "AadUserId": "12185914-91dd-4fb9-94f9-3252203b0426"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-23 22:34:43.362337+00:00",
+              "source_row_hash": "0446b7941c5426d969d67e7e4f68b7b912674cedbe6637d43971002ed85dee1b",
+              "matched_inputs": [
+                "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Application Window Discovery",
+            "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_49c129a6ecfa9aa4",
+          "status": "ok",
+          "candidate_count": 58,
+          "unique_values": [
+            "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d2bec7ed-3c42-62b7-685f-93a501e52d16",
+          "witnesses": [
+            {
+              "concept": "URL",
+              "graph_value": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt",
+              "raw_components": {
+                "Url": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "d2bec7ed-3c42-62b7-685f-93a501e52d16",
+              "time": "2024-07-19 00:13:48.728234+00:00",
+              "source_row_hash": "0bb0238237aeeeca74a20ef98454998b1b5157b7a72dd3edfe7f99057cb7c0c1",
+              "matched_inputs": [
+                "12185914-91dd-4fb9-94f9-3252203b0426"
+              ]
+            },
+            {
+              "concept": "URL",
+              "graph_value": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt",
+              "raw_components": {
+                "Url": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "d2bec7ed-3c42-62b7-685f-93a501e52d16",
+              "time": "2024-07-24 22:39:14.019182+00:00",
+              "source_row_hash": "0d70dcf9233b54c35876921da9483ae917d2428e180b87ca158100d18895501e",
+              "matched_inputs": [
+                "12185914-91dd-4fb9-94f9-3252203b0426"
+              ]
+            },
+            {
+              "concept": "URL",
+              "graph_value": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt",
+              "raw_components": {
+                "Url": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "d2bec7ed-3c42-62b7-685f-93a501e52d16",
+              "time": "2024-07-15 22:39:20.307249+00:00",
+              "source_row_hash": "20d68fe7936b2c2a15af5804f742e2746a3c2db48e92e56b2ddef0c7e601361b",
+              "matched_inputs": [
+                "12185914-91dd-4fb9-94f9-3252203b0426"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious process injection observed",
+            "12185914-91dd-4fb9-94f9-3252203b0426"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 536 (char 535)",
+          "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

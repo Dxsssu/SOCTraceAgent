@@ -1,0 +1,874 @@
+{
+  "id": "incident_34_train_004",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_34_qa_incident_o1-ga_c42.json",
+  "index": 4,
+  "sha256": "658133de6e295b829793ba58a5244db9515e2ef17d44398605bf71236d88c37f",
+  "split": "train",
+  "question_record": {
+    "context": "During a security incident, a process `winword.exe` was launched on host `vnevado-win10e` by the user `samuelf` (SID: S-1-5-21-1870156660-7534030218-135086563-1193). This activity was associated with a suspicious LDAP query executed, which indicates potential reconnaissance activity aimed at learning the organization's structure by querying the domain controller for administrative users, groups, and interesting assets.",
+    "question": "Can you identify the Azure Active Directory (AAD) User ID associated with the suspicious LDAP query?",
+    "answer": "16320fec-8d90-403b-b7fe-78f715d4728d",
+    "solution": [
+      "A suspicious LDAP query was executed by the user account with AadUserId `16320fec-8d90-403b-b7fe-78f715d4728d`."
+    ],
+    "start_alert": 24,
+    "end_alert": 24,
+    "start_entities": [
+      11,
+      1,
+      4,
+      2,
+      5,
+      12
+    ],
+    "end_entities": [
+      6
+    ],
+    "shortest_alert_path": [
+      24
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_34.graphml",
+  "graph_sha256": "f4d6e37d5b5ea1ae63e4e63d1148a74acca74a673a5fa91213e4284748386a8d",
+  "path": [
+    "24"
+  ],
+  "nodes": {
+    "11": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "9780__2024-06-26t11:57:20.2959493z__\"winword.exe\" c:\\scripts\\rs4_winatp-intro-invoice.docm "
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10e"
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "samuelf"
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "02b8f519-1123-4228-b32a-ccb78af3449f"
+    },
+    "5": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1870156660-7534030218-135086563-1193"
+    },
+    "12": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "winword.exe"
+    },
+    "24": {
+      "type": "alert",
+      "name": "Suspicious LDAP query",
+      "description": "A suspect LDAP (Lightweight Directory Access Protocol) query was executed, indicating potential reconnaissance activity. \n\nLDAP queries are often used by attackers in attempt to learn the organization's structure, by querying the domain controller for blatempistrative users and groups and interesting assets. \nUsing this information, an attacker can gain higher privileges and access important assets in the organization."
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "16320fec-8d90-403b-b7fe-78f715d4728d"
+    }
+  },
+  "interpretation": {
+    "alerts": 1,
+    "sql_steps_per_variant": 1,
+    "start_alternatives": [
+      {
+        "node": "11",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "1",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "4",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "2",
+        "concept": "Device_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "5",
+        "concept": "Account_SID",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "12",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_AAD_ID",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_c016aa871fbc04ba",
+  "merged_ems": [
+    "em_e901d489acc0748d",
+    "em_b01c5e8e6379ab3b",
+    "em_b064dbb7606ee24b",
+    "em_248d9301b788cdd0",
+    "em_65d21104249f1c48",
+    "em_bde4ee0e5ccbde3e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-04 22:35:02.608830+00:00",
+              "matched_inputs": [
+                "samuelf"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-04 22:35:02.608830+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-04 22:35:02.608830+00:00",
+              "matched_inputs": [
+                "winword.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-04 22:35:02.608830+00:00",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-04 22:35:02.608830+00:00",
+              "matched_inputs": [
+                "vnevado-win10e"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-04 22:35:02.608830+00:00",
+              "matched_inputs": [
+                "9780__2024-06-26t11:57:20.2959493z__\"winword.exe\" c:\\scripts\\rs4_winatp-intro-invoice.docm "
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "em_65d21104249f1c48",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_65d21104249f1c48",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-13 22:39:47.039136+00:00",
+              "source_row_hash": "10b403aa52985dbfa663f841a836aa0cba8cba32aa3f7f8edd3c11aeaf4c8d16",
+              "matched_inputs": [
+                "samuelf"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-06 22:34:52.774793+00:00",
+              "source_row_hash": "2236f2d07e534bda839279694243fec2bf15979760c743930db8d6ed48f8ba10",
+              "matched_inputs": [
+                "samuelf"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-15 22:39:21.509304+00:00",
+              "source_row_hash": "492807b16a313a0d13b4ae69ec23901c3ca38ea5b2b707f29c3101906480ced2",
+              "matched_inputs": [
+                "samuelf"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "samuelf"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "em_248d9301b788cdd0",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_248d9301b788cdd0",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-13 22:39:47.039136+00:00",
+              "source_row_hash": "10b403aa52985dbfa663f841a836aa0cba8cba32aa3f7f8edd3c11aeaf4c8d16",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-06 22:34:52.774793+00:00",
+              "source_row_hash": "2236f2d07e534bda839279694243fec2bf15979760c743930db8d6ed48f8ba10",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-15 22:39:21.509304+00:00",
+              "source_row_hash": "492807b16a313a0d13b4ae69ec23901c3ca38ea5b2b707f29c3101906480ced2",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "em_bde4ee0e5ccbde3e",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-13 22:39:47.039136+00:00",
+              "source_row_hash": "10b403aa52985dbfa663f841a836aa0cba8cba32aa3f7f8edd3c11aeaf4c8d16",
+              "matched_inputs": [
+                "winword.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-06 22:34:52.774793+00:00",
+              "source_row_hash": "2236f2d07e534bda839279694243fec2bf15979760c743930db8d6ed48f8ba10",
+              "matched_inputs": [
+                "winword.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-15 22:39:21.509304+00:00",
+              "source_row_hash": "492807b16a313a0d13b4ae69ec23901c3ca38ea5b2b707f29c3101906480ced2",
+              "matched_inputs": [
+                "winword.exe"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "winword.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "em_e901d489acc0748d",
+      "seed_concept": "Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_e901d489acc0748d",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-13 22:39:47.039136+00:00",
+              "source_row_hash": "10b403aa52985dbfa663f841a836aa0cba8cba32aa3f7f8edd3c11aeaf4c8d16",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-06 22:34:52.774793+00:00",
+              "source_row_hash": "2236f2d07e534bda839279694243fec2bf15979760c743930db8d6ed48f8ba10",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-15 22:39:21.509304+00:00",
+              "source_row_hash": "492807b16a313a0d13b4ae69ec23901c3ca38ea5b2b707f29c3101906480ced2",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "02b8f519-1123-4228-b32a-ccb78af3449f"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "em_b064dbb7606ee24b",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b064dbb7606ee24b",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-13 22:39:47.039136+00:00",
+              "source_row_hash": "10b403aa52985dbfa663f841a836aa0cba8cba32aa3f7f8edd3c11aeaf4c8d16",
+              "matched_inputs": [
+                "vnevado-win10e"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-06 22:34:52.774793+00:00",
+              "source_row_hash": "2236f2d07e534bda839279694243fec2bf15979760c743930db8d6ed48f8ba10",
+              "matched_inputs": [
+                "vnevado-win10e"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-15 22:39:21.509304+00:00",
+              "source_row_hash": "492807b16a313a0d13b4ae69ec23901c3ca38ea5b2b707f29c3101906480ced2",
+              "matched_inputs": [
+                "vnevado-win10e"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "vnevado-win10e"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "em_b01c5e8e6379ab3b",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b01c5e8e6379ab3b",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-13 22:39:47.039136+00:00",
+              "source_row_hash": "10b403aa52985dbfa663f841a836aa0cba8cba32aa3f7f8edd3c11aeaf4c8d16",
+              "matched_inputs": [
+                "9780__2024-06-26t11:57:20.2959493z__\"winword.exe\" c:\\scripts\\rs4_winatp-intro-invoice.docm "
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-06 22:34:52.774793+00:00",
+              "source_row_hash": "2236f2d07e534bda839279694243fec2bf15979760c743930db8d6ed48f8ba10",
+              "matched_inputs": [
+                "9780__2024-06-26t11:57:20.2959493z__\"winword.exe\" c:\\scripts\\rs4_winatp-intro-invoice.docm "
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4",
+              "time": "2024-07-15 22:39:21.509304+00:00",
+              "source_row_hash": "492807b16a313a0d13b4ae69ec23901c3ca38ea5b2b707f29c3101906480ced2",
+              "matched_inputs": [
+                "9780__2024-06-26t11:57:20.2959493z__\"winword.exe\" c:\\scripts\\rs4_winatp-intro-invoice.docm "
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious LDAP query",
+            "9780__2024-06-26t11:57:20.2959493z__\"winword.exe\" c:\\scripts\\rs4_winatp-intro-invoice.docm "
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4"
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "21f2f0d2-d7b0-b81a-85d5-49c12ca8a3b4"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

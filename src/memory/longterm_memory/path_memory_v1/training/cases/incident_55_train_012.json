@@ -1,0 +1,530 @@
+{
+  "id": "incident_55_train_012",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_55_qa_incident_o1-ga_c42.json",
+  "index": 12,
+  "sha256": "d3d22be38c226f61a5ac240a940e0c8901208766ea002b6e4f273361ce61ae80",
+  "split": "train",
+  "question_record": {
+    "context": "During a recent security investigation, it was identified that host `MB-DC1` read the DKM key of an ADFS object (`4cac49d3-29d3-407e-8c9b-b7ebb21541b2`). Following this, there was a suspected DCSync attack where a replication request was sent from `MB-WINCLIENT` by Luciano Herrera (CIO) to `MB-DC1`. Then, it was observed that a known tool or technique was used to gather information on a device in a suspicious system hardware discovery attempt. Eventually, a suspicious Task Scheduler activity was reported where a process involved in earlier malicious activity used Task Scheduler to create, modify, or delete a task. This might be an attempt to launch malicious code automatically and establish persistence. For further information on this threat, read the corresponding threat analytics report.",
+    "question": "What is the hostname of the device involved in the suspicious Task Scheduler activity?",
+    "answer": "mb-adfs",
+    "solution": [
+      "The host `MB-DC1` read the DKM key of ADFS object id `4cac49d3-29d3-407e-8c9b-b7ebb21541b2`.",
+      "The account with AadUserID `2de70991-2799-4a95-b734-8e3df3a50118`, used the host `MB-WINCLIENT` to send a replication request to `MB-DC1`.",
+      "A known tool or technique using `powershell.exe` was used to gather system hardware information.",
+      "A process associated with suspicious activity used Task Scheduler on the host `mb-adfs` to create, modify, or delete a task."
+    ],
+    "start_alert": 105,
+    "end_alert": 33,
+    "start_entities": [
+      99
+    ],
+    "end_entities": [
+      26
+    ],
+    "shortest_alert_path": [
+      105,
+      99,
+      98,
+      11,
+      0,
+      8,
+      33
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_55.graphml",
+  "graph_sha256": "c1455d8cf64d45d0e46183a7a347c100476f75193fdf2ae664a2ae2e03f6e8f2",
+  "path": [
+    "105",
+    "99",
+    "98",
+    "11",
+    "0",
+    "8",
+    "33"
+  ],
+  "nodes": {
+    "99": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "MB-DC1"
+    },
+    "105": {
+      "type": "alert",
+      "name": "Suspected AD FS DKM key read",
+      "description": "MB-DC1 read the DKM key of ADFS object id 4cac49d3-29d3-407e-8c9b-b7ebb21541b2"
+    },
+    "98": {
+      "type": "alert",
+      "name": "Suspected DCSync attack (replication of directory services)",
+      "description": "Luciano Herrera (CIO) on MB-WINCLIENT sent 1 replication request to MB-DC1."
+    },
+    "11": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "2de70991-2799-4a95-b734-8e3df3a50118"
+    },
+    "0": {
+      "type": "alert",
+      "name": "Suspicious System Hardware Discovery",
+      "description": "A known tool or technique was used to gather information on this device. Attackers might be trying to gather information about the target device or network for later attacks."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "powershell.exe"
+    },
+    "33": {
+      "type": "alert",
+      "name": "Suspicious Task Scheduler activity",
+      "description": "A process involved in earlier malicious activity used Task Scheduler to create, modify, or delete a task. This might be an attempt launch malicious code automatically and establish persistence.\n\nFor further information on this threat, read the following threat analytics report: https://security.microsoft.com/threatanalytics3/c9709a39-ac8d-493d-9a63-71da3ca1e745/analystreport"
+    },
+    "26": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "mb-adfs"
+    }
+  },
+  "interpretation": {
+    "alerts": 4,
+    "sql_steps_per_variant": 4,
+    "start_alternatives": [
+      {
+        "node": "99",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Host_Name",
+    "weak_links": [
+      "99",
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_3146905fd712c4a5",
+  "merged_ems": [
+    "em_7eb864af9d22aeb3",
+    "em_b064dbb7606ee24b",
+    "em_7d1370437b58e0dd",
+    "em_7d31cf1616eb2422"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "99",
+          "expected_present": true,
+          "values": [
+            "MB-DC1"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "MB-DC1",
+              "raw_components": {
+                "HostName": "MB-DC1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "cbab725c-a32b-a1b1-a2e6-af33f0407c09",
+              "time": "2024-07-10 11:24:45.548678+00:00",
+              "matched_inputs": [
+                "MB-DC1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "2de70991-2799-4a95-b734-8e3df3a50118",
+              "raw_components": {
+                "AadUserId": "2de70991-2799-4a95-b734-8e3df3a50118"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "e80d90d3-a9be-8883-1b79-2aa5c94b761c",
+              "time": "2024-07-10 11:24:45.469423+00:00",
+              "matched_inputs": [
+                "MB-DC1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "contosoadfsblatempcreds.ps1",
+            "powershell.exe",
+            "svchost.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "svchost.exe",
+              "raw_components": {
+                "CommandLine": "svchost.exe -k netsvcs -p -s Winmgmt"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "394a992b-7aba-fbd3-571a-bdefbebf65bb",
+              "time": "2024-07-04 22:35:00.746663+00:00",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "394a992b-7aba-fbd3-571a-bdefbebf65bb",
+              "time": "2024-07-04 22:35:00.746663+00:00",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ContosoADFSblatempcreds.ps1 "
+              },
+              "entity_index": 23,
+              "entity_ref": "25",
+              "roles": [],
+              "alert_id": "394a992b-7aba-fbd3-571a-bdefbebf65bb",
+              "time": "2024-07-04 22:35:00.746663+00:00",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ContosoADFSblatempcreds.ps1 "
+              },
+              "entity_index": 23,
+              "entity_ref": "25",
+              "roles": [],
+              "alert_id": "394a992b-7aba-fbd3-571a-bdefbebf65bb",
+              "time": "2024-07-04 22:35:00.746663+00:00",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-04 22:35:02.074477+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_638b7e6eaf24a383",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7d1370437b58e0dd",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "MB-DC1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "cbab725c-a32b-a1b1-a2e6-af33f0407c09",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "MB-DC1",
+              "raw_components": {
+                "HostName": "MB-DC1"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 0,
+              "alert_id": "cbab725c-a32b-a1b1-a2e6-af33f0407c09",
+              "time": "2024-07-10 11:24:45.548678+00:00",
+              "source_row_hash": "c9686b480e1cfe8ace839a211ccfe86eeacb9f99bf8b18374321aa5da2e29327",
+              "matched_inputs": [
+                "MB-DC1"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspected AD FS DKM key read",
+            "MB-DC1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_b064dbb7606ee24b",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "e80d90d3-a9be-8883-1b79-2aa5c94b761c",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "2de70991-2799-4a95-b734-8e3df3a50118",
+              "raw_components": {
+                "AadUserId": "2de70991-2799-4a95-b734-8e3df3a50118"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 2,
+              "alert_id": "e80d90d3-a9be-8883-1b79-2aa5c94b761c",
+              "time": "2024-07-10 11:24:45.469423+00:00",
+              "source_row_hash": "6687f5a9d62084923ad5c5cc708d827d04a47be6ab28b8a98bf3dc6a8091e636",
+              "matched_inputs": [
+                "MB-DC1"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspected DCSync attack (replication of directory services)",
+            "MB-DC1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 104,
+          "unique_values": [
+            "contosoadfsblatempcreds.ps1",
+            "powershell.exe",
+            "svchost.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "394a992b-7aba-fbd3-571a-bdefbebf65bb",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "394a992b-7aba-fbd3-571a-bdefbebf65bb",
+              "time": "2024-07-12 22:34:22.392960+00:00",
+              "source_row_hash": "00afd025ec056c6055bdfe7972e21d197d7ac114ec060c45a736a1f1d7ed2fe9",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" C:\\Script\\ContosoADFSblatempcreds.ps1 "
+              },
+              "roles": [],
+              "entity_index": 23,
+              "alert_id": "394a992b-7aba-fbd3-571a-bdefbebf65bb",
+              "time": "2024-07-12 22:34:22.392960+00:00",
+              "source_row_hash": "00afd025ec056c6055bdfe7972e21d197d7ac114ec060c45a736a1f1d7ed2fe9",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "394a992b-7aba-fbd3-571a-bdefbebf65bb",
+              "time": "2024-07-31 22:40:01.154923+00:00",
+              "source_row_hash": "02e9a4e2ccc9260132eb478509f90f20467432d8109e89c2917e9a9f53e082a6",
+              "matched_inputs": [
+                "2de70991-2799-4a95-b734-8e3df3a50118"
+              ]
+            }
+          ],
+          "witness_count": 52,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious System Hardware Discovery",
+            "2de70991-2799-4a95-b734-8e3df3a50118"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-25 22:35:06.634034+00:00",
+              "source_row_hash": "05036f378f41b056693a60d6ff1bfa583567a09f17a96f8f8be8267b9c908ce7",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-21 22:34:53.183885+00:00",
+              "source_row_hash": "17d07a347cc5f9cda6f582fbafa2356c9cd68dcf21b11c118007bc650adc14e8",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "944bdb6c-49eb-9660-515e-eb1b9fdd6770",
+              "time": "2024-07-17 22:34:55.271832+00:00",
+              "source_row_hash": "1d5829f0e80019714f9f7607e02079d978f14c4e976e84fbad6389a7c6abef06",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Task Scheduler activity",
+            "contosoadfsblatempcreds.ps1",
+            "powershell.exe",
+            "svchost.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

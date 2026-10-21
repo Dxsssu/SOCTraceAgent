@@ -1,0 +1,438 @@
+{
+  "id": "incident_5_train_042",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 42,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "During the recent incident on July 4th, 2024, there was possible ransomware activity identified, where numerous file system changes involved appending the extension `.lockbit` to the file `characterical.zip`. This is suspected to be indicative of mass encryption by ransomware. This suspicious activity was flagged based on known malicious extensions from past ransomware incidents.",
+    "question": "There is a linked suspicious remote activity involved in this incident. Can you determine the name of the script file that was remotely executed?",
+    "answer": "get-userprttoken.ps1",
+    "solution": [
+      "Possible ransomware activity was detected based on a known malicious extension and observed file system changes on the device associated with the account `dp5hn`.",
+      "Suspicious remote activity was detected on the machine involving the process `get-userprttoken.ps1`."
+    ],
+    "start_alert": 159,
+    "end_alert": 107,
+    "start_entities": [
+      94,
+      95
+    ],
+    "end_entities": [
+      59
+    ],
+    "shortest_alert_path": [
+      159,
+      1,
+      107
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "159",
+    "1",
+    "107"
+  ],
+  "nodes": {
+    "94": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "characterical.zip"
+    },
+    "95": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "characterical.zip.lockbit"
+    },
+    "159": {
+      "type": "alert",
+      "name": "Possible ransomware activity based on a known malicious extension",
+      "description": "Numerous file system changes have been observed on the device. The changes involve appending a file extension that is known and observed in past ransomware incidents. This file system activity might be indicative of mass encryption of files by ransomware."
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "dp5hn"
+    },
+    "107": {
+      "type": "alert",
+      "name": "Suspicious remote activity",
+      "description": "Suspicious activity initiated remotely was observed on this machine. This alert can flag attempts to initiate interactive sessions, modify files, pass WMI commands, create scheduled tasks, and other potentially malicious activities from a remote machine."
+    },
+    "59": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "get-userprttoken.ps1"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "94",
+        "concept": "File_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "95",
+        "concept": "File_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Command_File_Mention",
+    "weak_links": [
+      "1"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_737d1bfe6d969804",
+  "merged_ems": [
+    "em_a102133702e0cbb0",
+    "em_6b040dd1616cc12b"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "dp5hn"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "dp5hn",
+              "raw_components": {
+                "Name": "dp5hn"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "633da70b-dab4-e98f-9cb7-5dfeb6cbbdf7",
+              "time": "2024-07-04 22:35:03.935068+00:00",
+              "matched_inputs": [
+                "characterical.zip",
+                "characterical.zip.lockbit"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "59",
+          "expected_present": true,
+          "values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 3,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88",
+              "time": "2024-07-04 22:35:00.896765+00:00",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88",
+              "time": "2024-07-04 22:35:00.896765+00:00",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "7e872a6d-b858-6f54-b6c3-0c41a99de6f5",
+              "time": "2024-07-04 22:35:03.258229+00:00",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "7e872a6d-b858-6f54-b6c3-0c41a99de6f5",
+              "time": "2024-07-04 22:35:03.258229+00:00",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_8444585207b79226",
+      "seed_concept": "File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a102133702e0cbb0",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "dp5hn"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "633da70b-dab4-e98f-9cb7-5dfeb6cbbdf7",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "dp5hn",
+              "raw_components": {
+                "Name": "dp5hn"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "633da70b-dab4-e98f-9cb7-5dfeb6cbbdf7",
+              "time": "2024-07-04 22:35:03.935068+00:00",
+              "source_row_hash": "01a54cbea8e11d70b9d503fa6b254cb558a887a2d44671e3c781e89134aaee87",
+              "matched_inputs": [
+                "characterical.zip"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "dp5hn",
+              "raw_components": {
+                "Name": "dp5hn"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "633da70b-dab4-e98f-9cb7-5dfeb6cbbdf7",
+              "time": "2024-07-04 22:35:03.935068+00:00",
+              "source_row_hash": "01a54cbea8e11d70b9d503fa6b254cb558a887a2d44671e3c781e89134aaee87",
+              "matched_inputs": [
+                "characterical.zip.lockbit"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "dp5hn",
+              "raw_components": {
+                "Name": "dp5hn"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "633da70b-dab4-e98f-9cb7-5dfeb6cbbdf7",
+              "time": "2024-07-12 22:34:25.358386+00:00",
+              "source_row_hash": "076c05618149b4ac3f85f6a2e578da09b9cecbf1104e8f60e6863e2d770c34e8",
+              "matched_inputs": [
+                "characterical.zip"
+              ]
+            }
+          ],
+          "witness_count": 28,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible ransomware activity based on a known malicious extension",
+            "characterical.zip",
+            "characterical.zip.lockbit"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_6b040dd1616cc12b",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "roles": [],
+              "entity_index": 24,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "roles": [],
+              "entity_index": 24,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-11 22:34:57.147069+00:00",
+              "source_row_hash": "0c3b8adcca8d1e7a35efd53ed3ed236f91ad5b5c16474c407d6c054aa6fb066b",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "roles": [],
+              "entity_index": 24,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-09 22:34:24.160170+00:00",
+              "source_row_hash": "3221c00b0709599ea25fc3733ab4c26c6803a16000c4c09279941efba73bbedb",
+              "matched_inputs": [
+                "dp5hn"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "dp5hn"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_File_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 330 (char 329)",
+          "alert_id": "6f43ee2e-3e90-3dc8-f9c7-37ed01d9b47a"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

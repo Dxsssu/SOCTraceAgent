@@ -1,0 +1,1007 @@
+{
+  "id": "incident_5_train_052",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 52,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "During a recent security incident, ransomware behavior was detected on the host `vnevado-win11u` with AadDeviceId `bc00e484-d0e5-4da4-9472-95568cccc07e`. This incident involved suspicious file system changes which are indicative of potential ransomware activity. Further investigation identified suspicious remote activity, and subsequent lateral movement to the jump server `Vnevado-jump` using PSExec. The host was later detected with unknown malware that was active, which Windows Defender might have blocked.",
+    "question": "What is the name of the file associated with the unknown malware detected on the host `vnevado-win11u`?",
+    "answer": "mimikatz.exe",
+    "solution": [
+      "Suspicious file system changes indicating potential ransomware activity were detected, involving a host with AadDeviceId `bc00e484-d0e5-4da4-9472-95568cccc07e`.",
+      "Suspicious remote activity was observed from IP address `99.83.111.100`.",
+      "Lateral movement was detected with PSExec to the jump server, involving an account with SID `S-5-7-21-1843151660-3234030288-105586167-1422`.",
+      "An unknown malware named `mimikatz.exe` was detected and was active on the host."
+    ],
+    "start_alert": 160,
+    "end_alert": 110,
+    "start_entities": [
+      7,
+      8
+    ],
+    "end_entities": [
+      19
+    ],
+    "shortest_alert_path": [
+      160,
+      8,
+      88,
+      42,
+      174,
+      17,
+      110
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "160",
+    "8",
+    "88",
+    "42",
+    "174",
+    "17",
+    "110"
+  ],
+  "nodes": {
+    "7": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11u"
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+    },
+    "160": {
+      "type": "alert",
+      "name": "Ransomware behavior detected in the file system",
+      "description": "Suspicious file system changes might indicate ransomware activity. This potential ransomware activity might be indicative of mass encryption of files by ransomware.\n\nFor more information, read the Ransomware: A pervasive and ongoing threat Threat Analytics report: https://security.microsoft.com/threatanalytics3/05658b6c-dc62-496d-ad3c-c6a795a33c27/analystreport\n\nAlso read the Activity Profile: Iranian MOIS operators opportunistically deploy limited-impact wiper in response to Israel-Hamas war Threat Analytics report: https://security.microsoft.com/threatanalytics3/c6674205-df28-453a-9e42-0010b7979bdd/overview?tid4b2462a4-bbee-495a-a0e1-f23ae524cc9c"
+    },
+    "88": {
+      "type": "alert",
+      "name": "Suspicious remote activity",
+      "description": "Suspicious activity initiated remotely was observed on this machine. This alert can flag attempts to initiate interactive sessions, modify files, pass WMI commands, create scheduled tasks, and other potentially malicious activities from a remote machine."
+    },
+    "42": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "99.83.111.100"
+    },
+    "174": {
+      "type": "alert",
+      "name": "PSExec to Vnevado-jump",
+      "description": "Lateral movement to the jump server"
+    },
+    "17": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-5-7-21-1843151660-3234030288-105586167-1422"
+    },
+    "110": {
+      "type": "alert",
+      "name": "Unknown malware was detected and was active",
+      "description": "Malware and unwanted software are undesirable applications that perform annoying, disruptive, or harmful actions on affected machines. Some of these undesirable applications can replicate and spread from one machine to another. Others are able to receive commands from remote attackers and perform activities associated with cyber attacks.\n\nThis detection might indicate that Windows Defender has stopped the malware from delivering its payload. However, it is prudent to check the machine for signs of infection."
+    },
+    "19": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "mimikatz.exe"
+    }
+  },
+  "interpretation": {
+    "alerts": 4,
+    "sql_steps_per_variant": 4,
+    "start_alternatives": [
+      {
+        "node": "7",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "8",
+        "concept": "Device_AAD_ID",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "File_Name",
+    "weak_links": [
+      "42"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_7f35d3828cd325e8",
+  "merged_ems": [
+    "em_7f9ee32440614a22",
+    "em_1fb69112e61590cd",
+    "em_744b8479e6535662",
+    "em_72075cf3c3d53679",
+    "em_0b8b786c0508f5b4"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "bc00e484-d0e5-4da4-9472-95568cccc07e"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "entity_index": 5,
+              "entity_ref": "7",
+              "roles": [],
+              "alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+              "time": "2024-07-04 22:35:04.167866+00:00",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "17",
+          "expected_present": true,
+          "values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 1,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "19",
+          "expected_present": true,
+          "values": [
+            "mimikatz.exe",
+            "mimilib.dll"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-04 22:35:01.928451+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimilib.dll",
+              "raw_components": {
+                "Name": "mimilib.dll"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-04 22:35:01.928451+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimilib.dll",
+              "raw_components": {
+                "Name": "mimilib.dll"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-04 22:35:01.928451+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-04 22:35:01.928451+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "bc00e484-d0e5-4da4-9472-95568cccc07e"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "entity_index": 5,
+              "entity_ref": "7",
+              "roles": [],
+              "alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+              "time": "2024-07-04 22:35:04.167866+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "17",
+          "expected_present": true,
+          "values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 1,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "19",
+          "expected_present": true,
+          "values": [
+            "mimikatz.exe",
+            "mimilib.dll"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-04 22:35:01.928451+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimilib.dll",
+              "raw_components": {
+                "Name": "mimilib.dll"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-04 22:35:01.928451+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimilib.dll",
+              "raw_components": {
+                "Name": "mimilib.dll"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-04 22:35:01.928451+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-04 22:35:01.928451+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_656b2635b30c2bcf",
+      "seed_concept": "Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_72075cf3c3d53679",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "bc00e484-d0e5-4da4-9472-95568cccc07e"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 5,
+              "alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+              "time": "2024-07-11 22:34:59.297570+00:00",
+              "source_row_hash": "3558fc643cf06f5c4dcf0e12a0fee11060a49dc99e82c3376da5f78aef4075d1",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 5,
+              "alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+              "time": "2024-07-06 22:34:54.456213+00:00",
+              "source_row_hash": "3e9fc9ee87806d60bdc27fa919146173ecb0903c4ea139b32c1fe51dc42c0572",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 5,
+              "alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+              "time": "2024-07-09 22:34:26.325962+00:00",
+              "source_row_hash": "5b3d9de7b88a4874dde4187df0f32f0007e89785473de09bcc1b5324213c34be",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ransomware behavior detected in the file system",
+            "bc00e484-d0e5-4da4-9472-95568cccc07e"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-06 22:34:51.379660+00:00",
+              "source_row_hash": "1f15e2c04f6c7714dbe182ad29a7f4214db794b4c9fa1e9ca580b8a470e45818",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-05 22:34:18.441913+00:00",
+              "source_row_hash": "5d8b18e04c57c57c57a78aafeb36622cbd39794fcff4706fc92158e44bb15d8a",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-13 22:34:39.007845+00:00",
+              "source_row_hash": "5ec5eccfb02d87c35ea63d17a1d3585da14e2539bb34fd3a0a0304ffa3342d65",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "bc00e484-d0e5-4da4-9472-95568cccc07e"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_1fb69112e61590cd",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-12 22:39:37.245925+00:00",
+              "source_row_hash": "321f0b375b404f37b0fcd4be43a8618f24b13e84c618210abee69c09ebe5a5c3",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "source_row_hash": "c4daf5d07275aa5d85bf1e7698acc999bbac6033efe6086ccbd1fa9fec43e664",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PSExec to Vnevado-jump",
+            "99.83.111.100"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_0b8b786c0508f5b4",
+          "status": "ok",
+          "candidate_count": 40,
+          "unique_values": [
+            "mimikatz.exe",
+            "mimilib.dll"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-12 22:34:23.551566+00:00",
+              "source_row_hash": "042ba4bb5c4451e37601b82bbb850a134964c8e6ca1c92078de975dd01fc09c0",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-12 22:34:23.551566+00:00",
+              "source_row_hash": "042ba4bb5c4451e37601b82bbb850a134964c8e6ca1c92078de975dd01fc09c0",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-14 22:34:28.326828+00:00",
+              "source_row_hash": "0454fccd6a90512244fb48c153ed6d48112623c49854328b30a8fb705d50bf47",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ],
+          "witness_count": 20,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Unknown malware was detected and was active",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_656b2635b30c2bcf",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7f9ee32440614a22",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "bc00e484-d0e5-4da4-9472-95568cccc07e"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 5,
+              "alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+              "time": "2024-07-11 22:34:59.297570+00:00",
+              "source_row_hash": "3558fc643cf06f5c4dcf0e12a0fee11060a49dc99e82c3376da5f78aef4075d1",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 5,
+              "alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+              "time": "2024-07-06 22:34:54.456213+00:00",
+              "source_row_hash": "3e9fc9ee87806d60bdc27fa919146173ecb0903c4ea139b32c1fe51dc42c0572",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 5,
+              "alert_id": "adcc59ca-e9ab-256d-9415-1f8336ead603",
+              "time": "2024-07-09 22:34:26.325962+00:00",
+              "source_row_hash": "5b3d9de7b88a4874dde4187df0f32f0007e89785473de09bcc1b5324213c34be",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ransomware behavior detected in the file system",
+            "vnevado-win11u"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-06 22:34:51.379660+00:00",
+              "source_row_hash": "1f15e2c04f6c7714dbe182ad29a7f4214db794b4c9fa1e9ca580b8a470e45818",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-05 22:34:18.441913+00:00",
+              "source_row_hash": "5d8b18e04c57c57c57a78aafeb36622cbd39794fcff4706fc92158e44bb15d8a",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-13 22:34:39.007845+00:00",
+              "source_row_hash": "5ec5eccfb02d87c35ea63d17a1d3585da14e2539bb34fd3a0a0304ffa3342d65",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "bc00e484-d0e5-4da4-9472-95568cccc07e"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_1fb69112e61590cd",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-12 22:39:37.245925+00:00",
+              "source_row_hash": "321f0b375b404f37b0fcd4be43a8618f24b13e84c618210abee69c09ebe5a5c3",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "source_row_hash": "c4daf5d07275aa5d85bf1e7698acc999bbac6033efe6086ccbd1fa9fec43e664",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PSExec to Vnevado-jump",
+            "99.83.111.100"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_0b8b786c0508f5b4",
+          "status": "ok",
+          "candidate_count": 40,
+          "unique_values": [
+            "mimikatz.exe",
+            "mimilib.dll"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-12 22:34:23.551566+00:00",
+              "source_row_hash": "042ba4bb5c4451e37601b82bbb850a134964c8e6ca1c92078de975dd01fc09c0",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-12 22:34:23.551566+00:00",
+              "source_row_hash": "042ba4bb5c4451e37601b82bbb850a134964c8e6ca1c92078de975dd01fc09c0",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "409a2afe-2ef8-c8b9-4131-3d8ea44ea8e4",
+              "time": "2024-07-14 22:34:28.326828+00:00",
+              "source_row_hash": "0454fccd6a90512244fb48c153ed6d48112623c49854328b30a8fb705d50bf47",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ],
+          "witness_count": 20,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Unknown malware was detected and was active",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 143 (char 142)",
+          "alert_id": "6fd9be3b-fb8f-f0fc-7602-e295f5efe670"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 143 (char 142)",
+          "alert_id": "6fd9be3b-fb8f-f0fc-7602-e295f5efe670"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

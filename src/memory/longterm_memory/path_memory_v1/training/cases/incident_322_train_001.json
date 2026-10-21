@@ -1,0 +1,1233 @@
+{
+  "id": "incident_322_train_001",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_322_qa_incident_o1-ga_c42.json",
+  "index": 1,
+  "sha256": "af9d019b60fcad75fa00492344563c1969e39aaf80b506c77ed06a9749ad2fb2",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident involved suspicious Azure Resource Management (ARM) activities by a user `Hailey Johnson`, who signed in to a risky session. This activity was flagged by Microsoft Defender for Cloud. One part of this incident indicates that the proxy IP address `???` was involved in the suspicious ARM operations. However, it is often seen in malicious activities when threat actors try to hide their source IP. Microsoft Defender for Resource Manager detected a resource management operation from an IP address that is associated with proxy services, such as TOR.",
+    "question": "Can you identify the ResourceId related to the ARM operation from the suspicious proxy IP address?",
+    "answer": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+    "solution": [
+      "There were suspicious Azure Resource Management activities performed using IP address `253.1.244.215`.",
+      "A resource management operation from a suspicious proxy IP address associated with TOR was attempted on the Azure resource with ResourceId `/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc`."
+    ],
+    "start_alert": 32,
+    "end_alert": 25,
+    "start_entities": [
+      6,
+      7,
+      8,
+      9,
+      31
+    ],
+    "end_entities": [
+      30
+    ],
+    "shortest_alert_path": [
+      32,
+      31,
+      25
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_322.graphml",
+  "graph_sha256": "8d2d318a4fcded2f15b1565627612655b20ff74b3984bdbb10a632fdc242080f",
+  "path": [
+    "32",
+    "31",
+    "25"
+  ],
+  "nodes": {
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "Hailey Johnson"
+    },
+    "7": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Email",
+      "value": "Hailey Johnson@vnevado.alpineskihouse.co"
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1840151686-3534835288-156286563-1127"
+    },
+    "9": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "5e5dd0bd-f7ed-4583-8e9e-52f91e31a360"
+    },
+    "31": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "253.1.244.215"
+    },
+    "32": {
+      "type": "alert",
+      "name": "Suspicious Azure Resource Management activities by a risky user",
+      "description": "Suspicious cloud Azure Resource Management (ARM) activities were performed by a user account that signed in to a risky session. This alert was triggered based on a Microsoft Defender for Cloud alert related to ARM and Microsoft Entra ID Protection risk scores."
+    },
+    "25": {
+      "type": "alert",
+      "name": "Azure Resource Manager operation from suspicious proxy IP address",
+      "description": "Microsoft Defender for Resource Manager detected a resource management operation from an IP address that is associated with proxy services, such as TOR. While this behavior can be legitimate, it's often seen in malicious activities, when threat actors try to hide their source IP."
+    },
+    "30": {
+      "type": "entity",
+      "node_type": "azure-resource",
+      "identifier_fields": "ResourceId",
+      "value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "6",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "7",
+        "concept": "Account_Derived_Email",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "8",
+        "concept": "Account_SID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "9",
+        "concept": "Account_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "31",
+        "concept": "IP_Address",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Azure_Resource_ID",
+    "weak_links": [
+      "31"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_cc62052c25ab45c2",
+  "merged_ems": [
+    "em_a1923f354438856e",
+    "em_7ff9a8a6d8ea10c7",
+    "em_61021e3400a5e242",
+    "em_f4ce270254282e1c",
+    "em_d3c90d75aeb88742",
+    "em_2474cf47fd91a742"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "31",
+          "expected_present": true,
+          "values": [
+            "253.1.244.215"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Attacker"
+              ],
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "matched_inputs": [
+                "5e5dd0bd-f7ed-4583-8e9e-52f91e31a360"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "30",
+          "expected_present": true,
+          "values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "evidence": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "31",
+          "expected_present": true,
+          "values": [
+            "253.1.244.215"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Attacker"
+              ],
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "matched_inputs": [
+                "Hailey Johnson@vnevado.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "30",
+          "expected_present": true,
+          "values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "evidence": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "31",
+          "expected_present": true,
+          "values": [
+            "253.1.244.215"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Attacker"
+              ],
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "matched_inputs": [
+                "Hailey Johnson"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "30",
+          "expected_present": true,
+          "values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "evidence": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "31",
+          "expected_present": true,
+          "values": [
+            "253.1.244.215"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Attacker"
+              ],
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "30",
+          "expected_present": true,
+          "values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "evidence": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "31",
+          "expected_present": true,
+          "values": [
+            "253.1.244.215"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Attacker"
+              ],
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "30",
+          "expected_present": true,
+          "values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "evidence": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_55080679e31da24b",
+      "seed_concept": "Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f4ce270254282e1c",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "253.1.244.215"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 14:19:35.758105+00:00",
+              "source_row_hash": "67d82dcdc3c753cbf58461504f30347fd25eaf6641ebf46ef2b82f140d82dfc8",
+              "matched_inputs": [
+                "5e5dd0bd-f7ed-4583-8e9e-52f91e31a360"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "source_row_hash": "e2861ad69a06ce76db1ed84789e989ab39ea7a08a3239bb8d104584551cd1fce",
+              "matched_inputs": [
+                "5e5dd0bd-f7ed-4583-8e9e-52f91e31a360"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Azure Resource Management activities by a risky user",
+            "5e5dd0bd-f7ed-4583-8e9e-52f91e31a360"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7ff9a8a6d8ea10c7",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+          "witnesses": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Azure_Resource_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Azure Resource Manager operation from suspicious proxy IP address",
+            "253.1.244.215"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_55080679e31da24b",
+      "seed_concept": "Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_61021e3400a5e242",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "253.1.244.215"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 14:19:35.758105+00:00",
+              "source_row_hash": "67d82dcdc3c753cbf58461504f30347fd25eaf6641ebf46ef2b82f140d82dfc8",
+              "matched_inputs": [
+                "Hailey Johnson@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "source_row_hash": "e2861ad69a06ce76db1ed84789e989ab39ea7a08a3239bb8d104584551cd1fce",
+              "matched_inputs": [
+                "Hailey Johnson@vnevado.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Derived_Email' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Azure Resource Management activities by a risky user",
+            "Hailey Johnson@vnevado.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7ff9a8a6d8ea10c7",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+          "witnesses": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Azure_Resource_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Azure Resource Manager operation from suspicious proxy IP address",
+            "253.1.244.215"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_55080679e31da24b",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d3c90d75aeb88742",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "253.1.244.215"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 14:19:35.758105+00:00",
+              "source_row_hash": "67d82dcdc3c753cbf58461504f30347fd25eaf6641ebf46ef2b82f140d82dfc8",
+              "matched_inputs": [
+                "Hailey Johnson"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "source_row_hash": "e2861ad69a06ce76db1ed84789e989ab39ea7a08a3239bb8d104584551cd1fce",
+              "matched_inputs": [
+                "Hailey Johnson"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Azure Resource Management activities by a risky user",
+            "Hailey Johnson"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7ff9a8a6d8ea10c7",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+          "witnesses": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Azure_Resource_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Azure Resource Manager operation from suspicious proxy IP address",
+            "253.1.244.215"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_55080679e31da24b",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_2474cf47fd91a742",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "253.1.244.215"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 14:19:35.758105+00:00",
+              "source_row_hash": "67d82dcdc3c753cbf58461504f30347fd25eaf6641ebf46ef2b82f140d82dfc8",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "source_row_hash": "e2861ad69a06ce76db1ed84789e989ab39ea7a08a3239bb8d104584551cd1fce",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Azure Resource Management activities by a risky user",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7ff9a8a6d8ea10c7",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+          "witnesses": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Azure_Resource_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Azure Resource Manager operation from suspicious proxy IP address",
+            "253.1.244.215"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_55080679e31da24b",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a1923f354438856e",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "253.1.244.215"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 14:19:35.758105+00:00",
+              "source_row_hash": "67d82dcdc3c753cbf58461504f30347fd25eaf6641ebf46ef2b82f140d82dfc8",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "253.1.244.215",
+              "raw_components": {
+                "Address": "253.1.244.215"
+              },
+              "roles": [
+                "Attacker"
+              ],
+              "entity_index": 1,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "source_row_hash": "e2861ad69a06ce76db1ed84789e989ab39ea7a08a3239bb8d104584551cd1fce",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Azure Resource Management activities by a risky user",
+            "253.1.244.215"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7ff9a8a6d8ea10c7",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+            "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+          "witnesses": [
+            {
+              "concept": "Azure_Resource_ID",
+              "graph_value": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Azure_Resource_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Azure Resource Manager operation from suspicious proxy IP address",
+            "253.1.244.215"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 1,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "candidate_count": 6,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "candidate_count": 6,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "candidate_count": 6,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "candidate_count": 6,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "candidate_count": 6,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

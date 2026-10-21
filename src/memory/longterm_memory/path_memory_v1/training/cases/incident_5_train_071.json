@@ -1,0 +1,1263 @@
+{
+  "id": "incident_5_train_071",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 71,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "Security incident involving a compromised user account with the account SID `S-0-6-5` delivering ransomware files. The alert was triggered due to the suspicious WMI process creation observed on the machine, which is possibly used by malware to spawn new processes.",
+    "question": "There is also a suspicious WMI process creation related to this incident. Can you provide the command line details of the process observed?",
+    "answer": "`powershell -file c:\\scripts\\get-userprttoken.ps1`",
+    "solution": [
+      "A user account was seen delivering ransomware-related files on host `vnevado-win11t`.",
+      "A suspicious WMI process was created with process ID `6280` at `2024-06-20t09:29:43.9198085z` using the command line `powershell -file c:\\scripts\\get-userprttoken.ps1`."
+    ],
+    "start_alert": 93,
+    "end_alert": 145,
+    "start_entities": [
+      42,
+      47,
+      94,
+      95
+    ],
+    "end_entities": [
+      109
+    ],
+    "shortest_alert_path": [
+      93,
+      68,
+      145
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "93",
+    "68",
+    "145"
+  ],
+  "nodes": {
+    "42": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "99.83.111.100"
+    },
+    "47": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-0-6-5"
+    },
+    "94": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "characterical.zip"
+    },
+    "95": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "characterical.zip.lockbit"
+    },
+    "93": {
+      "type": "alert",
+      "name": "Possible compromised user account delivering ransomware-related files",
+      "description": "A user account was observed dropping a ransomware-related file on several devices. An attacker may have compromised the said user account to move laterally across the network and infect as many devices with ransomware as possible. Automated remediation action may be taken to disable the account."
+    },
+    "68": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11t"
+    },
+    "145": {
+      "type": "alert",
+      "name": "Suspicious WMI process creation",
+      "description": "Suspicious WMI process creation was observed on the machine. Malware frequently use WMI to spawn new processes, breaking process trees and further infecting a machine."
+    },
+    "109": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "42",
+        "concept": "IP_Address",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "47",
+        "concept": "Account_SID",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "94",
+        "concept": "File_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "95",
+        "concept": "File_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Process_Identity",
+    "weak_links": [
+      "68"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_248813147d5b2f07",
+  "merged_ems": [
+    "em_546045b7ece99c80",
+    "em_bab3dcef4b9e19c5",
+    "em_8d6469f2573a39ce",
+    "em_b108d6b14ba923d1"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "68",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11u",
+              "raw_components": {
+                "HostName": "vnevado-win11u"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab",
+              "time": "2024-07-04 22:35:00.773532+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-04 22:35:01.491898+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 10,
+          "expected_node": "109",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5572__2024-06-20t09:32:04.8002759z__curl http://vectorsandarrows.com",
+            "5708__2024-06-20t09:32:06.0902858z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "7332__2024-06-20t09:32:01.3894288z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7332__2024-06-20t09:32:01.3894288z__bcdedit /set bootstatuspolicy ignoreallfailures",
+              "raw_components": {
+                "ProcessId": "7332",
+                "CreatedTimeUtc": "2024-06-20T09:32:01.3894288Z",
+                "CommandLine": "bcdedit /set bootstatuspolicy ignoreallfailures"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4828",
+                "CreatedTimeUtc": "2024-06-20T09:31:59.6743318Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5708__2024-06-20t09:32:06.0902858z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "5708",
+                "CreatedTimeUtc": "2024-06-20T09:32:06.0902858Z",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 17,
+              "entity_ref": "19",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5572__2024-06-20t09:32:04.8002759z__curl http://vectorsandarrows.com",
+              "raw_components": {
+                "ProcessId": "5572",
+                "CreatedTimeUtc": "2024-06-20T09:32:04.8002759Z",
+                "CommandLine": "curl http://vectorsandarrows.com"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+              "raw_components": {
+                "ProcessId": "3364",
+                "CreatedTimeUtc": "2024-06-20T09:29:39.8123894Z",
+                "CommandLine": "bcdedit /set bootstatuspolicy ignoreallfailures"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com",
+              "raw_components": {
+                "ProcessId": "88",
+                "CreatedTimeUtc": "2024-06-20T09:29:42.3927529Z",
+                "CommandLine": "curl http://vectorsandarrows.com"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 17,
+              "entity_ref": "19",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "68",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11t"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-04 22:35:01.491898+00:00",
+              "matched_inputs": [
+                "characterical.zip",
+                "characterical.zip.lockbit"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 5,
+          "expected_node": "109",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+              "raw_components": {
+                "ProcessId": "3364",
+                "CreatedTimeUtc": "2024-06-20T09:29:39.8123894Z",
+                "CommandLine": "bcdedit /set bootstatuspolicy ignoreallfailures"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com",
+              "raw_components": {
+                "ProcessId": "88",
+                "CreatedTimeUtc": "2024-06-20T09:29:42.3927529Z",
+                "CommandLine": "curl http://vectorsandarrows.com"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 17,
+              "entity_ref": "19",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "68",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11u",
+              "raw_components": {
+                "HostName": "vnevado-win11u"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab",
+              "time": "2024-07-04 22:35:00.773532+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-04 22:35:01.491898+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 10,
+          "expected_node": "109",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5572__2024-06-20t09:32:04.8002759z__curl http://vectorsandarrows.com",
+            "5708__2024-06-20t09:32:06.0902858z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "7332__2024-06-20t09:32:01.3894288z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7332__2024-06-20t09:32:01.3894288z__bcdedit /set bootstatuspolicy ignoreallfailures",
+              "raw_components": {
+                "ProcessId": "7332",
+                "CreatedTimeUtc": "2024-06-20T09:32:01.3894288Z",
+                "CommandLine": "bcdedit /set bootstatuspolicy ignoreallfailures"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4828",
+                "CreatedTimeUtc": "2024-06-20T09:31:59.6743318Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5708__2024-06-20t09:32:06.0902858z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "5708",
+                "CreatedTimeUtc": "2024-06-20T09:32:06.0902858Z",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 17,
+              "entity_ref": "19",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5572__2024-06-20t09:32:04.8002759z__curl http://vectorsandarrows.com",
+              "raw_components": {
+                "ProcessId": "5572",
+                "CreatedTimeUtc": "2024-06-20T09:32:04.8002759Z",
+                "CommandLine": "curl http://vectorsandarrows.com"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "vnevado-win11u"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+              "raw_components": {
+                "ProcessId": "3364",
+                "CreatedTimeUtc": "2024-06-20T09:29:39.8123894Z",
+                "CommandLine": "bcdedit /set bootstatuspolicy ignoreallfailures"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com",
+              "raw_components": {
+                "ProcessId": "88",
+                "CreatedTimeUtc": "2024-06-20T09:29:42.3927529Z",
+                "CommandLine": "curl http://vectorsandarrows.com"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 17,
+              "entity_ref": "19",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b108d6b14ba923d1",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-09 22:34:23.795957+00:00",
+              "source_row_hash": "05936dc341ffd6d36a417c0ddf7189e1840591526c286ebb17f97aa7aeba3456",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-16 22:34:44.654494+00:00",
+              "source_row_hash": "3968e80dc0816f17f1140c186f12a9f8e64c43e758f25154a00b0259b47c86eb",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-08 22:34:58.339275+00:00",
+              "source_row_hash": "51abc33be89e0f85eedfaccfdab8b1cc2cd2bd96fe95b6d0b37a09ea0e1016f1",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible compromised user account delivering ransomware-related files",
+            "S-0-6-5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 140,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5572__2024-06-20t09:32:04.8002759z__curl http://vectorsandarrows.com",
+            "5708__2024-06-20t09:32:06.0902858z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "7332__2024-06-20t09:32:01.3894288z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-14 22:34:29.893832+00:00",
+              "source_row_hash": "1101e9bd6785da116cd89d30b6250a98f33d58ea79552c5b87143b4affe68ab2",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-08 22:35:00.159633+00:00",
+              "source_row_hash": "1135c0136e30fd131cfee2e9d087f85087bd4f13dddf2da5bf292796be4ba705",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-15 22:39:22.259180+00:00",
+              "source_row_hash": "2429c9d5ce0a3edb2e5d7afc53a0e8b79d76d4dae0f552d6a861ecbe0269778b",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious WMI process creation",
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bab3dcef4b9e19c5",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "vnevado-win11t"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-09 22:34:23.795957+00:00",
+              "source_row_hash": "05936dc341ffd6d36a417c0ddf7189e1840591526c286ebb17f97aa7aeba3456",
+              "matched_inputs": [
+                "characterical.zip"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-09 22:34:23.795957+00:00",
+              "source_row_hash": "05936dc341ffd6d36a417c0ddf7189e1840591526c286ebb17f97aa7aeba3456",
+              "matched_inputs": [
+                "characterical.zip.lockbit"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-16 22:34:44.654494+00:00",
+              "source_row_hash": "3968e80dc0816f17f1140c186f12a9f8e64c43e758f25154a00b0259b47c86eb",
+              "matched_inputs": [
+                "characterical.zip"
+              ]
+            }
+          ],
+          "witness_count": 28,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible compromised user account delivering ransomware-related files",
+            "characterical.zip",
+            "characterical.zip.lockbit"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 70,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-14 22:34:29.893832+00:00",
+              "source_row_hash": "1101e9bd6785da116cd89d30b6250a98f33d58ea79552c5b87143b4affe68ab2",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-08 22:35:00.159633+00:00",
+              "source_row_hash": "1135c0136e30fd131cfee2e9d087f85087bd4f13dddf2da5bf292796be4ba705",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-15 22:39:22.259180+00:00",
+              "source_row_hash": "2429c9d5ce0a3edb2e5d7afc53a0e8b79d76d4dae0f552d6a861ecbe0269778b",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious WMI process creation",
+            "vnevado-win11t"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_8d6469f2573a39ce",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-09 22:34:23.795957+00:00",
+              "source_row_hash": "05936dc341ffd6d36a417c0ddf7189e1840591526c286ebb17f97aa7aeba3456",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-16 22:34:44.654494+00:00",
+              "source_row_hash": "3968e80dc0816f17f1140c186f12a9f8e64c43e758f25154a00b0259b47c86eb",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11t",
+              "raw_components": {
+                "HostName": "vnevado-win11t"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-08 22:34:58.339275+00:00",
+              "source_row_hash": "51abc33be89e0f85eedfaccfdab8b1cc2cd2bd96fe95b6d0b37a09ea0e1016f1",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible compromised user account delivering ransomware-related files",
+            "99.83.111.100"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 140,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5572__2024-06-20t09:32:04.8002759z__curl http://vectorsandarrows.com",
+            "5708__2024-06-20t09:32:06.0902858z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "7332__2024-06-20t09:32:01.3894288z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-14 22:34:29.893832+00:00",
+              "source_row_hash": "1101e9bd6785da116cd89d30b6250a98f33d58ea79552c5b87143b4affe68ab2",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-08 22:35:00.159633+00:00",
+              "source_row_hash": "1135c0136e30fd131cfee2e9d087f85087bd4f13dddf2da5bf292796be4ba705",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+              "raw_components": {
+                "ProcessId": "6280",
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1",
+                "CreatedTimeUtc": "2024-06-20T09:29:43.9198085Z"
+              },
+              "roles": [],
+              "entity_index": 22,
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-15 22:39:22.259180+00:00",
+              "source_row_hash": "2429c9d5ce0a3edb2e5d7afc53a0e8b79d76d4dae0f552d6a861ecbe0269778b",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious WMI process creation",
+            "vnevado-win11t",
+            "vnevado-win11u"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 497 (char 496)",
+          "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab"
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 497 (char 496)",
+          "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab"
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 497 (char 496)",
+          "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

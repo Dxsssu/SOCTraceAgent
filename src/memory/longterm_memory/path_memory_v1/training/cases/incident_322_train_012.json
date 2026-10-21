@@ -1,0 +1,397 @@
+{
+  "id": "incident_322_train_012",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_322_qa_incident_o1-ga_c42.json",
+  "index": 12,
+  "sha256": "af9d019b60fcad75fa00492344563c1969e39aaf80b506c77ed06a9749ad2fb2",
+  "split": "train",
+  "question_record": {
+    "context": "Suspicious Azure Resource Management (ARM) activities were performed by a user account that signed in to a risky session from the IP address 253.1.244.215. This suspicious activity triggered an alert based on a Microsoft Defender for Cloud alert related to ARM and Microsoft Entra ID Protection risk scores. Subsequently, a malicious URL was clicked on a device, and that activity was logged. Additionally, a connection from an IP address to login.micro.demo.antoinetest.ovh was detected in the proxy logs. This connection should be investigated further to determine what happened on the computer.",
+    "question": "What is the IP address that made the connection to login.micro.demo.antoinetest.ovh?",
+    "answer": "231.60.52.209",
+    "solution": [
+      "Suspicious Azure Resource Management activities were performed by a risky user with SID `S-1-5-21-1840151686-3534835288-156286563-1127`.",
+      "The host `vnevado-win11h` clicked on a malicious URL.",
+      "A connection from IP address `231.60.52.209` was detected in the proxy logs, involving the host `vnevado-win11h` and the URL `login.micro.demo.antoinetest.ovh`."
+    ],
+    "start_alert": 32,
+    "end_alert": 11,
+    "start_entities": [
+      31
+    ],
+    "end_entities": [
+      14
+    ],
+    "shortest_alert_path": [
+      32,
+      8,
+      33,
+      13,
+      11
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_322.graphml",
+  "graph_sha256": "8d2d318a4fcded2f15b1565627612655b20ff74b3984bdbb10a632fdc242080f",
+  "path": [
+    "32",
+    "8",
+    "33",
+    "13",
+    "11"
+  ],
+  "nodes": {
+    "31": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "253.1.244.215"
+    },
+    "32": {
+      "type": "alert",
+      "name": "Suspicious Azure Resource Management activities by a risky user",
+      "description": "Suspicious cloud Azure Resource Management (ARM) activities were performed by a user account that signed in to a risky session. This alert was triggered based on a Microsoft Defender for Cloud alert related to ARM and Microsoft Entra ID Protection risk scores."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1840151686-3534835288-156286563-1127"
+    },
+    "33": {
+      "type": "alert",
+      "name": "Malicious URL was clicked on that device",
+      "description": "Malicious URL was clicked on that device"
+    },
+    "13": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11h"
+    },
+    "11": {
+      "type": "alert",
+      "name": "Malicious Url detected in Proxy logs",
+      "description": "Connection from 231.60.52.209 - vnevado-win11h.vnevado.alpineskihouse.co to login.micro.demo.antoinetest.ovh has been seen on the proxy, please check on the computer what happened"
+    },
+    "14": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "231.60.52.209"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "31",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [
+      "13"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e282491397049add",
+  "merged_ems": [
+    "em_1fb69112e61590cd",
+    "em_b108d6b14ba923d1",
+    "em_4da484e0b617d72a"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Compromised"
+              ],
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "13",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11h"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11h",
+              "raw_components": {
+                "HostName": "vnevado-win11h"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 13:49:58.880422+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "14",
+          "expected_present": true,
+          "values": [
+            "228.3.31.94",
+            "231.60.52.209"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "231.60.52.209",
+              "raw_components": {
+                "Address": "231.60.52.209"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+              "time": "2024-08-01 12:47:22.846409+00:00",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "228.3.31.94",
+              "raw_components": {
+                "Address": "228.3.31.94"
+              },
+              "entity_index": 3,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+              "time": "2024-08-01 12:47:22.846409+00:00",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_2233cc8b03bedf59",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1fb69112e61590cd",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 14:19:35.758105+00:00",
+              "source_row_hash": "67d82dcdc3c753cbf58461504f30347fd25eaf6641ebf46ef2b82f140d82dfc8",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "source_row_hash": "e2861ad69a06ce76db1ed84789e989ab39ea7a08a3239bb8d104584551cd1fce",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Azure Resource Management activities by a risky user",
+            "253.1.244.215"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_b108d6b14ba923d1",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "vnevado-win11h"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11h",
+              "raw_components": {
+                "HostName": "vnevado-win11h"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 15:49:16.174289+00:00",
+              "source_row_hash": "13cb36022c5413f8bd014ff061235891865d6fa97760496848638bfe7a44d95a",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11h",
+              "raw_components": {
+                "HostName": "vnevado-win11h"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb",
+              "time": "2024-08-01 13:49:58.880422+00:00",
+              "source_row_hash": "1d7035906796aa632e754d53dddab2609eba23dcc6df3533a41f98eb08f1ef09",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious URL was clicked on that device",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_4da484e0b617d72a",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "228.3.31.94",
+            "231.60.52.209"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "231.60.52.209",
+              "raw_components": {
+                "Address": "231.60.52.209"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "01a23e9a-b69c-ee97-c5f0-447aaa91df7a",
+              "time": "2024-08-01 12:47:22.846409+00:00",
+              "source_row_hash": "ae03d11e7f149f378769b621731325e7bb1178e06651eecffb5efa9dcf8b555d",
+              "matched_inputs": [
+                "vnevado-win11h"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious Url detected in Proxy logs",
+            "vnevado-win11h"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 2032 (char 2031)",
+          "alert_id": "a2fb174d-cdd1-4484-436a-f3cb4c2713bb"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

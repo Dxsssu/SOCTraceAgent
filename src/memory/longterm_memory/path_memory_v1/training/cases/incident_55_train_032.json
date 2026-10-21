@@ -1,0 +1,706 @@
+{
+  "id": "incident_55_train_032",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_55_qa_incident_o1-ga_c42.json",
+  "index": 32,
+  "sha256": "d3d22be38c226f61a5ac240a940e0c8901208766ea002b6e4f273361ce61ae80",
+  "split": "train",
+  "question_record": {
+    "context": "A potential malicious URL click was detected and reported for the mailbox `bjenkins@niseko.alpineskihouse.co` on 2024-07-10. This incident suggests that an attacker might have leveraged this click to compromise the user's account and send phishing emails internally. Following this, it was observed that a user was sending phishing emails from a device on 2024-07-07, which indicates a possible lateral movement by the attacker within the organization. This alert was a result of a Microsoft Defender for Office 365 alert.",
+    "question": "Which mailbox received the email containing the malicious URL that was later removed in the security incident?",
+    "answer": "santiago@vnevado.alpineskihouse.co",
+    "solution": [
+      "The user with SID `S-1-5-21-561436748-3867387497-1732241745-3701` clicked on a potentially malicious URL.",
+      "A phishing campaign was launched from the device associated with the user account having AadUserId `28058d92-fc24-4869-9231-6546a34b00f2`.",
+      "An email containing a malicious URL was delivered to the mailbox `santiago@vnevado.alpineskihouse.co` and later removed."
+    ],
+    "start_alert": 104,
+    "end_alert": 70,
+    "start_entities": [
+      93,
+      94
+    ],
+    "end_entities": [
+      71
+    ],
+    "shortest_alert_path": [
+      104,
+      2,
+      88,
+      78,
+      70
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_55.graphml",
+  "graph_sha256": "c1455d8cf64d45d0e46183a7a347c100476f75193fdf2ae664a2ae2e03f6e8f2",
+  "path": [
+    "104",
+    "2",
+    "88",
+    "78",
+    "70"
+  ],
+  "nodes": {
+    "93": {
+      "type": "entity",
+      "node_type": "mailbox",
+      "identifier_fields": "MailboxPrimaryAddress",
+      "value": "bjenkins@niseko.alpineskihouse.co"
+    },
+    "94": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "Recipient",
+      "value": "bjenkins@niseko.alpineskihouse.co"
+    },
+    "104": {
+      "type": "alert",
+      "name": "A potentially malicious URL click was detected",
+      "description": "We have detected that one of your users has recently clicked on a link that was found to be malicious. -V1.0.0.5"
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-561436748-3867387497-1732241745-3701"
+    },
+    "88": {
+      "type": "alert",
+      "name": "Internal phishing lexpaign",
+      "description": "A user was observed to have sent phishing email from this device to recipients inside the organization. The user account might have been compromised in an attempt by an attacker to move laterally inside the organization. This alert was triggered based on a Microsoft Defender for Office 365 alert."
+    },
+    "78": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "28058d92-fc24-4869-9231-6546a34b00f2"
+    },
+    "70": {
+      "type": "alert",
+      "name": "Email messages containing malicious URL removed after delivery​",
+      "description": "Emails with malicious URL that were delivered and later removed -V62.34.26.163"
+    },
+    "71": {
+      "type": "entity",
+      "node_type": "mailbox",
+      "identifier_fields": "MailboxPrimaryAddress",
+      "value": "santiago@vnevado.alpineskihouse.co"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "93",
+        "concept": "Mailbox_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "94",
+        "concept": "Mail_Recipient",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Mailbox_Address",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_8c3e60816c266237",
+  "merged_ems": [
+    "em_1a8926f8d3e8a059",
+    "em_248d9301b788cdd0",
+    "em_757d3eda611caf21",
+    "em_5936c1c7524e9997"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Mail_Recipient",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "entity_index": 3,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+              "time": "2024-07-10 11:24:45.507742+00:00",
+              "matched_inputs": [
+                "bjenkins@niseko.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "78",
+          "expected_present": true,
+          "values": [
+            "28058d92-fc24-4869-9231-6546a34b00f2",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "28058d92-fc24-4869-9231-6546a34b00f2",
+              "raw_components": {
+                "AadUserId": "28058d92-fc24-4869-9231-6546a34b00f2"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Compromised"
+              ],
+              "alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+              "time": "2024-07-07 10:09:33.920702+00:00",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+              "time": "2024-07-07 10:09:33.920702+00:00",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "71",
+          "expected_present": true,
+          "values": [
+            "bjenkins@niseko.alpineskihouse.co",
+            "santiago@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "santiago@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "santiago@vnevado.alpineskihouse.co"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "0336b5dc-db3e-ba73-eddf-317f4a4c5f17",
+              "time": "2024-07-07 08:54:40.074602+00:00",
+              "matched_inputs": [
+                "28058d92-fc24-4869-9231-6546a34b00f2"
+              ]
+            },
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "bjenkins@niseko.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "bjenkins@niseko.alpineskihouse.co"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8fa04864-d711-b9a7-0aca-3df5ff43d9ce",
+              "time": "2024-07-09 11:49:57.362974+00:00",
+              "matched_inputs": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Mailbox_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "entity_index": 3,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+              "time": "2024-07-10 11:24:45.507742+00:00",
+              "matched_inputs": [
+                "bjenkins@niseko.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "78",
+          "expected_present": true,
+          "values": [
+            "28058d92-fc24-4869-9231-6546a34b00f2",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "28058d92-fc24-4869-9231-6546a34b00f2",
+              "raw_components": {
+                "AadUserId": "28058d92-fc24-4869-9231-6546a34b00f2"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Compromised"
+              ],
+              "alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+              "time": "2024-07-07 10:09:33.920702+00:00",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+              "time": "2024-07-07 10:09:33.920702+00:00",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "71",
+          "expected_present": true,
+          "values": [
+            "bjenkins@niseko.alpineskihouse.co",
+            "santiago@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "santiago@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "santiago@vnevado.alpineskihouse.co"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "0336b5dc-db3e-ba73-eddf-317f4a4c5f17",
+              "time": "2024-07-07 08:54:40.074602+00:00",
+              "matched_inputs": [
+                "28058d92-fc24-4869-9231-6546a34b00f2"
+              ]
+            },
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "bjenkins@niseko.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "bjenkins@niseko.alpineskihouse.co"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8fa04864-d711-b9a7-0aca-3df5ff43d9ce",
+              "time": "2024-07-09 11:49:57.362974+00:00",
+              "matched_inputs": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_76c3d2617120850f",
+      "seed_concept": "Mail_Recipient",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_5936c1c7524e9997",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 3,
+              "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+              "time": "2024-07-10 11:24:45.507742+00:00",
+              "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+              "matched_inputs": [
+                "bjenkins@niseko.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mail_Recipient' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A potentially malicious URL click was detected",
+            "bjenkins@niseko.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_248d9301b788cdd0",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "28058d92-fc24-4869-9231-6546a34b00f2",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "28058d92-fc24-4869-9231-6546a34b00f2",
+              "raw_components": {
+                "AadUserId": "28058d92-fc24-4869-9231-6546a34b00f2"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+              "time": "2024-07-10 11:24:45.529246+00:00",
+              "source_row_hash": "6f7d67545a3b74e85d93f32661dd3e03f7d168868839323f869df79e2cfbf09b",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "28058d92-fc24-4869-9231-6546a34b00f2",
+              "raw_components": {
+                "AadUserId": "28058d92-fc24-4869-9231-6546a34b00f2"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+              "time": "2024-07-07 10:09:33.920702+00:00",
+              "source_row_hash": "8be4b1b0a1112e88acdd4801837f1c2ce897f717ce5c03dcc5ac47993e984067",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Internal phishing lexpaign",
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_757d3eda611caf21",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "bjenkins@niseko.alpineskihouse.co",
+            "santiago@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0336b5dc-db3e-ba73-eddf-317f4a4c5f17",
+          "witnesses": [
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "santiago@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "santiago@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "0336b5dc-db3e-ba73-eddf-317f4a4c5f17",
+              "time": "2024-07-07 08:54:40.074602+00:00",
+              "source_row_hash": "d6de7ba8c4e9d9c275fe50559c0b0ac6fbad1d84bde76b5be6bff9e3f1663053",
+              "matched_inputs": [
+                "28058d92-fc24-4869-9231-6546a34b00f2"
+              ]
+            },
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "santiago@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "santiago@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "0336b5dc-db3e-ba73-eddf-317f4a4c5f17",
+              "time": "2024-07-10 07:29:53.013409+00:00",
+              "source_row_hash": "ef16ac53d605f0ccf94e7a8435e21eee7926539a16c420620a5122490331c01d",
+              "matched_inputs": [
+                "28058d92-fc24-4869-9231-6546a34b00f2"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Mailbox_Address'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "28058d92-fc24-4869-9231-6546a34b00f2",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_76c3d2617120850f",
+      "seed_concept": "Mailbox_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1a8926f8d3e8a059",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+              "raw_components": {
+                "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+              },
+              "roles": [],
+              "entity_index": 3,
+              "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+              "time": "2024-07-10 11:24:45.507742+00:00",
+              "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+              "matched_inputs": [
+                "bjenkins@niseko.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mailbox_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A potentially malicious URL click was detected",
+            "bjenkins@niseko.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_248d9301b788cdd0",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "28058d92-fc24-4869-9231-6546a34b00f2",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "28058d92-fc24-4869-9231-6546a34b00f2",
+              "raw_components": {
+                "AadUserId": "28058d92-fc24-4869-9231-6546a34b00f2"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+              "time": "2024-07-10 11:24:45.529246+00:00",
+              "source_row_hash": "6f7d67545a3b74e85d93f32661dd3e03f7d168868839323f869df79e2cfbf09b",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "28058d92-fc24-4869-9231-6546a34b00f2",
+              "raw_components": {
+                "AadUserId": "28058d92-fc24-4869-9231-6546a34b00f2"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "cb8c56e0-02e2-c7ba-cd25-cdcfe9d817f4",
+              "time": "2024-07-07 10:09:33.920702+00:00",
+              "source_row_hash": "8be4b1b0a1112e88acdd4801837f1c2ce897f717ce5c03dcc5ac47993e984067",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Internal phishing lexpaign",
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_757d3eda611caf21",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "bjenkins@niseko.alpineskihouse.co",
+            "santiago@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0336b5dc-db3e-ba73-eddf-317f4a4c5f17",
+          "witnesses": [
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "santiago@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "santiago@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "0336b5dc-db3e-ba73-eddf-317f4a4c5f17",
+              "time": "2024-07-07 08:54:40.074602+00:00",
+              "source_row_hash": "d6de7ba8c4e9d9c275fe50559c0b0ac6fbad1d84bde76b5be6bff9e3f1663053",
+              "matched_inputs": [
+                "28058d92-fc24-4869-9231-6546a34b00f2"
+              ]
+            },
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "santiago@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "santiago@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "0336b5dc-db3e-ba73-eddf-317f4a4c5f17",
+              "time": "2024-07-10 07:29:53.013409+00:00",
+              "source_row_hash": "ef16ac53d605f0ccf94e7a8435e21eee7926539a16c420620a5122490331c01d",
+              "matched_inputs": [
+                "28058d92-fc24-4869-9231-6546a34b00f2"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Mailbox_Address'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "28058d92-fc24-4869-9231-6546a34b00f2",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Mail_Recipient",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 1850 (char 1849)",
+          "alert_id": "73fda2ef-73b1-864b-bad5-d8faaf374718"
+        }
+      ]
+    },
+    {
+      "variant": "from_Mailbox_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 1850 (char 1849)",
+          "alert_id": "73fda2ef-73b1-864b-bad5-d8faaf374718"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

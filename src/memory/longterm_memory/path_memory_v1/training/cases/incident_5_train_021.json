@@ -1,0 +1,2739 @@
+{
+  "id": "incident_5_train_021",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 21,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "A system recovery tampering incident was observed on host `vnevado-win11t`. The incident involved the deletion of volume shadow copies, which compromises the system's recovery capabilities by removing backup options.",
+    "question": "What was the name of the process involved in deleting all volume shadow copies during the system recovery tampering incident?",
+    "answer": "vssblatemp.exe",
+    "solution": [
+      "Suspicious remote activity was observed using the process `vssblatemp.exe`.",
+      "System recovery settings were tampered using the process `vssblatemp.exe` with command line `vssblatemp.exe delete shadows /all` on `2024-06-20t09:32:02.4640548z` with Process ID `1900`."
+    ],
+    "start_alert": 107,
+    "end_alert": 76,
+    "start_entities": [
+      59,
+      47,
+      81,
+      68,
+      108,
+      42,
+      109,
+      69,
+      67,
+      80
+    ],
+    "end_entities": [
+      77
+    ],
+    "shortest_alert_path": [
+      107,
+      11,
+      76
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "107",
+    "11",
+    "76"
+  ],
+  "nodes": {
+    "59": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "get-userprttoken.ps1"
+    },
+    "47": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-0-6-5"
+    },
+    "81": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no"
+    },
+    "68": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11t"
+    },
+    "108": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures"
+    },
+    "42": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "99.83.111.100"
+    },
+    "109": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1"
+    },
+    "69": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "e5799261-6720-4297-961e-bd9ca4275033"
+    },
+    "67": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+    },
+    "80": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all"
+    },
+    "107": {
+      "type": "alert",
+      "name": "Suspicious remote activity",
+      "description": "Suspicious activity initiated remotely was observed on this machine. This alert can flag attempts to initiate interactive sessions, modify files, pass WMI commands, create scheduled tasks, and other potentially malicious activities from a remote machine."
+    },
+    "11": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "vssblatemp.exe"
+    },
+    "76": {
+      "type": "alert",
+      "name": "System recovery setting tampering",
+      "description": "System recovery setting tampering has been observed on this device. Adversaries might be attempting to delete or remove built-in operating system data and turn off recovery services to prevent recovering a corrupted system. This may deny access to available backups and recovery options.\n\nOperating systems may contain features that can help fix corrupted systems, such as a backup catalog, volume shadow copies, and automatic repair features. Adversaries may stop or delete system recovery features to augment the effects of Data Destruction and Data Encrypted for Impact.\n\nMany native Windows utilities have been used by adversaries to disable or delete system recovery features:\n•\t vssblatemp.exe can be used to delete all volume shadow copies on a system using the following command: [vssblatemp.exe delete shadows /all /quiet]\n•\tWindows Management Instrumentation can be used to delete volume shadow copies using the following command: [wmic shadowcopy delete]\n•\twbblatemp.exe can be used to delete the Windows Backup Catalog using the following command: [wbblatemp.exe delete catalog -quiet]\n•\tbcdedit.exe can be used to disable automatic Windows recovery features by modifying boot configuration data using the following command: [bcdedit.exe /set default bootstatuspolicy ignoreallfailures & bcdedit /set default recoveryenabled no]"
+    },
+    "77": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "59",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "47",
+        "concept": "Account_SID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "81",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "68",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "108",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "42",
+        "concept": "IP_Address",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "109",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "69",
+        "concept": "Device_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "67",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "80",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Process_Identity",
+    "weak_links": [
+      "11"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_4910061ac8315424",
+  "merged_ems": [
+    "em_0df0df84e926e5d1",
+    "em_afdcb0e9dc74c4fe",
+    "em_786437addb3952bb",
+    "em_9ae1301f165ec60f",
+    "em_3207d456cf954197",
+    "em_f9eb831ba32a2663",
+    "em_011879f02f92abdd"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 3,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88",
+              "time": "2024-07-04 22:35:00.896765+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88",
+              "time": "2024-07-04 22:35:00.896765+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "7e872a6d-b858-6f54-b6c3-0c41a99de6f5",
+              "time": "2024-07-04 22:35:03.258229+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "7e872a6d-b858-6f54-b6c3-0c41a99de6f5",
+              "time": "2024-07-04 22:35:03.258229+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "77",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4828",
+                "CreatedTimeUtc": "2024-06-20T09:31:59.6743318Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "8136",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0438707Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4312",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0676225Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 3,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88",
+              "time": "2024-07-04 22:35:00.896765+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88",
+              "time": "2024-07-04 22:35:00.896765+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "7e872a6d-b858-6f54-b6c3-0c41a99de6f5",
+              "time": "2024-07-04 22:35:03.258229+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "7e872a6d-b858-6f54-b6c3-0c41a99de6f5",
+              "time": "2024-07-04 22:35:03.258229+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "77",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4828",
+                "CreatedTimeUtc": "2024-06-20T09:31:59.6743318Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "8136",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0438707Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4312",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0676225Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "77",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4828",
+                "CreatedTimeUtc": "2024-06-20T09:31:59.6743318Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "8136",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0438707Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4312",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0676225Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "77",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4828",
+                "CreatedTimeUtc": "2024-06-20T09:31:59.6743318Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "8136",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0438707Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4312",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0676225Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 3,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88",
+              "time": "2024-07-04 22:35:00.896765+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88",
+              "time": "2024-07-04 22:35:00.896765+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "cfa10441-97d6-1cc3-04e1-27eb9658a375",
+              "time": "2024-07-04 22:35:01.317647+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "7e872a6d-b858-6f54-b6c3-0c41a99de6f5",
+              "time": "2024-07-04 22:35:03.258229+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "7e872a6d-b858-6f54-b6c3-0c41a99de6f5",
+              "time": "2024-07-04 22:35:03.258229+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "77",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4828",
+                "CreatedTimeUtc": "2024-06-20T09:31:59.6743318Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "8136",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0438707Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4312",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0676225Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+                "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+                "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+                "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+                "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-userprttoken.ps1",
+              "raw_components": {
+                "CommandLine": "powershell -File C:\\Scripts\\get-userprttoken.ps1"
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-04 22:35:01.893209+00:00",
+              "matched_inputs": [
+                "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+                "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+                "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+                "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+                "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "77",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4828",
+                "CreatedTimeUtc": "2024-06-20T09:31:59.6743318Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-04 22:35:01.107822+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "3464",
+                "CreatedTimeUtc": "2024-06-20T09:29:37.8767978Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "8edf196f-fae8-6f94-3acd-93c648e9aa1f",
+              "time": "2024-07-04 22:35:01.158784+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "8136",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0438707Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "65e0e94f-36d8-f3a7-039e-c1770857c3ce",
+              "time": "2024-07-04 22:35:01.515191+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+              "raw_components": {
+                "ProcessId": "4312",
+                "CreatedTimeUtc": "2024-06-20T09:10:48.0676225Z",
+                "CommandLine": "bcdedit /set recoveryenabled no"
+              },
+              "entity_index": 10,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "37ed1840-2428-9ace-8db4-fc7ceeda30b9",
+              "time": "2024-07-04 22:35:02.226256+00:00",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_6a15bc55ff15aad7",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_0df0df84e926e5d1",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-11 22:34:57.147069+00:00",
+              "source_row_hash": "0c3b8adcca8d1e7a35efd53ed3ed236f91ad5b5c16474c407d6c054aa6fb066b",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-09 22:34:24.160170+00:00",
+              "source_row_hash": "3221c00b0709599ea25fc3733ab4c26c6803a16000c4c09279941efba73bbedb",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "S-0-6-5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_011879f02f92abdd",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-07 22:34:15.261693+00:00",
+              "source_row_hash": "256cc91cb883de36086cb63e0a62d645253d11f396276e1caaa9b6c55c54ca1a",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_6a15bc55ff15aad7",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_3207d456cf954197",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-11 22:34:57.147069+00:00",
+              "source_row_hash": "0c3b8adcca8d1e7a35efd53ed3ed236f91ad5b5c16474c407d6c054aa6fb066b",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-09 22:34:24.160170+00:00",
+              "source_row_hash": "3221c00b0709599ea25fc3733ab4c26c6803a16000c4c09279941efba73bbedb",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "get-userprttoken.ps1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_011879f02f92abdd",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-07 22:34:15.261693+00:00",
+              "source_row_hash": "256cc91cb883de36086cb63e0a62d645253d11f396276e1caaa9b6c55c54ca1a",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_6a15bc55ff15aad7",
+      "seed_concept": "Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9ae1301f165ec60f",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-11 22:34:57.147069+00:00",
+              "source_row_hash": "0c3b8adcca8d1e7a35efd53ed3ed236f91ad5b5c16474c407d6c054aa6fb066b",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-09 22:34:24.160170+00:00",
+              "source_row_hash": "3221c00b0709599ea25fc3733ab4c26c6803a16000c4c09279941efba73bbedb",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_011879f02f92abdd",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-07 22:34:15.261693+00:00",
+              "source_row_hash": "256cc91cb883de36086cb63e0a62d645253d11f396276e1caaa9b6c55c54ca1a",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_6a15bc55ff15aad7",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-11 22:34:57.147069+00:00",
+              "source_row_hash": "0c3b8adcca8d1e7a35efd53ed3ed236f91ad5b5c16474c407d6c054aa6fb066b",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-09 22:34:24.160170+00:00",
+              "source_row_hash": "3221c00b0709599ea25fc3733ab4c26c6803a16000c4c09279941efba73bbedb",
+              "matched_inputs": [
+                "vnevado-win11t"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "vnevado-win11t"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_011879f02f92abdd",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-07 22:34:15.261693+00:00",
+              "source_row_hash": "256cc91cb883de36086cb63e0a62d645253d11f396276e1caaa9b6c55c54ca1a",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_6a15bc55ff15aad7",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f9eb831ba32a2663",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-11 22:34:57.147069+00:00",
+              "source_row_hash": "0c3b8adcca8d1e7a35efd53ed3ed236f91ad5b5c16474c407d6c054aa6fb066b",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-09 22:34:24.160170+00:00",
+              "source_row_hash": "3221c00b0709599ea25fc3733ab4c26c6803a16000c4c09279941efba73bbedb",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "99.83.111.100"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_011879f02f92abdd",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-07 22:34:15.261693+00:00",
+              "source_row_hash": "256cc91cb883de36086cb63e0a62d645253d11f396276e1caaa9b6c55c54ca1a",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_6a15bc55ff15aad7",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 140,
+          "unique_values": [
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "vssblatemp.exe",
+              "raw_components": {
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "c4375cbf-0e89-916f-5b98-2d4cbebc536d",
+              "time": "2024-07-17 22:34:55.077594+00:00",
+              "source_row_hash": "0b2763fe804383f72800e2535940e8fa4eaff90af2e5efe7879894f314da5961",
+              "matched_inputs": [
+                "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no"
+              ]
+            }
+          ],
+          "witness_count": 70,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious remote activity",
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "3364__2024-06-20t09:29:39.8123894z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "6280__2024-06-20t09:29:43.9198085z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "88__2024-06-20t09:29:42.3927529z__curl http://vectorsandarrows.com"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_011879f02f92abdd",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "3464__2024-06-20t09:29:37.8767978z__bcdedit /set recoveryenabled no",
+            "4312__2024-06-20t09:10:48.0676225z__bcdedit /set recoveryenabled no",
+            "4828__2024-06-20t09:31:59.6743318z__bcdedit /set recoveryenabled no",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-05 22:34:18.241600+00:00",
+              "source_row_hash": "08d6065289c8ccb2454a64503e76d590e888682340e2548549d7cc88f8791142",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-14 22:34:27.468838+00:00",
+              "source_row_hash": "1ab8952e2040724f7a2f9ce3179b1630aa3e0b9e87fd32ed43755c3a1a8f92a2",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "62857e21-c95b-4124-457c-3bdcef05583f",
+              "time": "2024-07-07 22:34:15.261693+00:00",
+              "source_row_hash": "256cc91cb883de36086cb63e0a62d645253d11f396276e1caaa9b6c55c54ca1a",
+              "matched_inputs": [
+                "vssblatemp.exe"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System recovery setting tampering",
+            "get-userprttoken.ps1",
+            "vssblatemp.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 2,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 501 (char 500)",
+          "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 501 (char 500)",
+          "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88"
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 501 (char 500)",
+          "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 501 (char 500)",
+          "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88"
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 501 (char 500)",
+          "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 501 (char 500)",
+          "alert_id": "67d67313-a778-a735-2d11-b4b7d01a0c88"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

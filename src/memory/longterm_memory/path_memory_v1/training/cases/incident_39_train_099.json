@@ -1,0 +1,700 @@
+{
+  "id": "incident_39_train_099",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 99,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident involves a remote session where a file `psexesvc.exe` was dropped and executed, indicating an attempt to move laterally or propagate malware. During the incident, Activity indicating the use of the Rubeus tool was observed, which can perform kerberoasting and other attack techniques utilizing Kerberos authentication. PsExec was also used to launch a command on a remote device, potentially to move laterally.",
+    "question": "Can you identify the Azure Active Directory (AAD) User ID associated with the malicious credential theft tool execution?",
+    "answer": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+    "solution": [
+      "A remote session dropped and launched the file `psexesvc.exe` with Process ID `5512` at `2024-06-27t14:33:27.3525354z`.",
+      "The Rubeus tool activity indicated kerberoasting attempts involving the file `adminticket.txt`.",
+      "PsExec launched a command on a remote device by an account with AadUserId `1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1`.",
+      "A malicious credential theft tool was executed by the same account with AadUserId `1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1`."
+    ],
+    "start_alert": 58,
+    "end_alert": 104,
+    "start_entities": [
+      59
+    ],
+    "end_entities": [
+      29
+    ],
+    "shortest_alert_path": [
+      58,
+      4,
+      0,
+      8,
+      95,
+      29,
+      104
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "58",
+    "4",
+    "0",
+    "8",
+    "95",
+    "29",
+    "104"
+  ],
+  "nodes": {
+    "59": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+    },
+    "58": {
+      "type": "alert",
+      "name": "File dropped and launched from remote location",
+      "description": "A remote session dropped a file and executed it. An attacker or a malware might be an attempting move laterally or propagate."
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+    },
+    "0": {
+      "type": "alert",
+      "name": "Possible use of the Rubeus kerberoasting tool",
+      "description": "Activity indicating the use of the Rubeus tool was observed on this endpoint. This tool can perform kerberoasting, pass-the-ticket, and other attack techniques that take advantage of Kerberos authentication.\n\nDuring these attacks, attackers often request Kerberos tickets for an account's service principal name (SPN). They then decrypt the tickets to get plaintext credentials associated with the account. Alternatively, they can perform the pass-the-ticket technique to authenticate directly without having to decrypt the obtained tickets."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "adminticket.txt"
+    },
+    "95": {
+      "type": "alert",
+      "name": "PsExec launched a command on a remote device",
+      "description": "PsExec was used to launch a command on a remote device. PsExec is a tool used to launch programs on remote, or local devices. An attacker might be leveraging this tool to launch malicious commands to a remote device and move laterally in the organization."
+    },
+    "29": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+    },
+    "104": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    }
+  },
+  "interpretation": {
+    "alerts": 4,
+    "sql_steps_per_variant": 4,
+    "start_alternatives": [
+      {
+        "node": "59",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_AAD_ID",
+    "weak_links": [
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e0615ae3235dc173",
+  "merged_ems": [
+    "em_a5657604896b51cf",
+    "em_786437addb3952bb",
+    "em_9707dd4d678e3ddf",
+    "em_bde4ee0e5ccbde3e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "4",
+          "expected_present": true,
+          "values": [
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-04 22:35:01.862275+00:00",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5912",
+                "CreatedTimeUtc": "2024-06-27T14:32:53.2267179Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-04 22:35:01.862275+00:00",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "29",
+          "expected_present": true,
+          "values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 7,
+          "expected_node": "29",
+          "expected_present": true,
+          "values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "532a5162-7573-5642-fd2a-baddc2ed1360",
+              "time": "2024-07-04 22:35:02.584465+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_49297e6dec519f74",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a5657604896b51cf",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CommandLine": "PSEXESVC.exe",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-27 22:35:09.499615+00:00",
+              "source_row_hash": "006ed090ffff2fceeb0537a8542b95b9c02eed73da787868498b4c1753092f90",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CommandLine": "PSEXESVC.exe",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-15 22:39:20.802026+00:00",
+              "source_row_hash": "0229959537e326a41d98c9322a9c9ca475f705381b18f7d52354e18fffb3827d",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CommandLine": "PSEXESVC.exe",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-13 22:34:39.536790+00:00",
+              "source_row_hash": "036ee8385bc95006598d074a18baddc87c733f841b058d571531ae8aced3460a",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File dropped and launched from remote location",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_9707dd4d678e3ddf",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-24 22:39:15.540009+00:00",
+              "source_row_hash": "0b473814ecfa68e858e2f4dbb12e5ab731f054ab72bfb69ae51934d98c42404c",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-17 22:34:56.807638+00:00",
+              "source_row_hash": "0b7ba40d154b0f6060e67a0847975c853ce97b5f0c2986a882fa3269e9770767",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-26 22:35:02.712193+00:00",
+              "source_row_hash": "101dc2def092805419f4a627950571a14635a260152cce7fb1e7c3c3b18c7fe2",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 513 (char 512)",
+          "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

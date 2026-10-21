@@ -1,0 +1,308 @@
+{
+  "id": "incident_34_train_011",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_34_qa_incident_o1-ga_c42.json",
+  "index": 11,
+  "sha256": "658133de6e295b829793ba58a5244db9515e2ef17d44398605bf71236d88c37f",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident was reported involving suspicious Task Scheduler activity where a process used Task Scheduler to create, modify, or delete a task, potentially to launch malicious code automatically and establish persistence. The process involved had the command: `schtasks.exe /run /tn yrei`, with a Process ID of 1616. The alert happened on 2024-07-04 at 22:35:01.761898+00:00.",
+    "question": "Can you identify the AadUserId associated with the anomalous scheduled task that was created?",
+    "answer": "16320fec-8d90-403b-b7fe-78f715d4728d",
+    "solution": [
+      "A user with AadUserId `16320fec-8d90-403b-b7fe-78f715d4728d` has been involved in suspicious Task Scheduler activity, potentially attempting to launch malicious code automatically and establish persistence.",
+      "An anomalous scheduled task was created by the same user with AadUserId `16320fec-8d90-403b-b7fe-78f715d4728d`, possibly for persistence purposes."
+    ],
+    "start_alert": 21,
+    "end_alert": 20,
+    "start_entities": [
+      15
+    ],
+    "end_entities": [
+      6
+    ],
+    "shortest_alert_path": [
+      21,
+      6,
+      20
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_34.graphml",
+  "graph_sha256": "f4d6e37d5b5ea1ae63e4e63d1148a74acca74a673a5fa91213e4284748386a8d",
+  "path": [
+    "21",
+    "6",
+    "20"
+  ],
+  "nodes": {
+    "15": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+    },
+    "21": {
+      "type": "alert",
+      "name": "Suspicious Task Scheduler activity",
+      "description": "A process involved in earlier malicious activity used Task Scheduler to create, modify, or delete a task. This might be an attempt launch malicious code automatically and establish persistence.\n\nFor further information on this threat, read the following threat analytics report: https://security.microsoft.com/threatanalytics3/c9709a39-ac8d-493d-9a63-71da3ca1e745/analystreport"
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "16320fec-8d90-403b-b7fe-78f715d4728d"
+    },
+    "20": {
+      "type": "alert",
+      "name": "An anomalous scheduled task was created",
+      "description": "An anomalous scheduled task was created. This may be used by an attacker to obtain persistence on the device.\n\nFor further information on this threat, read the following threat analytics report: https://security.microsoft.com/threatanalytics3/c9709a39-ac8d-493d-9a63-71da3ca1e745/analystreport"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "15",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_AAD_ID",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_27a28b319c376209",
+  "merged_ems": [
+    "em_b01c5e8e6379ab3b",
+    "em_9707dd4d678e3ddf"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-04 22:35:01.761898+00:00",
+              "matched_inputs": [
+                "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "f91066bf-7b43-91d6-5847-caed2d600727",
+              "time": "2024-07-04 22:35:01.260626+00:00",
+              "matched_inputs": [
+                "16320fec-8d90-403b-b7fe-78f715d4728d"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_ae08e741637e83e2",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b01c5e8e6379ab3b",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-15 22:39:20.698008+00:00",
+              "source_row_hash": "0d6e878793f1ebd3b850de42cb1c91ed2d473c6510a8cdfc1473491135910640",
+              "matched_inputs": [
+                "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-12 22:34:23.406734+00:00",
+              "source_row_hash": "103fc7c4b3dc4398781cfa43b7981c7407a0c05a275ac13695c8816759e15d7b",
+              "matched_inputs": [
+                "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-16 22:39:55.391227+00:00",
+              "source_row_hash": "2d7eecf2effc07cec2c3c223182e7a2dab1ae8fd41f2aa2f31cb382c182bedc5",
+              "matched_inputs": [
+                "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Task Scheduler activity",
+            "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_9707dd4d678e3ddf",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f91066bf-7b43-91d6-5847-caed2d600727",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "f91066bf-7b43-91d6-5847-caed2d600727",
+              "time": "2024-07-24 22:39:13.977748+00:00",
+              "source_row_hash": "21d69797c49183552a585b0a56b0749684e75a451065ca65949dc17a407b755b",
+              "matched_inputs": [
+                "16320fec-8d90-403b-b7fe-78f715d4728d"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "f91066bf-7b43-91d6-5847-caed2d600727",
+              "time": "2024-07-17 22:39:56.943173+00:00",
+              "source_row_hash": "2534b8f9af7a1194f6342046dee3714cc6f70584db5fb1d49c4000cb1548791d",
+              "matched_inputs": [
+                "16320fec-8d90-403b-b7fe-78f715d4728d"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "16320fec-8d90-403b-b7fe-78f715d4728d",
+              "raw_components": {
+                "AadUserId": "16320fec-8d90-403b-b7fe-78f715d4728d"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "f91066bf-7b43-91d6-5847-caed2d600727",
+              "time": "2024-07-06 22:34:51.327789+00:00",
+              "source_row_hash": "3293b542220a42591ac70bf4245733daa1e720de49b097765803ef4154106a22",
+              "matched_inputs": [
+                "16320fec-8d90-403b-b7fe-78f715d4728d"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An anomalous scheduled task was created",
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

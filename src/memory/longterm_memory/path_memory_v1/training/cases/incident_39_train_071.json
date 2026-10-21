@@ -1,0 +1,1039 @@
+{
+  "id": "incident_39_train_071",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 71,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident was identified involving the launch of a suspicious service on a device, which may be used by attackers to run malicious commands, maintain persistence, or elevate privileges. The incident involved multiple processes including `psexesvc.exe` and `services.exe`. The alert was triggered for a suspicious service start, initially observed with Process ID 7668 and timestamp 2024-06-27T14:34:10.0201983Z for `psexesvc.exe` and Process ID 652 and timestamp 2024-06-19T12:56:00.7201251Z for `services.exe`.",
+    "question": "During the same incident, there was an execution of a known credential theft tool. Can you identify the account name associated with the execution of this malicious tool?",
+    "answer": "tgs2z",
+    "solution": [
+      "There was a suspicious service launched on the host `vnevado-dc`.",
+      "The process `powershell.exe` was started suspiciously on the host `vnevado-dc`.",
+      "The malicious credential theft tool was executed by the account with the name `tgs2z`."
+    ],
+    "start_alert": 86,
+    "end_alert": 44,
+    "start_entities": [
+      5,
+      61,
+      87,
+      88
+    ],
+    "end_entities": [
+      27
+    ],
+    "shortest_alert_path": [
+      86,
+      20,
+      12,
+      17,
+      44
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "86",
+    "20",
+    "12",
+    "17",
+    "44"
+  ],
+  "nodes": {
+    "5": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "psexesvc.exe"
+    },
+    "61": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7668__2024-06-27t14:34:10.0201983z__psexesvc.exe"
+    },
+    "87": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "652__2024-06-19t12:56:00.7201251z__services.exe"
+    },
+    "88": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "services.exe"
+    },
+    "86": {
+      "type": "alert",
+      "name": "Suspicious service launched",
+      "description": "A suspicious service was started on this device. Attackers might use services to launch malicious commands or programs. This technique is used to maintain persistence or elevate privileges on the target device."
+    },
+    "20": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-dc"
+    },
+    "12": {
+      "type": "alert",
+      "name": "Suspicious service launched",
+      "description": "A suspicious service was started on this device. Attackers might use services to launch malicious commands or programs. This technique is used to maintain persistence or elevate privileges on the target device."
+    },
+    "17": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "powershell.exe"
+    },
+    "44": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "27": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "tgs2z"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "5",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "61",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "87",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "88",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [
+      "20",
+      "17"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_7b40bab714087ede",
+  "merged_ems": [
+    "em_afdcb0e9dc74c4fe",
+    "em_d1102041c654bb01",
+    "em_71b0ed9affecd48c",
+    "em_7eb864af9d22aeb3"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "vnevado-dc",
+            "vnevado-win10b"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-04 22:35:02.631253+00:00",
+              "matched_inputs": [
+                "psexesvc.exe",
+                "services.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10b",
+              "raw_components": {
+                "HostName": "vnevado-win10b"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "matched_inputs": [
+                "psexesvc.exe",
+                "services.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 8,
+          "expected_node": "17",
+          "expected_present": true,
+          "values": [
+            "net.exe",
+            "powershell.exe",
+            "psexesvc.exe",
+            "services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-04 22:35:00.511266+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-04 22:35:00.511266+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "\"net.exe\" start ntds"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-04 22:35:00.511266+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "services.exe",
+              "raw_components": {
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-04 22:35:02.631253+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-04 22:35:02.631253+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "services.exe",
+              "raw_components": {
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "vnevado-dc"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-04 22:35:02.631253+00:00",
+              "matched_inputs": [
+                "652__2024-06-19t12:56:00.7201251z__services.exe",
+                "7668__2024-06-27t14:34:10.0201983z__psexesvc.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 5,
+          "expected_node": "17",
+          "expected_present": true,
+          "values": [
+            "net.exe",
+            "powershell.exe",
+            "psexesvc.exe",
+            "services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-04 22:35:00.511266+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-04 22:35:00.511266+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "\"net.exe\" start ntds"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-04 22:35:00.511266+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "services.exe",
+              "raw_components": {
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-04 22:35:02.631253+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-04 22:35:02.631253+00:00",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_1951946f4ffa1a9d",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 106,
+          "unique_values": [
+            "vnevado-dc",
+            "vnevado-win10b"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-11 22:34:57.807229+00:00",
+              "source_row_hash": "056adb638d954c144618fb8f748fb6a3d4c167c54bc8ee836f8608baca285b2c",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-11 22:34:57.807229+00:00",
+              "source_row_hash": "056adb638d954c144618fb8f748fb6a3d4c167c54bc8ee836f8608baca285b2c",
+              "matched_inputs": [
+                "services.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-19 22:35:14.845729+00:00",
+              "source_row_hash": "058392136d971d7e9757af6553cd58fd621e2b0b6398d4d3f05002a47d4359e4",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            }
+          ],
+          "witness_count": 52,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service launched",
+            "psexesvc.exe",
+            "services.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 211,
+          "unique_values": [
+            "net.exe",
+            "powershell.exe",
+            "psexesvc.exe",
+            "services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-09 22:34:22.920714+00:00",
+              "source_row_hash": "14593db1c629033d0c9dc8728447c4acf47c23a026a98f5c5f912d8dacfd3385",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-12 22:34:22.169782+00:00",
+              "source_row_hash": "14fe3b45a19ee64c38ff34cf86c8d4e117653948a3e981ab3106d69d3c2f549f",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-21 22:34:52.367613+00:00",
+              "source_row_hash": "1a1d553f8f242b3e3a926c7589e6acff360ea510e64d44904cce3b7840c3ac12",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service launched",
+            "vnevado-dc",
+            "vnevado-win10b"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 81,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-31 12:19:34.205582+00:00",
+              "source_row_hash": "0f116ac8edc1a28ea30bc7dd43246ff27e504c8ecade82e1e21e72add226bda1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-21 22:34:52.714071+00:00",
+              "source_row_hash": "16ed885236c3561b3373c05721393899cd9ea29f56e1b66276671083ccbfb8d6",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-20 22:39:29.272087+00:00",
+              "source_row_hash": "24658850e333f4661fae0915d507f2b3337a2ad28667e1054b9503b8b5c3b6aa",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "net.exe",
+            "powershell.exe",
+            "psexesvc.exe",
+            "services.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_1951946f4ffa1a9d",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d1102041c654bb01",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "vnevado-dc"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-11 22:34:57.807229+00:00",
+              "source_row_hash": "056adb638d954c144618fb8f748fb6a3d4c167c54bc8ee836f8608baca285b2c",
+              "matched_inputs": [
+                "652__2024-06-19t12:56:00.7201251z__services.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-11 22:34:57.807229+00:00",
+              "source_row_hash": "056adb638d954c144618fb8f748fb6a3d4c167c54bc8ee836f8608baca285b2c",
+              "matched_inputs": [
+                "7668__2024-06-27t14:34:10.0201983z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-dc",
+              "raw_components": {
+                "HostName": "vnevado-dc"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "4ddd15a3-2419-5b09-3c4d-491f7bf130d5",
+              "time": "2024-07-19 22:35:14.845729+00:00",
+              "source_row_hash": "058392136d971d7e9757af6553cd58fd621e2b0b6398d4d3f05002a47d4359e4",
+              "matched_inputs": [
+                "652__2024-06-19t12:56:00.7201251z__services.exe"
+              ]
+            }
+          ],
+          "witness_count": 52,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service launched",
+            "652__2024-06-19t12:56:00.7201251z__services.exe",
+            "7668__2024-06-27t14:34:10.0201983z__psexesvc.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 130,
+          "unique_values": [
+            "net.exe",
+            "powershell.exe",
+            "psexesvc.exe",
+            "services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-09 22:34:22.920714+00:00",
+              "source_row_hash": "14593db1c629033d0c9dc8728447c4acf47c23a026a98f5c5f912d8dacfd3385",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-12 22:34:22.169782+00:00",
+              "source_row_hash": "14fe3b45a19ee64c38ff34cf86c8d4e117653948a3e981ab3106d69d3c2f549f",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\""
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8",
+              "time": "2024-07-21 22:34:52.367613+00:00",
+              "source_row_hash": "1a1d553f8f242b3e3a926c7589e6acff360ea510e64d44904cce3b7840c3ac12",
+              "matched_inputs": [
+                "vnevado-dc"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service launched",
+            "vnevado-dc"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 81,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-31 12:19:34.205582+00:00",
+              "source_row_hash": "0f116ac8edc1a28ea30bc7dd43246ff27e504c8ecade82e1e21e72add226bda1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-21 22:34:52.714071+00:00",
+              "source_row_hash": "16ed885236c3561b3373c05721393899cd9ea29f56e1b66276671083ccbfb8d6",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-20 22:39:29.272087+00:00",
+              "source_row_hash": "24658850e333f4661fae0915d507f2b3337a2ad28667e1054b9503b8b5c3b6aa",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "net.exe",
+            "powershell.exe",
+            "psexesvc.exe",
+            "services.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 363 (char 362)",
+          "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 363 (char 362)",
+          "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

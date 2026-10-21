@@ -1,0 +1,2078 @@
+{
+  "id": "incident_39_train_008",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 8,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A suspicious behavior indicating the possible use of the Rubeus kerberoasting tool was detected on host `vnevado-win10b`. This involved several processes including `psexesvc.exe` and `rubeus.exe`, which might be an indication of an attacker attempting to request Kerberos tickets for an account's SPN or performing pass-the-ticket techniques.",
+    "question": "Based on the observed suspicious activities and connected entities, which user account was involved in using PsExec to launch a command on a remote device?",
+    "answer": "tgs2z",
+    "solution": [
+      "Activity indicating the use of the Rubeus tool was observed, which might include kerberoasting, pass-the-ticket, and other attack techniques. The tool extracted a file named `adminticket.txt`.",
+      "PsExec was used to launch a command on a remote device. The account name involved in this activity is `tgs2z`."
+    ],
+    "start_alert": 0,
+    "end_alert": 95,
+    "start_entities": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "end_entities": [
+      27
+    ],
+    "shortest_alert_path": [
+      0,
+      8,
+      95
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "0",
+    "8",
+    "95"
+  ],
+  "nodes": {
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "fk8mq"
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1540151660-3530000288-105586595-1517"
+    },
+    "3": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "97e6a954-b6bd-48a5-808c-bd8464cce677"
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+    },
+    "5": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "psexesvc.exe"
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+    },
+    "9": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+    },
+    "10": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10b"
+    },
+    "11": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+    },
+    "0": {
+      "type": "alert",
+      "name": "Possible use of the Rubeus kerberoasting tool",
+      "description": "Activity indicating the use of the Rubeus tool was observed on this endpoint. This tool can perform kerberoasting, pass-the-ticket, and other attack techniques that take advantage of Kerberos authentication.\n\nDuring these attacks, attackers often request Kerberos tickets for an account's service principal name (SPN). They then decrypt the tickets to get plaintext credentials associated with the account. Alternatively, they can perform the pass-the-ticket technique to authenticate directly without having to decrypt the obtained tickets."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "adminticket.txt"
+    },
+    "95": {
+      "type": "alert",
+      "name": "PsExec launched a command on a remote device",
+      "description": "PsExec was used to launch a command on a remote device. PsExec is a tool used to launch programs on remote, or local devices. An attacker might be leveraging this tool to launch malicious commands to a remote device and move laterally in the organization."
+    },
+    "27": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "tgs2z"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "1",
+        "concept": "Account_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "2",
+        "concept": "Account_SID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "3",
+        "concept": "Account_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "4",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "5",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "6",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "9",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "10",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "11",
+        "concept": "Device_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_2b9f36af54b2454b",
+  "merged_ems": [
+    "em_0df0df84e926e5d1",
+    "em_afdcb0e9dc74c4fe",
+    "em_786437addb3952bb",
+    "em_71b0ed9affecd48c",
+    "em_9ae1301f165ec60f",
+    "em_6b040dd1616cc12b",
+    "em_3207d456cf954197",
+    "em_7d31cf1616eb2422"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+                "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+                "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+                "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+                "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "97e6a954-b6bd-48a5-808c-bd8464cce677"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_6b040dd1616cc12b",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "fk8mq"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_0df0df84e926e5d1",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "S-1-5-21-1540151660-3530000288-105586595-1517"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_3207d456cf954197",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "psexesvc.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9ae1301f165ec60f",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "vnevado-win10b"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "vnevado-win10b"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 324,
+          "unique_values": [
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"cmd\" /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+              ]
+            }
+          ],
+          "witness_count": 81,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

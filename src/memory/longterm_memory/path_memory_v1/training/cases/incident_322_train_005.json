@@ -1,0 +1,417 @@
+{
+  "id": "incident_322_train_005",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_322_qa_incident_o1-ga_c42.json",
+  "index": 5,
+  "sha256": "af9d019b60fcad75fa00492344563c1969e39aaf80b506c77ed06a9749ad2fb2",
+  "split": "train",
+  "question_record": {
+    "context": "As part of a suspicious Azure Resource Management (ARM) activity documented on 2024-08-01, we noted an IP address `253.1.244.215` linked with risky user actions. There were also email messages containing a malicious URL that were delivered and later removed. Evidence suggests this may involve a user clicking on a potentially malicious URL identified in the same timeframe.",
+    "question": "Can you identify the email recipient who clicked on the potentially malicious URL recently?",
+    "answer": "alyssat@vnevado.alpineskihouse.co",
+    "solution": [
+      "Suspicious ARM activities were performed by a user account with SID `S-1-5-21-1840151686-3534835288-156286563-1127` that logged into a risky session.",
+      "The email recipient `alyssat@vnevado.alpineskihouse.co` received emails with malicious URLs which were later removed.",
+      "The email recipient `alyssat@vnevado.alpineskihouse.co` clicked on a malicious URL."
+    ],
+    "start_alert": 32,
+    "end_alert": 0,
+    "start_entities": [
+      31
+    ],
+    "end_entities": [
+      1
+    ],
+    "shortest_alert_path": [
+      32,
+      8,
+      2,
+      1,
+      0
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_322.graphml",
+  "graph_sha256": "8d2d318a4fcded2f15b1565627612655b20ff74b3984bdbb10a632fdc242080f",
+  "path": [
+    "32",
+    "8",
+    "2",
+    "1",
+    "0"
+  ],
+  "nodes": {
+    "31": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "253.1.244.215"
+    },
+    "32": {
+      "type": "alert",
+      "name": "Suspicious Azure Resource Management activities by a risky user",
+      "description": "Suspicious cloud Azure Resource Management (ARM) activities were performed by a user account that signed in to a risky session. This alert was triggered based on a Microsoft Defender for Cloud alert related to ARM and Microsoft Entra ID Protection risk scores."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1840151686-3534835288-156286563-1127"
+    },
+    "2": {
+      "type": "alert",
+      "name": "Email messages containing malicious URL removed after delivery​",
+      "description": "Emails with malicious URL that were delivered and later removed -V62.34.26.163"
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "Recipient",
+      "value": "alyssat@vnevado.alpineskihouse.co"
+    },
+    "0": {
+      "type": "alert",
+      "name": "A potentially malicious URL click was detected",
+      "description": "We have detected that one of your users has recently clicked on a link that was found to be malicious. -V1.0.0.5"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "31",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Mail_Recipient",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_70595237a0208be0",
+  "merged_ems": [
+    "em_816383e17260a939",
+    "em_1fb69112e61590cd",
+    "em_4f8c9e33f7cf59e2"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Compromised"
+              ],
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "alyssat@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "alyssat@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "alyssat@vnevado.alpineskihouse.co"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "alyssat@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "alyssat@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "alyssat@vnevado.alpineskihouse.co"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "8f7670f2-f36b-5131-3458-fc6bcc1bae4b",
+              "time": "2024-08-01 12:44:53.271124+00:00",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_983ce46eb9cdc1b0",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1fb69112e61590cd",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 14:19:35.758105+00:00",
+              "source_row_hash": "67d82dcdc3c753cbf58461504f30347fd25eaf6641ebf46ef2b82f140d82dfc8",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "source_row_hash": "e2861ad69a06ce76db1ed84789e989ab39ea7a08a3239bb8d104584551cd1fce",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Azure Resource Management activities by a risky user",
+            "253.1.244.215"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_4f8c9e33f7cf59e2",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "alyssat@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+          "witnesses": [
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "alyssat@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "alyssat@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-02 22:39:34.084782+00:00",
+              "source_row_hash": "3d77ae3b3c9a4ee0e3239bc0c7d67e737e0b5b1937839a5c40f15588fef86ffc",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "alyssat@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "alyssat@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:54:55.640816+00:00",
+              "source_row_hash": "769adbc49e49422dad36ac47c88b1908728a604e96271e64f7e7d7fd02851a1a",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "alyssat@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "alyssat@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "source_row_hash": "aab4c5a13e3397f1f827653e0990c8391d6148dee1f4d0d1814c75f34fd883be",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 4,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Mail_Recipient'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_816383e17260a939",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "alyssat@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "8f7670f2-f36b-5131-3458-fc6bcc1bae4b",
+          "witnesses": [
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "alyssat@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "alyssat@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "8f7670f2-f36b-5131-3458-fc6bcc1bae4b",
+              "time": "2024-08-01 12:44:53.271124+00:00",
+              "source_row_hash": "0158dd1ecb15fc8c03a67812644cb2aff9d9d4a86d6bc69fd3cf314c5169c4e3",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "alyssat@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "alyssat@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "8f7670f2-f36b-5131-3458-fc6bcc1bae4b",
+              "time": "2024-08-01 12:49:56.245268+00:00",
+              "source_row_hash": "93c207c3dc5f7389333aaba9966527229b1d4514710dfd06e72e6eac66e9c697",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "alyssat@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "alyssat@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "8f7670f2-f36b-5131-3458-fc6bcc1bae4b",
+              "time": "2024-08-01 12:54:55.617188+00:00",
+              "source_row_hash": "cce5bca0e0784e5480f43f1639a0c7f17829f5a464bd56ec61f00d4109ea178d",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 3,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mail_Recipient' AND o.Concept = 'Mail_Recipient'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A potentially malicious URL click was detected",
+            "alyssat@vnevado.alpineskihouse.co"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 3006 (char 3005)",
+          "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

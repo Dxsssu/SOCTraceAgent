@@ -1,0 +1,2130 @@
+{
+  "timestamp": "2026-10-19T18:32:44.939938+00:00",
+  "model": "deepseek-v4.1-flash",
+  "provider": "fancybag",
+  "recall": "lexical+LLM",
+  "scope": "Training-memory resubstitution tests, not held-out accuracy. No official seed/path/index passed to retriever. Ablations explicitly hide memory layers.",
+  "tests": [
+    {
+      "case": "incident_55_train_000",
+      "mode": "normal",
+      "context": "We have detected that one of your users has recently clicked on a link that was found to be malicious: `http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/`. This is part of a broader security incident involving suspicious exploration activities including the use of multiple Windows commands which can be used by attackers to identify assets of value and coordinate lateral movement after compromising a machine.",
+      "question": "A recent security incident included another instance of potentially malicious URL click on the same device. Can you identify the URL?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "同一设备上另一个潜在恶意URL点击事件涉及的URL"
+          },
+          "constraints": [
+            "只从材料提取，不推断未知实体",
+            "实体值必须原样出现在原文"
+          ],
+          "event_context": [
+            "已检测到某用户点击了被判定为恶意的链接",
+            "这是一起更广泛安全事件的一部分，涉及可疑探测活动，包括使用多个Windows命令识别有价值资产并在入侵后进行横向移动",
+            "近期安全事件包含同一设备上另一次潜在恶意URL点击"
+          ],
+          "retrieval_query": "识别同一设备上另一次潜在恶意URL点击事件涉及的URL"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "PM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "只从材料提取，不推断未知实体",
+                  "supported": true,
+                  "reason": "该路线以已知URL E1为起点，经账户、主机桥接实体定位同一设备，再检索该设备上的另一URL点击事件；全程使用已观测/可检索实体，不推断未知值。"
+                },
+                {
+                  "constraint": "实体值必须原样出现在原文",
+                  "supported": true,
+                  "reason": "已知实体URL E1原样来自当前告警；目标URL须在检索到的事件记录中原样取值，选择阶段不预填最终值。"
+                }
+              ],
+              "reason": "题目要求找到同一设备上另一次潜在恶意URL点击的URL。该路线事件包含“A potentially malicious URL click was detected”“Suspicious sequence of exploration activities”“Malicious URL was clicked on that device”，与当前事件上下文中的URL点击及可疑探测活动直接对应；且先通过账户、主机桥接定位同一设备，再在设备上检索另一URL，符合设备关联与事件顺序要求。",
+              "candidates": [
+                "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+                "pm_946f48bf4383cee1/scope_a5cad25ec6b4e92c/route_9195073f7a8130d5/URL",
+                "pm_3076db3c3bca149e/scope_55e1fe92b7f270fe/route_3c31d15c9d9bbed0/URL",
+                "pm_e7814882561779b8/scope_55e1fe92b7f270fe/route_90017d55fe2e2b5e/URL"
+              ]
+            },
+            "selected": {
+              "id": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+              "pm_id": "pm_946f48bf4383cee1",
+              "scenario_id": "scope_f54ed65dfffc7b12",
+              "route_id": "route_a4a73f68d563b0d7",
+              "known": "URL",
+              "wanted": "URL",
+              "name": "账户 → 主机 → URL关联调查",
+              "guide": "从已知实体选择满足输入与目标类型的具体路线及完整事件场景，依次调查账户、主机、URL。严格按路线的EM依赖顺序传递观测结果，保留证据和候选；阶段归并不代表标识等价，不可跳过重复追踪步骤。",
+              "events": [
+                "A potentially malicious URL click was detected",
+                "Suspicious sequence of exploration activities",
+                "Malicious URL was clicked on that device"
+              ],
+              "outputs": [
+                "Account_SID",
+                "Host_Name",
+                "URL"
+              ],
+              "recall_score": 0.21216,
+              "values": [
+                "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "只从材料提取，不推断未知实体",
+                  "supported": true,
+                  "reason": "候选值原样出现在T3输出的graph_value中"
+                },
+                {
+                  "constraint": "实体值必须原样出现在原文",
+                  "supported": true,
+                  "reason": "T3中URL值为https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/，与候选逐字一致"
+                }
+              ],
+              "reason": "T1确认已知URL点击事件关联Account_SID，T2将该SID映射到主机mb-winclient，T3显示同一主机mb-winclient上存在另一潜在恶意URL点击事件，其URL为https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/（与已知http://版本仅在协议上不同，但材料中作为单独URL实体原样出现）。候选值来自材料，满足约束。"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_e516c468f5783731",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+                "raw_components": {
+                  "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+                },
+                "roles": [],
+                "entity_index": 3,
+                "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+                "time": "2024-07-10 11:24:45.507742+00:00",
+                "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+                "matched_inputs": [
+                  "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "A potentially malicious URL click was detected",
+              "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            ]
+          },
+          {
+            "step": "T2",
+            "episode_id": "em_b108d6b14ba923d1",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-04 22:35:03.197761+00:00",
+                "source_row_hash": "0199fcecfa31eaf6175917359b5016ed7b5105322feb145c859bb645bb029d40",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-31 22:40:02.973923+00:00",
+                "source_row_hash": "1044a74d6ac7ad7b854011e1ddb599f15d0b782f199b060bfbd344936c874f3f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-22 22:34:43.459272+00:00",
+                "source_row_hash": "1c0eb9de58d3dc5227e1cb7f856b44c799ac3c5e2f97428d7373041205d709c8",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-05 22:34:20.263868+00:00",
+                "source_row_hash": "28088ecf1be941c132e2fa3a228736e46bbf54224a13d212dd41325ae286e3ca",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-17 22:34:56.504955+00:00",
+                "source_row_hash": "2b51cae449d346aba9c89e9b11852b8eaae9873fee0e7c760f06a79db623a3a6",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-28 22:34:32.041305+00:00",
+                "source_row_hash": "2c804d24e4cce9b1c5d135590ee3b2971e07f07f684656fa01cb3ecc58df5f12",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-16 22:34:46.365151+00:00",
+                "source_row_hash": "3160203713066de64eafc5dc011e821b9ff0defe257d3f68447ef7536b38b188",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-15 22:39:22.104088+00:00",
+                "source_row_hash": "444f53939ed0dafc1da315131dc87ca8a7192c359af8fe7783561dbe3776ef68",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-27 22:35:10.351189+00:00",
+                "source_row_hash": "58eb9b7d952e0d7d1a7fb7a27b4ec15b0fef7740496debe6fea8a4ec73bb094a",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-20 22:34:25.658848+00:00",
+                "source_row_hash": "6575997cc71446e8df397fee44cf0b8c8faff9e290d3e119a0cd678b7cdc7c64",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-09 07:30:01.738261+00:00",
+                "source_row_hash": "71231ac67d452f84c462e7327ccbb6b19279c5bf7317eaa659059bc54e31893c",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-12 22:34:24.665964+00:00",
+                "source_row_hash": "716ee69ef0e29176a86f2241688437c54f542130db31a416df8d09ec7bb97119",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-13 22:34:40.838195+00:00",
+                "source_row_hash": "7f4c1d73e7b212e7c468ca97a88438dc9452f6d736b5d09dca4b3cc20a338f7e",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-07 22:34:17.429571+00:00",
+                "source_row_hash": "87784f67e8df80ffdc99e7e2bbb6ac5eae7a06fb6011a60b7c0bf365c1810ee1",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-23 22:34:45.181949+00:00",
+                "source_row_hash": "8cad82285c53d0256aea7fb9ed3e078e070fbff8fdd6d2fecfcb3ec2cab213e0",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-28 22:39:34.780875+00:00",
+                "source_row_hash": "940382da55dca1a92a3ff8ce93ae62893817de3ef924272c2e978e35cbca6683",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-31 22:34:53.280094+00:00",
+                "source_row_hash": "aa985f0ad2320e20717b4d6b4c04a99ebcc56f181405a75ea96d193ffad0fc86",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-21 22:34:53.945511+00:00",
+                "source_row_hash": "b96c52ae4c26884394917983780efb59af679b11e913f76a37028cda9eca872a",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-18 22:36:02.298264+00:00",
+                "source_row_hash": "c0fff2f4a854bdc86ec770cc2af3841a2add522a5dd9cb04f3bc9f3157b6e90f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-29 22:40:19.723316+00:00",
+                "source_row_hash": "c9dd9701240999fe9dd318ae2f5727efcaa6a9a1b8256811e36e70f253534fc0",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-24 22:39:15.361905+00:00",
+                "source_row_hash": "cb7cbe93b589e2e0be5682a8369e3f89ac32eda91e83727c0434e00c1fb6d313",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-25 22:39:13.696036+00:00",
+                "source_row_hash": "cde16e6272ec4e4b31bc4264a840dd3c570f943d76d677002444d9e6e339382b",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-30 22:39:41.483098+00:00",
+                "source_row_hash": "d7b5de0ea2147f3dd894f24f9f2ae8e4bf62cfa838452f1af1338bc700a4c19f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-19 22:35:15.275758+00:00",
+                "source_row_hash": "d9d0c6bb0c3e0435d62d1ccab727655fea66f33136ceebb04468860657c2965e",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-08-01 22:39:19.643703+00:00",
+                "source_row_hash": "e417119931a71e3c9d83cdd641e825afaa0ae491f099189dd6dfb76f23f27681",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-14 22:34:29.671458+00:00",
+                "source_row_hash": "f0a12e4d831e3b8feed37962f68d7b6f9fb101a7430a6d101c7f7e6ab741167c",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Suspicious sequence of exploration activities",
+              "S-1-5-21-561436748-3867387497-1732241745-3701"
+            ]
+          },
+          {
+            "step": "T3",
+            "episode_id": "em_1e29a02e39e38dec",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-24 22:39:30.160437+00:00",
+                "source_row_hash": "12d60f823382bad786cf1da8be83e94e13ec9ed1f629da8fa96d4cae67a9f27c",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-23 22:39:10.359959+00:00",
+                "source_row_hash": "1853702f4792647584523605b73da67835a17577fe0441c58ecc92b2e6fd307f",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-25 22:39:57.656949+00:00",
+                "source_row_hash": "3dd185583c9de4ac96bbaf462e100365bc6343e3f69b3a9a3836bc38e0d53085",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-12 22:39:37.571741+00:00",
+                "source_row_hash": "3eb38acb8e4e7a4b89128d9dbc7023f0f25eedce69460d5c047c57bb288209de",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-08-01 22:41:05.511922+00:00",
+                "source_row_hash": "51e998c20b5d429ab0042eb5144a266757543cf6481704a1df699ba23aad26f4",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-31 22:39:13.246089+00:00",
+                "source_row_hash": "6c9ba14d6812e82c5e081c3984dbb21a0115976e3c9b5f3f373f75c811b3d5fb",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-13 22:40:05.144951+00:00",
+                "source_row_hash": "6d2dfdcdb7eea673dd469317ff979a3bd38911b673cc645d2e8a2fb9f8743251",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-28 22:39:57.724890+00:00",
+                "source_row_hash": "84f2361df19a975fac32eb7710228bb500845b9a3dbc3ae843f0a0840f85dcc8",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-29 22:39:58.320630+00:00",
+                "source_row_hash": "882e8c7b824528c6f1c7892d778533731873b18d7b6f91754f1f132cf0a9d4fe",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-30 22:39:33.137082+00:00",
+                "source_row_hash": "a37ef8383b5f6521cc4e20514de0b865f7ea2a73647a8c7f0eb7144bc869a4ef",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-10 11:24:45.667104+00:00",
+                "source_row_hash": "b433ab3538aa0116f847b79854326e833089fe7370201f65531da9b0f5f39e91",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-27 22:39:12.735557+00:00",
+                "source_row_hash": "e61237c23ea622eeb945bb93bcc57a59e281f914b56fb5da4617486d4d0bfa26",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Malicious URL was clicked on that device",
+              "mb-winclient"
+            ]
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+        "exact": false,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 5,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 168,
+            "prompt_tokens": 1069,
+            "total_tokens": 1237,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 896
+            }
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"同一设备上另一个潜在恶意URL点击事件涉及的URL\"},\"constraints\":[\"只从材料提取，不推断未知实体\",\"实体值必须原样出现在原文\"],\"event_context\":[\"已检测到某用户点击了被判定为恶意的链接\",\"这是一起更广泛安全事件的一部分，涉及可疑探测活动，包括使用多个Windows命令识别有价值资产并在入侵后进行横向移动\",\"近期安全事件包含同一设备上另一次潜在恶意URL点击\"],\"retrieval_query\":\"识别同一设备上另一次潜在恶意URL点击事件涉及的URL\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 269,
+            "prompt_tokens": 1647,
+            "total_tokens": 1916,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"只从材料提取，不推断未知实体\",\"supported\":true,\"reason\":\"该路线以已知URL E1为起点，经账户、主机桥接实体定位同一设备，再检索该设备上的另一URL点击事件；全程使用已观测/可检索实体，不推断未知值。\"},{\"constraint\":\"实体值必须原样出现在原文\",\"supported\":true,\"reason\":\"已知实体URL E1原样来自当前告警；目标URL须在检索到的事件记录中原样取值，选择阶段不预填最终值。\"}],\"reason\":\"题目要求找到同一设备上另一次潜在恶意URL点击的URL。该路线事件包含“A potentially malicious URL click was detected”“Suspicious sequence of exploration activities”“Malicious URL was clicked on that device”，与当前事件上下文中的URL点击及可疑探测活动直接对应；且先通过账户、主机桥接定位同一设备，再在设备上检索另一URL，符合设备关联与事件顺序要求。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 230,
+            "prompt_tokens": 7667,
+            "total_tokens": 7897,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"],\"constraint_checks\":[{\"constraint\":\"只从材料提取，不推断未知实体\",\"supported\":true,\"reason\":\"候选值原样出现在T3输出的graph_value中\"},{\"constraint\":\"实体值必须原样出现在原文\",\"supported\":true,\"reason\":\"T3中URL值为https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/，与候选逐字一致\"}],\"reason\":\"T1确认已知URL点击事件关联Account_SID，T2将该SID映射到主机mb-winclient，T3显示同一主机mb-winclient上存在另一潜在恶意URL点击事件，其URL为https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/（与已知http://版本仅在协议上不同，但材料中作为单独URL实体原样出现）。候选值来自材料，满足约束。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 11050
+    },
+    {
+      "case": "incident_55_train_000",
+      "mode": "without_PM",
+      "context": "We have detected that one of your users has recently clicked on a link that was found to be malicious: `http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/`. This is part of a broader security incident involving suspicious exploration activities including the use of multiple Windows commands which can be used by attackers to identify assets of value and coordinate lateral movement after compromising a machine.",
+      "question": "A recent security incident included another instance of potentially malicious URL click on the same device. Can you identify the URL?",
+      "result": {
+        "status": "budget_exhausted",
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "同一设备上最近安全事件中另一次潜在恶意 URL 点击所涉及的 URL"
+          },
+          "constraints": [
+            "该 URL 点击被认定为潜在恶意",
+            "该点击事件发生在同一设备上",
+            "这是最近安全事件中的另一实例"
+          ],
+          "event_context": [
+            "检测到某用户点击了被判定为恶意的链接",
+            "该事件属于更广泛的安全事件，涉及可疑探索活动",
+            "这些活动包括使用多个 Windows 命令，攻击者可在攻陷机器后用于识别有价值资产并协调横向移动"
+          ],
+          "retrieval_query": "查找同一设备上最近安全事件中另一次潜在恶意 URL 点击所涉及的 URL"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "EM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "EM/em_c5500cc48c1247c7/2aacabb3bd0e",
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "该候选来自“A potentially malicious URL click was detected”告警，并绑定已知恶意URL实体E1；提取同告警设备标识不违反该约束，且可保留在同类告警范围内继续筛选。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": true,
+                  "reason": "候选返回同一告警中的Device_AAD_ID，可作为设备桥接标识，用于后续检索该设备上的其他URL点击；当前步骤支持验证，尚未最终断言。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": true,
+                  "reason": "先取得设备ID后，才能按同一设备查找时间上最近的其他URL点击实例；该步骤是发现另一实例的必要中转，不直接等同最终答案。"
+                }
+              ],
+              "reason": "目标是找同一设备上另一次潜在恶意URL点击，当前缺少设备标识。选择同告警中的Device_AAD_ID可作为设备桥接实体，之后可据该设备继续检索其他URL点击，比直接返回账户或邮件接收者更贴近“同一设备”约束。",
+              "candidates": [
+                "EM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "EM/em_36b2add63380b678/2aacabb3bd0e",
+                "EM/em_91337af89e0a799a/2aacabb3bd0e",
+                "EM/em_a3221b25c137cf72/2aacabb3bd0e",
+                "EM/em_acf4bcfca67f0e2b/2aacabb3bd0e",
+                "EM/em_c5500cc48c1247c7/2aacabb3bd0e",
+                "EM/em_e516c468f5783731/2aacabb3bd0e",
+                "EM/em_282d44abd73e9a92/36e2c6b79fbb"
+              ]
+            },
+            "selected": {
+              "id": "EM/em_c5500cc48c1247c7/2aacabb3bd0e",
+              "episode_id": "em_c5500cc48c1247c7",
+              "known": "URL",
+              "wanted": "Device_AAD_ID",
+              "event": "A potentially malicious URL click was detected",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "recall_score": 0.108348,
+              "values": [
+                "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ]
+            }
+          },
+          {
+            "round": 2,
+            "layer": "EM",
+            "decision": {
+              "decision": "needs_evidence",
+              "candidate_id": null,
+              "entity_ids": [],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "多个候选来自 'A potentially malicious URL click was detected' 告警主题，但需先获取同设备信息才能定位另一恶意 URL 点击"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": false,
+                  "reason": "当前仅有 URL，缺少设备标识；需先查询与 E1 关联的主机/账户等桥接实体"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": false,
+                  "reason": "尚未建立与 E1 同设备的关联，无法确认另一实例"
+                }
+              ],
+              "reason": "目标是同一设备上另一潜在恶意 URL，但现有候选均为从 URL 指向账户/主机/收件人等桥接实体的路线，尚未获得设备标识，也未被系统排除。应先获取当前 URL 关联的主机或账户，再据实际实体继续查询 URL。候选未含目标类型 URL，不能凭类型或关键词凑选。",
+              "candidates": [
+                "EM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "EM/em_36b2add63380b678/2aacabb3bd0e",
+                "EM/em_91337af89e0a799a/2aacabb3bd0e",
+                "EM/em_a3221b25c137cf72/2aacabb3bd0e",
+                "EM/em_acf4bcfca67f0e2b/2aacabb3bd0e",
+                "EM/em_e516c468f5783731/2aacabb3bd0e",
+                "EM/em_282d44abd73e9a92/36e2c6b79fbb",
+                "EM/em_36b2add63380b678/36e2c6b79fbb"
+              ]
+            }
+          },
+          {
+            "round": 2,
+            "layer": "SM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "SM/em_4fcdffffd71c45be/2aacabb3bd0e",
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "候选事件为“A potentially malicious URL click was detected”，与已知实体 E1 同属该告警，可返回同一告警中的 URL 实体。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": true,
+                  "reason": "该候选目标类型为 URL，来源于同一告警中的 URL 实体；需执行后验证该告警是否包含同一设备实体并确认关联。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": true,
+                  "reason": "需执行后比对返回的 URL 是否与 E1 不同且同属最近安全事件，从而确认另一实例。"
+                }
+              ],
+              "reason": "只有该候选的 wanted 类型为 URL，且事件主题与当前告警一致，可继续验证同设备关联与另一实例；其余候选目标类型均非 URL，无法直接满足目标。",
+              "candidates": [
+                "SM/em_4fcdffffd71c45be/2aacabb3bd0e",
+                "SM/em_098aeab7ab018ad5/2aacabb3bd0e",
+                "SM/em_2210b83e57f41eab/2aacabb3bd0e",
+                "SM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "SM/em_36b2add63380b678/2aacabb3bd0e",
+                "SM/em_3b59c389bea0b024/2aacabb3bd0e",
+                "SM/em_43da300c4c874d0b/2aacabb3bd0e",
+                "SM/em_6759d8de5459a35e/2aacabb3bd0e"
+              ]
+            },
+            "selected": {
+              "id": "SM/em_4fcdffffd71c45be/2aacabb3bd0e",
+              "episode_id": "em_4fcdffffd71c45be",
+              "known": "URL",
+              "wanted": "URL",
+              "event": "A potentially malicious URL click was detected",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "fields": {
+                "URL": {
+                  "name": "URL",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "URL",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "retain original URL; official graph lowercases and can lose path case",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "url",
+                    "json_paths": [
+                      "$[*].Url"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                }
+              },
+              "recall_score": 0.094849,
+              "values": [
+                "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ]
+            },
+            "verification": {
+              "decision": "continue",
+              "values": [],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "证据中的告警事件为 “A potentially malicious URL click was detected”，且输出 URL 为候选值。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": false,
+                  "reason": "证据未提供设备标识，无法证明该点击与已知事件发生在同一设备。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": false,
+                  "reason": "证据仅返回与已知 E1 相同的 URL，未提供可区分的另一次点击实例或不同 URL。"
+                }
+              ],
+              "reason": "当前证据只包含已知 URL 的潜在恶意点击告警，缺少同设备关联和“另一实例”的独立证据，不能据此确定目标 URL。"
+            }
+          },
+          {
+            "round": 3,
+            "layer": "EM",
+            "decision": {
+              "decision": "needs_evidence",
+              "candidate_id": null,
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "当前日志已将被点击的URL判定为恶意，可作为起点。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": false,
+                  "reason": "尚未获得该URL点击所在设备/主机的标识，需先查主机或账户等桥接实体以确定同一设备。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": false,
+                  "reason": "候选均只返回账户/主机/收件人等实体，而非另一URL；且尚未验证它们与同一设备及最近事件另一URL点击实例的关联。"
+                }
+              ],
+              "reason": "目标是查找同一设备上另一潜在恶意URL点击的URL。当前仅有E1一个URL，候选均为从URL到账户/主机/收件人等非URL实体，尚不能直接产出所需URL；需先获取该点击关联的设备/主机等桥接实体，再据其检索同设备上的其他URL点击事件。故下一步应为证据发现而非匹配最终URL。",
+              "candidates": [
+                "EM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "EM/em_36b2add63380b678/2aacabb3bd0e",
+                "EM/em_91337af89e0a799a/2aacabb3bd0e",
+                "EM/em_a3221b25c137cf72/2aacabb3bd0e",
+                "EM/em_acf4bcfca67f0e2b/2aacabb3bd0e",
+                "EM/em_e516c468f5783731/2aacabb3bd0e",
+                "EM/em_282d44abd73e9a92/36e2c6b79fbb",
+                "EM/em_36b2add63380b678/36e2c6b79fbb"
+              ]
+            }
+          },
+          {
+            "round": 3,
+            "layer": "SM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "SM/em_282d44abd73e9a92/2aacabb3bd0e",
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "候选来自“A potentially malicious URL click was detected”告警，并用已知 URL 实体 E1 定位同一告警；该步不否定恶意判定，但最终仍需以告警证据核验。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": true,
+                  "reason": "选择同一 URL 点击告警中的 Account_AAD_ID 可先识别点击用户，作为后续关联其设备/会话并筛选同一设备其他 URL 点击的桥接实体；设备一致性需后续验证。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": true,
+                  "reason": "从该告警取得账户后，可继续追踪同一用户/设备在最近事件中的其他 URL 点击；当前步骤只产生账户线索，尚不直接证明另一实例。"
+                }
+              ],
+              "reason": "候选能返回已知恶意 URL 点击告警中的 AAD 账户对象 ID，这是从 URL E1 推进到用户、再关联设备并查找同一设备上另一潜在恶意 URL 点击的有效桥接步骤；其他候选多返回资源、邮箱或应用实体，对定位同一设备上的另一 URL 点击帮助较弱。",
+              "candidates": [
+                "SM/em_098aeab7ab018ad5/2aacabb3bd0e",
+                "SM/em_2210b83e57f41eab/2aacabb3bd0e",
+                "SM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "SM/em_36b2add63380b678/2aacabb3bd0e",
+                "SM/em_3b59c389bea0b024/2aacabb3bd0e",
+                "SM/em_43da300c4c874d0b/2aacabb3bd0e",
+                "SM/em_6759d8de5459a35e/2aacabb3bd0e",
+                "SM/em_8a2bf2bcdc8b00e1/2aacabb3bd0e"
+              ]
+            },
+            "selected": {
+              "id": "SM/em_282d44abd73e9a92/2aacabb3bd0e",
+              "episode_id": "em_282d44abd73e9a92",
+              "known": "URL",
+              "wanted": "Account_AAD_ID",
+              "event": "A potentially malicious URL click was detected",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "fields": {
+                "URL": {
+                  "name": "URL",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "URL",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "retain original URL; official graph lowercases and can lose path case",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "url",
+                    "json_paths": [
+                      "$[*].Url"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                },
+                "Account_AAD_ID": {
+                  "name": "AAD账户对象ID",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "Account_AAD_ID",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "tenant-scoped directory object ID",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "account",
+                    "json_paths": [
+                      "$[*].AadUserId"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                }
+              },
+              "recall_score": 0.084985,
+              "values": [
+                "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ]
+            },
+            "verification": {
+              "decision": "continue",
+              "values": [],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "E1 和 em_4fcdffffd71c45be 均显示该 URL 为已知的潜在恶意 URL 点击事件。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": false,
+                  "reason": "证据只返回 URL、账号 AAD ID 和告警 ID，未提供设备标识，也未证明另一次点击与已知事件在同一设备上。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": false,
+                  "reason": "目前检索到的 URL 与已知 E1 相同，没有发现另一实例的其他 URL。"
+                }
+              ],
+              "reason": "检索结果只返回已知 URL（http://ym018491661...）及其账号信息，缺少同设备的另一次点击证据，也缺少可区分的另一 URL。候选仅有已知值，不能将其当作“另一实例”的答案。"
+            }
+          },
+          {
+            "round": 4,
+            "layer": "EM",
+            "decision": {
+              "decision": "needs_evidence",
+              "candidate_id": null,
+              "entity_ids": [
+                "O2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "候选EM/em_49c129a6ecfa9aa4/2aacabb3bd0e对应'A potentially malicious URL click was detected'告警，符合潜在恶意URL点击主题。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": false,
+                  "reason": "当前仅知同告警包含账户AAD ID，尚未确认设备主机；需先用账户实体查询关联主机关联，才能验证同设备。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": false,
+                  "reason": "需要从账户桥接到主机后，再在同一主机上查找另一条潜在恶意URL点击记录；当前尚未获得可验证的URL候选实体ID。"
+                }
+              ],
+              "reason": "候选EM/em_49c129a6ecfa9aa4/2aacabb3bd0e与当前告警主题匹配，但目前只绑定了账户AAD ID(O2)，缺少同设备证明与具体URL值。应先通过账户O2查关联主机，再据主机继续检索同设备另一URL点击，因此暂不返回match。",
+              "candidates": [
+                "EM/em_49c129a6ecfa9aa4/17b802b122a0",
+                "EM/em_49c129a6ecfa9aa4/4923ae609ccf",
+                "EM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "EM/em_49c129a6ecfa9aa4/2aacabb3bd0e",
+                "EM/em_36b2add63380b678/2aacabb3bd0e",
+                "EM/em_91337af89e0a799a/2aacabb3bd0e",
+                "EM/em_a3221b25c137cf72/2aacabb3bd0e",
+                "EM/em_acf4bcfca67f0e2b/2aacabb3bd0e"
+              ]
+            }
+          },
+          {
+            "round": 4,
+            "layer": "SM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "SM/em_49c129a6ecfa9aa4/2aacabb3bd0e",
+              "entity_ids": [
+                "O2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "候选事件为“A potentially malicious URL click was detected”，并从同一账户实体返回该告警中的 URL；该 URL 的恶意判定仍需最终证据审核。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": true,
+                  "reason": "该步先用已知账户 O2 找到同一账户下的潜在恶意 URL 点击告警并取得 URL，不违反同设备约束；取得 URL 后需继续通过该告警的设备/主机实体验证是否与 E1 同一设备。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": true,
+                  "reason": "候选属于同一事件 episode em_49c129a6ecfa9aa4 中的潜在恶意 URL 点击告警，可产出 URL 后与已知 E1 比较，确认是否为另一实例。"
+                }
+              ],
+              "reason": "选择账户 O2 到 URL 的桥接：从同一账户关联的“A potentially malicious URL click was detected”告警中获取待核验 URL，再继续验证设备一致性及是否为不同于 E1 的另一实例。",
+              "candidates": [
+                "SM/em_49c129a6ecfa9aa4/4923ae609ccf",
+                "SM/em_49c129a6ecfa9aa4/17b802b122a0",
+                "SM/em_9707dd4d678e3ddf/4923ae609ccf",
+                "SM/em_9707dd4d678e3ddf/17b802b122a0",
+                "SM/em_49c129a6ecfa9aa4/2aacabb3bd0e",
+                "SM/em_07dbbba3e4b67125/17b802b122a0",
+                "SM/em_11c2d76ccf064e91/17b802b122a0",
+                "SM/em_1b180a45703de956/17b802b122a0"
+              ]
+            },
+            "selected": {
+              "id": "SM/em_49c129a6ecfa9aa4/2aacabb3bd0e",
+              "episode_id": "em_49c129a6ecfa9aa4",
+              "known": "Account_AAD_ID",
+              "wanted": "URL",
+              "event": "A potentially malicious URL click was detected",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "fields": {
+                "Account_AAD_ID": {
+                  "name": "AAD账户对象ID",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "Account_AAD_ID",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "tenant-scoped directory object ID",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "account",
+                    "json_paths": [
+                      "$[*].AadUserId"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                },
+                "URL": {
+                  "name": "URL",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "URL",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "retain original URL; official graph lowercases and can lose path case",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "url",
+                    "json_paths": [
+                      "$[*].Url"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                }
+              },
+              "recall_score": 0.125622,
+              "values": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            },
+            "verification": {
+              "decision": "continue",
+              "values": [],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "证据中包含“A potentially malicious URL click was detected”，且该 URL 出现在对应告警输出中。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": false,
+                  "reason": "证据未提供设备标识或设备关联信息，无法确认与已知点击属于同一设备。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": false,
+                  "reason": "现有证据只反复出现同一个已知 URL 和同一告警 ID，没有显示另一次不同的潜在恶意 URL 点击实例。"
+                }
+              ],
+              "reason": "当前只找到已知 URL http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/ 的相关告警输出，未证明存在同一设备上的另一实例，也没有可选的第二个 URL 候选，因此证据不足，继续检索。"
+            }
+          },
+          {
+            "round": 5,
+            "layer": "EM",
+            "decision": {
+              "decision": "needs_evidence",
+              "candidate_id": null,
+              "entity_ids": [
+                "O2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": false,
+                  "reason": "当前仅有初始恶意链接 E1，尚无另一实例的点击证据"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": false,
+                  "reason": "尚未确定 E1 关联设备，也缺少另一 URL 点击的同设备证据"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": false,
+                  "reason": "尚未建立同一告警或事件中另一恶意 URL 点击记录"
+                }
+              ],
+              "reason": "目标是同一设备上另一潜在恶意 URL 点击的 URL，但当前仅有 URL E1 与账户 O2。需先通过 O2 查询同设备/同告警桥接实体（如 Host_Name），再据实际主机继续查找另一恶意 URL 点击；现有候选要么不产出设备桥接，要么召回较低，暂不足以绑定同一设备上另一 URL 实例。",
+              "candidates": [
+                "EM/em_49c129a6ecfa9aa4/17b802b122a0",
+                "EM/em_49c129a6ecfa9aa4/4923ae609ccf",
+                "EM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "EM/em_49c129a6ecfa9aa4/2aacabb3bd0e",
+                "EM/em_36b2add63380b678/2aacabb3bd0e",
+                "EM/em_91337af89e0a799a/2aacabb3bd0e",
+                "EM/em_a3221b25c137cf72/2aacabb3bd0e",
+                "EM/em_acf4bcfca67f0e2b/2aacabb3bd0e"
+              ]
+            }
+          },
+          {
+            "round": 5,
+            "layer": "SM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "SM/em_49c129a6ecfa9aa4/4923ae609ccf",
+              "entity_ids": [
+                "O2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "候选告警主题为“可疑探索活动”，与当前更广泛安全事件上下文一致；返回该告警中的 URL 后可进一步核验其恶意判定。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": true,
+                  "reason": "候选以当前告警中的账户 O2 为桥接实体，可返回同告警内 URL；设备同一性需在获得 URL 后结合告警主机或相关实体继续验证。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": true,
+                  "reason": "候选事件主题与上下文所述“可疑探索活动”安全事件直接对应，且返回目标类型 URL 后可核验其是否不同于 E1 并属于另一次点击。"
+                }
+              ],
+              "reason": "选择与更广泛安全事件主题直接一致的“Suspicious sequence of exploration activities”候选，使用当前已知账户 O2 作为桥接实体获取同告警目标类型 URL，能推进同设备另一潜在恶意 URL 的发现；尚未直接断言最终答案。",
+              "candidates": [
+                "SM/em_49c129a6ecfa9aa4/4923ae609ccf",
+                "SM/em_49c129a6ecfa9aa4/17b802b122a0",
+                "SM/em_9707dd4d678e3ddf/4923ae609ccf",
+                "SM/em_9707dd4d678e3ddf/17b802b122a0",
+                "SM/em_07dbbba3e4b67125/17b802b122a0",
+                "SM/em_11c2d76ccf064e91/17b802b122a0",
+                "SM/em_1b180a45703de956/17b802b122a0",
+                "SM/em_1bc1af61b62114f4/17b802b122a0"
+              ]
+            },
+            "selected": {
+              "id": "SM/em_49c129a6ecfa9aa4/4923ae609ccf",
+              "episode_id": "em_49c129a6ecfa9aa4",
+              "known": "Account_AAD_ID",
+              "wanted": "URL",
+              "event": "Suspicious sequence of exploration activities",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "fields": {
+                "Account_AAD_ID": {
+                  "name": "AAD账户对象ID",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "Account_AAD_ID",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "tenant-scoped directory object ID",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "account",
+                    "json_paths": [
+                      "$[*].AadUserId"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                },
+                "URL": {
+                  "name": "URL",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "URL",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "retain original URL; official graph lowercases and can lose path case",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "url",
+                    "json_paths": [
+                      "$[*].Url"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                }
+              },
+              "recall_score": 0.151674,
+              "values": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            },
+            "verification": {
+              "decision": "continue",
+              "values": [],
+              "constraint_checks": [
+                {
+                  "constraint": "该 URL 点击被认定为潜在恶意",
+                  "supported": true,
+                  "reason": "证据显示检测到潜在恶意 URL 点击，但该证据对应已知 URL 及同一告警，不能证明是另一实例。"
+                },
+                {
+                  "constraint": "该点击事件发生在同一设备上",
+                  "supported": false,
+                  "reason": "证据中未提供设备标识或同一设备的关联路径证据。"
+                },
+                {
+                  "constraint": "这是最近安全事件中的另一实例",
+                  "supported": false,
+                  "reason": "检索结果仅重复出现已知 URL 和同一 alert_id，没有发现另一条不同的潜在恶意 URL 点击事件。"
+                }
+              ],
+              "reason": "唯一候选值就是已知 URL，且证据来自同一告警/同一事件；未获得同一设备上另一次潜在恶意 URL 点击所涉及的不同 URL 的充分证据。"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_c5500cc48c1247c7",
+            "status": "empty",
+            "outputs": [],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "A potentially malicious URL click was detected",
+              "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            ]
+          },
+          {
+            "step": "T1",
+            "episode_id": "em_4fcdffffd71c45be",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "URL",
+                "graph_value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 2,
+                "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+                "time": "2024-07-10 11:24:45.507742+00:00",
+                "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+                "matched_inputs": [
+                  "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "A potentially malicious URL click was detected",
+              "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            ]
+          },
+          {
+            "step": "T1",
+            "episode_id": "em_282d44abd73e9a92",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_AAD_ID",
+                "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+                "raw_components": {
+                  "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+                },
+                "roles": [],
+                "entity_index": 3,
+                "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+                "time": "2024-07-10 11:24:45.507742+00:00",
+                "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+                "matched_inputs": [
+                  "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "A potentially malicious URL click was detected",
+              "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            ]
+          },
+          {
+            "step": "T1",
+            "episode_id": "em_49c129a6ecfa9aa4",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "URL",
+                "graph_value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 2,
+                "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+                "time": "2024-07-10 11:24:45.507742+00:00",
+                "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+                "matched_inputs": [
+                  "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "A potentially malicious URL click was detected",
+              "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+            ]
+          },
+          {
+            "step": "T1",
+            "episode_id": "em_49c129a6ecfa9aa4",
+            "status": "empty",
+            "outputs": [],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Suspicious sequence of exploration activities",
+              "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+            ]
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+        "exact": false,
+        "normalized_single_answer": false,
+        "answer_in_candidates": false
+      },
+      "sql_queries_including_metadata": 17,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 585,
+            "prompt_tokens": 1094,
+            "total_tokens": 1679,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"同一设备上最近安全事件中另一次潜在恶意 URL 点击所涉及的 URL\"},\"constraints\":[\"该 URL 点击被认定为潜在恶意\",\"该点击事件发生在同一设备上\",\"这是最近安全事件中的另一实例\"],\"event_context\":[\"检测到某用户点击了被判定为恶意的链接\",\"该事件属于更广泛的安全事件，涉及可疑探索活动\",\"这些活动包括使用多个 Windows 命令，攻击者可在攻陷机器后用于识别有价值资产并协调横向移动\"],\"retrieval_query\":\"查找同一设备上最近安全事件中另一次潜在恶意 URL 点击所涉及的 URL\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 1279,
+            "prompt_tokens": 1697,
+            "total_tokens": 2976,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"EM/em_c5500cc48c1247c7/2aacabb3bd0e\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"该候选来自“A potentially malicious URL click was detected”告警，并绑定已知恶意URL实体E1；提取同告警设备标识不违反该约束，且可保留在同类告警范围内继续筛选。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":true,\"reason\":\"候选返回同一告警中的Device_AAD_ID，可作为设备桥接标识，用于后续检索该设备上的其他URL点击；当前步骤支持验证，尚未最终断言。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":true,\"reason\":\"先取得设备ID后，才能按同一设备查找时间上最近的其他URL点击实例；该步骤是发现另一实例的必要中转，不直接等同最终答案。\"}],\"reason\":\"目标是找同一设备上另一次潜在恶意URL点击，当前缺少设备标识。选择同告警中的Device_AAD_ID可作为设备桥接实体，之后可据该设备继续检索其他URL点击，比直接返回账户或邮件接收者更贴近“同一设备”约束。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 229,
+            "prompt_tokens": 1669,
+            "total_tokens": 1898,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"needs_evidence\",\"candidate_id\":null,\"entity_ids\":[],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"多个候选来自 'A potentially malicious URL click was detected' 告警主题，但需先获取同设备信息才能定位另一恶意 URL 点击\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":false,\"reason\":\"当前仅有 URL，缺少设备标识；需先查询与 E1 关联的主机/账户等桥接实体\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":false,\"reason\":\"尚未建立与 E1 同设备的关联，无法确认另一实例\"}],\"reason\":\"目标是同一设备上另一潜在恶意 URL，但现有候选均为从 URL 指向账户/主机/收件人等桥接实体的路线，尚未获得设备标识，也未被系统排除。应先获取当前 URL 关联的主机或账户，再据实际实体继续查询 URL。候选未含目标类型 URL，不能凭类型或关键词凑选。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 239,
+            "prompt_tokens": 3823,
+            "total_tokens": 4062,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"SM/em_4fcdffffd71c45be/2aacabb3bd0e\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"候选事件为“A potentially malicious URL click was detected”，与已知实体 E1 同属该告警，可返回同一告警中的 URL 实体。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":true,\"reason\":\"该候选目标类型为 URL，来源于同一告警中的 URL 实体；需执行后验证该告警是否包含同一设备实体并确认关联。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":true,\"reason\":\"需执行后比对返回的 URL 是否与 E1 不同且同属最近安全事件，从而确认另一实例。\"}],\"reason\":\"只有该候选的 wanted 类型为 URL，且事件主题与当前告警一致，可继续验证同设备关联与另一实例；其余候选目标类型均非 URL，无法直接满足目标。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 567,
+            "prompt_tokens": 860,
+            "total_tokens": 1427,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 128
+            }
+          },
+          "response": "{\"decision\":\"continue\",\"values\":[],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"证据中的告警事件为 “A potentially malicious URL click was detected”，且输出 URL 为候选值。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":false,\"reason\":\"证据未提供设备标识，无法证明该点击与已知事件发生在同一设备。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":false,\"reason\":\"证据仅返回与已知 E1 相同的 URL，未提供可区分的另一次点击实例或不同 URL。\"}],\"reason\":\"当前证据只包含已知 URL 的潜在恶意点击告警，缺少同设备关联和“另一实例”的独立证据，不能据此确定目标 URL。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 241,
+            "prompt_tokens": 1669,
+            "total_tokens": 1910,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 1535
+            }
+          },
+          "response": "{\"decision\":\"needs_evidence\",\"candidate_id\":null,\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"当前日志已将被点击的URL判定为恶意，可作为起点。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":false,\"reason\":\"尚未获得该URL点击所在设备/主机的标识，需先查主机或账户等桥接实体以确定同一设备。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":false,\"reason\":\"候选均只返回账户/主机/收件人等实体，而非另一URL；且尚未验证它们与同一设备及最近事件另一URL点击实例的关联。\"}],\"reason\":\"目标是查找同一设备上另一潜在恶意URL点击的URL。当前仅有E1一个URL，候选均为从URL到账户/主机/收件人等非URL实体，尚不能直接产出所需URL；需先获取该点击关联的设备/主机等桥接实体，再据其检索同设备上的其他URL点击事件。故下一步应为证据发现而非匹配最终URL。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 973,
+            "prompt_tokens": 4006,
+            "total_tokens": 4979,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"SM/em_282d44abd73e9a92/2aacabb3bd0e\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"候选来自“A potentially malicious URL click was detected”告警，并用已知 URL 实体 E1 定位同一告警；该步不否定恶意判定，但最终仍需以告警证据核验。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":true,\"reason\":\"选择同一 URL 点击告警中的 Account_AAD_ID 可先识别点击用户，作为后续关联其设备/会话并筛选同一设备其他 URL 点击的桥接实体；设备一致性需后续验证。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":true,\"reason\":\"从该告警取得账户后，可继续追踪同一用户/设备在最近事件中的其他 URL 点击；当前步骤只产生账户线索，尚不直接证明另一实例。\"}],\"reason\":\"候选能返回已知恶意 URL 点击告警中的 AAD 账户对象 ID，这是从 URL E1 推进到用户、再关联设备并查找同一设备上另一潜在恶意 URL 点击的有效桥接步骤；其他候选多返回资源、邮箱或应用实体，对定位同一设备上的另一 URL 点击帮助较弱。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 206,
+            "prompt_tokens": 1115,
+            "total_tokens": 1321,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"continue\",\"values\":[],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"E1 和 em_4fcdffffd71c45be 均显示该 URL 为已知的潜在恶意 URL 点击事件。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":false,\"reason\":\"证据只返回 URL、账号 AAD ID 和告警 ID，未提供设备标识，也未证明另一次点击与已知事件在同一设备上。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":false,\"reason\":\"目前检索到的 URL 与已知 E1 相同，没有发现另一实例的其他 URL。\"}],\"reason\":\"检索结果只返回已知 URL（http://ym018491661...）及其账号信息，缺少同设备的另一次点击证据，也缺少可区分的另一 URL。候选仅有已知值，不能将其当作“另一实例”的答案。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 271,
+            "prompt_tokens": 1760,
+            "total_tokens": 2031,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"needs_evidence\",\"candidate_id\":null,\"entity_ids\":[\"O2\"],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"候选EM/em_49c129a6ecfa9aa4/2aacabb3bd0e对应'A potentially malicious URL click was detected'告警，符合潜在恶意URL点击主题。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":false,\"reason\":\"当前仅知同告警包含账户AAD ID，尚未确认设备主机；需先用账户实体查询关联主机关联，才能验证同设备。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":false,\"reason\":\"需要从账户桥接到主机后，再在同一主机上查找另一条潜在恶意URL点击记录；当前尚未获得可验证的URL候选实体ID。\"}],\"reason\":\"候选EM/em_49c129a6ecfa9aa4/2aacabb3bd0e与当前告警主题匹配，但目前只绑定了账户AAD ID(O2)，缺少同设备证明与具体URL值。应先通过账户O2查关联主机，再据主机继续检索同设备另一URL点击，因此暂不返回match。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 2500,
+            "prompt_tokens": 3840,
+            "total_tokens": 6340,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"SM/em_49c129a6ecfa9aa4/2aacabb3bd0e\",\"entity_ids\":[\"O2\"],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"候选事件为“A potentially malicious URL click was detected”，并从同一账户实体返回该告警中的 URL；该 URL 的恶意判定仍需最终证据审核。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":true,\"reason\":\"该步先用已知账户 O2 找到同一账户下的潜在恶意 URL 点击告警并取得 URL，不违反同设备约束；取得 URL 后需继续通过该告警的设备/主机实体验证是否与 E1 同一设备。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":true,\"reason\":\"候选属于同一事件 episode em_49c129a6ecfa9aa4 中的潜在恶意 URL 点击告警，可产出 URL 后与已知 E1 比较，确认是否为另一实例。\"}],\"reason\":\"选择账户 O2 到 URL 的桥接：从同一账户关联的“A potentially malicious URL click was detected”告警中获取待核验 URL，再继续验证设备一致性及是否为不同于 E1 的另一实例。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 329,
+            "prompt_tokens": 1413,
+            "total_tokens": 1742,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 768
+            }
+          },
+          "response": "{\"decision\":\"continue\",\"values\":[],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"证据中包含“A potentially malicious URL click was detected”，且该 URL 出现在对应告警输出中。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":false,\"reason\":\"证据未提供设备标识或设备关联信息，无法确认与已知点击属于同一设备。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":false,\"reason\":\"现有证据只反复出现同一个已知 URL 和同一告警 ID，没有显示另一次不同的潜在恶意 URL 点击实例。\"}],\"reason\":\"当前只找到已知 URL http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/ 的相关告警输出，未证明存在同一设备上的另一实例，也没有可选的第二个 URL 候选，因此证据不足，继续检索。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 216,
+            "prompt_tokens": 1760,
+            "total_tokens": 1976,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"needs_evidence\",\"candidate_id\":null,\"entity_ids\":[\"O2\"],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":false,\"reason\":\"当前仅有初始恶意链接 E1，尚无另一实例的点击证据\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":false,\"reason\":\"尚未确定 E1 关联设备，也缺少另一 URL 点击的同设备证据\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":false,\"reason\":\"尚未建立同一告警或事件中另一恶意 URL 点击记录\"}],\"reason\":\"目标是同一设备上另一潜在恶意 URL 点击的 URL，但当前仅有 URL E1 与账户 O2。需先通过 O2 查询同设备/同告警桥接实体（如 Host_Name），再据实际主机继续查找另一恶意 URL 点击；现有候选要么不产出设备桥接，要么召回较低，暂不足以绑定同一设备上另一 URL 实例。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 1056,
+            "prompt_tokens": 3849,
+            "total_tokens": 4905,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"SM/em_49c129a6ecfa9aa4/4923ae609ccf\",\"entity_ids\":[\"O2\"],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"候选告警主题为“可疑探索活动”，与当前更广泛安全事件上下文一致；返回该告警中的 URL 后可进一步核验其恶意判定。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":true,\"reason\":\"候选以当前告警中的账户 O2 为桥接实体，可返回同告警内 URL；设备同一性需在获得 URL 后结合告警主机或相关实体继续验证。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":true,\"reason\":\"候选事件主题与上下文所述“可疑探索活动”安全事件直接对应，且返回目标类型 URL 后可核验其是否不同于 E1 并属于另一次点击。\"}],\"reason\":\"选择与更广泛安全事件主题直接一致的“Suspicious sequence of exploration activities”候选，使用当前已知账户 O2 作为桥接实体获取同告警目标类型 URL，能推进同设备另一潜在恶意 URL 的发现；尚未直接断言最终答案。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 353,
+            "prompt_tokens": 1471,
+            "total_tokens": 1824,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"continue\",\"values\":[],\"constraint_checks\":[{\"constraint\":\"该 URL 点击被认定为潜在恶意\",\"supported\":true,\"reason\":\"证据显示检测到潜在恶意 URL 点击，但该证据对应已知 URL 及同一告警，不能证明是另一实例。\"},{\"constraint\":\"该点击事件发生在同一设备上\",\"supported\":false,\"reason\":\"证据中未提供设备标识或同一设备的关联路径证据。\"},{\"constraint\":\"这是最近安全事件中的另一实例\",\"supported\":false,\"reason\":\"检索结果仅重复出现已知 URL 和同一 alert_id，没有发现另一条不同的潜在恶意 URL 点击事件。\"}],\"reason\":\"唯一候选值就是已知 URL，且证据来自同一告警/同一事件；未获得同一设备上另一次潜在恶意 URL 点击所涉及的不同 URL 的充分证据。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 39070
+    },
+    {
+      "case": "incident_55_train_000",
+      "mode": "SM_only",
+      "context": "We have detected that one of your users has recently clicked on a link that was found to be malicious: `http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/`. This is part of a broader security incident involving suspicious exploration activities including the use of multiple Windows commands which can be used by attackers to identify assets of value and coordinate lateral movement after compromising a machine.",
+      "question": "A recent security incident included another instance of potentially malicious URL click on the same device. Can you identify the URL?",
+      "result": {
+        "status": "no_match",
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "Identify the URL associated with another potentially malicious URL click on the same device during the recent security incident."
+          },
+          "constraints": [
+            "The URL click is another instance separate from the known malicious URL click.",
+            "The click occurred on the same device.",
+            "The URL is potentially malicious."
+          ],
+          "event_context": [
+            "A user recently clicked on a link found to be malicious.",
+            "The incident involves suspicious exploration activities including multiple Windows commands that can be used to identify assets and coordinate lateral movement after compromise."
+          ],
+          "retrieval_query": "Find another potentially malicious URL click on the same device during the security incident"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "SM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "SM/em_4fcdffffd71c45be/2aacabb3bd0e",
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "The URL click is another instance separate from the known malicious URL click.",
+                  "supported": true,
+                  "reason": "该候选在同类“potentially malicious URL click”告警中返回目标URL实体；执行后需确认返回的URL不等于已知E1。"
+                },
+                {
+                  "constraint": "The click occurred on the same device.",
+                  "supported": true,
+                  "reason": "候选关联到同一恶意URL点击告警上下文，执行后需核对告警中的设备与已知点击设备一致。"
+                },
+                {
+                  "constraint": "The URL is potentially malicious.",
+                  "supported": true,
+                  "reason": "候选事件主题即为检测到潜在的恶意URL点击，可用于继续提取目标URL。"
+                }
+              ],
+              "reason": "只有该候选的目标类型为URL，能在同类恶意URL点击告警中检索另一个URL实体；其他候选返回资源组、账户、邮箱等非URL类型，不能直接推进寻找另一恶意URL的目标。",
+              "candidates": [
+                "SM/em_4fcdffffd71c45be/2aacabb3bd0e",
+                "SM/em_098aeab7ab018ad5/2aacabb3bd0e",
+                "SM/em_2210b83e57f41eab/2aacabb3bd0e",
+                "SM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "SM/em_36b2add63380b678/2aacabb3bd0e",
+                "SM/em_3b59c389bea0b024/2aacabb3bd0e",
+                "SM/em_43da300c4c874d0b/2aacabb3bd0e",
+                "SM/em_6759d8de5459a35e/2aacabb3bd0e"
+              ]
+            },
+            "selected": {
+              "id": "SM/em_4fcdffffd71c45be/2aacabb3bd0e",
+              "episode_id": "em_4fcdffffd71c45be",
+              "known": "URL",
+              "wanted": "URL",
+              "event": "A potentially malicious URL click was detected",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "fields": {
+                "URL": {
+                  "name": "URL",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "URL",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "retain original URL; official graph lowercases and can lose path case",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "url",
+                    "json_paths": [
+                      "$[*].Url"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                }
+              },
+              "recall_score": 0.078018,
+              "values": [
+                "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ]
+            },
+            "verification": {
+              "decision": "continue",
+              "values": [],
+              "constraint_checks": [
+                {
+                  "constraint": "The URL click is another instance separate from the known malicious URL click.",
+                  "supported": false,
+                  "reason": "The only evidence output (T1) is the same URL as the known value, so it does not establish a separate URL click."
+                },
+                {
+                  "constraint": "The click occurred on the same device.",
+                  "supported": false,
+                  "reason": "No device or entity linkage evidence is provided for the click."
+                },
+                {
+                  "constraint": "The URL is potentially malicious.",
+                  "supported": false,
+                  "reason": "The candidate is the same known URL, not an additional potentially malicious URL."
+                }
+              ],
+              "reason": "Only one URL appears in the candidates and evidence, and it equals the known URL. No evidence shows a distinct second URL click, the same device, or device linkage; therefore no answer can be selected without guessing."
+            }
+          },
+          {
+            "round": 2,
+            "layer": "SM",
+            "decision": {
+              "decision": "needs_evidence",
+              "candidate_id": null,
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "The URL click is another instance separate from the known malicious URL click.",
+                  "supported": true,
+                  "reason": "当前所有候选均只确认已知URL与目标实体的共现（同一告警），未产生或绑定同设备上的另一URL，需先桥接到设备/账户再查URL。"
+                },
+                {
+                  "constraint": "The click occurred on the same device.",
+                  "supported": true,
+                  "reason": "候选提供Account_AAD_ID、Cloud_App_Instance、Mailbox_Address等桥接实体，可用于定位同一设备；但当前尚无设备实体绑定，无法断言。"
+                },
+                {
+                  "constraint": "The URL is potentially malicious.",
+                  "supported": true,
+                  "reason": "候选事件主题为potentially malicious URL click，执行桥接后可在同事件主题下发现另一恶意URL；当前尚无具体URL可验证。"
+                }
+              ],
+              "reason": "wanted为另一URL，但所有候选的wanted均为非URL实体（资源组、云应用、账户、邮箱、资源ID、OAuth、命令行线索），无同类型URL可直接匹配。最有效推进是先获取同设备的桥接实体（如账户/邮箱/主机）以便继续检索另一URL，因此需要进一步证据而非拒绝。",
+              "candidates": [
+                "SM/em_098aeab7ab018ad5/2aacabb3bd0e",
+                "SM/em_2210b83e57f41eab/2aacabb3bd0e",
+                "SM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "SM/em_36b2add63380b678/2aacabb3bd0e",
+                "SM/em_3b59c389bea0b024/2aacabb3bd0e",
+                "SM/em_43da300c4c874d0b/2aacabb3bd0e",
+                "SM/em_6759d8de5459a35e/2aacabb3bd0e",
+                "SM/em_8a2bf2bcdc8b00e1/2aacabb3bd0e"
+              ]
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_4fcdffffd71c45be",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "URL",
+                "graph_value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 2,
+                "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+                "time": "2024-07-10 11:24:45.507742+00:00",
+                "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+                "matched_inputs": [
+                  "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "A potentially malicious URL click was detected",
+              "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            ]
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+        "exact": false,
+        "normalized_single_answer": false,
+        "answer_in_candidates": false
+      },
+      "sql_queries_including_metadata": 5,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 346,
+            "prompt_tokens": 1094,
+            "total_tokens": 1440,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 896
+            }
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"Identify the URL associated with another potentially malicious URL click on the same device during the recent security incident.\"},\"constraints\":[\"The URL click is another instance separate from the known malicious URL click.\",\"The click occurred on the same device.\",\"The URL is potentially malicious.\"],\"event_context\":[\"A user recently clicked on a link found to be malicious.\",\"The incident involves suspicious exploration activities including multiple Windows commands that can be used to identify assets and coordinate lateral movement after compromise.\"],\"retrieval_query\":\"Find another potentially malicious URL click on the same device during the security incident\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 742,
+            "prompt_tokens": 3836,
+            "total_tokens": 4578,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"SM/em_4fcdffffd71c45be/2aacabb3bd0e\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"The URL click is another instance separate from the known malicious URL click.\",\"supported\":true,\"reason\":\"该候选在同类“potentially malicious URL click”告警中返回目标URL实体；执行后需确认返回的URL不等于已知E1。\"},{\"constraint\":\"The click occurred on the same device.\",\"supported\":true,\"reason\":\"候选关联到同一恶意URL点击告警上下文，执行后需核对告警中的设备与已知点击设备一致。\"},{\"constraint\":\"The URL is potentially malicious.\",\"supported\":true,\"reason\":\"候选事件主题即为检测到潜在的恶意URL点击，可用于继续提取目标URL。\"}],\"reason\":\"只有该候选的目标类型为URL，能在同类恶意URL点击告警中检索另一个URL实体；其他候选返回资源组、账户、邮箱等非URL类型，不能直接推进寻找另一恶意URL的目标。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 177,
+            "prompt_tokens": 766,
+            "total_tokens": 943,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"continue\",\"values\":[],\"constraint_checks\":[{\"constraint\":\"The URL click is another instance separate from the known malicious URL click.\",\"supported\":false,\"reason\":\"The only evidence output (T1) is the same URL as the known value, so it does not establish a separate URL click.\"},{\"constraint\":\"The click occurred on the same device.\",\"supported\":false,\"reason\":\"No device or entity linkage evidence is provided for the click.\"},{\"constraint\":\"The URL is potentially malicious.\",\"supported\":false,\"reason\":\"The candidate is the same known URL, not an additional potentially malicious URL.\"}],\"reason\":\"Only one URL appears in the candidates and evidence, and it equals the known URL. No evidence shows a distinct second URL click, the same device, or device linkage; therefore no answer can be selected without guessing.\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 275,
+            "prompt_tokens": 3969,
+            "total_tokens": 4244,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"needs_evidence\",\"candidate_id\":null,\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"The URL click is another instance separate from the known malicious URL click.\",\"supported\":true,\"reason\":\"当前所有候选均只确认已知URL与目标实体的共现（同一告警），未产生或绑定同设备上的另一URL，需先桥接到设备/账户再查URL。\"},{\"constraint\":\"The click occurred on the same device.\",\"supported\":true,\"reason\":\"候选提供Account_AAD_ID、Cloud_App_Instance、Mailbox_Address等桥接实体，可用于定位同一设备；但当前尚无设备实体绑定，无法断言。\"},{\"constraint\":\"The URL is potentially malicious.\",\"supported\":true,\"reason\":\"候选事件主题为potentially malicious URL click，执行桥接后可在同事件主题下发现另一恶意URL；当前尚无具体URL可验证。\"}],\"reason\":\"wanted为另一URL，但所有候选的wanted均为非URL实体（资源组、云应用、账户、邮箱、资源ID、OAuth、命令行线索），无同类型URL可直接匹配。最有效推进是先获取同设备的桥接实体（如账户/邮箱/主机）以便继续检索另一URL，因此需要进一步证据而非拒绝。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 11205
+    },
+    {
+      "case": "incident_5_train_000",
+      "mode": "normal",
+      "context": "A suspicious and anomalous user behavior was detected on the device `vnevado-win11t` indicating potential compromise. This could be a part of a possible human-operated attack. This suspicious behavior caused several alerts related to the user, including a change in the frequency and usage pattern of tools or applications.",
+      "question": "What is the URL associated with the Manatee Tempest activity group observed in this incident?",
+      "error": {
+        "type": "ValueError",
+        "message": "Unsupported constraints"
+      },
+      "sql_queries_including_metadata": 4,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 392,
+            "prompt_tokens": 1182,
+            "total_tokens": 1574,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"Host_Name\",\"value\":\"vnevado-win11t\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"与本次事件中 Manatee Tempest 活动组织相关的 URL\"},\"constraints\":[\"材料中未出现任何 URL 值\",\"材料中未出现 Manatee Tempest 活动组织名称\",\"仅能依据提供的 context 提取信息，不推断未知实体\"],\"event_context\":[\"在设备 vnevado-win11t 上检测到可疑且异常的用户行为，可能表明设备遭入侵\",\"该行为可能是人工操作攻击的一部分\",\"可疑行为引发了与该用户相关的多个告警，包括工具或应用程序的使用频率与使用模式发生变化\"],\"retrieval_query\":\"本次事件中 Manatee Tempest 活动组织关联的 URL\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 2432,
+            "prompt_tokens": 1779,
+            "total_tokens": 4211,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 128
+            }
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"pm_3076db3c3bca149e/scope_09d875cfb70bd8fd/route_ee74e4bc5ae730ff/Host_Name\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"材料中未出现任何 URL 值\",\"supported\":true,\"reason\":\"当前 context 未提供 URL；选择该路线是通过账户桥接继续查询 URL，不将候选事件标题当作已证实的 URL。\"},{\"constraint\":\"材料中未出现 Manatee Tempest 活动组织名称\",\"supported\":true,\"reason\":\"初始 context 未出现该组织名；候选路线包含 Manatee Tempest 事件仅用于调查匹配，仍需后续证据确认关联。\"},{\"constraint\":\"仅能依据提供的 context 提取信息，不推断未知实体\",\"supported\":true,\"reason\":\"仅绑定已知主机实体 E1，不编造账户或 URL 实体；下一阶段再依据查询结果验证。\"}],\"reason\":\"候选路线的事件顺序为“Suspicious hands on keyboard user behavior → Manatee Tempest activity group”，与 context 中人工操作攻击及异常用户行为最吻合；通过 Host_Name 先查账户再到 URL，可推进 Manatee Tempest 相关 URL 的调查。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 215,
+            "prompt_tokens": 10260,
+            "total_tokens": 10475,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"vectorsandarrows.com\"],\"constraint_checks\":[{\"constraint\":\"材料中未出现任何 URL 值\",\"supported\":false,\"reason\":\"证据 T2 明确给出 URL 实体 vectorsandarrows.com，与约束描述相反\"},{\"constraint\":\"材料中未出现 Manatee Tempest 活动组织名称\",\"supported\":false,\"reason\":\"证据 T2 事件值为 'Manatee Tempest activity group'，与约束描述相反\"},{\"constraint\":\"仅能依据提供的 context 提取信息，不推断未知实体\",\"supported\":true,\"reason\":\"检索证据 T2 直接返回 Manatee Tempest 活动组关联的 URL 实体，值来自候选且非推断\"}],\"reason\":\"证据 T2 在 Manatee Tempest activity group 事件下多次输出 URL 值 vectorsandarrows.com，且其 matched_inputs 与 T1 中设备关联的 Account_SID 一致，可对应本次事件；值唯一且来自候选列表。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 16260
+    },
+    {
+      "case": "incident_34_train_000",
+      "mode": "normal",
+      "context": "During an investigation into an advanced security incident, an anomaly was detected in the ASEP registry, indicating that a process named `winatp-intro-backdoor.exe` with ProcessId__CreatedTimeUtc__CommandLine `10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe` was registered to run after a reboot on host `vnevado-win10e` linked to user `samuelf`.",
+      "question": "What is the SID of the account observed in the alert indicating that an uncommon file was created and added to a Run Key?",
+      "error": {
+        "type": "ValueError",
+        "message": "Unsupported constraints"
+      },
+      "sql_queries_including_metadata": 8,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 936,
+            "prompt_tokens": 1273,
+            "total_tokens": 2209,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"Process_Identity\",\"value\":\"10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\\\software\\\\microsoft\\\\windows\\\\currentversion\\\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\\\desktop\\\\winatp-intro-backdoor.exe\"},{\"id\":\"E2\",\"concept\":\"File_Name\",\"value\":\"winatp-intro-backdoor.exe\"},{\"id\":\"E3\",\"concept\":\"Host_Name\",\"value\":\"vnevado-win10e\"},{\"id\":\"E4\",\"concept\":\"Account_Name\",\"value\":\"samuelf\"},{\"id\":\"E5\",\"concept\":\"Command_File_Mention\",\"value\":\"winatp-intro-backdoor.exe\"}],\"wanted\":{\"concept\":\"Account_SID\",\"description\":\"与告警中账户关联的SID；该告警涉及不常见文件被创建并加入 Run Key，材料未给出SID值\"},\"constraints\":[\"仅使用材料中出现的实体值，不得推断未知 SID\",\"账户仅以 samuelf 出现，材料未提供其 SID\",\"Process_Identity 含 PID、创建时间和命令行，仍需主机范围\"],\"event_context\":[\"ASEP 注册表发现异常，进程 winatp-intro-backdoor.exe 被注册为重启后运行\",\"相关主机为 vnevado-win10e，关联用户为 samuelf\",\"命令行涉及 HKCU RunOnce 注册表项及桌面文件路径\"],\"retrieval_query\":\"查找告警中涉及创建不常见文件并加入 Run Key 的账户 SID\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 310,
+            "prompt_tokens": 2908,
+            "total_tokens": 3218,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name\",\"entity_ids\":[\"E4\"],\"constraint_checks\":[{\"constraint\":\"仅使用材料中出现的实体值，不得推断未知 SID\",\"supported\":true,\"reason\":\"该路线以已出现的 Account_Name 实体 samuelf 作为输入，查询其对应的 Account_SID，不推断或编造 SID 值。\"},{\"constraint\":\"账户仅以 samuelf 出现，材料未提供其 SID\",\"supported\":true,\"reason\":\"E4 为账户 samuelf，尚缺 SID；本步正是用 samuelf 查账户关联以获取 SID，属于桥接推进。\"},{\"constraint\":\"Process_Identity 含 PID、创建时间和命令行，仍需主机范围\",\"supported\":true,\"reason\":\"以账户 samuelf 为入口的查询不依赖未确认的主机范围，可在获得 SID 后再结合 vnevado-win10e 与 Process_Identity 完成事件顺序核验。\"}],\"reason\":\"目标是 Account_SID，当前已知 Account_Name 为 samuelf，而候选路线恰为从 Account_Name 查 Account_SID，且事件场景与当前 ASEP 注册表异常及不常见文件加入 Run Key 一致，因此该操作可产生新线索并推进调查。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 310,
+            "prompt_tokens": 7369,
+            "total_tokens": 7679,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"S-1-5-21-1870156660-7534030218-135086563-1193\"],\"constraint_checks\":[{\"constraint\":\"仅使用材料中出现的实体值，不得推断未知 SID\",\"supported\":true,\"reason\":\"SID 值直接来自证据输出，非推断生成。\"},{\"constraint\":\"账户仅以 samuelf 出现，材料未提供其 SID\",\"supported\":false,\"reason\":\"context 未列 SID，但检索证据 T1/T2 明确输出 Account_SID，并与 samuelf 匹配，故材料整体已提供该 SID。\"},{\"constraint\":\"Process_Identity 含 PID、创建时间和命令行，仍需主机范围\",\"supported\":true,\"reason\":\"证据 T1 通过匹配 samuelf 关联 Account_SID，且 context 已给出主机 vnevado-win10e；T2 为同一账户在不常见文件创建并加入 Run Key 告警中的 SID。\"}],\"reason\":\"目标问题为告警中‘不常见文件被创建并加入 Run Key’事件账户的 SID。证据 T2 事件名与目标一致，Account_SID 输出值为 S-1-5-21-1870156660-7534030218-135086563-1193，且 T1 中该 SID 与账户 samuelf 匹配，候选中仅此一个值，可直接作为答案。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 13106
+    }
+  ]
+}

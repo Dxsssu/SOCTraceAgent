@@ -1,0 +1,292 @@
+{
+  "id": "incident_134_train_001",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_134_qa_incident_o1-ga_c42.json",
+  "index": 1,
+  "sha256": "fb25bc9fca4ac7162ab9ff66e35d58a38d1dcbc5e202cfdf258cde432ac8cfaf",
+  "split": "train",
+  "question_record": {
+    "context": "A sign-in was detected from an anonymous IP address `170.54.121.63` (e.g., Tor browser or anonymizer VPNs). This is part of a broader multi-stage security incident where a user account was involved.",
+    "question": "In relation to the detected potentially malicious URL click, who was the recipient of the malicious email message?",
+    "answer": "raphaelt@vnevado.alpineskihouse.co",
+    "solution": [
+      "The user with AadUserId `e036dee7-fa23-42ef-a019-468c8d3401f1` signed in from an anonymous IP address.",
+      "The mail recipient `raphaelt@vnevado.alpineskihouse.co` clicked on a malicious URL."
+    ],
+    "start_alert": 11,
+    "end_alert": 0,
+    "start_entities": [
+      12
+    ],
+    "end_entities": [
+      1
+    ],
+    "shortest_alert_path": [
+      11,
+      9,
+      0
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_134.graphml",
+  "graph_sha256": "da229e7e70f31eb1dbeed6055254663d68ac2b35504dc243bab8d40cdb0e83ac",
+  "path": [
+    "11",
+    "9",
+    "0"
+  ],
+  "nodes": {
+    "12": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "170.54.121.63"
+    },
+    "11": {
+      "type": "alert",
+      "name": "Anonymous IP address",
+      "description": "Sign-in from an anonymous IP address (e.g. Tor browser, anonymizer VPNs)"
+    },
+    "9": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "e036dee7-fa23-42ef-a019-468c8d3401f1"
+    },
+    "0": {
+      "type": "alert",
+      "name": "A potentially malicious URL click was detected",
+      "description": "We have detected that one of your users has recently clicked on a link that was found to be malicious. -V1.0.0.5"
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "Recipient",
+      "value": "raphaelt@vnevado.alpineskihouse.co"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "12",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Mail_Recipient",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_b11245a80ebd310c",
+  "merged_ems": [
+    "em_2a76c56e995bcb7b",
+    "em_2c021427290dc77e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "9",
+          "expected_present": true,
+          "values": [
+            "e036dee7-fa23-42ef-a019-468c8d3401f1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "e036dee7-fa23-42ef-a019-468c8d3401f1",
+              "raw_components": {
+                "AadUserId": "e036dee7-fa23-42ef-a019-468c8d3401f1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1ae29b32-a9a7-38b7-7bae-4c48498970b9",
+              "time": "2024-07-17 11:01:27.633644+00:00",
+              "matched_inputs": [
+                "170.54.121.63"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "raphaelt@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "raphaelt@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "raphaelt@vnevado.alpineskihouse.co"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "842de14d-27aa-d006-296c-239987d60a6e",
+              "time": "2024-07-17 10:59:14.787387+00:00",
+              "matched_inputs": [
+                "e036dee7-fa23-42ef-a019-468c8d3401f1"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_5ce06fe8ba8c1de6",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_2c021427290dc77e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "e036dee7-fa23-42ef-a019-468c8d3401f1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1ae29b32-a9a7-38b7-7bae-4c48498970b9",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "e036dee7-fa23-42ef-a019-468c8d3401f1",
+              "raw_components": {
+                "AadUserId": "e036dee7-fa23-42ef-a019-468c8d3401f1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1ae29b32-a9a7-38b7-7bae-4c48498970b9",
+              "time": "2024-07-17 11:01:27.633644+00:00",
+              "source_row_hash": "adbb7f2b4d583f7f88c1a5b629610f8c772ea68737b60be1eaaf78a810c18c3a",
+              "matched_inputs": [
+                "170.54.121.63"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anonymous IP address",
+            "170.54.121.63"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_2a76c56e995bcb7b",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "raphaelt@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "842de14d-27aa-d006-296c-239987d60a6e",
+          "witnesses": [
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "raphaelt@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "raphaelt@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "842de14d-27aa-d006-296c-239987d60a6e",
+              "time": "2024-07-17 12:19:32.902854+00:00",
+              "source_row_hash": "43c53ac757d263844ffe44947c4f7200e995f8b87b0249fd49ac5872cac3c5bc",
+              "matched_inputs": [
+                "e036dee7-fa23-42ef-a019-468c8d3401f1"
+              ]
+            },
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "raphaelt@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "raphaelt@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "842de14d-27aa-d006-296c-239987d60a6e",
+              "time": "2024-07-17 10:59:14.787387+00:00",
+              "source_row_hash": "5f4612f896becbadd4cae68f5244a8a7a198139e8c5c1ca04096dfa7bd6817da",
+              "matched_inputs": [
+                "e036dee7-fa23-42ef-a019-468c8d3401f1"
+              ]
+            },
+            {
+              "concept": "Mail_Recipient",
+              "graph_value": "raphaelt@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "Recipient": "raphaelt@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "842de14d-27aa-d006-296c-239987d60a6e",
+              "time": "2024-07-17 11:09:26.897532+00:00",
+              "source_row_hash": "c17ce0adb6bf6ec6802b69230e212d5f8aedf778c6a6ef81d2b5dad1441e4490",
+              "matched_inputs": [
+                "e036dee7-fa23-42ef-a019-468c8d3401f1"
+              ]
+            }
+          ],
+          "witness_count": 3,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Mail_Recipient'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A potentially malicious URL click was detected",
+            "e036dee7-fa23-42ef-a019-468c8d3401f1"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 6,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 2388 (char 2387)",
+          "alert_id": "842de14d-27aa-d006-296c-239987d60a6e"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

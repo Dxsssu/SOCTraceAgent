@@ -36,7 +36,7 @@ def change_node(tree: TracebackTaskTree, node_id: str, **changes) -> TracebackTa
     if not any(n.node_id == node_id for n, _ in walk(tree)):
         raise ValueError(f"Unknown node: {node_id}")
     def update(n):
-        updated = replace(n, children=tuple(update(c) for c in n.children), **(changes if n.node_id == node_id else {}))
+        updated = replace(n, **{"children": tuple(update(c) for c in n.children), **(changes if n.node_id == node_id else {})})
         if updated.children:
             updated = replace(updated, evidence_refs=tuple(dict.fromkeys(
                 (*updated.evidence_refs, *(ref for c in updated.children for ref in c.evidence_refs))

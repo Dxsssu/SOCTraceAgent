@@ -1,0 +1,1696 @@
+{
+  "id": "incident_39_train_070",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 70,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A known credential theft tool `mimikatz.exe` was executed from the device with URL `vnevado-dc.vnevado.alpineskihouse.co` and IP address `65.233.23.156` to dump users' credentials. This incident triggered a malicious credential theft tool execution alert on 2024-07-04. Shortly after, there was a sign-in attempt with a deceptive user account detected, indicating that a potential attacker might be using a fake or decoy account to perform various attack activities including lateral movement and accessing sensitive data.",
+    "question": "Can you identify the security identifier (SID) of the deceptive user account involved in the sign-in attempt?",
+    "answer": "S-0-6-5",
+    "solution": [
+      "A known credential theft tool was executed using the account `tgs2z`.",
+      "There was a sign-in attempt using a deceptive user account with the name `kyleg`.",
+      "Another sign-in attempt was detected using a deceptive user account with the SID `S-0-6-5`."
+    ],
+    "start_alert": 111,
+    "end_alert": 75,
+    "start_entities": [
+      30,
+      31,
+      112,
+      113
+    ],
+    "end_entities": [
+      23
+    ],
+    "shortest_alert_path": [
+      111,
+      27,
+      41,
+      42,
+      75
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "111",
+    "27",
+    "41",
+    "42",
+    "75"
+  ],
+  "nodes": {
+    "30": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+    },
+    "31": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "mimikatz.exe"
+    },
+    "112": {
+      "type": "entity",
+      "node_type": "url",
+      "identifier_fields": "Url",
+      "value": "vnevado-dc.vnevado.alpineskihouse.co"
+    },
+    "113": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "65.233.23.156"
+    },
+    "111": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "27": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "tgs2z"
+    },
+    "41": {
+      "type": "alert",
+      "name": "Sign-in attempt with deceptive user account",
+      "description": "A sign-in attempt was detected using a deceptive user account. A potential attacker might be using a fake or decoy user account on this device. Attackers might use the account to perform various attack activities, including lateral movement and accessing sensitive data."
+    },
+    "42": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "kyleg"
+    },
+    "75": {
+      "type": "alert",
+      "name": "Sign-in attempt with deceptive user account",
+      "description": "A sign-in attempt was detected using a deceptive user account. A potential attacker might be using a fake or decoy user account on this device. Attackers might use the account to perform various attack activities, including lateral movement and accessing sensitive data."
+    },
+    "23": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-0-6-5"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "30",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "31",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "112",
+        "concept": "URL",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "113",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_SID",
+    "weak_links": [
+      "27",
+      "42"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e69d53cab1f2eae1",
+  "merged_ems": [
+    "em_71b0ed9affecd48c",
+    "em_d88d3bbe6f849524",
+    "em_acf4bcfca67f0e2b",
+    "em_46de56dff68618c8",
+    "em_838ecc5f5265cf46",
+    "em_837a161de400deb8"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 7,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "532a5162-7573-5642-fd2a-baddc2ed1360",
+              "time": "2024-07-04 22:35:02.584465+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "kyleg",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "23",
+          "expected_present": true,
+          "values": [
+            "S-0-6-5",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "kyleg",
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-04 22:35:02.300904+00:00",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-04 22:35:02.300904+00:00",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "65.233.23.156"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "kyleg",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "23",
+          "expected_present": true,
+          "values": [
+            "S-0-6-5",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "kyleg",
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-04 22:35:02.300904+00:00",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-04 22:35:02.300904+00:00",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "kyleg",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "23",
+          "expected_present": true,
+          "values": [
+            "S-0-6-5",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "kyleg",
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-04 22:35:02.300904+00:00",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-04 22:35:02.300904+00:00",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "vnevado-dc.vnevado.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "kyleg",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "23",
+          "expected_present": true,
+          "values": [
+            "S-0-6-5",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "matched_inputs": [
+                "kyleg",
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-04 22:35:02.300904+00:00",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-04 22:35:02.300904+00:00",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_96c7eb6b0c3cd022",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "source_row_hash": "098911c97928736b58293af6161ab091360aab8bf64bfd8c143d97044480364f",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-21 22:34:54.553096+00:00",
+              "source_row_hash": "1085e697804e0c8eda20875f48ef1b4bb2d5628c01eea63dcd08f5d23af6b82b",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-17 22:34:57.456584+00:00",
+              "source_row_hash": "11a0ab2af35dd15fd768d81af01d45cbe3dbd25552e3fb57eb409c6ed037f759",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "mimikatz.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_838ecc5f5265cf46",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "kyleg",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "source_row_hash": "08eefa739054d6734651ef25bd05ef3d41e9dcb88099ae8571d6c178efdde49b",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-27 22:35:09.111145+00:00",
+              "source_row_hash": "0a1affe077e27796edeffc975eaca1cef9129c6031259c632c2d3cf0f002d13a",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-14 22:34:27.491519+00:00",
+              "source_row_hash": "278a69830f986fae66a274ee0a49bb84d83842467d3a7f6fc2f7b1186d164edb",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sign-in attempt with deceptive user account",
+            "tgs2z"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_837a161de400deb8",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "S-0-6-5",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-21 22:34:53.303603+00:00",
+              "source_row_hash": "0c2e52b9cb8998a60d090761f2dff51864d80086631f15ccd1d1df04d3369142",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-21 22:34:53.303603+00:00",
+              "source_row_hash": "0c2e52b9cb8998a60d090761f2dff51864d80086631f15ccd1d1df04d3369142",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-17 22:34:55.453540+00:00",
+              "source_row_hash": "143bebe4faabe271682bee769fe995f8c18829df63f80613e423f64213014d40",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            }
+          ],
+          "witness_count": 54,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sign-in attempt with deceptive user account",
+            "kyleg",
+            "tgs2z"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_96c7eb6b0c3cd022",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d88d3bbe6f849524",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "source_row_hash": "098911c97928736b58293af6161ab091360aab8bf64bfd8c143d97044480364f",
+              "matched_inputs": [
+                "65.233.23.156"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-21 22:34:54.553096+00:00",
+              "source_row_hash": "1085e697804e0c8eda20875f48ef1b4bb2d5628c01eea63dcd08f5d23af6b82b",
+              "matched_inputs": [
+                "65.233.23.156"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-17 22:34:57.456584+00:00",
+              "source_row_hash": "11a0ab2af35dd15fd768d81af01d45cbe3dbd25552e3fb57eb409c6ed037f759",
+              "matched_inputs": [
+                "65.233.23.156"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "65.233.23.156"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_838ecc5f5265cf46",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "kyleg",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "source_row_hash": "08eefa739054d6734651ef25bd05ef3d41e9dcb88099ae8571d6c178efdde49b",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-27 22:35:09.111145+00:00",
+              "source_row_hash": "0a1affe077e27796edeffc975eaca1cef9129c6031259c632c2d3cf0f002d13a",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-14 22:34:27.491519+00:00",
+              "source_row_hash": "278a69830f986fae66a274ee0a49bb84d83842467d3a7f6fc2f7b1186d164edb",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sign-in attempt with deceptive user account",
+            "tgs2z"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_837a161de400deb8",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "S-0-6-5",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-21 22:34:53.303603+00:00",
+              "source_row_hash": "0c2e52b9cb8998a60d090761f2dff51864d80086631f15ccd1d1df04d3369142",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-21 22:34:53.303603+00:00",
+              "source_row_hash": "0c2e52b9cb8998a60d090761f2dff51864d80086631f15ccd1d1df04d3369142",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-17 22:34:55.453540+00:00",
+              "source_row_hash": "143bebe4faabe271682bee769fe995f8c18829df63f80613e423f64213014d40",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            }
+          ],
+          "witness_count": 54,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sign-in attempt with deceptive user account",
+            "kyleg",
+            "tgs2z"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_96c7eb6b0c3cd022",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_46de56dff68618c8",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "source_row_hash": "098911c97928736b58293af6161ab091360aab8bf64bfd8c143d97044480364f",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-21 22:34:54.553096+00:00",
+              "source_row_hash": "1085e697804e0c8eda20875f48ef1b4bb2d5628c01eea63dcd08f5d23af6b82b",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-17 22:34:57.456584+00:00",
+              "source_row_hash": "11a0ab2af35dd15fd768d81af01d45cbe3dbd25552e3fb57eb409c6ed037f759",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_838ecc5f5265cf46",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "kyleg",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "source_row_hash": "08eefa739054d6734651ef25bd05ef3d41e9dcb88099ae8571d6c178efdde49b",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-27 22:35:09.111145+00:00",
+              "source_row_hash": "0a1affe077e27796edeffc975eaca1cef9129c6031259c632c2d3cf0f002d13a",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-14 22:34:27.491519+00:00",
+              "source_row_hash": "278a69830f986fae66a274ee0a49bb84d83842467d3a7f6fc2f7b1186d164edb",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sign-in attempt with deceptive user account",
+            "tgs2z"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_837a161de400deb8",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "S-0-6-5",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-21 22:34:53.303603+00:00",
+              "source_row_hash": "0c2e52b9cb8998a60d090761f2dff51864d80086631f15ccd1d1df04d3369142",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-21 22:34:53.303603+00:00",
+              "source_row_hash": "0c2e52b9cb8998a60d090761f2dff51864d80086631f15ccd1d1df04d3369142",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-17 22:34:55.453540+00:00",
+              "source_row_hash": "143bebe4faabe271682bee769fe995f8c18829df63f80613e423f64213014d40",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            }
+          ],
+          "witness_count": 54,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sign-in attempt with deceptive user account",
+            "kyleg",
+            "tgs2z"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_96c7eb6b0c3cd022",
+      "seed_concept": "URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_acf4bcfca67f0e2b",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "source_row_hash": "098911c97928736b58293af6161ab091360aab8bf64bfd8c143d97044480364f",
+              "matched_inputs": [
+                "vnevado-dc.vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-21 22:34:54.553096+00:00",
+              "source_row_hash": "1085e697804e0c8eda20875f48ef1b4bb2d5628c01eea63dcd08f5d23af6b82b",
+              "matched_inputs": [
+                "vnevado-dc.vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-17 22:34:57.456584+00:00",
+              "source_row_hash": "11a0ab2af35dd15fd768d81af01d45cbe3dbd25552e3fb57eb409c6ed037f759",
+              "matched_inputs": [
+                "vnevado-dc.vnevado.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "vnevado-dc.vnevado.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_838ecc5f5265cf46",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "kyleg",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-04 22:35:01.132314+00:00",
+              "source_row_hash": "08eefa739054d6734651ef25bd05ef3d41e9dcb88099ae8571d6c178efdde49b",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-27 22:35:09.111145+00:00",
+              "source_row_hash": "0a1affe077e27796edeffc975eaca1cef9129c6031259c632c2d3cf0f002d13a",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "9f83065f-b9a8-09f4-f21d-3a3cdc10d56e",
+              "time": "2024-07-14 22:34:27.491519+00:00",
+              "source_row_hash": "278a69830f986fae66a274ee0a49bb84d83842467d3a7f6fc2f7b1186d164edb",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sign-in attempt with deceptive user account",
+            "tgs2z"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_837a161de400deb8",
+          "status": "ok",
+          "candidate_count": 108,
+          "unique_values": [
+            "S-0-6-5",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-21 22:34:53.303603+00:00",
+              "source_row_hash": "0c2e52b9cb8998a60d090761f2dff51864d80086631f15ccd1d1df04d3369142",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-21 22:34:53.303603+00:00",
+              "source_row_hash": "0c2e52b9cb8998a60d090761f2dff51864d80086631f15ccd1d1df04d3369142",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "4a567937-122a-ad79-c559-e5fbe7c47370",
+              "time": "2024-07-17 22:34:55.453540+00:00",
+              "source_row_hash": "143bebe4faabe271682bee769fe995f8c18829df63f80613e423f64213014d40",
+              "matched_inputs": [
+                "kyleg"
+              ]
+            }
+          ],
+          "witness_count": 54,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sign-in attempt with deceptive user account",
+            "kyleg",
+            "tgs2z"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb"
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb"
+        }
+      ]
+    },
+    {
+      "variant": "from_URL",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

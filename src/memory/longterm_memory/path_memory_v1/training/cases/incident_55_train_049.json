@@ -1,0 +1,2304 @@
+{
+  "id": "incident_55_train_049",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_55_qa_incident_o1-ga_c42.json",
+  "index": 49,
+  "sha256": "d3d22be38c226f61a5ac240a940e0c8901208766ea002b6e4f273361ce61ae80",
+  "split": "train",
+  "question_record": {
+    "context": "There is an ongoing security incident involving suspicious activities on host `mb-adfs` where an account with name `gsmith` and account Sid `S-2-5-21-571436798-3864380397-1837441745-3206` executed a file `iy2orr1e.rrg.exe` using command line `3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa=`. The incident includes hands-on-keyboard attacks via the Impacket toolkit and code injection activities, indicating possible attempts to move laterally across the network and execute malicious payloads.",
+    "question": "Can you identify the AadUserId of the account that was associated with the process that injected potentially malicious code?",
+    "answer": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+    "solution": [
+      "A known public tool was observed under an unexpected filename, which might be an attempt to hide the usage of that tool for malicious purposes by an account with AadUserId `ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5`.",
+      "Suspicious execution of a command via Impacket toolkit was observed, using the process `powershell.exe`. This indicates a potential hands-on-keyboard attack where attackers might be attempting to move laterally across the network.",
+      "A process was injected with potentially malicious code by an account with AadUserId `a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0`. This injected code indicates suspicious activity as the target process may behave abnormally, such as opening a listening port or connecting to a command and control server."
+    ],
+    "start_alert": 32,
+    "end_alert": 41,
+    "start_entities": [
+      18,
+      19,
+      20,
+      26,
+      28,
+      29
+    ],
+    "end_entities": [
+      3
+    ],
+    "shortest_alert_path": [
+      32,
+      20,
+      16,
+      8,
+      41
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_55.graphml",
+  "graph_sha256": "c1455d8cf64d45d0e46183a7a347c100476f75193fdf2ae664a2ae2e03f6e8f2",
+  "path": [
+    "32",
+    "20",
+    "16",
+    "8",
+    "41"
+  ],
+  "nodes": {
+    "18": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "gsmith"
+    },
+    "19": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-2-5-21-571436798-3864380397-1837441745-3206"
+    },
+    "20": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+    },
+    "26": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "mb-adfs"
+    },
+    "28": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+    },
+    "29": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "iy2orr1e.rrg.exe"
+    },
+    "32": {
+      "type": "alert",
+      "name": "Attempt to hide use of dual-purpose tool",
+      "description": "A known public tool, which could also be used for malicious reasons, was observed under an unexpected filename.\nThis might be an attempt to hide the usage of that tool for malicious purposes."
+    },
+    "16": {
+      "type": "alert",
+      "name": "Ongoing hands-on-keyboard attack via Impacket toolkit",
+      "description": "Suspicious execution of a command via Impacket was observed on this device. This tool connects to other hosts to explore network shares and execute commands. Attackers might be attempting to move laterally across the network using this tool. This usage of Impacket has often been observed in hands-on-keyboard attacks, where ransomware and other payloads are installed on target devices.\n\nCorresponding TA for this IOA: https://security.microsoft.com/threatanalytics3/ff7e4fff-dde3-49be-9a06-7f63a490996d/analystreport"
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "powershell.exe"
+    },
+    "41": {
+      "type": "alert",
+      "name": "A process was injected with potentially malicious code",
+      "description": "A process has injected code into another process, indicating suspicious code being run in the target process memory. Injection is often used to hide malicious code execution within a trusted process. \nAs a result, the target process may exhibit abnormal behaviors such as opening a listening port or connecting to a command and control server."
+    },
+    "3": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "18",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "19",
+        "concept": "Account_SID",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "20",
+        "concept": "Account_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "26",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "28",
+        "concept": "Process_Identity",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "29",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_AAD_ID",
+    "weak_links": [
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_c65ede3be8dfe2ce",
+  "merged_ems": [
+    "em_b01c5e8e6379ab3b",
+    "em_b064dbb7606ee24b",
+    "em_248d9301b788cdd0",
+    "em_65d21104249f1c48",
+    "em_9707dd4d678e3ddf",
+    "em_bde4ee0e5ccbde3e",
+    "em_7d31cf1616eb2422"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-04 22:35:01.567512+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "1ad47565-3bc3-1b62-b066-82beafcf4bc5",
+              "time": "2024-07-06 00:09:58.973357+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "2de70991-2799-4a95-b734-8e3df3a50118",
+              "raw_components": {
+                "AadUserId": "2de70991-2799-4a95-b734-8e3df3a50118"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-04 22:35:01.567512+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "1ad47565-3bc3-1b62-b066-82beafcf4bc5",
+              "time": "2024-07-06 00:09:58.973357+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "2de70991-2799-4a95-b734-8e3df3a50118",
+              "raw_components": {
+                "AadUserId": "2de70991-2799-4a95-b734-8e3df3a50118"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-04 22:35:01.567512+00:00",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "1ad47565-3bc3-1b62-b066-82beafcf4bc5",
+              "time": "2024-07-06 00:09:58.973357+00:00",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "2de70991-2799-4a95-b734-8e3df3a50118",
+              "raw_components": {
+                "AadUserId": "2de70991-2799-4a95-b734-8e3df3a50118"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-04 22:35:01.567512+00:00",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "1ad47565-3bc3-1b62-b066-82beafcf4bc5",
+              "time": "2024-07-06 00:09:58.973357+00:00",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "2de70991-2799-4a95-b734-8e3df3a50118",
+              "raw_components": {
+                "AadUserId": "2de70991-2799-4a95-b734-8e3df3a50118"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-04 22:35:01.567512+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "1ad47565-3bc3-1b62-b066-82beafcf4bc5",
+              "time": "2024-07-06 00:09:58.973357+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "2de70991-2799-4a95-b734-8e3df3a50118",
+              "raw_components": {
+                "AadUserId": "2de70991-2799-4a95-b734-8e3df3a50118"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-04 22:35:01.567512+00:00",
+              "matched_inputs": [
+                "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-04 22:35:01.395957+00:00",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "2de70991-2799-4a95-b734-8e3df3a50118",
+              "raw_components": {
+                "AadUserId": "2de70991-2799-4a95-b734-8e3df3a50118"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_fc4dd217b15359d8",
+      "seed_concept": "Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9707dd4d678e3ddf",
+          "status": "ok",
+          "candidate_count": 61,
+          "unique_values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-12 22:34:23.219051+00:00",
+              "source_row_hash": "0da4edda3190fa5674d40f45394305726121e9ece63ad66f584eb4c18945214e",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-11 22:34:56.836165+00:00",
+              "source_row_hash": "109c056bd43274a6dafa63980807d05f514c37e4fbec4968e99019bbc97adc59",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-13 22:34:39.222395+00:00",
+              "source_row_hash": "25c02037b13231bc079185f51911ea5717ce112ec20910410fd3d4bbd49b7cc3",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Attempt to hide use of dual-purpose tool",
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-20 22:34:24.737427+00:00",
+              "source_row_hash": "167ebb8938568cf4992b9f9185dd2e24e4a6ab7e0f8062a1b53ee9e19ef7f0bf",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-14 22:34:27.802585+00:00",
+              "source_row_hash": "1d140e7f2ac14db7b7ea21599f83e829e496535b773736b9817ee79050758612",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-25 22:35:06.223199+00:00",
+              "source_row_hash": "214e612feda9f07d7bcce1e219e4f8001bb9749375aa1de82557f66373f8b620",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ongoing hands-on-keyboard attack via Impacket toolkit",
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-21 22:34:53.555995+00:00",
+              "source_row_hash": "019cf1ab1e751bd266b92f6565bdea0849f5beab74f90a26076e4283a9918894",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-22 22:34:43.148248+00:00",
+              "source_row_hash": "03cdb29ee8a215efb1f9b31db740a825f2fa2cd9a7d95a41cf2e4b14a14fc79c",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-31 22:34:52.738183+00:00",
+              "source_row_hash": "138ab9f55b5f87285b0c6f96d4c639634da0ebb475ba8f9be82379c8028871b1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A process was injected with potentially malicious code",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_fc4dd217b15359d8",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_65d21104249f1c48",
+          "status": "ok",
+          "candidate_count": 61,
+          "unique_values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-12 22:34:23.219051+00:00",
+              "source_row_hash": "0da4edda3190fa5674d40f45394305726121e9ece63ad66f584eb4c18945214e",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-11 22:34:56.836165+00:00",
+              "source_row_hash": "109c056bd43274a6dafa63980807d05f514c37e4fbec4968e99019bbc97adc59",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-13 22:34:39.222395+00:00",
+              "source_row_hash": "25c02037b13231bc079185f51911ea5717ce112ec20910410fd3d4bbd49b7cc3",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Attempt to hide use of dual-purpose tool",
+            "gsmith"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-20 22:34:24.737427+00:00",
+              "source_row_hash": "167ebb8938568cf4992b9f9185dd2e24e4a6ab7e0f8062a1b53ee9e19ef7f0bf",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-14 22:34:27.802585+00:00",
+              "source_row_hash": "1d140e7f2ac14db7b7ea21599f83e829e496535b773736b9817ee79050758612",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-25 22:35:06.223199+00:00",
+              "source_row_hash": "214e612feda9f07d7bcce1e219e4f8001bb9749375aa1de82557f66373f8b620",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ongoing hands-on-keyboard attack via Impacket toolkit",
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-21 22:34:53.555995+00:00",
+              "source_row_hash": "019cf1ab1e751bd266b92f6565bdea0849f5beab74f90a26076e4283a9918894",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-22 22:34:43.148248+00:00",
+              "source_row_hash": "03cdb29ee8a215efb1f9b31db740a825f2fa2cd9a7d95a41cf2e4b14a14fc79c",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-31 22:34:52.738183+00:00",
+              "source_row_hash": "138ab9f55b5f87285b0c6f96d4c639634da0ebb475ba8f9be82379c8028871b1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A process was injected with potentially malicious code",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_fc4dd217b15359d8",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_248d9301b788cdd0",
+          "status": "ok",
+          "candidate_count": 61,
+          "unique_values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-12 22:34:23.219051+00:00",
+              "source_row_hash": "0da4edda3190fa5674d40f45394305726121e9ece63ad66f584eb4c18945214e",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-11 22:34:56.836165+00:00",
+              "source_row_hash": "109c056bd43274a6dafa63980807d05f514c37e4fbec4968e99019bbc97adc59",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-13 22:34:39.222395+00:00",
+              "source_row_hash": "25c02037b13231bc079185f51911ea5717ce112ec20910410fd3d4bbd49b7cc3",
+              "matched_inputs": [
+                "S-2-5-21-571436798-3864380397-1837441745-3206"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Attempt to hide use of dual-purpose tool",
+            "S-2-5-21-571436798-3864380397-1837441745-3206"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-20 22:34:24.737427+00:00",
+              "source_row_hash": "167ebb8938568cf4992b9f9185dd2e24e4a6ab7e0f8062a1b53ee9e19ef7f0bf",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-14 22:34:27.802585+00:00",
+              "source_row_hash": "1d140e7f2ac14db7b7ea21599f83e829e496535b773736b9817ee79050758612",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-25 22:35:06.223199+00:00",
+              "source_row_hash": "214e612feda9f07d7bcce1e219e4f8001bb9749375aa1de82557f66373f8b620",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ongoing hands-on-keyboard attack via Impacket toolkit",
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-21 22:34:53.555995+00:00",
+              "source_row_hash": "019cf1ab1e751bd266b92f6565bdea0849f5beab74f90a26076e4283a9918894",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-22 22:34:43.148248+00:00",
+              "source_row_hash": "03cdb29ee8a215efb1f9b31db740a825f2fa2cd9a7d95a41cf2e4b14a14fc79c",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-31 22:34:52.738183+00:00",
+              "source_row_hash": "138ab9f55b5f87285b0c6f96d4c639634da0ebb475ba8f9be82379c8028871b1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A process was injected with potentially malicious code",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_fc4dd217b15359d8",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 61,
+          "unique_values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-12 22:34:23.219051+00:00",
+              "source_row_hash": "0da4edda3190fa5674d40f45394305726121e9ece63ad66f584eb4c18945214e",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-11 22:34:56.836165+00:00",
+              "source_row_hash": "109c056bd43274a6dafa63980807d05f514c37e4fbec4968e99019bbc97adc59",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-13 22:34:39.222395+00:00",
+              "source_row_hash": "25c02037b13231bc079185f51911ea5717ce112ec20910410fd3d4bbd49b7cc3",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Attempt to hide use of dual-purpose tool",
+            "iy2orr1e.rrg.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-20 22:34:24.737427+00:00",
+              "source_row_hash": "167ebb8938568cf4992b9f9185dd2e24e4a6ab7e0f8062a1b53ee9e19ef7f0bf",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-14 22:34:27.802585+00:00",
+              "source_row_hash": "1d140e7f2ac14db7b7ea21599f83e829e496535b773736b9817ee79050758612",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-25 22:35:06.223199+00:00",
+              "source_row_hash": "214e612feda9f07d7bcce1e219e4f8001bb9749375aa1de82557f66373f8b620",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ongoing hands-on-keyboard attack via Impacket toolkit",
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-21 22:34:53.555995+00:00",
+              "source_row_hash": "019cf1ab1e751bd266b92f6565bdea0849f5beab74f90a26076e4283a9918894",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-22 22:34:43.148248+00:00",
+              "source_row_hash": "03cdb29ee8a215efb1f9b31db740a825f2fa2cd9a7d95a41cf2e4b14a14fc79c",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-31 22:34:52.738183+00:00",
+              "source_row_hash": "138ab9f55b5f87285b0c6f96d4c639634da0ebb475ba8f9be82379c8028871b1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A process was injected with potentially malicious code",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_fc4dd217b15359d8",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b064dbb7606ee24b",
+          "status": "ok",
+          "candidate_count": 61,
+          "unique_values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-12 22:34:23.219051+00:00",
+              "source_row_hash": "0da4edda3190fa5674d40f45394305726121e9ece63ad66f584eb4c18945214e",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-11 22:34:56.836165+00:00",
+              "source_row_hash": "109c056bd43274a6dafa63980807d05f514c37e4fbec4968e99019bbc97adc59",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-13 22:34:39.222395+00:00",
+              "source_row_hash": "25c02037b13231bc079185f51911ea5717ce112ec20910410fd3d4bbd49b7cc3",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Attempt to hide use of dual-purpose tool",
+            "mb-adfs"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-20 22:34:24.737427+00:00",
+              "source_row_hash": "167ebb8938568cf4992b9f9185dd2e24e4a6ab7e0f8062a1b53ee9e19ef7f0bf",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-14 22:34:27.802585+00:00",
+              "source_row_hash": "1d140e7f2ac14db7b7ea21599f83e829e496535b773736b9817ee79050758612",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-25 22:35:06.223199+00:00",
+              "source_row_hash": "214e612feda9f07d7bcce1e219e4f8001bb9749375aa1de82557f66373f8b620",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ongoing hands-on-keyboard attack via Impacket toolkit",
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-21 22:34:53.555995+00:00",
+              "source_row_hash": "019cf1ab1e751bd266b92f6565bdea0849f5beab74f90a26076e4283a9918894",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-22 22:34:43.148248+00:00",
+              "source_row_hash": "03cdb29ee8a215efb1f9b31db740a825f2fa2cd9a7d95a41cf2e4b14a14fc79c",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-31 22:34:52.738183+00:00",
+              "source_row_hash": "138ab9f55b5f87285b0c6f96d4c639634da0ebb475ba8f9be82379c8028871b1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A process was injected with potentially malicious code",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_fc4dd217b15359d8",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b01c5e8e6379ab3b",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-12 22:34:23.219051+00:00",
+              "source_row_hash": "0da4edda3190fa5674d40f45394305726121e9ece63ad66f584eb4c18945214e",
+              "matched_inputs": [
+                "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-11 22:34:56.836165+00:00",
+              "source_row_hash": "109c056bd43274a6dafa63980807d05f514c37e4fbec4968e99019bbc97adc59",
+              "matched_inputs": [
+                "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5",
+              "raw_components": {
+                "AadUserId": "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436",
+              "time": "2024-07-13 22:34:39.222395+00:00",
+              "source_row_hash": "25c02037b13231bc079185f51911ea5717ce112ec20910410fd3d4bbd49b7cc3",
+              "matched_inputs": [
+                "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Attempt to hide use of dual-purpose tool",
+            "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-20 22:34:24.737427+00:00",
+              "source_row_hash": "167ebb8938568cf4992b9f9185dd2e24e4a6ab7e0f8062a1b53ee9e19ef7f0bf",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-14 22:34:27.802585+00:00",
+              "source_row_hash": "1d140e7f2ac14db7b7ea21599f83e829e496535b773736b9817ee79050758612",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "63db8ff5-e4ef-59ce-0afc-ca3aa30f37dd",
+              "time": "2024-07-25 22:35:06.223199+00:00",
+              "source_row_hash": "214e612feda9f07d7bcce1e219e4f8001bb9749375aa1de82557f66373f8b620",
+              "matched_inputs": [
+                "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ongoing hands-on-keyboard attack via Impacket toolkit",
+            "ec3ec68b-fdeb-4fe4-9a29-acd445e1ccc5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "2de70991-2799-4a95-b734-8e3df3a50118",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-21 22:34:53.555995+00:00",
+              "source_row_hash": "019cf1ab1e751bd266b92f6565bdea0849f5beab74f90a26076e4283a9918894",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-22 22:34:43.148248+00:00",
+              "source_row_hash": "03cdb29ee8a215efb1f9b31db740a825f2fa2cd9a7d95a41cf2e4b14a14fc79c",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0",
+              "raw_components": {
+                "AadUserId": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-31 22:34:52.738183+00:00",
+              "source_row_hash": "138ab9f55b5f87285b0c6f96d4c639634da0ebb475ba8f9be82379c8028871b1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A process was injected with potentially malicious code",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 357 (char 356)",
+          "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 357 (char 356)",
+          "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 357 (char 356)",
+          "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 357 (char 356)",
+          "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 357 (char 356)",
+          "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 357 (char 356)",
+          "alert_id": "35a65eab-db08-ffbe-a244-a1b99a9f5436"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

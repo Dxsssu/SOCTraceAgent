@@ -1,0 +1,316 @@
+{
+  "id": "incident_5_train_094",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 94,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "A recent incident involved the detection of the Mimikatz credential theft tool, specifically with the file `mimilib.dll`. This suggests that an attacker might be attempting to collect credentials on the network. Additionally, there was an alert about the LSASS process memory being modified, which might indicate an attempt to bypass security mechanisms or checks.",
+    "question": "During this incident, what is the account name associated with modifying the LSASS process memory?",
+    "answer": "tgs2z",
+    "solution": [
+      "The Mimikatz tool was detected on the host `vnevado-win10v`. This tool is often used for credential theft.",
+      "The LSASS process memory was modified by the user account `tgs2z`, potentially to bypass security mechanisms."
+    ],
+    "start_alert": 55,
+    "end_alert": 115,
+    "start_entities": [
+      56
+    ],
+    "end_entities": [
+      16
+    ],
+    "shortest_alert_path": [
+      55,
+      34,
+      115
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "55",
+    "34",
+    "115"
+  ],
+  "nodes": {
+    "56": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "mimilib.dll"
+    },
+    "55": {
+      "type": "alert",
+      "name": "Mimikatz credential theft tool",
+      "description": "The Mimikatz hacktool was detected on this device. Mimikatz is a credential theft tool that can harvest plaintext passwords, password hashes, smartcard PINs, and Kerberos tickets.  An attacker might be trying to harvest credentials to log into this or other devices on the network, by impersonating a valid user.\n\nFor more information, read the Mimikatz tool profile Threat Analytics report: https://security.microsoft.com/threatanalytics3/51db19ab-081f-46f3-9fe1-3f5e5d2f8ee0/analystreport? and read the Actor profile: Storm-0875 Threat Analytics report https://security.microsoft.com/threatanalytics3/4f60801d-912e-4bcb-91b2-f46879c8a718/analystreport\n"
+    },
+    "34": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10v"
+    },
+    "115": {
+      "type": "alert",
+      "name": "LSASS process memory modified",
+      "description": "The Local Security Authority Subsystem Service (LSASS) process enforces security policy by verifying user logons and password changes. Attackers might modify LSASS memory to bypass security mechanisms or circumvent legitimate checks."
+    },
+    "16": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "tgs2z"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "56",
+        "concept": "File_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [
+      "34"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_6a1c523a32ed2cbe",
+  "merged_ems": [
+    "em_bab3dcef4b9e19c5",
+    "em_a1856eff0c584ee8"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "34",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 8,
+              "entity_ref": "10",
+              "roles": [],
+              "alert_id": "bf00bf89-d4f8-d91f-7575-d0e95512ce1c",
+              "time": "2024-07-04 22:35:00.846286+00:00",
+              "matched_inputs": [
+                "mimilib.dll"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "16",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-04 22:35:01.998483+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_d57dc721cd69d588",
+      "seed_concept": "File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bab3dcef4b9e19c5",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "bf00bf89-d4f8-d91f-7575-d0e95512ce1c",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 8,
+              "alert_id": "bf00bf89-d4f8-d91f-7575-d0e95512ce1c",
+              "time": "2024-07-05 22:34:17.984799+00:00",
+              "source_row_hash": "39b6a9319e9aa6754ed0e1da2472a24083a35172a22fd8d3fbb5ea041b63c06b",
+              "matched_inputs": [
+                "mimilib.dll"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 8,
+              "alert_id": "bf00bf89-d4f8-d91f-7575-d0e95512ce1c",
+              "time": "2024-07-16 22:34:43.969489+00:00",
+              "source_row_hash": "3e86ea0662237647420a34d5f478aa1854bf6330892f5f6e0c3a988ccb5de659",
+              "matched_inputs": [
+                "mimilib.dll"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 8,
+              "alert_id": "bf00bf89-d4f8-d91f-7575-d0e95512ce1c",
+              "time": "2024-07-17 22:34:54.001731+00:00",
+              "source_row_hash": "725ae6ff8c65d32f52b05a29333e32725b9a8b165466f044697f0b270349d182",
+              "matched_inputs": [
+                "mimilib.dll"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Mimikatz credential theft tool",
+            "mimilib.dll"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_a1856eff0c584ee8",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-17 22:39:57.708001+00:00",
+              "source_row_hash": "0011ec873bb055ebd8d97e724cb3928778706f09e7b794c3e6078bf421927870",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-15 22:39:20.968683+00:00",
+              "source_row_hash": "01368e0e3412f9ff02534f6687aeb646229329f941a89602bb1512a39b2ed07d",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-13 22:34:39.678556+00:00",
+              "source_row_hash": "06cabd5e845a19109889b2075c7129df8e4ad49668ccb22b7361315f8a685b96",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "LSASS process memory modified",
+            "vnevado-win10v"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_File_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 28 (char 27)",
+          "alert_id": "bf00bf89-d4f8-d91f-7575-d0e95512ce1c"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

@@ -1,0 +1,580 @@
+{
+  "id": "incident_34_train_005",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_34_qa_incident_o1-ga_c42.json",
+  "index": 5,
+  "sha256": "658133de6e295b829793ba58a5244db9515e2ef17d44398605bf71236d88c37f",
+  "split": "train",
+  "question_record": {
+    "context": "On 2024-07-04, a security incident reported suspicious Task Scheduler activity suggesting a process with earlier malicious activity used Task Scheduler to potentially launch malicious code automatically for persistence. One of the observed malicious activities involved the execution of a process `schtasks.exe` creating and running tasks.",
+    "question": "During this security incident, a process executed PowerShell to download a file or run an encoded command. What is the Security Identifier (SID) of the account associated with this suspicious PowerShell activity?",
+    "answer": "S-1-5-21-1870156660-7534030218-135086563-1193",
+    "solution": [
+      "There was a suspicious Task Scheduler activity initiated by a user with SID `S-1-5-21-1870156660-7534030218-135086563-1193` to potentially establish persistence.",
+      "The same user with SID `S-1-5-21-1870156660-7534030218-135086563-1193` executed a suspicious PowerShell command to download a file or run an encoded command."
+    ],
+    "start_alert": 21,
+    "end_alert": 22,
+    "start_entities": [
+      13,
+      14,
+      15
+    ],
+    "end_entities": [
+      5
+    ],
+    "shortest_alert_path": [
+      21,
+      5,
+      22
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_34.graphml",
+  "graph_sha256": "f4d6e37d5b5ea1ae63e4e63d1148a74acca74a673a5fa91213e4284748386a8d",
+  "path": [
+    "21",
+    "5",
+    "22"
+  ],
+  "nodes": {
+    "13": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1348__2024-06-26t12:00:40.0878355z__\"schtasks.exe\" /create /sc once /tn yrei /tr \"c:\\users\\samuelf\\onedrive - (new) alpineskihouse\\desktop\\winatp-intro-backdoor.exe\" /st 11:58 /f"
+    },
+    "14": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "schtasks.exe"
+    },
+    "15": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+    },
+    "21": {
+      "type": "alert",
+      "name": "Suspicious Task Scheduler activity",
+      "description": "A process involved in earlier malicious activity used Task Scheduler to create, modify, or delete a task. This might be an attempt launch malicious code automatically and establish persistence.\n\nFor further information on this threat, read the following threat analytics report: https://security.microsoft.com/threatanalytics3/c9709a39-ac8d-493d-9a63-71da3ca1e745/analystreport"
+    },
+    "5": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1870156660-7534030218-135086563-1193"
+    },
+    "22": {
+      "type": "alert",
+      "name": "Suspicious PowerShell download or encoded command execution",
+      "description": "A process executed PowerShell to download a file or run an encoded command. PowerShell is often used by attackers to bypass security protection mechanisms by executing their payload in memory without leaving a trace or touching the disk. An attacker might be trying to download external payloads or execute commands in the device."
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "13",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "14",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "15",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_SID",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_afa7695b8fef66b6",
+  "merged_ems": [
+    "em_acd9f0e565efcca0",
+    "em_b30f58cf03511b0b",
+    "em_9339ee7c75ce2525"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-04 22:35:01.761898+00:00",
+              "matched_inputs": [
+                "schtasks.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+              "time": "2024-07-04 22:35:01.807662+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6c80d462-bc11-1d7e-71a4-df2917bd0b1d",
+              "time": "2024-07-04 22:35:04.145779+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-04 22:35:01.761898+00:00",
+              "matched_inputs": [
+                "1348__2024-06-26t12:00:40.0878355z__\"schtasks.exe\" /create /sc once /tn yrei /tr \"c:\\users\\samuelf\\onedrive - (new) alpineskihouse\\desktop\\winatp-intro-backdoor.exe\" /st 11:58 /f",
+                "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+              "time": "2024-07-04 22:35:01.807662+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6c80d462-bc11-1d7e-71a4-df2917bd0b1d",
+              "time": "2024-07-04 22:35:04.145779+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-15 22:39:20.698008+00:00",
+              "source_row_hash": "0d6e878793f1ebd3b850de42cb1c91ed2d473c6510a8cdfc1473491135910640",
+              "matched_inputs": [
+                "schtasks.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-12 22:34:23.406734+00:00",
+              "source_row_hash": "103fc7c4b3dc4398781cfa43b7981c7407a0c05a275ac13695c8816759e15d7b",
+              "matched_inputs": [
+                "schtasks.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-16 22:39:55.391227+00:00",
+              "source_row_hash": "2d7eecf2effc07cec2c3c223182e7a2dab1ae8fd41f2aa2f31cb382c182bedc5",
+              "matched_inputs": [
+                "schtasks.exe"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Task Scheduler activity",
+            "schtasks.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 32,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+              "time": "2024-07-16 22:39:55.455565+00:00",
+              "source_row_hash": "0e299c831d3e7e56d271c8d2f8321c91b5316e9de37283737516b390f0e67b7f",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+              "time": "2024-07-22 22:39:52.182566+00:00",
+              "source_row_hash": "12aa2bde0a157e294d55d07d0566ba7c858c40e33c7c7f7785a230d7a129c3c0",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+              "time": "2024-07-23 22:34:44.163528+00:00",
+              "source_row_hash": "1dc5691eaa5eb13f82a837aebfdcc6c2bd87345b40cf849f19618a7678f80042",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious PowerShell download or encoded command execution",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b30f58cf03511b0b",
+          "status": "ok",
+          "candidate_count": 32,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-15 22:39:20.698008+00:00",
+              "source_row_hash": "0d6e878793f1ebd3b850de42cb1c91ed2d473c6510a8cdfc1473491135910640",
+              "matched_inputs": [
+                "1348__2024-06-26t12:00:40.0878355z__\"schtasks.exe\" /create /sc once /tn yrei /tr \"c:\\users\\samuelf\\onedrive - (new) alpineskihouse\\desktop\\winatp-intro-backdoor.exe\" /st 11:58 /f"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-15 22:39:20.698008+00:00",
+              "source_row_hash": "0d6e878793f1ebd3b850de42cb1c91ed2d473c6510a8cdfc1473491135910640",
+              "matched_inputs": [
+                "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27",
+              "time": "2024-07-12 22:34:23.406734+00:00",
+              "source_row_hash": "103fc7c4b3dc4398781cfa43b7981c7407a0c05a275ac13695c8816759e15d7b",
+              "matched_inputs": [
+                "1348__2024-06-26t12:00:40.0878355z__\"schtasks.exe\" /create /sc once /tn yrei /tr \"c:\\users\\samuelf\\onedrive - (new) alpineskihouse\\desktop\\winatp-intro-backdoor.exe\" /st 11:58 /f"
+              ]
+            }
+          ],
+          "witness_count": 32,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Task Scheduler activity",
+            "1348__2024-06-26t12:00:40.0878355z__\"schtasks.exe\" /create /sc once /tn yrei /tr \"c:\\users\\samuelf\\onedrive - (new) alpineskihouse\\desktop\\winatp-intro-backdoor.exe\" /st 11:58 /f",
+            "1616__2024-06-26t12:00:40.6793914z__\"schtasks.exe\" /run /tn yrei"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 32,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+              "time": "2024-07-16 22:39:55.455565+00:00",
+              "source_row_hash": "0e299c831d3e7e56d271c8d2f8321c91b5316e9de37283737516b390f0e67b7f",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+              "time": "2024-07-22 22:39:52.182566+00:00",
+              "source_row_hash": "12aa2bde0a157e294d55d07d0566ba7c858c40e33c7c7f7785a230d7a129c3c0",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9ec3006f-0df9-d4d6-5f1d-b9f36c220686",
+              "time": "2024-07-23 22:34:44.163528+00:00",
+              "source_row_hash": "1dc5691eaa5eb13f82a837aebfdcc6c2bd87345b40cf849f19618a7678f80042",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious PowerShell download or encoded command execution",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 311 (char 310)",
+          "alert_id": "530423cd-9fe5-130c-0a42-f2d7e1dadb27"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

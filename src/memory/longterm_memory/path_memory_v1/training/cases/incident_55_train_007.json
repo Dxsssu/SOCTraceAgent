@@ -1,0 +1,2545 @@
+{
+  "id": "incident_55_train_007",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_55_qa_incident_o1-ga_c42.json",
+  "index": 7,
+  "sha256": "d3d22be38c226f61a5ac240a940e0c8901208766ea002b6e4f273361ce61ae80",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident report indicates that a process scanned or dumped memory from the Local Security Authority Subsystem Service (lsass.exe) on the host `mb-winclient`, used by account `bjenkins`. This action can enable an attacker to extract sensitive credentials. The involved process was `powershell.exe`. Additionally, there was a suspicious registration of a system program as a service.",
+    "question": "Can you identify the command line and process ID of the registered suspicious service?",
+    "answer": "764__2024-06-20t08:30:13.7925191z__services.exe",
+    "solution": [
+      "A process named `powershell.exe` scanned or dumped memory from lsass.exe to extract sensitive credentials on `2024-07-04 22:35:04.120690+00:00`.",
+      "A system executable renamed and launched on host `mb-adfs` on `2024-07-04 22:35:01.543723+00:00`.",
+      "A system program `services.exe` was registered as a service with Process ID `764`, Created Time `2024-06-20t08:30:13.7925191z`, on `2024-07-04 22:35:03.448593+00:00`."
+    ],
+    "start_alert": 67,
+    "end_alert": 61,
+    "start_entities": [
+      1,
+      2,
+      3,
+      4,
+      7,
+      14,
+      15,
+      50
+    ],
+    "end_entities": [
+      62
+    ],
+    "shortest_alert_path": [
+      67,
+      8,
+      27,
+      26,
+      61
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_55.graphml",
+  "graph_sha256": "c1455d8cf64d45d0e46183a7a347c100476f75193fdf2ae664a2ae2e03f6e8f2",
+  "path": [
+    "67",
+    "8",
+    "27",
+    "26",
+    "61"
+  ],
+  "nodes": {
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "bjenkins"
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-561436748-3867387497-1732241745-3701"
+    },
+    "3": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "72.5.72.208"
+    },
+    "7": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "12412__2024-07-02t09:47:16.330794z__\"powershell.exe\" -noexit -command set-location -literalpath 'c:\\users\\bjenkins\\downloads\\midnight14'"
+    },
+    "14": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "mb-winclient"
+    },
+    "15": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+    },
+    "50": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "760__2024-07-02t07:28:35.8580921z__lsass.exe"
+    },
+    "67": {
+      "type": "alert",
+      "name": "Sensitive credential memory read",
+      "description": "A process scanned or dumped memory from the Local Security Authority Subsystem Service (lsass.exe).  Accessing this process memory allows the attacker to extract secrets such as authentication hashes or passwords.  A copy of this memory may be written to the file system and exfiltrated to extract these credentials offline."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "powershell.exe"
+    },
+    "27": {
+      "type": "alert",
+      "name": "System executable renamed and launched",
+      "description": "A Windows executable file that has been renamed was launched. Attackers might be attempting to use the executable to perform malicious activities, such as running malicious code or connecting to an attacker-controlled network address. By changing the path or file name of a system executable, attackers can avoid certain behavior-based detection technologies that rely on default paths and file names."
+    },
+    "26": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "mb-adfs"
+    },
+    "61": {
+      "type": "alert",
+      "name": "Suspicious service registration",
+      "description": "A system program was registered as a service. This can indicate malicious intent to establish persistence or gain system privileges."
+    },
+    "62": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "764__2024-06-20t08:30:13.7925191z__services.exe"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "1",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "2",
+        "concept": "Account_SID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "3",
+        "concept": "Account_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "4",
+        "concept": "IP_Address",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "7",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "14",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "15",
+        "concept": "Device_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "50",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Process_Identity",
+    "weak_links": [
+      "8",
+      "26"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_bd7b15c679c56723",
+  "merged_ems": [
+    "em_0df0df84e926e5d1",
+    "em_afdcb0e9dc74c4fe",
+    "em_546045b7ece99c80",
+    "em_786437addb3952bb",
+    "em_7eb864af9d22aeb3",
+    "em_9ae1301f165ec60f",
+    "em_6b040dd1616cc12b",
+    "em_7d31cf1616eb2422",
+    "em_f9eb831ba32a2663"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "62",
+          "expected_present": true,
+          "values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z",
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-04 22:35:03.448593+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "bjenkins"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "bjenkins"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "62",
+          "expected_present": true,
+          "values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z",
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-04 22:35:03.448593+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "62",
+          "expected_present": true,
+          "values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z",
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-04 22:35:03.448593+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "7661dfd4-218f-4016-8a87-66d68a7f098e"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "7661dfd4-218f-4016-8a87-66d68a7f098e"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "62",
+          "expected_present": true,
+          "values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z",
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-04 22:35:03.448593+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "mb-winclient"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "mb-winclient"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "62",
+          "expected_present": true,
+          "values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z",
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-04 22:35:03.448593+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "62",
+          "expected_present": true,
+          "values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z",
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-04 22:35:03.448593+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "lsass.exe",
+              "raw_components": {
+                "CommandLine": "lsass.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "12412__2024-07-02t09:47:16.330794z__\"powershell.exe\" -noexit -command set-location -literalpath 'c:\\users\\bjenkins\\downloads\\midnight14'",
+                "760__2024-07-02t07:28:35.8580921z__lsass.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "12412__2024-07-02t09:47:16.330794z__\"powershell.exe\" -noexit -command set-location -literalpath 'c:\\users\\bjenkins\\downloads\\midnight14'",
+                "760__2024-07-02t07:28:35.8580921z__lsass.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "26",
+          "expected_present": true,
+          "values": [
+            "mb-adfs"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "62",
+          "expected_present": true,
+          "values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z",
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-04 22:35:03.448593+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_4e2786a30fd96873",
+      "seed_concept": "Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7d31cf1616eb2422",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "a2d0f7c2-b0a0-43bd-bce0-27d8ae3be4d0"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-21 22:34:54.054223+00:00",
+              "source_row_hash": "08e569a199d0b932889da18e1b14fe8444fc8b9a12c7c1d17aeea1973860412c",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-08-01 22:34:10.748751+00:00",
+              "source_row_hash": "11b3354ab52726997294625fba9988a9aeab476c4436dc7b03f632dc29474428",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-18 22:36:02.415431+00:00",
+              "source_row_hash": "16a409fd5ffa18b4ac146d74585bd0250a4836654213982c7c7b66374401872f",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service registration",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_4e2786a30fd96873",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_6b040dd1616cc12b",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "bjenkins"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "bjenkins"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "bjenkins"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "bjenkins"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-21 22:34:54.054223+00:00",
+              "source_row_hash": "08e569a199d0b932889da18e1b14fe8444fc8b9a12c7c1d17aeea1973860412c",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-08-01 22:34:10.748751+00:00",
+              "source_row_hash": "11b3354ab52726997294625fba9988a9aeab476c4436dc7b03f632dc29474428",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-18 22:36:02.415431+00:00",
+              "source_row_hash": "16a409fd5ffa18b4ac146d74585bd0250a4836654213982c7c7b66374401872f",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service registration",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_4e2786a30fd96873",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_0df0df84e926e5d1",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "S-1-5-21-561436748-3867387497-1732241745-3701"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "S-1-5-21-561436748-3867387497-1732241745-3701"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-21 22:34:54.054223+00:00",
+              "source_row_hash": "08e569a199d0b932889da18e1b14fe8444fc8b9a12c7c1d17aeea1973860412c",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-08-01 22:34:10.748751+00:00",
+              "source_row_hash": "11b3354ab52726997294625fba9988a9aeab476c4436dc7b03f632dc29474428",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-18 22:36:02.415431+00:00",
+              "source_row_hash": "16a409fd5ffa18b4ac146d74585bd0250a4836654213982c7c7b66374401872f",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service registration",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_4e2786a30fd96873",
+      "seed_concept": "Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9ae1301f165ec60f",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "7661dfd4-218f-4016-8a87-66d68a7f098e"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "7661dfd4-218f-4016-8a87-66d68a7f098e"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "7661dfd4-218f-4016-8a87-66d68a7f098e"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "7661dfd4-218f-4016-8a87-66d68a7f098e"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-21 22:34:54.054223+00:00",
+              "source_row_hash": "08e569a199d0b932889da18e1b14fe8444fc8b9a12c7c1d17aeea1973860412c",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-08-01 22:34:10.748751+00:00",
+              "source_row_hash": "11b3354ab52726997294625fba9988a9aeab476c4436dc7b03f632dc29474428",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-18 22:36:02.415431+00:00",
+              "source_row_hash": "16a409fd5ffa18b4ac146d74585bd0250a4836654213982c7c7b66374401872f",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service registration",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_4e2786a30fd96873",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "mb-winclient"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "mb-winclient"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "mb-winclient"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "mb-winclient"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-21 22:34:54.054223+00:00",
+              "source_row_hash": "08e569a199d0b932889da18e1b14fe8444fc8b9a12c7c1d17aeea1973860412c",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-08-01 22:34:10.748751+00:00",
+              "source_row_hash": "11b3354ab52726997294625fba9988a9aeab476c4436dc7b03f632dc29474428",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-18 22:36:02.415431+00:00",
+              "source_row_hash": "16a409fd5ffa18b4ac146d74585bd0250a4836654213982c7c7b66374401872f",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service registration",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_4e2786a30fd96873",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f9eb831ba32a2663",
+          "status": "ok",
+          "candidate_count": 52,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "72.5.72.208"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-21 22:34:54.054223+00:00",
+              "source_row_hash": "08e569a199d0b932889da18e1b14fe8444fc8b9a12c7c1d17aeea1973860412c",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-08-01 22:34:10.748751+00:00",
+              "source_row_hash": "11b3354ab52726997294625fba9988a9aeab476c4436dc7b03f632dc29474428",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-18 22:36:02.415431+00:00",
+              "source_row_hash": "16a409fd5ffa18b4ac146d74585bd0250a4836654213982c7c7b66374401872f",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service registration",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_4e2786a30fd96873",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 104,
+          "unique_values": [
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "12412__2024-07-02t09:47:16.330794z__\"powershell.exe\" -noexit -command set-location -literalpath 'c:\\users\\bjenkins\\downloads\\midnight14'"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "760__2024-07-02t07:28:35.8580921z__lsass.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -noexit -command Set-Location -literalPath 'C:\\Users\\bjenkins\\Downloads\\Midnight14'"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "12412__2024-07-02t09:47:16.330794z__\"powershell.exe\" -noexit -command set-location -literalpath 'c:\\users\\bjenkins\\downloads\\midnight14'"
+              ]
+            }
+          ],
+          "witness_count": 52,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "12412__2024-07-02t09:47:16.330794z__\"powershell.exe\" -noexit -command set-location -literalpath 'c:\\users\\bjenkins\\downloads\\midnight14'",
+            "760__2024-07-02t07:28:35.8580921z__lsass.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "mb-adfs"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "mb-adfs",
+              "raw_components": {
+                "HostName": "mb-adfs"
+              },
+              "roles": [],
+              "entity_index": 18,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "lsass.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 31,
+          "unique_values": [
+            "764__2024-06-20t08:30:13.7925191z__services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-21 22:34:54.054223+00:00",
+              "source_row_hash": "08e569a199d0b932889da18e1b14fe8444fc8b9a12c7c1d17aeea1973860412c",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-08-01 22:34:10.748751+00:00",
+              "source_row_hash": "11b3354ab52726997294625fba9988a9aeab476c4436dc7b03f632dc29474428",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "764__2024-06-20t08:30:13.7925191z__services.exe",
+              "raw_components": {
+                "ProcessId": "764",
+                "CommandLine": "services.exe",
+                "CreatedTimeUtc": "2024-06-20T08:30:13.7925191Z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "98002c32-2047-aa24-17f4-e6cad72b06bf",
+              "time": "2024-07-18 22:36:02.415431+00:00",
+              "source_row_hash": "16a409fd5ffa18b4ac146d74585bd0250a4836654213982c7c7b66374401872f",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service registration",
+            "mb-adfs"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 482 (char 481)",
+          "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 482 (char 481)",
+          "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 482 (char 481)",
+          "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c"
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 482 (char 481)",
+          "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 482 (char 481)",
+          "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c"
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 482 (char 481)",
+          "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 482 (char 481)",
+          "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

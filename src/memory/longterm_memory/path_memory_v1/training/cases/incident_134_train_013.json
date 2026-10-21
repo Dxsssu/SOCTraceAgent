@@ -1,0 +1,298 @@
+{
+  "id": "incident_134_train_013",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_134_qa_incident_o1-ga_c42.json",
+  "index": 13,
+  "sha256": "fb25bc9fca4ac7162ab9ff66e35d58a38d1dcbc5e202cfdf258cde432ac8cfaf",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident involving Business Email Compromise (BEC) financial fraud was identified when a suspicious inbox rule that hides incoming email messages was created during a risky Azure Active Directory session. The incident involves an IP address `237.7.81.122`.",
+    "question": "During the investigation, it was found that emails containing malicious URLs were delivered and later removed. Can you identify the primary address of the mailbox where these emails were delivered?",
+    "answer": "raphaelt@vnevado.alpineskihouse.co",
+    "solution": [
+      "The email account `Nina Park` was involved in a suspicious activity where an inbox rule was created to hide incoming email messages, indicating potential BEC financial fraud.",
+      "The mailbox with the primary address `raphaelt@vnevado.alpineskihouse.co` received email messages containing a malicious URL which were later removed."
+    ],
+    "start_alert": 17,
+    "end_alert": 13,
+    "start_entities": [
+      16
+    ],
+    "end_entities": [
+      4
+    ],
+    "shortest_alert_path": [
+      17,
+      6,
+      13
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_134.graphml",
+  "graph_sha256": "da229e7e70f31eb1dbeed6055254663d68ac2b35504dc243bab8d40cdb0e83ac",
+  "path": [
+    "17",
+    "6",
+    "13"
+  ],
+  "nodes": {
+    "16": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "237.7.81.122"
+    },
+    "17": {
+      "type": "alert",
+      "name": "BEC financial fraud",
+      "description": "A suspicious inbox rule that hides incoming email messages was created in a risky Azure Active Directory session. An attacker might be attempting to conduct business email compromise (BEC), a form of financial fraud."
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "Nina Park"
+    },
+    "13": {
+      "type": "alert",
+      "name": "Email messages containing malicious URL removed after delivery​",
+      "description": "Emails with malicious URL that were delivered and later removed -V62.34.26.163"
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "mailbox",
+      "identifier_fields": "MailboxPrimaryAddress",
+      "value": "raphaelt@vnevado.alpineskihouse.co"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "16",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Mailbox_Address",
+    "weak_links": [
+      "6"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_d0197e3fb8e993df",
+  "merged_ems": [
+    "em_23d321d0e69cf136",
+    "em_d88d3bbe6f849524"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "Nina Park"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Nina Park",
+              "raw_components": {
+                "Name": "Nina Park"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Compromised"
+              ],
+              "alert_id": "166ac45d-f6cf-7617-2290-72009e744b64",
+              "time": "2024-07-17 11:34:48.803827+00:00",
+              "matched_inputs": [
+                "237.7.81.122"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "4",
+          "expected_present": true,
+          "values": [
+            "raphaelt@vnevado.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "raphaelt@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "raphaelt@vnevado.alpineskihouse.co"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6b50ba78-1fff-03b6-3576-034f8d31cb65",
+              "time": "2024-07-17 11:04:19.964546+00:00",
+              "matched_inputs": [
+                "Nina Park"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_4ed24abbc8c1d1a8",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d88d3bbe6f849524",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Nina Park"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "166ac45d-f6cf-7617-2290-72009e744b64",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Nina Park",
+              "raw_components": {
+                "Name": "Nina Park"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "166ac45d-f6cf-7617-2290-72009e744b64",
+              "time": "2024-07-17 11:34:48.803827+00:00",
+              "source_row_hash": "0b7c7299ad822b4e64ed21498d89f07ad5230b0282fd858c7e9ac2b15e2ef841",
+              "matched_inputs": [
+                "237.7.81.122"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC financial fraud",
+            "237.7.81.122"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_23d321d0e69cf136",
+          "status": "ok",
+          "candidate_count": 3,
+          "unique_values": [
+            "raphaelt@vnevado.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "6b50ba78-1fff-03b6-3576-034f8d31cb65",
+          "witnesses": [
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "raphaelt@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "raphaelt@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6b50ba78-1fff-03b6-3576-034f8d31cb65",
+              "time": "2024-07-17 11:14:28.350655+00:00",
+              "source_row_hash": "7ac6588ad0d5ef3f3950f74d84f97f6799be8a453b36bd44d2c7564e22f53508",
+              "matched_inputs": [
+                "Nina Park"
+              ]
+            },
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "raphaelt@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "raphaelt@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6b50ba78-1fff-03b6-3576-034f8d31cb65",
+              "time": "2024-07-17 11:09:26.921559+00:00",
+              "source_row_hash": "b7f4ac14c1ce4d74007624e0d47c2f34633d5cbe71f119f69ac8d28cdc2f22fc",
+              "matched_inputs": [
+                "Nina Park"
+              ]
+            },
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "raphaelt@vnevado.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "raphaelt@vnevado.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6b50ba78-1fff-03b6-3576-034f8d31cb65",
+              "time": "2024-07-17 11:04:19.964546+00:00",
+              "source_row_hash": "e37d1e1029da58cb17243001c719e8d5204f464d52566304ab5cf9e9ed64a591",
+              "matched_inputs": [
+                "Nina Park"
+              ]
+            }
+          ],
+          "witness_count": 3,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Mailbox_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "Nina Park"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 2395 (char 2394)",
+          "alert_id": "6b50ba78-1fff-03b6-3576-034f8d31cb65"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "episodes": [
+    {
+      "id": "em_url_to_sid",
+      "name": "URL和事件主题 → 关联账户SID",
+      "known": {
+        "url": {
+          "concept": "URL",
+          "kind": "url",
+          "cardinality": "one"
+        },
+        "title": {
+          "concept": "Alert_Title",
+          "kind": "title",
+          "cardinality": "one"
+        }
+      },
+      "wanted": {
+        "AccountSid": {
+          "concept": "Account_SID",
+          "kind": "sid",
+          "cardinality": "one"
+        }
+      },
+      "relation": "已知URL所在告警的User实体，作为关联账户候选",
+      "sql": "SELECT DISTINCT u.AlertId,u.Title,u.EvidenceRole,u.AccountSid\nFROM AlertEvidence a JOIN AlertEvidence u ON a.AlertId=u.AlertId\nWHERE a.EntityType='Url' AND a.RemoteUrl=:url AND a.Title=:title\nAND u.EntityType='User' AND u.AccountSid IS NOT NULL AND u.AccountSid<>''\nLIMIT 101",
+      "row_limit": 100,
+      "evidence_fields": [
+        "AlertId",
+        "Title",
+        "EvidenceRole"
+      ],
+      "cautions": [
+        "保留全部候选；达到查询上限不能当作完整结果。",
+        "同告警关联不证明因果、先后或操作者身份。"
+      ],
+      "source_refs": [
+        "train_incident55_index0"
+      ]
+    },
+    {
+      "id": "em_sid_to_device",
+      "name": "SID集合和事件主题 → 关联设备",
+      "known": {
+        "sids": {
+          "concept": "Account_SID",
+          "kind": "sid",
+          "cardinality": "many"
+        },
+        "title": {
+          "concept": "Alert_Title",
+          "kind": "title",
+          "cardinality": "one"
+        }
+      },
+      "wanted": {
+        "DeviceName": {
+          "concept": "Device_Name",
+          "kind": "device_name",
+          "cardinality": "one"
+        }
+      },
+      "relation": "指定账户出现在目标主题告警中，该告警关联的主机候选",
+      "sql": "SELECT DISTINCT h.AlertId,h.Title,h.EvidenceRole,h.DeviceName\nFROM AlertEvidence u JOIN AlertEvidence h ON u.AlertId=h.AlertId\nWHERE u.EntityType='User' AND u.AccountSid IN (:sids) AND u.Title=:title\nAND h.EntityType='Machine' AND h.DeviceName IS NOT NULL AND h.DeviceName<>''\nLIMIT 101",
+      "row_limit": 100,
+      "evidence_fields": [
+        "AlertId",
+        "Title",
+        "EvidenceRole"
+      ],
+      "cautions": [
+        "保留全部候选；达到查询上限不能当作完整结果。",
+        "同告警关联不证明因果、先后或操作者身份。"
+      ],
+      "source_refs": [
+        "train_incident55_index0"
+      ]
+    },
+    {
+      "id": "em_device_to_url",
+      "name": "设备名称集合和事件主题 → 关联URL",
+      "known": {
+        "devices": {
+          "concept": "Device_Name",
+          "kind": "device_name",
+          "cardinality": "many"
+        },
+        "title": {
+          "concept": "Alert_Title",
+          "kind": "title",
+          "cardinality": "one"
+        }
+      },
+      "wanted": {
+        "RemoteUrl": {
+          "concept": "URL",
+          "kind": "url",
+          "cardinality": "one"
+        }
+      },
+      "relation": "目标主题告警中，与给定设备共现的URL候选",
+      "sql": "SELECT DISTINCT u.AlertId,u.Title,u.EvidenceRole,h.DeviceName,u.RemoteUrl\nFROM AlertEvidence h JOIN AlertEvidence u ON h.AlertId=u.AlertId\nWHERE h.EntityType='Machine' AND h.Title=:title\nAND (LOWER(h.DeviceName) IN (:devices)\n OR SUBSTRING_INDEX(LOWER(h.DeviceName),'.',1) IN (:short_devices))\nAND u.EntityType='Url' AND u.RemoteUrl IS NOT NULL AND u.RemoteUrl<>''\nLIMIT 101",
+      "row_limit": 100,
+      "evidence_fields": [
+        "AlertId",
+        "Title",
+        "EvidenceRole"
+      ],
+      "cautions": [
+        "保留全部候选；达到查询上限不能当作完整结果。",
+        "同告警关联不证明因果、先后或操作者身份。"
+      ],
+      "source_refs": [
+        "train_incident55_index0"
+      ],
+      "derived_parameters": {
+        "short_devices": "devices中不含点号的短名，转小写；FQDN不降级为短名"
+      }
+    }
+  ]
+}

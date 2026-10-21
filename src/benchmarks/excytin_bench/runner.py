@@ -265,9 +265,11 @@ class ExcytinBenchmarkRunner:
         llm_eval: bool = False,
         workflow_factory: WorkflowFactory | None = None,
         executor_factory: ExecutorFactory | None = None,
+        ltm_enabled: bool = False,
     ) -> None:
         if workers < 1:
             raise ValueError("workers must be positive")
+        self.ltm_enabled = ltm_enabled
         self.workers = workers
         self.max_steps = max_steps
         self.output_dir = output_dir
@@ -275,6 +277,9 @@ class ExcytinBenchmarkRunner:
         self.workflow_factory = workflow_factory or (
             lambda limit: ExcytinBenchWorkflow(max_steps=limit)
         )
+        if executor_factory is None and ltm_enabled:
+            from src.workflow.ltm_backend import LTMQueryExecutor
+            executor_factory=LTMQueryExecutor
         if executor_factory is None:
             password = os.environ.get("MYSQL_ROOT_PASSWORD", "").strip()
             if not password:
@@ -355,6 +360,11 @@ class ExcytinBenchmarkRunner:
         _write_json(case_path, base_record)
 
         try:
+            executor = self.executor_factory(case.incident)
+            if self.ltm_enabled:
+                from src.workflow.ltm_wm import LTMWMController
+                workflow.memory_controller=LTMWMController(executor.backend,
+                    lambda *,system_prompt,user_prompt:workflow._call_role_llm(system_prompt,user_prompt))
             workflow.start(
                 {
                     "context": case.question.get("context", ""),
@@ -366,7 +376,6 @@ class ExcytinBenchmarkRunner:
                     "split": split,
                 },
             )
-            executor = self.executor_factory(case.incident)
             for _ in range(self.max_steps):
                 action_started = time.perf_counter()
                 action = workflow.propose_next_action()
@@ -626,6 +635,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Random-sample ExCyTIn test questions and run SOCTrace LTM workflow"
     )
+    parser.add_argument("--ltm", action=argparse.BooleanOptionalAction, default=True, help="Use PM/EM/SM with evidence-driven ITT; --no-ltm restores baseline")
     parser.add_argument("--sample-size", type=int, default=10)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max-steps", type=int, default=25)
@@ -659,6 +669,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         workers=args.workers,
         output_dir=args.output_dir,
         llm_eval=args.llm_eval,
+        ltm_enabled=args.ltm,
     )
     run_dir, metrics = runner.run(selected, seed=args.seed)
     print(json.dumps(metrics, ensure_ascii=False, indent=2))

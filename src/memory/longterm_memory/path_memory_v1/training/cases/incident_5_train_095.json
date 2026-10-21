@@ -1,0 +1,443 @@
+{
+  "id": "incident_5_train_095",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 95,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "A potential attempt to access a Primary Refresh Token (PRT) through the process `browsercore.exe` was detected on 2024-07-04. PRT is crucial for Azure AD authentication across various devices, and attackers might try to exploit it to move laterally or steal credentials. Subsequently, it was identified that a compromised user account was involved in delivering ransomware-related files across multiple devices. This indicates potential lateral movement and broader infection attempts within the network.",
+    "question": "Can you identify the IP address associated with the lateral movement to the jump server Vnevado-jump?",
+    "answer": "141.216.110.153",
+    "solution": [
+      "There was a possible attempt to access the Primary Refresh Token (PRT) associated with the AadUserId `731adb71-b11c-4bbf-850b-57989b350e96`.",
+      "A user account may have been compromised and used to deliver ransomware-related files from IP address `99.83.111.100`.",
+      "Lateral movement using PSExec was detected to the jump server with IP address `141.216.110.153`."
+    ],
+    "start_alert": 82,
+    "end_alert": 174,
+    "start_entities": [
+      83
+    ],
+    "end_entities": [
+      177
+    ],
+    "shortest_alert_path": [
+      82,
+      3,
+      41,
+      42,
+      174
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "82",
+    "3",
+    "41",
+    "42",
+    "174"
+  ],
+  "nodes": {
+    "83": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7036__2024-06-20t09:29:49.304018z__\"browsercore.exe\""
+    },
+    "82": {
+      "type": "alert",
+      "name": "Possible attempt to access Primary Refresh Token (PRT)",
+      "description": "Possible attempt to access Primary Refresh Token (PRT) has been detected. A Primary Refresh Token (PRT) is a key artifact of Azure AD authentication on Windows 10, Windows Server 2016 and later versions, iOS, and Android devices. It is a JSON Web Token (JWT) that's specially issued to Microsoft first party token brokers to enable single sign-on (SSO) across the applications used on those devices. Attackers can attempt to access this resource to move laterally into organization or perform credential theft.\n\nFor more information, read the Activity profile: Midnight Blizzard credential attacks Threat Analytics report: https://security.microsoft.com/threatanalytics3/e4aad043-a273-4f88-b65e-fdfc3996ec92/analystreport?\n\n"
+    },
+    "3": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "731adb71-b11c-4bbf-850b-57989b350e96"
+    },
+    "41": {
+      "type": "alert",
+      "name": "Possible compromised user account delivering ransomware-related files",
+      "description": "A user account was observed dropping a ransomware-related file on several devices. An attacker may have compromised the said user account to move laterally across the network and infect as many devices with ransomware as possible. Automated remediation action may be taken to disable the account."
+    },
+    "42": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "99.83.111.100"
+    },
+    "174": {
+      "type": "alert",
+      "name": "PSExec to Vnevado-jump",
+      "description": "Lateral movement to the jump server"
+    },
+    "177": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "141.216.110.153"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "83",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [
+      "42"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_1827e0060dbfefa2",
+  "merged_ems": [
+    "em_b01c5e8e6379ab3b",
+    "em_a1923f354438856e",
+    "em_f4ce270254282e1c"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 10,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-04 22:35:01.208400+00:00",
+              "matched_inputs": [
+                "7036__2024-06-20t09:29:49.304018z__\"browsercore.exe\""
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab",
+              "time": "2024-07-04 22:35:00.773532+00:00",
+              "matched_inputs": [
+                "731adb71-b11c-4bbf-850b-57989b350e96"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b2ab20f4-9334-1b76-405c-9812a8fd0fe2",
+              "time": "2024-07-04 22:35:01.491898+00:00",
+              "matched_inputs": [
+                "731adb71-b11c-4bbf-850b-57989b350e96"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "177",
+          "expected_present": true,
+          "values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "entity_index": 3,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 4,
+              "entity_ref": "10",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_8bcba1b72b4a9593",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b01c5e8e6379ab3b",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 10,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-11 22:34:56.510002+00:00",
+              "source_row_hash": "06bdd1464111577f13a60816852eb9ef7701f30dff4c6aec9c41a1212bdbcf4b",
+              "matched_inputs": [
+                "7036__2024-06-20t09:29:49.304018z__\"browsercore.exe\""
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 10,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-09 22:34:23.548181+00:00",
+              "source_row_hash": "12475435cafd6ebe343b0f8dd795f16d2ebc4b4ef8625f61b2bada48df7a07f5",
+              "matched_inputs": [
+                "7036__2024-06-20t09:29:49.304018z__\"browsercore.exe\""
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 10,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-16 22:34:44.400587+00:00",
+              "source_row_hash": "53ea61a4e3dc272924cf1b61dbc79c4c1aa1f7d5a870b00c85ee9943a75e22e5",
+              "matched_inputs": [
+                "7036__2024-06-20t09:29:49.304018z__\"browsercore.exe\""
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible attempt to access Primary Refresh Token (PRT)",
+            "7036__2024-06-20t09:29:49.304018z__\"browsercore.exe\""
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_f4ce270254282e1c",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab",
+              "time": "2024-07-11 22:34:56.110915+00:00",
+              "source_row_hash": "0bae178e648eba87e162ca4b6266d15b5ac080077dff1d2e19306dff04fe6a79",
+              "matched_inputs": [
+                "731adb71-b11c-4bbf-850b-57989b350e96"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab",
+              "time": "2024-07-17 22:34:53.902904+00:00",
+              "source_row_hash": "16a84ac7ff62e41aaf0d68d5b2c876c21aa5f3eeeabf2282dd2952e5dd9bb107",
+              "matched_inputs": [
+                "731adb71-b11c-4bbf-850b-57989b350e96"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "80c7dbab-b825-ea76-4b05-73353504a5ab",
+              "time": "2024-07-14 22:34:27.120982+00:00",
+              "source_row_hash": "4136393586512ce53025ef3b0eea3e18a3e77c10a4b81050de03ca5db55a8e5d",
+              "matched_inputs": [
+                "731adb71-b11c-4bbf-850b-57989b350e96"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible compromised user account delivering ransomware-related files",
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_a1923f354438856e",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "roles": [],
+              "entity_index": 3,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-12 22:39:37.245925+00:00",
+              "source_row_hash": "321f0b375b404f37b0fcd4be43a8618f24b13e84c618210abee69c09ebe5a5c3",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "roles": [],
+              "entity_index": 3,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "source_row_hash": "c4daf5d07275aa5d85bf1e7698acc999bbac6033efe6086ccbd1fa9fec43e664",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PSExec to Vnevado-jump",
+            "99.83.111.100"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

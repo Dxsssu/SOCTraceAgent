@@ -23,13 +23,14 @@ from src.agent.llm import LLMClient, LLMConfig, parse_yaml_response
 from src.agent.executor import SQL_EXECUTOR_SYSTEM_PROMPT
 from src.agent.planner import PLANNER_SYSTEM_PROMPT
 from src.agent.reviewer import REVIEWER_SYSTEM_PROMPT
-from src.agent.verifier import VERIFIER_SYSTEM_PROMPT, validate_verification
+from src.agent.verifier import VERIFIER_SYSTEM_PROMPT, validate_verification, parse_verifier_response
 from src.schema.ttt_updates import next_task, change_node, resolved
 from src.schema.investigation import task_input
 from src.schema.reviewer_output import parse_review, evidence_result
 from src.schema.itt import itt_payload, compact_json, execution_fields, task_payload, review_payload
 from src.schema.planner_operations import apply_planner_operations, parse_planner_response
 from src.schema.evidence_view import dump_evidence_prompt
+from src.schema.verifier_evidence import compact_verifier_itt
 from src.schema import Event, RoundReview, TracebackTaskTree, TTTNode, TTTNodeStatus
 
 
@@ -194,9 +195,11 @@ class ExcytinBenchWorkflow:
         max_observation_chars: int = 20_000,
         executor_format_attempts: int = 2,
         compact_evidence: bool = False,
+        memory_controller=None,
     ) -> None:
         if max_steps < 2:
             raise ValueError("max_steps must reserve at least one query and one submit")
+        self.memory_controller = memory_controller
         self.max_steps = max_steps
         self._llm = llm or self._default_llm
         self.max_executor_attempts_per_l3 = min(2, max(1, max_executor_attempts_per_l3))
@@ -329,7 +332,11 @@ class ExcytinBenchWorkflow:
             {"event_id": event.event_id, "round_id": ttt.round_id},
         )
         self._record_trace("ttt_planned", {"ttt": ttt.to_dict()})
-        return ttt
+        if self.memory_controller:
+            self.state.ttt=self.memory_controller.plan(ttt)
+            self.state.ttt_history.append(self.state.ttt.to_dict())
+            self._record_trace("ltm_tasks_materialized", {"ttt":self.state.ttt.to_dict()})
+        return self.state.ttt
 
     def act(
         self,
@@ -455,12 +462,18 @@ class ExcytinBenchWorkflow:
             result_summary="")
         state.reviews.append(review)
         self._record_trace("review_completed", {"review": review})
+        if self.memory_controller:
+            state.ttt=self.memory_controller.observe(state.ttt,node,execution,raw_observation)
+            state.ttt_history.append(state.ttt.to_dict())
+            self._record_trace("wm_evidence_committed", {"ttt":state.ttt.to_dict()})
         verdict = self._verify_progress(review)
         state.ready_to_submit = verdict["can_answer"] == "yes"
         state.cannot_continue = False
         budget_exhausted = state.actions_issued >= self.max_steps - 1
         if state.ready_to_submit:
             state.final_answer = verdict["answer"]
+            if self.memory_controller:
+                state.ttt=self.memory_controller.finish(state.ttt)
             for root in state.ttt.root_nodes:
                 state.ttt = change_node(state.ttt, root.node_id, status=TTTNodeStatus.RESOLVED)
             state.ttt = replace(state.ttt, next_task_id=None)
@@ -509,6 +522,13 @@ class ExcytinBenchWorkflow:
         node = self._next_todo_leaf(state.ttt)
         if should_submit:
             return self._issue_submit()
+        if node is None and self.memory_controller:
+            state.ttt=self.memory_controller.plan(state.ttt)
+            state.ttt_history.append(state.ttt.to_dict())
+            node=self._next_todo_leaf(state.ttt)
+            if node is None:
+                state.cannot_continue=True
+                return self._issue_submit()
         if node is None:
             gap_review = RoundReview(event_id=state.event.event_id, round_id=state.ttt.round_id,
                 gaps=("Verifier 尚未确认答案且没有可执行任务，请新增一个 todo 的 T 继续调查。",))
@@ -560,8 +580,8 @@ class ExcytinBenchWorkflow:
                 "workflow": "excytin_bench",
                 "event_id": self._bootstrap_event_id,
                 "status": self._bootstrap_status,
-                "ltm_enabled": False,
-                "planner_pm_enabled": False,
+                "ltm_enabled": self.memory_controller is not None,
+                "planner_pm_enabled": self.memory_controller is not None,
                 "actions_issued": 0,
                 "initial_input": self._bootstrap_initial_input,
                 "trace": list(self._bootstrap_trace),
@@ -569,8 +589,8 @@ class ExcytinBenchWorkflow:
         state = self.state
         return {
             "workflow": "excytin_bench",
-            "ltm_enabled": False,
-            "planner_pm_enabled": False,
+            "ltm_enabled": self.memory_controller is not None,
+            "planner_pm_enabled": self.memory_controller is not None,
             "event_id": state.event.event_id,
             "status": "done" if state.done else "active",
             "actions_issued": state.actions_issued,
@@ -582,7 +602,8 @@ class ExcytinBenchWorkflow:
             "executions": [item.to_dict() for item in state.executions],
             "reviews": list(state.reviews),
             "verifications": list(state.verifications),
-            "memory_retrievals": [],
+            "memory_metadata_queries": self.memory_controller.metadata_queries if self.memory_controller else 0,
+            "memory_retrievals": list(self.memory_controller.retrievals) if self.memory_controller else [],
             "ttt_history": list(state.ttt_history),
             "action_history": list(state.action_history),
             "trace": list(state.trace),
@@ -595,6 +616,8 @@ class ExcytinBenchWorkflow:
         *,
         investigation_input: Mapping[str, str],
     ) -> TracebackTaskTree:
+        if self.memory_controller:
+            return self.memory_controller.initialize(event,dict(investigation_input))
         prompt = "下面是此次事件的背景和调查问题。当前任务是初始化 ITT：只返回顶层为 operations 的 YAML，操作仅用 add_goal/add_entity/add_task/select_task，严格遵循系统中的字段协议。执行环境是 MySQL。不要返回 SQL、KQL、调查解释或最终答案。\n" + compact_json(dict(investigation_input))
         parsed = self._call_yaml_role(
             "planner",
@@ -615,6 +638,8 @@ class ExcytinBenchWorkflow:
         current_ttt: TracebackTaskTree,
         review: RoundReview,
     ) -> TracebackTaskTree:
+        if self.memory_controller:
+            return self.memory_controller.plan(current_ttt)
         state = self._require_state()
         prompt = dump_evidence_prompt(dict(task_input(state.event),
             itt=itt_payload(current_ttt, state.executions, planner_view=True),
@@ -636,6 +661,8 @@ class ExcytinBenchWorkflow:
 
     def _generate_sql(self, node: TTTNode) -> str:
         state = self._require_state()
+        if self.memory_controller and node.metadata.get('ltm_task'):
+            return ReadOnlySQLValidator.validate(self.memory_controller.sql(state.ttt,node))
         failure = self._latest_repairable_for_node(state, node.node_id)
         recovery = None
         if failure is not None and not failure.query_success:
@@ -708,6 +735,9 @@ class ExcytinBenchWorkflow:
                 raise ValueError("Verifier confirmed without an answer")
         else:
             answer = "无法确认答案：调查结束，尚无充分证据。"
+            if self.memory_controller:
+                reason="budget_exhausted" if state.actions_issued >= self.max_steps-1 else "no_match"
+                state.ttt=self.memory_controller.stop(state.ttt,reason)
             state.cannot_continue = True
             for root in state.ttt.root_nodes:
                 state.ttt = change_node(state.ttt, root.node_id, status=TTTNodeStatus.BLOCKED)
@@ -726,10 +756,15 @@ class ExcytinBenchWorkflow:
 
     def _verify_progress(self, review):
         state = self._require_state()
-        prompt = dump_evidence_prompt({
-            **task_input(state.event),
-            "itt": itt_payload(state.ttt, state.executions, planner_view=True),
-        }, compact=self.compact_evidence)
+        original = itt_payload(state.ttt, state.executions, planner_view=True)
+        evidence, stats = compact_verifier_itt(original)
+        payload = {**task_input(state.event), "itt": evidence}
+        prompt = compact_json(payload)
+        self._record_trace("verifier_evidence_compacted", {
+            **stats, "before_chars": len(dump_evidence_prompt(
+                {**task_input(state.event), "itt": original}, compact=self.compact_evidence)),
+            "after_chars": len(prompt),
+        })
         verdict = self._call_yaml_role("verifier", VERIFIER_SYSTEM_PROMPT, prompt,
                                       validator=validate_verification)
         verdict = validate_verification(verdict)
@@ -767,7 +802,8 @@ class ExcytinBenchWorkflow:
             response_text = self._call_role_llm(system_prompt, prompt)
             parsed = None
             try:
-                parsed = parse_planner_response(response_text) if role == "planner" else self._parse_response(response_text)
+                parsed = (parse_planner_response(response_text) if role == "planner" else
+                          parse_verifier_response(response_text) if role == "verifier" else self._parse_response(response_text))
                 if validator is not None:
                     validator(parsed)
             except Exception as exc:  # noqa: BLE001 - retry malformed model output.

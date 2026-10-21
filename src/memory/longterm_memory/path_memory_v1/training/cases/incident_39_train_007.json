@@ -1,0 +1,383 @@
+{
+  "id": "incident_39_train_007",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 7,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "During an investigation, we noted a file `psexesvc.exe` was dropped and launched from a remote location, which might be an attempt by an attacker or malware to move laterally or propagate. This was flagged as part of a larger incident observed on 2024-07-04 at 22:35:01.862275+00:00.",
+    "question": "Can you identify the account name associated with the human-operated malicious activity observed on the device on 2024-07-04 at 22:35:03.712134+00:00?",
+    "answer": "kyleg",
+    "solution": [
+      "A file was dropped and executed from a remote location by the account with SID `S-1-5-21-1540151660-3530000288-105586595-1517`.",
+      "Potential human-operated malicious activity was observed, involving the user account `kyleg`, which might indicate ransomware or other malicious payloads."
+    ],
+    "start_alert": 58,
+    "end_alert": 105,
+    "start_entities": [
+      59
+    ],
+    "end_entities": [
+      42
+    ],
+    "shortest_alert_path": [
+      58,
+      2,
+      105
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "58",
+    "2",
+    "105"
+  ],
+  "nodes": {
+    "59": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+    },
+    "58": {
+      "type": "alert",
+      "name": "File dropped and launched from remote location",
+      "description": "A remote session dropped a file and executed it. An attacker or a malware might be an attempting move laterally or propagate."
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1540151660-3530000288-105586595-1517"
+    },
+    "105": {
+      "type": "alert",
+      "name": "Potential human-operated malicious activity",
+      "description": "A sequence of alerts that might be indicative of human operated malicious activity was observed on this device. This activity might lead to ransomware or other payloads installed on target devices."
+    },
+    "42": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "kyleg"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "59",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e45d723c035d8493",
+  "merged_ems": [
+    "em_80588a18683b0c38",
+    "em_b30f58cf03511b0b"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "S-0-6-5",
+            "S-1-5-21-1540151660-3530000288-105586595-1517"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1540151660-3530000288-105586595-1517",
+              "raw_components": {
+                "Sid": "S-1-5-21-1540151660-3530000288-105586595-1517"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-04 22:35:01.862275+00:00",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-0-6-5",
+              "raw_components": {
+                "Sid": "S-0-6-5"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-04 22:35:01.862275+00:00",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "fk8mq",
+            "kyleg"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "f4f368aa-9a52-45e5-8c88-a1642658c5ed",
+              "time": "2024-07-04 22:35:03.712134+00:00",
+              "matched_inputs": [
+                "S-0-6-5",
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "entity_index": 23,
+              "entity_ref": "25",
+              "roles": [],
+              "alert_id": "f4f368aa-9a52-45e5-8c88-a1642658c5ed",
+              "time": "2024-07-04 22:35:03.712134+00:00",
+              "matched_inputs": [
+                "S-0-6-5",
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "79b51b40-3027-c26e-b480-a84fe41b135b",
+              "time": "2024-07-04 22:35:04.075398+00:00",
+              "matched_inputs": [
+                "S-0-6-5",
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "79b51b40-3027-c26e-b480-a84fe41b135b",
+              "time": "2024-07-04 22:35:04.075398+00:00",
+              "matched_inputs": [
+                "S-0-6-5",
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_f6caa37a2b504d9a",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b30f58cf03511b0b",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "S-0-6-5",
+            "S-1-5-21-1540151660-3530000288-105586595-1517"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1540151660-3530000288-105586595-1517",
+              "raw_components": {
+                "Sid": "S-1-5-21-1540151660-3530000288-105586595-1517"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-27 22:35:09.499615+00:00",
+              "source_row_hash": "006ed090ffff2fceeb0537a8542b95b9c02eed73da787868498b4c1753092f90",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1540151660-3530000288-105586595-1517",
+              "raw_components": {
+                "Sid": "S-1-5-21-1540151660-3530000288-105586595-1517"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-15 22:39:20.802026+00:00",
+              "source_row_hash": "0229959537e326a41d98c9322a9c9ca475f705381b18f7d52354e18fffb3827d",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1540151660-3530000288-105586595-1517",
+              "raw_components": {
+                "Sid": "S-1-5-21-1540151660-3530000288-105586595-1517"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-13 22:34:39.536790+00:00",
+              "source_row_hash": "036ee8385bc95006598d074a18baddc87c733f841b058d571531ae8aced3460a",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File dropped and launched from remote location",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_80588a18683b0c38",
+          "status": "ok",
+          "candidate_count": 216,
+          "unique_values": [
+            "fk8mq",
+            "kyleg"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f4f368aa-9a52-45e5-8c88-a1642658c5ed",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 23,
+              "alert_id": "f4f368aa-9a52-45e5-8c88-a1642658c5ed",
+              "time": "2024-07-25 22:35:07.908988+00:00",
+              "source_row_hash": "040fd90b77a57bea6d44ab8ec6b553402ef4d645a659a38272f5083d386ec24e",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 23,
+              "alert_id": "f4f368aa-9a52-45e5-8c88-a1642658c5ed",
+              "time": "2024-07-22 22:39:53.270654+00:00",
+              "source_row_hash": "12d352200a1962495155636a4674dc781e4803dc4531fe2f9868df19aa8ca281",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "kyleg",
+              "raw_components": {
+                "Name": "kyleg"
+              },
+              "roles": [],
+              "entity_index": 23,
+              "alert_id": "f4f368aa-9a52-45e5-8c88-a1642658c5ed",
+              "time": "2024-07-06 22:34:53.949373+00:00",
+              "source_row_hash": "12e12d9dfb9f7ccc2e7b1a372cb10a0e5c5f6c3d48d4c9330c38cde3e13d3e19",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Potential human-operated malicious activity",
+            "S-0-6-5",
+            "S-1-5-21-1540151660-3530000288-105586595-1517"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 513 (char 512)",
+          "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

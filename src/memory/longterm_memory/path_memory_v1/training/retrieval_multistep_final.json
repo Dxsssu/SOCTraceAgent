@@ -1,0 +1,1483 @@
+{
+  "timestamp": "2026-10-19T18:42:40.164252+00:00",
+  "model": "deepseek-v4.1-flash",
+  "provider": "fancybag",
+  "recall": "lexical+LLM",
+  "scope": "Training-memory resubstitution tests, not held-out accuracy. No official seed/path/index passed to retriever. Ablations explicitly hide memory layers.",
+  "tests": [
+    {
+      "case": "incident_55_train_000",
+      "mode": "normal",
+      "context": "We have detected that one of your users has recently clicked on a link that was found to be malicious: `http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/`. This is part of a broader security incident involving suspicious exploration activities including the use of multiple Windows commands which can be used by attackers to identify assets of value and coordinate lateral movement after compromising a machine.",
+      "question": "A recent security incident included another instance of potentially malicious URL click on the same device. Can you identify the URL?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "同一设备上近期安全事件中另一实例潜在恶意URL点击所涉及的URL"
+          },
+          "constraints": [
+            "目标URL必须关联同一设备",
+            "目标URL必须属于近期安全事件中的潜在恶意URL点击"
+          ],
+          "event_context": [
+            "检测到一名用户最近点击了一个被判定为恶意的链接。",
+            "该点击属于更广泛的安全事件，涉及可疑探索活动，包括使用多个Windows命令，这些命令可被攻击者用于识别有价值资产并在入侵后协调横向移动。"
+          ],
+          "retrieval_query": "查找近期安全事件中同一设备上另一潜在恶意URL点击的URL",
+          "constraint_sources": [
+            "on the same device",
+            "A recent security incident included another instance of potentially malicious URL click"
+          ]
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "PM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "目标URL必须关联同一设备",
+                  "supported": true,
+                  "reason": "该路线按账户、主机、URL的顺序调查，并包含“Malicious URL was clicked on that device”事件，因此可通过主机实体关联到同一设备上的另一URL；仍需在后续证据中核验设备一致性。"
+                },
+                {
+                  "constraint": "目标URL必须属于近期安全事件中的潜在恶意URL点击",
+                  "supported": true,
+                  "reason": "该路线包含“A potentially malicious URL click was detected”和“Suspicious sequence of exploration activities”事件，与已知URL点击所属的近期安全事件上下文一致；目标URL仍需由后续检索结果确认。"
+                }
+              ],
+              "reason": "该候选路线覆盖潜在恶意URL点击、可疑探索活动以及同一设备上的恶意URL点击，输出包含主机和URL，最符合同一设备上另一实例URL点击的调查目标；其他路线缺少设备关联或偏向邮件/钓鱼事件。",
+              "candidates": [
+                "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+                "pm_946f48bf4383cee1/scope_a5cad25ec6b4e92c/route_9195073f7a8130d5/URL",
+                "pm_3076db3c3bca149e/scope_55e1fe92b7f270fe/route_3c31d15c9d9bbed0/URL",
+                "pm_e7814882561779b8/scope_55e1fe92b7f270fe/route_90017d55fe2e2b5e/URL"
+              ],
+              "rejected_decisions": []
+            },
+            "selected": {
+              "id": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+              "pm_id": "pm_946f48bf4383cee1",
+              "scenario_id": "scope_f54ed65dfffc7b12",
+              "route_id": "route_a4a73f68d563b0d7",
+              "known": "URL",
+              "wanted": "URL",
+              "name": "账户 → 主机 → URL关联调查",
+              "guide": "从已知实体选择满足输入与目标类型的具体路线及完整事件场景，依次调查账户、主机、URL。严格按路线的EM依赖顺序传递观测结果，保留证据和候选；阶段归并不代表标识等价，不可跳过重复追踪步骤。",
+              "events": [
+                "A potentially malicious URL click was detected",
+                "Suspicious sequence of exploration activities",
+                "Malicious URL was clicked on that device"
+              ],
+              "outputs": [
+                "Account_SID",
+                "Host_Name",
+                "URL"
+              ],
+              "recall_score": 0.206677,
+              "bindable_entity_ids": [
+                "E1"
+              ],
+              "values": [
+                "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "目标URL必须关联同一设备",
+                  "supported": true,
+                  "reason": "T2显示已知账户SID关联主机mb-winclient；T3事件为“Malicious URL was clicked on that device”，其URL输出均由matched_inputs=mb-winclient关联，证明该URL点击发生在同一设备mb-winclient上。"
+                },
+                {
+                  "constraint": "目标URL必须属于近期安全事件中的潜在恶意URL点击",
+                  "supported": true,
+                  "reason": "T3事件即“Malicious URL was clicked on that device”，输出概念为URL且告警为恶意URL点击告警，候选值https://ym018491661.../来自该事件，满足潜在恶意URL点击条件。"
+                }
+              ],
+              "reason": "证据T3提供了同一设备mb-winclient上的另一恶意URL点击事件，候选URL https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/ 与已知URL的http/https协议模式不同，属于另一实例，且设备关联明确（matched_inputs=mb-winclient）。"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_e516c468f5783731",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+                "raw_components": {
+                  "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+                },
+                "roles": [],
+                "entity_index": 3,
+                "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+                "time": "2024-07-10 11:24:45.507742+00:00",
+                "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+                "matched_inputs": [
+                  "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "A potentially malicious URL click was detected",
+              "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            ],
+            "round": 1,
+            "layer": "PM",
+            "selected_memory": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL"
+          },
+          {
+            "step": "T2",
+            "episode_id": "em_b108d6b14ba923d1",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-04 22:35:03.197761+00:00",
+                "source_row_hash": "0199fcecfa31eaf6175917359b5016ed7b5105322feb145c859bb645bb029d40",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-31 22:40:02.973923+00:00",
+                "source_row_hash": "1044a74d6ac7ad7b854011e1ddb599f15d0b782f199b060bfbd344936c874f3f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-22 22:34:43.459272+00:00",
+                "source_row_hash": "1c0eb9de58d3dc5227e1cb7f856b44c799ac3c5e2f97428d7373041205d709c8",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-05 22:34:20.263868+00:00",
+                "source_row_hash": "28088ecf1be941c132e2fa3a228736e46bbf54224a13d212dd41325ae286e3ca",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-17 22:34:56.504955+00:00",
+                "source_row_hash": "2b51cae449d346aba9c89e9b11852b8eaae9873fee0e7c760f06a79db623a3a6",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-28 22:34:32.041305+00:00",
+                "source_row_hash": "2c804d24e4cce9b1c5d135590ee3b2971e07f07f684656fa01cb3ecc58df5f12",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-16 22:34:46.365151+00:00",
+                "source_row_hash": "3160203713066de64eafc5dc011e821b9ff0defe257d3f68447ef7536b38b188",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-15 22:39:22.104088+00:00",
+                "source_row_hash": "444f53939ed0dafc1da315131dc87ca8a7192c359af8fe7783561dbe3776ef68",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-27 22:35:10.351189+00:00",
+                "source_row_hash": "58eb9b7d952e0d7d1a7fb7a27b4ec15b0fef7740496debe6fea8a4ec73bb094a",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-20 22:34:25.658848+00:00",
+                "source_row_hash": "6575997cc71446e8df397fee44cf0b8c8faff9e290d3e119a0cd678b7cdc7c64",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-09 07:30:01.738261+00:00",
+                "source_row_hash": "71231ac67d452f84c462e7327ccbb6b19279c5bf7317eaa659059bc54e31893c",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-12 22:34:24.665964+00:00",
+                "source_row_hash": "716ee69ef0e29176a86f2241688437c54f542130db31a416df8d09ec7bb97119",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-13 22:34:40.838195+00:00",
+                "source_row_hash": "7f4c1d73e7b212e7c468ca97a88438dc9452f6d736b5d09dca4b3cc20a338f7e",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-07 22:34:17.429571+00:00",
+                "source_row_hash": "87784f67e8df80ffdc99e7e2bbb6ac5eae7a06fb6011a60b7c0bf365c1810ee1",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-23 22:34:45.181949+00:00",
+                "source_row_hash": "8cad82285c53d0256aea7fb9ed3e078e070fbff8fdd6d2fecfcb3ec2cab213e0",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-28 22:39:34.780875+00:00",
+                "source_row_hash": "940382da55dca1a92a3ff8ce93ae62893817de3ef924272c2e978e35cbca6683",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-31 22:34:53.280094+00:00",
+                "source_row_hash": "aa985f0ad2320e20717b4d6b4c04a99ebcc56f181405a75ea96d193ffad0fc86",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-21 22:34:53.945511+00:00",
+                "source_row_hash": "b96c52ae4c26884394917983780efb59af679b11e913f76a37028cda9eca872a",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-18 22:36:02.298264+00:00",
+                "source_row_hash": "c0fff2f4a854bdc86ec770cc2af3841a2add522a5dd9cb04f3bc9f3157b6e90f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-29 22:40:19.723316+00:00",
+                "source_row_hash": "c9dd9701240999fe9dd318ae2f5727efcaa6a9a1b8256811e36e70f253534fc0",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-24 22:39:15.361905+00:00",
+                "source_row_hash": "cb7cbe93b589e2e0be5682a8369e3f89ac32eda91e83727c0434e00c1fb6d313",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-25 22:39:13.696036+00:00",
+                "source_row_hash": "cde16e6272ec4e4b31bc4264a840dd3c570f943d76d677002444d9e6e339382b",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-30 22:39:41.483098+00:00",
+                "source_row_hash": "d7b5de0ea2147f3dd894f24f9f2ae8e4bf62cfa838452f1af1338bc700a4c19f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-19 22:35:15.275758+00:00",
+                "source_row_hash": "d9d0c6bb0c3e0435d62d1ccab727655fea66f33136ceebb04468860657c2965e",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-08-01 22:39:19.643703+00:00",
+                "source_row_hash": "e417119931a71e3c9d83cdd641e825afaa0ae491f099189dd6dfb76f23f27681",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-14 22:34:29.671458+00:00",
+                "source_row_hash": "f0a12e4d831e3b8feed37962f68d7b6f9fb101a7430a6d101c7f7e6ab741167c",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Suspicious sequence of exploration activities",
+              "S-1-5-21-561436748-3867387497-1732241745-3701"
+            ],
+            "round": 1,
+            "layer": "PM",
+            "selected_memory": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL"
+          },
+          {
+            "step": "T3",
+            "episode_id": "em_1e29a02e39e38dec",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-24 22:39:30.160437+00:00",
+                "source_row_hash": "12d60f823382bad786cf1da8be83e94e13ec9ed1f629da8fa96d4cae67a9f27c",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-23 22:39:10.359959+00:00",
+                "source_row_hash": "1853702f4792647584523605b73da67835a17577fe0441c58ecc92b2e6fd307f",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-25 22:39:57.656949+00:00",
+                "source_row_hash": "3dd185583c9de4ac96bbaf462e100365bc6343e3f69b3a9a3836bc38e0d53085",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-12 22:39:37.571741+00:00",
+                "source_row_hash": "3eb38acb8e4e7a4b89128d9dbc7023f0f25eedce69460d5c047c57bb288209de",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-08-01 22:41:05.511922+00:00",
+                "source_row_hash": "51e998c20b5d429ab0042eb5144a266757543cf6481704a1df699ba23aad26f4",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-31 22:39:13.246089+00:00",
+                "source_row_hash": "6c9ba14d6812e82c5e081c3984dbb21a0115976e3c9b5f3f373f75c811b3d5fb",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-13 22:40:05.144951+00:00",
+                "source_row_hash": "6d2dfdcdb7eea673dd469317ff979a3bd38911b673cc645d2e8a2fb9f8743251",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-28 22:39:57.724890+00:00",
+                "source_row_hash": "84f2361df19a975fac32eb7710228bb500845b9a3dbc3ae843f0a0840f85dcc8",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-29 22:39:58.320630+00:00",
+                "source_row_hash": "882e8c7b824528c6f1c7892d778533731873b18d7b6f91754f1f132cf0a9d4fe",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-30 22:39:33.137082+00:00",
+                "source_row_hash": "a37ef8383b5f6521cc4e20514de0b865f7ea2a73647a8c7f0eb7144bc869a4ef",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-10 11:24:45.667104+00:00",
+                "source_row_hash": "b433ab3538aa0116f847b79854326e833089fe7370201f65531da9b0f5f39e91",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-27 22:39:12.735557+00:00",
+                "source_row_hash": "e61237c23ea622eeb945bb93bcc57a59e281f914b56fb5da4617486d4d0bfa26",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Malicious URL was clicked on that device",
+              "mb-winclient"
+            ],
+            "round": 1,
+            "layer": "PM",
+            "selected_memory": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL"
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+        "exact": false,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 5,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 1979,
+            "prompt_tokens": 1194,
+            "total_tokens": 3173,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"同一设备上近期安全事件中另一实例潜在恶意URL点击所涉及的URL\"},\"constraints\":[\"目标URL必须关联同一设备\",\"目标URL必须属于近期安全事件中的潜在恶意URL点击\"],\"event_context\":[\"检测到一名用户最近点击了一个被判定为恶意的链接。\",\"该点击属于更广泛的安全事件，涉及可疑探索活动，包括使用多个Windows命令，这些命令可被攻击者用于识别有价值资产并在入侵后协调横向移动。\"],\"retrieval_query\":\"查找近期安全事件中同一设备上另一潜在恶意URL点击的URL\",\"constraint_sources\":[\"on the same device\",\"A recent security incident included another instance of potentially malicious URL click\"]}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 799,
+            "prompt_tokens": 1876,
+            "total_tokens": 2675,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"目标URL必须关联同一设备\",\"supported\":true,\"reason\":\"该路线按账户、主机、URL的顺序调查，并包含“Malicious URL was clicked on that device”事件，因此可通过主机实体关联到同一设备上的另一URL；仍需在后续证据中核验设备一致性。\"},{\"constraint\":\"目标URL必须属于近期安全事件中的潜在恶意URL点击\",\"supported\":true,\"reason\":\"该路线包含“A potentially malicious URL click was detected”和“Suspicious sequence of exploration activities”事件，与已知URL点击所属的近期安全事件上下文一致；目标URL仍需由后续检索结果确认。\"}],\"reason\":\"该候选路线覆盖潜在恶意URL点击、可疑探索活动以及同一设备上的恶意URL点击，输出包含主机和URL，最符合同一设备上另一实例URL点击的调查目标；其他路线缺少设备关联或偏向邮件/钓鱼事件。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 257,
+            "prompt_tokens": 7735,
+            "total_tokens": 7992,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"],\"constraint_checks\":[{\"constraint\":\"目标URL必须关联同一设备\",\"supported\":true,\"reason\":\"T2显示已知账户SID关联主机mb-winclient；T3事件为“Malicious URL was clicked on that device”，其URL输出均由matched_inputs=mb-winclient关联，证明该URL点击发生在同一设备mb-winclient上。\"},{\"constraint\":\"目标URL必须属于近期安全事件中的潜在恶意URL点击\",\"supported\":true,\"reason\":\"T3事件即“Malicious URL was clicked on that device”，输出概念为URL且告警为恶意URL点击告警，候选值https://ym018491661.../来自该事件，满足潜在恶意URL点击条件。\"}],\"reason\":\"证据T3提供了同一设备mb-winclient上的另一恶意URL点击事件，候选URL https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/ 与已知URL的http/https协议模式不同，属于另一实例，且设备关联明确（matched_inputs=mb-winclient）。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 13840
+    },
+    {
+      "case": "incident_34_train_000",
+      "mode": "normal",
+      "context": "During an investigation into an advanced security incident, an anomaly was detected in the ASEP registry, indicating that a process named `winatp-intro-backdoor.exe` with ProcessId__CreatedTimeUtc__CommandLine `10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe` was registered to run after a reboot on host `vnevado-win10e` linked to user `samuelf`.",
+      "question": "What is the SID of the account observed in the alert indicating that an uncommon file was created and added to a Run Key?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "S-1-5-21-1870156660-7534030218-135086563-1193"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "Host_Name",
+              "value": "vnevado-win10e"
+            },
+            {
+              "id": "E2",
+              "concept": "Account_Name",
+              "value": "samuelf"
+            },
+            {
+              "id": "E3",
+              "concept": "Process_Identity",
+              "value": "10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe"
+            },
+            {
+              "id": "E4",
+              "concept": "File_Name",
+              "value": "winatp-intro-backdoor.exe"
+            }
+          ],
+          "wanted": {
+            "concept": "Account_SID",
+            "description": "与告警中关联用户 samuelf 对应账户的 SID"
+          },
+          "constraints": [
+            "必须是告警中关联账户的 SID"
+          ],
+          "constraint_sources": [
+            "linked to user `samuelf`"
+          ],
+          "event_context": [
+            "ASEP 注册表异常：进程 winatp-intro-backdoor.exe 通过 RunOnce 键注册为重启后运行",
+            "主机 vnevado-win10e 关联用户 samuelf"
+          ],
+          "retrieval_query": "查询告警中关联用户账户的 SID"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "PM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name",
+              "entity_ids": [
+                "E2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "必须是告警中关联账户的 SID",
+                  "supported": true,
+                  "reason": "候选路线以已知账户 samuelf（E2）为输入，目标为 Account_SID，且事件序列包含“An uncommon file was created and added to a Run Key”，与告警中关联用户 samuelf 的账户调查直接对应；执行后仍需核验所得 SID 确实属于该账户。"
+                }
+              ],
+              "reason": "选择从已知账户 samuelf（E2）出发查询 Account_SID 的路线。该候选覆盖 ASEP 注册表异常与文件被创建并加入 Run Key 两个事件，符合题目要求，并可绑定同类型已知实体 E2；其他候选的事件场景或输入类型与当前告警链路不直接匹配。",
+              "candidates": [
+                "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name",
+                "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Process_Identity",
+                "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Host_Name",
+                "pm_6117b813c7bba655/scope_22b395a0b711f67e/route_a251cf37abc0a30a/File_Name",
+                "pm_eaad33cd317d6bde/scope_7365dbfd0059cea5/route_78179bae78e8e57d/Process_Identity",
+                "pm_eaad33cd317d6bde/scope_7365dbfd0059cea5/route_78179bae78e8e57d/Host_Name",
+                "pm_eaad33cd317d6bde/scope_7365dbfd0059cea5/route_78179bae78e8e57d/Account_Name",
+                "pm_eaad33cd317d6bde/scope_7e39189567cbdf74/route_d3b727a910e089cc/Process_Identity"
+              ],
+              "rejected_decisions": []
+            },
+            "selected": {
+              "id": "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name",
+              "pm_id": "pm_eaad33cd317d6bde",
+              "scenario_id": "scope_17d713539bb15339",
+              "route_id": "route_d3b727a910e089cc",
+              "known": "Account_Name",
+              "wanted": "Account_SID",
+              "name": "账户关联调查",
+              "guide": "从已知实体选择满足输入与目标类型的具体路线及完整事件场景，依次调查账户。严格按路线的EM依赖顺序传递观测结果，保留证据和候选；阶段归并不代表标识等价，不可跳过重复追踪步骤。",
+              "events": [
+                "Anomaly detected in ASEP registry",
+                "An uncommon file was created and added to a Run Key"
+              ],
+              "outputs": [
+                "Account_SID",
+                "Account_SID"
+              ],
+              "recall_score": 0.239189,
+              "bindable_entity_ids": [
+                "E2"
+              ],
+              "values": [
+                "samuelf"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "必须是告警中关联账户的 SID",
+                  "supported": true,
+                  "reason": "证据中账号 samuelf 对应并匹配到该 SID；T2 告警（uncommon file created and added to a Run Key）的 Account_SID 均返回同一候选值。"
+                }
+              ],
+              "reason": "目标事件为“创建异常文件并添加到 Run Key”的告警；其关联账号 SID 在证据中一致显示为 S-1-5-21-1870156660-7534030218-135086563-1193，且与用户 samuelf 匹配，因此答案已获得。"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_837a161de400deb8",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-26 22:35:00.573584+00:00",
+                "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-13 22:39:45.487350+00:00",
+                "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-24 22:39:13.842278+00:00",
+                "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-05 22:34:18.215026+00:00",
+                "source_row_hash": "4a9b44471621e6fc1ab681325a71c3231b7fb4961af733e0c9b459e54fcc7e3c",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-21 22:39:59.208297+00:00",
+                "source_row_hash": "628ede86b9a1873e95838d08666f0aa211f65dbc88e18738cdea57416440262e",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-16 22:39:54.716326+00:00",
+                "source_row_hash": "6d03798c130c6bf6c74228b2bd85d4c6cbe31a0d168ea9d438ed2dd03d3bb253",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-21 22:34:52.673493+00:00",
+                "source_row_hash": "7420e02792cd21e0863adb9b47504ac07b2a0ce442d1ab31966ea3818edb984e",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-06 22:34:51.149619+00:00",
+                "source_row_hash": "7b07db37ae641266c8f9fce222b5b89eef3da5330ebfa050a4e3136f17a24199",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-22 22:39:51.710708+00:00",
+                "source_row_hash": "7b17e92a8c4a3142dcce08b3ba94070a02608ccccd8ef569775e501e2a31a96f",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-19 00:13:48.553157+00:00",
+                "source_row_hash": "7e9f3b67e3689aea1cb0a5e9abe295c4b867f4db645586777c92a7fffae7f954",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-17 22:39:56.737660+00:00",
+                "source_row_hash": "902912f155fbc1be9486c20f6a781171895e49cd5fb03f6782eb7e185122a96a",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-13 22:34:38.722955+00:00",
+                "source_row_hash": "a27297fab28e0463a1f24d757fbc5754b8b4127fa87e09c77df81c7729c75a4e",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-04 22:35:01.084834+00:00",
+                "source_row_hash": "aef2b316d3053720ff2ad5b7f5530ca985b095372b32e1b37f7bf93d786fce9d",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-12 22:34:22.691521+00:00",
+                "source_row_hash": "d97c327314b701d7982cfcd3322ce97b5629ee442bdc8b4a915fd65e65885e46",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-15 22:39:20.002600+00:00",
+                "source_row_hash": "e7767346dea5d2db74d5b841334b48e45fd97c63ca4c60d1821e4dd0991f6a50",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-23 22:34:43.655177+00:00",
+                "source_row_hash": "f6150a96b7e065519fd849ef23397cc57a92f58fec5b1b0a38e6553d67875b00",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Anomaly detected in ASEP registry",
+              "samuelf"
+            ],
+            "round": 1,
+            "layer": "PM",
+            "selected_memory": "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name"
+          },
+          {
+            "step": "T2",
+            "episode_id": "em_acd9f0e565efcca0",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-15 22:39:21.186988+00:00",
+                "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-12 22:34:23.814148+00:00",
+                "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-13 22:39:46.678263+00:00",
+                "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-16 22:39:55.950266+00:00",
+                "source_row_hash": "322806e84d04e47622ded80d820a7a965cd5a94c65dc8bd5c73bb2391d117cda",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-13 22:34:39.883279+00:00",
+                "source_row_hash": "326fa56480fd84400b35b8887c1d5dedf06e39928649b7338484760e55969188",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-21 22:34:53.260803+00:00",
+                "source_row_hash": "3368ca995999ec0e0ebf10443591c265f1796478811ea747fb3bc670c0761baa",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-06 22:34:52.375789+00:00",
+                "source_row_hash": "4a3123567586362fae65ce6da6b8aca77a00759333e2ae86730cbe37af9af501",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-22 22:39:52.374462+00:00",
+                "source_row_hash": "519c3b9f48a1d44603d6f70b51655eb8ed400552435e2ab9e4fdcbcb66ab7b29",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-05 22:34:19.314806+00:00",
+                "source_row_hash": "6bbfae86ef02be86d9f2b6f3987c8c32c6684f676e02842a240c21b55b55ce64",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-04 22:35:02.252731+00:00",
+                "source_row_hash": "7bd3a0564ea18faa66c407cbeac33f2d612a6d9fac15509a5b014d8d3d4e5baa",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-17 22:39:57.921987+00:00",
+                "source_row_hash": "80cfe3c3aea5eb8fb05e5aa3aa20d01bb76edb3ae3373466c816daa4f5b4347c",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-23 22:34:44.438016+00:00",
+                "source_row_hash": "8d5f17c63b21ec8218ee3cd4e38df42f5e5ef557e01de174028c6de7570851a6",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-19 00:13:49.128721+00:00",
+                "source_row_hash": "959ce7d6aa37e3ef05a994f1535178ab6097d3513d8d44d2974adb23538c35c7",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-26 22:35:01.415004+00:00",
+                "source_row_hash": "aaab0fd063d69de8922bb1d057cf98922c8926a4ef90a5048bcfdcf2a9184620",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-21 22:39:59.853304+00:00",
+                "source_row_hash": "d2a0f2bbbed652620e39f7d1ac1f822e5a6e02679875fd1113e37dd3f37b732a",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-24 22:39:14.594910+00:00",
+                "source_row_hash": "f54949a80ed0e6da264a00196e363fb5469e9e9e44d81f9fb992b156964cc446",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "An uncommon file was created and added to a Run Key",
+              "S-1-5-21-1870156660-7534030218-135086563-1193"
+            ],
+            "round": 1,
+            "layer": "PM",
+            "selected_memory": "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name"
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "S-1-5-21-1870156660-7534030218-135086563-1193",
+        "exact": true,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 7,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 276,
+            "prompt_tokens": 1229,
+            "total_tokens": 1505,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"Host_Name\",\"value\":\"vnevado-win10e\"},{\"id\":\"E2\",\"concept\":\"Account_Name\",\"value\":\"samuelf\"},{\"id\":\"E3\",\"concept\":\"Process_Identity\",\"value\":\"10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\\\software\\\\microsoft\\\\windows\\\\currentversion\\\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\\\desktop\\\\winatp-intro-backdoor.exe\"},{\"id\":\"E4\",\"concept\":\"File_Name\",\"value\":\"winatp-intro-backdoor.exe\"}],\"wanted\":{\"concept\":\"Account_SID\",\"description\":\"与告警中关联用户 samuelf 对应账户的 SID\"},\"constraints\":[\"必须是告警中关联账户的 SID\"],\"constraint_sources\":[\"linked to user `samuelf`\"],\"event_context\":[\"ASEP 注册表异常：进程 winatp-intro-backdoor.exe 通过 RunOnce 键注册为重启后运行\",\"主机 vnevado-win10e 关联用户 samuelf\"],\"retrieval_query\":\"查询告警中关联用户账户的 SID\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 445,
+            "prompt_tokens": 2900,
+            "total_tokens": 3345,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name\",\"entity_ids\":[\"E2\"],\"constraint_checks\":[{\"constraint\":\"必须是告警中关联账户的 SID\",\"supported\":true,\"reason\":\"候选路线以已知账户 samuelf（E2）为输入，目标为 Account_SID，且事件序列包含“An uncommon file was created and added to a Run Key”，与告警中关联用户 samuelf 的账户调查直接对应；执行后仍需核验所得 SID 确实属于该账户。\"}],\"reason\":\"选择从已知账户 samuelf（E2）出发查询 Account_SID 的路线。该候选覆盖 ASEP 注册表异常与文件被创建并加入 Run Key 两个事件，符合题目要求，并可绑定同类型已知实体 E2；其他候选的事件场景或输入类型与当前告警链路不直接匹配。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 174,
+            "prompt_tokens": 7301,
+            "total_tokens": 7475,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"S-1-5-21-1870156660-7534030218-135086563-1193\"],\"constraint_checks\":[{\"constraint\":\"必须是告警中关联账户的 SID\",\"supported\":true,\"reason\":\"证据中账号 samuelf 对应并匹配到该 SID；T2 告警（uncommon file created and added to a Run Key）的 Account_SID 均返回同一候选值。\"}],\"reason\":\"目标事件为“创建异常文件并添加到 Run Key”的告警；其关联账号 SID 在证据中一致显示为 S-1-5-21-1870156660-7534030218-135086563-1193，且与用户 samuelf 匹配，因此答案已获得。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 12325
+    }
+  ]
+}

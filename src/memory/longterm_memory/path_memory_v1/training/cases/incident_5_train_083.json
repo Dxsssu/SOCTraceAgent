@@ -1,0 +1,702 @@
+{
+  "id": "incident_5_train_083",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 83,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "In a recent attempt to move laterally within our network, a user account associated with Grace Chen (email: Grace Chen@vnevado.alpineskihouse.co) had its attempts to modify files over server message block (SMB) protocol blocked by an automated attack disruption. This incident is part of a broader security concern involving possible attempts to access the Primary Refresh Token (PRT), which is a crucial artifact for Azure AD authentication on various devices.",
+    "question": "Can you determine the IP address from which the possible attempt to access the Primary Refresh Token (PRT) was made?",
+    "answer": "107.224.99.179",
+    "solution": [
+      "An attempt to create, delete, or modify files over the SMB protocol was blocked on the device with AadDeviceId `e5799261-6720-4297-961e-bd9ca4275033`.",
+      "A possible attempt to access the Primary Refresh Token (PRT) using the process `browsercore.exe` was detected.",
+      "A possible attempt to access the Primary Refresh Token (PRT) was detected from IP address `107.224.99.179`."
+    ],
+    "start_alert": 171,
+    "end_alert": 36,
+    "start_entities": [
+      172,
+      173
+    ],
+    "end_entities": [
+      20
+    ],
+    "shortest_alert_path": [
+      171,
+      69,
+      82,
+      40,
+      36
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "171",
+    "69",
+    "82",
+    "40",
+    "36"
+  ],
+  "nodes": {
+    "172": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "Grace Chen"
+    },
+    "173": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Email",
+      "value": "Grace Chen@vnevado.alpineskihouse.co"
+    },
+    "171": {
+      "type": "alert",
+      "name": "Lateral movement using SMB remote file access blocked on multiple devices",
+      "description": "A contained user’s attempt to create, delete, or modify files over server message block (SMB) protocol was automatically blocked by attack disruption. An attacker might be trying to gain access to your organization, move laterally within your network, or remotely encrypt files."
+    },
+    "69": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "e5799261-6720-4297-961e-bd9ca4275033"
+    },
+    "82": {
+      "type": "alert",
+      "name": "Possible attempt to access Primary Refresh Token (PRT)",
+      "description": "Possible attempt to access Primary Refresh Token (PRT) has been detected. A Primary Refresh Token (PRT) is a key artifact of Azure AD authentication on Windows 10, Windows Server 2016 and later versions, iOS, and Android devices. It is a JSON Web Token (JWT) that's specially issued to Microsoft first party token brokers to enable single sign-on (SSO) across the applications used on those devices. Attackers can attempt to access this resource to move laterally into organization or perform credential theft.\n\nFor more information, read the Activity profile: Midnight Blizzard credential attacks Threat Analytics report: https://security.microsoft.com/threatanalytics3/e4aad043-a273-4f88-b65e-fdfc3996ec92/analystreport?\n\n"
+    },
+    "40": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "browsercore.exe"
+    },
+    "36": {
+      "type": "alert",
+      "name": "Possible attempt to access Primary Refresh Token (PRT)",
+      "description": "Possible attempt to access Primary Refresh Token (PRT) has been detected. A Primary Refresh Token (PRT) is a key artifact of Azure AD authentication on Windows 10, Windows Server 2016 and later versions, iOS, and Android devices. It is a JSON Web Token (JWT) that's specially issued to Microsoft first party token brokers to enable single sign-on (SSO) across the applications used on those devices. Attackers can attempt to access this resource to move laterally into organization or perform credential theft.\n\nFor more information, read the Activity profile: Midnight Blizzard credential attacks Threat Analytics report: https://security.microsoft.com/threatanalytics3/e4aad043-a273-4f88-b65e-fdfc3996ec92/analystreport?\n\n"
+    },
+    "20": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "107.224.99.179"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "172",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "173",
+        "concept": "Account_Derived_Email",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [
+      "40"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_50dafe752edef864",
+  "merged_ems": [
+    "em_f786239dd70259a3",
+    "em_ae72853c346eb558",
+    "em_f612b8701f3585d0",
+    "em_9ae1301f165ec60f"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "69",
+          "expected_present": true,
+          "values": [
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "e5799261-6720-4297-961e-bd9ca4275033",
+              "raw_components": {
+                "AadDeviceId": "e5799261-6720-4297-961e-bd9ca4275033"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "fe4d71b8-2a10-2a57-9ff2-1b0cc5dfd5ae",
+              "time": "2024-07-10 11:24:45.237800+00:00",
+              "matched_inputs": [
+                "Grace Chen@vnevado.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "40",
+          "expected_present": true,
+          "values": [
+            "browsercore.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "browsercore.exe",
+              "raw_components": {
+                "CommandLine": "\"browsercore.exe\""
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-04 22:35:01.208400+00:00",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "107.224.99.179"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.224.99.179",
+              "raw_components": {
+                "Address": "107.224.99.179"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+              "time": "2024-07-04 22:35:00.619840+00:00",
+              "matched_inputs": [
+                "browsercore.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "69",
+          "expected_present": true,
+          "values": [
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "e5799261-6720-4297-961e-bd9ca4275033",
+              "raw_components": {
+                "AadDeviceId": "e5799261-6720-4297-961e-bd9ca4275033"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "fe4d71b8-2a10-2a57-9ff2-1b0cc5dfd5ae",
+              "time": "2024-07-10 11:24:45.237800+00:00",
+              "matched_inputs": [
+                "Grace Chen"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "40",
+          "expected_present": true,
+          "values": [
+            "browsercore.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "browsercore.exe",
+              "raw_components": {
+                "CommandLine": "\"browsercore.exe\""
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-04 22:35:01.208400+00:00",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "20",
+          "expected_present": true,
+          "values": [
+            "107.224.99.179"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.224.99.179",
+              "raw_components": {
+                "Address": "107.224.99.179"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+              "time": "2024-07-04 22:35:00.619840+00:00",
+              "matched_inputs": [
+                "browsercore.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_43bcc171708e1006",
+      "seed_concept": "Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_ae72853c346eb558",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe4d71b8-2a10-2a57-9ff2-1b0cc5dfd5ae",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "e5799261-6720-4297-961e-bd9ca4275033",
+              "raw_components": {
+                "AadDeviceId": "e5799261-6720-4297-961e-bd9ca4275033"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "fe4d71b8-2a10-2a57-9ff2-1b0cc5dfd5ae",
+              "time": "2024-07-10 11:24:45.237800+00:00",
+              "source_row_hash": "b78508c9e844e7314bb1dd554b68dfdd59910640ae6de8381c2e99c77342d8b0",
+              "matched_inputs": [
+                "Grace Chen@vnevado.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Derived_Email' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Lateral movement using SMB remote file access blocked on multiple devices",
+            "Grace Chen@vnevado.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_9ae1301f165ec60f",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "browsercore.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "browsercore.exe",
+              "raw_components": {
+                "CommandLine": "\"browsercore.exe\""
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-11 22:34:56.510002+00:00",
+              "source_row_hash": "06bdd1464111577f13a60816852eb9ef7701f30dff4c6aec9c41a1212bdbcf4b",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "browsercore.exe",
+              "raw_components": {
+                "CommandLine": "\"browsercore.exe\""
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-09 22:34:23.548181+00:00",
+              "source_row_hash": "12475435cafd6ebe343b0f8dd795f16d2ebc4b4ef8625f61b2bada48df7a07f5",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "browsercore.exe",
+              "raw_components": {
+                "CommandLine": "\"browsercore.exe\""
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-16 22:34:44.400587+00:00",
+              "source_row_hash": "53ea61a4e3dc272924cf1b61dbc79c4c1aa1f7d5a870b00c85ee9943a75e22e5",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible attempt to access Primary Refresh Token (PRT)",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_f612b8701f3585d0",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "107.224.99.179"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.224.99.179",
+              "raw_components": {
+                "Address": "107.224.99.179"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+              "time": "2024-07-17 22:39:56.284382+00:00",
+              "source_row_hash": "2385d7e69ebfc27fb8858645369ce4768df5a45169628e8737c13332a47ea17f",
+              "matched_inputs": [
+                "browsercore.exe"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.224.99.179",
+              "raw_components": {
+                "Address": "107.224.99.179"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+              "time": "2024-07-16 22:34:43.753352+00:00",
+              "source_row_hash": "27ccb0382cbe82a5f252c43370c9e6967cd541929e2c45337562f03a8c091784",
+              "matched_inputs": [
+                "browsercore.exe"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.224.99.179",
+              "raw_components": {
+                "Address": "107.224.99.179"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+              "time": "2024-07-05 22:34:17.782290+00:00",
+              "source_row_hash": "2e8df532ff64250e0092371a19cb1a51d3bef8f2649d95a2f5d66cc8cac769d5",
+              "matched_inputs": [
+                "browsercore.exe"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible attempt to access Primary Refresh Token (PRT)",
+            "browsercore.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_43bcc171708e1006",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f786239dd70259a3",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe4d71b8-2a10-2a57-9ff2-1b0cc5dfd5ae",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "e5799261-6720-4297-961e-bd9ca4275033",
+              "raw_components": {
+                "AadDeviceId": "e5799261-6720-4297-961e-bd9ca4275033"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "fe4d71b8-2a10-2a57-9ff2-1b0cc5dfd5ae",
+              "time": "2024-07-10 11:24:45.237800+00:00",
+              "source_row_hash": "b78508c9e844e7314bb1dd554b68dfdd59910640ae6de8381c2e99c77342d8b0",
+              "matched_inputs": [
+                "Grace Chen"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Lateral movement using SMB remote file access blocked on multiple devices",
+            "Grace Chen"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_9ae1301f165ec60f",
+          "status": "ok",
+          "candidate_count": 14,
+          "unique_values": [
+            "browsercore.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "browsercore.exe",
+              "raw_components": {
+                "CommandLine": "\"browsercore.exe\""
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-11 22:34:56.510002+00:00",
+              "source_row_hash": "06bdd1464111577f13a60816852eb9ef7701f30dff4c6aec9c41a1212bdbcf4b",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "browsercore.exe",
+              "raw_components": {
+                "CommandLine": "\"browsercore.exe\""
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-09 22:34:23.548181+00:00",
+              "source_row_hash": "12475435cafd6ebe343b0f8dd795f16d2ebc4b4ef8625f61b2bada48df7a07f5",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "browsercore.exe",
+              "raw_components": {
+                "CommandLine": "\"browsercore.exe\""
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "1d92650e-aa29-ba7e-95ce-3293e6619f6e",
+              "time": "2024-07-16 22:34:44.400587+00:00",
+              "source_row_hash": "53ea61a4e3dc272924cf1b61dbc79c4c1aa1f7d5a870b00c85ee9943a75e22e5",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible attempt to access Primary Refresh Token (PRT)",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_f612b8701f3585d0",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "107.224.99.179"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.224.99.179",
+              "raw_components": {
+                "Address": "107.224.99.179"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+              "time": "2024-07-17 22:39:56.284382+00:00",
+              "source_row_hash": "2385d7e69ebfc27fb8858645369ce4768df5a45169628e8737c13332a47ea17f",
+              "matched_inputs": [
+                "browsercore.exe"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.224.99.179",
+              "raw_components": {
+                "Address": "107.224.99.179"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+              "time": "2024-07-16 22:34:43.753352+00:00",
+              "source_row_hash": "27ccb0382cbe82a5f252c43370c9e6967cd541929e2c45337562f03a8c091784",
+              "matched_inputs": [
+                "browsercore.exe"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "107.224.99.179",
+              "raw_components": {
+                "Address": "107.224.99.179"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd",
+              "time": "2024-07-05 22:34:17.782290+00:00",
+              "source_row_hash": "2e8df532ff64250e0092371a19cb1a51d3bef8f2649d95a2f5d66cc8cac769d5",
+              "matched_inputs": [
+                "browsercore.exe"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible attempt to access Primary Refresh Token (PRT)",
+            "browsercore.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_Derived_Email",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "921f3a15-f2d2-bb66-eb15-e69c338de3cd"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

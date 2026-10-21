@@ -1,0 +1,348 @@
+{
+  "id": "incident_38_train_003",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_38_qa_incident_o1-ga_c42.json",
+  "index": 3,
+  "sha256": "32a38ed62884552afc21824ce5b605fed97a821f591188826c1f832a343fa31b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident involving a suspicious process injection was detected on 2024-07-04, where a URL `https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt` was accessed. This incident could result in abnormal behaviors like opening a listening port or connecting to a command and control server.",
+    "question": "Following the suspicious code injection, an unexpected behavior was observed in a process without command line arguments. Identify the IP address connected by this process.",
+    "answer": "202.183.149.174",
+    "solution": [
+      "There was a suspicious process injection observed on host `vnevado-win11a`.",
+      "An unexpected behavior was observed from a process without command line arguments, exhibiting unusual communication with the IP address `202.183.149.174`."
+    ],
+    "start_alert": 10,
+    "end_alert": 15,
+    "start_entities": [
+      13
+    ],
+    "end_entities": [
+      16
+    ],
+    "shortest_alert_path": [
+      10,
+      8,
+      15
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_38.graphml",
+  "graph_sha256": "740c5641e2ee770182a0bb99f0fc5c0d7b0fdaafc4eddcc144168a1bfe9366fc",
+  "path": [
+    "10",
+    "8",
+    "15"
+  ],
+  "nodes": {
+    "13": {
+      "type": "entity",
+      "node_type": "url",
+      "identifier_fields": "Url",
+      "value": "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+    },
+    "10": {
+      "type": "alert",
+      "name": "Suspicious process injection observed",
+      "description": "A process abnormally injected code into another process, As a result, unexpected code may be running in the target process memory. Injection is often used to hide malicious code execution within a trusted process. \nAs a result, the target process may exhibit abnormal behaviors such as opening a listening port or connecting to a command and control server."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win11a"
+    },
+    "15": {
+      "type": "alert",
+      "name": "Unexpected behavior observed by a process ran with no command line arguments",
+      "description": "The legitimate process by this name does not normally exhibit this behavior when ran with no command line arguments. \nSuch unexpected behavior may be a result of extraneous code injected into a legitimate process, or a malicious executable masquerading as the legitimate one by name."
+    },
+    "16": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "202.183.149.174"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "13",
+        "concept": "URL",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_2957405fa9a9c4f9",
+  "merged_ems": [
+    "em_91337af89e0a799a",
+    "em_4da484e0b617d72a"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "vnevado-win11a"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "d368aa79-4d7a-0d19-84a0-fbae77571b6e",
+              "time": "2024-07-04 22:35:00.869748+00:00",
+              "matched_inputs": [
+                "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "d2bec7ed-3c42-62b7-685f-93a501e52d16",
+              "time": "2024-07-04 22:35:01.343148+00:00",
+              "matched_inputs": [
+                "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "16",
+          "expected_present": true,
+          "values": [
+            "202.183.149.174",
+            "72.5.72.208"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "72.5.72.208",
+              "raw_components": {
+                "Address": "72.5.72.208"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-04 22:35:01.443868+00:00",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "202.183.149.174",
+              "raw_components": {
+                "Address": "202.183.149.174"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-04 22:35:01.443868+00:00",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_624e5316025f561e",
+      "seed_concept": "URL",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_91337af89e0a799a",
+          "status": "ok",
+          "candidate_count": 58,
+          "unique_values": [
+            "vnevado-win11a"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d368aa79-4d7a-0d19-84a0-fbae77571b6e",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "d368aa79-4d7a-0d19-84a0-fbae77571b6e",
+              "time": "2024-07-17 22:34:54.022340+00:00",
+              "source_row_hash": "01228962fc8fb5362d4995dc0e58241bcd778cc9dc462011f47caa6cb56a2ca0",
+              "matched_inputs": [
+                "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "d368aa79-4d7a-0d19-84a0-fbae77571b6e",
+              "time": "2024-07-26 22:35:00.462325+00:00",
+              "source_row_hash": "04d7e82ade97b0a4af9060c990de4519a2c29439486679ae3762fa6d8aacd2ae",
+              "matched_inputs": [
+                "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win11a",
+              "raw_components": {
+                "HostName": "vnevado-win11a"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "d368aa79-4d7a-0d19-84a0-fbae77571b6e",
+              "time": "2024-07-20 22:39:29.217280+00:00",
+              "source_row_hash": "07f9e4140b2a510dee14f7dcd5a0882e6188fbc209201e4abbc9f8ecc735b927",
+              "matched_inputs": [
+                "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious process injection observed",
+            "https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/winatp-intro-fileless.txt"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_4da484e0b617d72a",
+          "status": "ok",
+          "candidate_count": 58,
+          "unique_values": [
+            "202.183.149.174",
+            "72.5.72.208"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "202.183.149.174",
+              "raw_components": {
+                "Address": "202.183.149.174"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-24 22:35:10.396109+00:00",
+              "source_row_hash": "00d2c81c780d79d8e3de483d054aca3e3e2a0eefa98b44cc04bffc0c7f3f75a6",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "202.183.149.174",
+              "raw_components": {
+                "Address": "202.183.149.174"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-05 22:34:18.567898+00:00",
+              "source_row_hash": "066f98e7188e32377fe89f34f160689055073e5d00232eb120be3d58ab7cc43e",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "202.183.149.174",
+              "raw_components": {
+                "Address": "202.183.149.174"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "f9c9ba44-9510-fd11-3c50-336c83f62f8a",
+              "time": "2024-07-26 22:35:00.868583+00:00",
+              "source_row_hash": "1075deb6fa37bc8d1353039f1c43f8d16140b501849331108b6293bf4242560f",
+              "matched_inputs": [
+                "vnevado-win11a"
+              ]
+            }
+          ],
+          "witness_count": 29,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Unexpected behavior observed by a process ran with no command line arguments",
+            "vnevado-win11a"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_URL",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "d368aa79-4d7a-0d19-84a0-fbae77571b6e"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

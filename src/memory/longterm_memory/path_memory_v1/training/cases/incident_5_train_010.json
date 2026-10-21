@@ -1,0 +1,1399 @@
+{
+  "id": "incident_5_train_010",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 10,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "A known credential theft tool named `mimikatz.exe` was executed on 2024-07-04, indicating a potential credential theft attempt, involving a series of processes like `notepad.exe` and `cmd.exe`. Following this activity, there was a lateral movement alert reported on 2024-07-10 towards the jump server `Vnevado-jump`. In another connected alert on 2024-07-04, there was an indication of potentially compromised assets exhibiting ransomware-like behavior, suggesting that an attacker might be using a specific user account, IP, or device to spread ransomware.",
+    "question": "What is the Azure Active Directory User ID (AadUserId) of the account associated with the potentially compromised assets exhibiting ransomware-like behavior?",
+    "answer": "731adb71-b11c-4bbf-850b-57989b350e96",
+    "solution": [
+      "A known credential theft tool execution was detected on host `vnevado-win10v`.",
+      "There was a lateral movement detected to the jump server from IP address `99.83.111.100` using PSExec.",
+      "Potentially compromised assets are exhibiting ransomware-like behavior, an attacker might be using the user account with AadUserId `731adb71-b11c-4bbf-850b-57989b350e96`."
+    ],
+    "start_alert": 130,
+    "end_alert": 147,
+    "start_entities": [
+      20,
+      24,
+      30,
+      31,
+      32
+    ],
+    "end_entities": [
+      3
+    ],
+    "shortest_alert_path": [
+      130,
+      34,
+      174,
+      42,
+      147
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "130",
+    "34",
+    "174",
+    "42",
+    "147"
+  ],
+  "nodes": {
+    "20": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "107.224.99.179"
+    },
+    "24": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "mimikatz.exe"
+    },
+    "30": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "notepad.exe"
+    },
+    "31": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "cmd.exe"
+    },
+    "32": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+    },
+    "130": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "34": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10v"
+    },
+    "174": {
+      "type": "alert",
+      "name": "PSExec to Vnevado-jump",
+      "description": "Lateral movement to the jump server"
+    },
+    "42": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "99.83.111.100"
+    },
+    "147": {
+      "type": "alert",
+      "name": "Potentially compromised assets exhibiting ransomware-like behavior",
+      "description": "Potentially compromised assets are exhibiting ransomware-like behavior, impacting several devices. An attacker may be operating using the specified user account, IP, or device to move laterally across the network and infect as many devices as possible with ransomware. Automated remediation action might be taken to disable the account or device the attacker used."
+    },
+    "3": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "731adb71-b11c-4bbf-850b-57989b350e96"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "20",
+        "concept": "IP_Address",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "24",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "30",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "31",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "32",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_AAD_ID",
+    "weak_links": [
+      "34",
+      "42"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_7aa4d12826fcf88b",
+  "merged_ems": [
+    "em_d1102041c654bb01",
+    "em_7eb864af9d22aeb3",
+    "em_8d6469f2573a39ce",
+    "em_2c021427290dc77e",
+    "em_4da484e0b617d72a"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 6,
+          "expected_node": "34",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9",
+              "time": "2024-07-04 22:35:01.368957+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "20ead08a-82fa-af66-a6d2-51ae76517dac",
+              "time": "2024-07-04 22:35:02.654051+00:00",
+              "matched_inputs": [
+                "cmd.exe",
+                "mimikatz.exe",
+                "notepad.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-04 22:35:02.680957+00:00",
+              "matched_inputs": [
+                "cmd.exe",
+                "mimikatz.exe",
+                "notepad.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-04 22:35:02.702215+00:00",
+              "matched_inputs": [
+                "cmd.exe",
+                "mimikatz.exe",
+                "notepad.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "e9866748-c910-72ff-588e-aeaff9082b21",
+              "time": "2024-07-04 22:35:03.869406+00:00",
+              "matched_inputs": [
+                "cmd.exe",
+                "mimikatz.exe",
+                "notepad.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-04 22:35:04.193072+00:00",
+              "matched_inputs": [
+                "cmd.exe",
+                "mimikatz.exe",
+                "notepad.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "entity_index": 3,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 4,
+              "entity_ref": "10",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4f2afb56-ce36-3183-31b0-9fa3abb863a1",
+              "time": "2024-07-04 22:35:01.617193+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "ba7a8288-44ab-5988-8c3c-732f8b8cfd89",
+              "time": "2024-07-04 22:35:02.951002+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-04 22:35:03.502972+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "cd68943b-7f93-70a0-f2d5-aa7866e8f035",
+              "time": "2024-07-04 22:35:03.888143+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 6,
+          "expected_node": "34",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9",
+              "time": "2024-07-04 22:35:01.368957+00:00",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "20ead08a-82fa-af66-a6d2-51ae76517dac",
+              "time": "2024-07-04 22:35:02.654051+00:00",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-04 22:35:02.680957+00:00",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-04 22:35:02.702215+00:00",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "e9866748-c910-72ff-588e-aeaff9082b21",
+              "time": "2024-07-04 22:35:03.869406+00:00",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-04 22:35:04.193072+00:00",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "entity_index": 3,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 4,
+              "entity_ref": "10",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4f2afb56-ce36-3183-31b0-9fa3abb863a1",
+              "time": "2024-07-04 22:35:01.617193+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "ba7a8288-44ab-5988-8c3c-732f8b8cfd89",
+              "time": "2024-07-04 22:35:02.951002+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-04 22:35:03.502972+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "cd68943b-7f93-70a0-f2d5-aa7866e8f035",
+              "time": "2024-07-04 22:35:03.888143+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "34",
+          "expected_present": true,
+          "values": [
+            "vnevado-win10v"
+          ],
+          "evidence": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "entity_index": 9,
+              "entity_ref": "11",
+              "roles": [],
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-04 22:35:02.680957+00:00",
+              "matched_inputs": [
+                "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "entity_index": 3,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 4,
+              "entity_ref": "10",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "3",
+          "expected_present": true,
+          "values": [
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "4f2afb56-ce36-3183-31b0-9fa3abb863a1",
+              "time": "2024-07-04 22:35:01.617193+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "ba7a8288-44ab-5988-8c3c-732f8b8cfd89",
+              "time": "2024-07-04 22:35:02.951002+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-04 22:35:03.502972+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "cd68943b-7f93-70a0-f2d5-aa7866e8f035",
+              "time": "2024-07-04 22:35:03.888143+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_69afc83f81735d3f",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7eb864af9d22aeb3",
+          "status": "ok",
+          "candidate_count": 160,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-16 22:34:45.786378+00:00",
+              "source_row_hash": "0ed35a32fdab18fc3ec18483f929452cf6d0003511e10f2d873def75e6a4a060",
+              "matched_inputs": [
+                "cmd.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-16 22:34:45.786378+00:00",
+              "source_row_hash": "0ed35a32fdab18fc3ec18483f929452cf6d0003511e10f2d873def75e6a4a060",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-16 22:34:45.786378+00:00",
+              "source_row_hash": "0ed35a32fdab18fc3ec18483f929452cf6d0003511e10f2d873def75e6a4a060",
+              "matched_inputs": [
+                "notepad.exe"
+              ]
+            }
+          ],
+          "witness_count": 30,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "cmd.exe",
+            "mimikatz.exe",
+            "notepad.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_4da484e0b617d72a",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-12 22:39:37.245925+00:00",
+              "source_row_hash": "321f0b375b404f37b0fcd4be43a8618f24b13e84c618210abee69c09ebe5a5c3",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "source_row_hash": "c4daf5d07275aa5d85bf1e7698acc999bbac6033efe6086ccbd1fa9fec43e664",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PSExec to Vnevado-jump",
+            "vnevado-win10v"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_2c021427290dc77e",
+          "status": "ok",
+          "candidate_count": 56,
+          "unique_values": [
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-08 22:35:00.274791+00:00",
+              "source_row_hash": "01dbc117b93e6932ec573eb67f6e7ef59b7894bd5ed60f207c7a49a6c9cea8b8",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-06 22:34:53.738053+00:00",
+              "source_row_hash": "0ff933267475e9db42f6f0df08db157b668aac697e4765b7f8c175ef6141e9e7",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-07 22:34:17.756397+00:00",
+              "source_row_hash": "18d15547c4fdcc545aa9552840ce81d5b97c6f181cbc847943e3ca4b0d4cfa00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Potentially compromised assets exhibiting ransomware-like behavior",
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_69afc83f81735d3f",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_8d6469f2573a39ce",
+          "status": "ok",
+          "candidate_count": 60,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-16 22:34:45.786378+00:00",
+              "source_row_hash": "0ed35a32fdab18fc3ec18483f929452cf6d0003511e10f2d873def75e6a4a060",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-17 22:34:55.804495+00:00",
+              "source_row_hash": "150b2606a9b7f00acc3ea74cba3ab3a9eea8f9733765f3ff7a380517e7a74ba1",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-04 22:35:02.680957+00:00",
+              "source_row_hash": "2cb1bc173438c2bd6aaa52d17b91a083ee51fa745c61f9926a1ad4544a8de3bd",
+              "matched_inputs": [
+                "107.224.99.179"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "107.224.99.179"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_4da484e0b617d72a",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-12 22:39:37.245925+00:00",
+              "source_row_hash": "321f0b375b404f37b0fcd4be43a8618f24b13e84c618210abee69c09ebe5a5c3",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "source_row_hash": "c4daf5d07275aa5d85bf1e7698acc999bbac6033efe6086ccbd1fa9fec43e664",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PSExec to Vnevado-jump",
+            "vnevado-win10v"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_2c021427290dc77e",
+          "status": "ok",
+          "candidate_count": 56,
+          "unique_values": [
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-08 22:35:00.274791+00:00",
+              "source_row_hash": "01dbc117b93e6932ec573eb67f6e7ef59b7894bd5ed60f207c7a49a6c9cea8b8",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-06 22:34:53.738053+00:00",
+              "source_row_hash": "0ff933267475e9db42f6f0df08db157b668aac697e4765b7f8c175ef6141e9e7",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-07 22:34:17.756397+00:00",
+              "source_row_hash": "18d15547c4fdcc545aa9552840ce81d5b97c6f181cbc847943e3ca4b0d4cfa00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Potentially compromised assets exhibiting ransomware-like behavior",
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_69afc83f81735d3f",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d1102041c654bb01",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "vnevado-win10v"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+          "witnesses": [
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-16 22:34:45.786378+00:00",
+              "source_row_hash": "0ed35a32fdab18fc3ec18483f929452cf6d0003511e10f2d873def75e6a4a060",
+              "matched_inputs": [
+                "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-17 22:34:55.804495+00:00",
+              "source_row_hash": "150b2606a9b7f00acc3ea74cba3ab3a9eea8f9733765f3ff7a380517e7a74ba1",
+              "matched_inputs": [
+                "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+              ]
+            },
+            {
+              "concept": "Host_Name",
+              "graph_value": "vnevado-win10v",
+              "raw_components": {
+                "HostName": "vnevado-win10v"
+              },
+              "roles": [],
+              "entity_index": 9,
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-04 22:35:02.680957+00:00",
+              "source_row_hash": "2cb1bc173438c2bd6aaa52d17b91a083ee51fa745c61f9926a1ad4544a8de3bd",
+              "matched_inputs": [
+                "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_4da484e0b617d72a",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-12 22:39:37.245925+00:00",
+              "source_row_hash": "321f0b375b404f37b0fcd4be43a8618f24b13e84c618210abee69c09ebe5a5c3",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "source_row_hash": "c4daf5d07275aa5d85bf1e7698acc999bbac6033efe6086ccbd1fa9fec43e664",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PSExec to Vnevado-jump",
+            "vnevado-win10v"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_2c021427290dc77e",
+          "status": "ok",
+          "candidate_count": 56,
+          "unique_values": [
+            "731adb71-b11c-4bbf-850b-57989b350e96"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-08 22:35:00.274791+00:00",
+              "source_row_hash": "01dbc117b93e6932ec573eb67f6e7ef59b7894bd5ed60f207c7a49a6c9cea8b8",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-06 22:34:53.738053+00:00",
+              "source_row_hash": "0ff933267475e9db42f6f0df08db157b668aac697e4765b7f8c175ef6141e9e7",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "731adb71-b11c-4bbf-850b-57989b350e96",
+              "raw_components": {
+                "AadUserId": "731adb71-b11c-4bbf-850b-57989b350e96"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "9a9432e1-bb29-9126-e1ef-fe9efa245254",
+              "time": "2024-07-07 22:34:17.756397+00:00",
+              "source_row_hash": "18d15547c4fdcc545aa9552840ce81d5b97c6f181cbc847943e3ca4b0d4cfa00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Potentially compromised assets exhibiting ransomware-like behavior",
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 5,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9"
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

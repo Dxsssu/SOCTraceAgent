@@ -1,0 +1,426 @@
+{
+  "id": "incident_39_train_056",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 56,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "An active 'Kekeo' malware was detected according to an alert on 2024-07-04. Malware and unwanted software can perform disruptive, or harmful actions on affected machines and may spread or receive commands from remote attackers. This malware was active, indicating it was running or had persistence mechanisms in place. Connected to this alert, PsExec was used to launch a command on a remote device, which could be part of the attacker's method to move laterally within the organization.",
+    "question": "Regarding the suspicious access to the LSASS service, what file was identified as being used in this attack?",
+    "answer": "get-krbticket.ps1",
+    "solution": [
+      "An active 'Kekeo' malware was detected and is associated with the file `rubeus.exe`.",
+      "PsExec was used to launch a command on a remote device with AadDeviceId `4d8d23e9-a77d-4e33-9435-b8c457e57ca1`, indicating potential lateral movement.",
+      "Suspicious access to LSASS service was detected, associated with the file `get-krbticket.ps1`, indicating an attempt to obtain clear-text passwords."
+    ],
+    "start_alert": 106,
+    "end_alert": 102,
+    "start_entities": [
+      9
+    ],
+    "end_entities": [
+      38
+    ],
+    "shortest_alert_path": [
+      106,
+      7,
+      95,
+      33,
+      102
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "106",
+    "7",
+    "95",
+    "33",
+    "102"
+  ],
+  "nodes": {
+    "9": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+    },
+    "106": {
+      "type": "alert",
+      "name": "An active 'Kekeo' malware was detected",
+      "description": "Malware and unwanted software are undesirable applications that perform annoying, disruptive, or harmful actions on affected machines. Some of these undesirable applications can replicate and spread from one machine to another. Others are able to receive commands from remote attackers and perform activities associated with cyber attacks.\n\nA malware is considered active if it is found running on the machine or it already has persistence mechanisms in place. Active malware detections are assigned higher severity ratings.\n\nBecause this malware was active, take precautionary measures and check for residual signs of infection."
+    },
+    "7": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "rubeus.exe"
+    },
+    "95": {
+      "type": "alert",
+      "name": "PsExec launched a command on a remote device",
+      "description": "PsExec was used to launch a command on a remote device. PsExec is a tool used to launch programs on remote, or local devices. An attacker might be leveraging this tool to launch malicious commands to a remote device and move laterally in the organization."
+    },
+    "33": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+    },
+    "102": {
+      "type": "alert",
+      "name": "Suspicious access to LSASS service",
+      "description": "In order to obtain clear-text password, attackers must decrypt the user's password from the LSASS service's memory. Multiple public tools as well as custom ones could be used to perform this operation. Once obtained, these credentials are often used in lateral movement activities to infiltrate other machines and servers in the network."
+    },
+    "38": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "get-krbticket.ps1"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "9",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "File_Name",
+    "weak_links": [
+      "7"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_30a34a71cbd590b7",
+  "merged_ems": [
+    "em_786437addb3952bb",
+    "em_13778774ab0e7651",
+    "em_7ede6ce88cbad0ac"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "7",
+          "expected_present": true,
+          "values": [
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "e95415a2-b277-26bf-c40d-24a1f35a9f93",
+              "time": "2024-07-04 22:35:03.761714+00:00",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "33",
+          "expected_present": true,
+          "values": [
+            "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1",
+              "raw_components": {
+                "AadDeviceId": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              },
+              "entity_index": 20,
+              "entity_ref": "22",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "38",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "entity_index": 21,
+              "entity_ref": "23",
+              "roles": [],
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-04 22:35:03.532131+00:00",
+              "matched_inputs": [
+                "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_7b2b25b19eb46830",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "e95415a2-b277-26bf-c40d-24a1f35a9f93",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e95415a2-b277-26bf-c40d-24a1f35a9f93",
+              "time": "2024-07-06 22:34:54.002150+00:00",
+              "source_row_hash": "166c980adf30298ed6a963bee75611734db41e389f9febb24ab47254cb206290",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e95415a2-b277-26bf-c40d-24a1f35a9f93",
+              "time": "2024-07-18 22:36:02.600822+00:00",
+              "source_row_hash": "2ba44331d5a9ac8cbbd4aac94b9cc929179024deb8c5f080fb5cf5ea6f356cd8",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e95415a2-b277-26bf-c40d-24a1f35a9f93",
+              "time": "2024-07-24 22:35:11.942871+00:00",
+              "source_row_hash": "3ca489f7d814e06a39db2c90daff46d0ed67d54166007188fd7d7ba16f45ff87",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An active 'Kekeo' malware was detected",
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_7ede6ce88cbad0ac",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1",
+              "raw_components": {
+                "AadDeviceId": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1",
+              "raw_components": {
+                "AadDeviceId": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1",
+              "raw_components": {
+                "AadDeviceId": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              },
+              "roles": [],
+              "entity_index": 20,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "rubeus.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_13778774ab0e7651",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "get-krbticket.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-15 22:39:22.394304+00:00",
+              "source_row_hash": "02ea8cb1e706b48e229d65e876b89a048d5c57a69f6e0af1bb058e706a422ebc",
+              "matched_inputs": [
+                "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-18 22:36:02.468158+00:00",
+              "source_row_hash": "03262688d431df54a1fad9dd5f49b9c32fae0875119ff194281ecd14fe56eaac",
+              "matched_inputs": [
+                "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "52af3fc8-859f-3d1c-5435-312924f1dc16",
+              "time": "2024-07-19 22:39:22.116411+00:00",
+              "source_row_hash": "071d155479edac0dc1db7946a9d74167c2cf33f845c0fefec78ec6638970c3cc",
+              "matched_inputs": [
+                "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious access to LSASS service",
+            "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 209 (char 208)",
+          "alert_id": "e95415a2-b277-26bf-c40d-24a1f35a9f93"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

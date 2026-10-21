@@ -1,0 +1,262 @@
+{
+  "id": "incident_166_train_026",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_166_qa_incident_o1-ga_c42.json",
+  "index": 26,
+  "sha256": "57a4491e11e42986ad61360378ea3d1c5b0f1058426bcfb455e8959bb64b3cda",
+  "split": "train",
+  "question_record": {
+    "context": "An anonymous sign-in was detected from the IP address `95.202.65.202` at 2024-07-22 08:45:32.664841+00:00. This could have been done using tools like the Tor browser or anonymizer VPNs. There is an ongoing investigation related to BEC (business email compromise) fraud attempts.",
+    "question": "Which user account was identified as suspicious and sending BEC-related emails?",
+    "answer": "Jordan P",
+    "solution": [
+      "The user with AadUserId `89e933b9-5b2e-4bd6-bcdf-033db707ef82` signed in from an anonymous IP address.",
+      "Suspicious emails were sent by the account `Jordan P`, likely as part of a business email compromise (BEC) fraud attempt."
+    ],
+    "start_alert": 0,
+    "end_alert": 18,
+    "start_entities": [
+      2
+    ],
+    "end_entities": [
+      6
+    ],
+    "shortest_alert_path": [
+      0,
+      1,
+      18
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_166.graphml",
+  "graph_sha256": "0b5a949fa824acc0369e8da5a8a612b8987a900571001c1d3ac0ce9581522b24",
+  "path": [
+    "0",
+    "1",
+    "18"
+  ],
+  "nodes": {
+    "2": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "95.202.65.202"
+    },
+    "0": {
+      "type": "alert",
+      "name": "Anonymous IP address",
+      "description": "Sign-in from an anonymous IP address (e.g. Tor browser, anonymizer VPNs)"
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+    },
+    "18": {
+      "type": "alert",
+      "name": "Suspicious emails sent by BEC-related user",
+      "description": "Suspicious emails were sent by a possibly compromised user account related to an ongoing BEC (business email compromise) fraud attempt. This alert was triggered based on a previous BEC-related alert."
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "Jordan P"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "2",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_fbc55b88c8d3e10a",
+  "merged_ems": [
+    "em_f6a369032e873e00",
+    "em_2c021427290dc77e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "f2ca8b1b-2085-f0db-8f58-31b2d8a5512c",
+              "time": "2024-07-22 08:45:32.664841+00:00",
+              "matched_inputs": [
+                "95.202.65.202"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "Jordan P"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_586a8edfd3fd4fba",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_2c021427290dc77e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f2ca8b1b-2085-f0db-8f58-31b2d8a5512c",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "f2ca8b1b-2085-f0db-8f58-31b2d8a5512c",
+              "time": "2024-07-22 08:45:32.664841+00:00",
+              "source_row_hash": "cc6fc70901c34188ac53be4d99b70e76c33245391e76aac384fbee71bc4f69e6",
+              "matched_inputs": [
+                "95.202.65.202"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anonymous IP address",
+            "95.202.65.202"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_f6a369032e873e00",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Jordan P"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "source_row_hash": "2abdcdb0e5ec5912c332175a5eafdea79081b7f37e0ef6961653f84fda1455e0",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious emails sent by BEC-related user",
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

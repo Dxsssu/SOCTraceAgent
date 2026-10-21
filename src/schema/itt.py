@@ -53,6 +53,17 @@ def itt_payload(tree: TracebackTaskTree, executions=(), *, planner_view=False) -
                        execution_result=n.metadata.get("execution_result", "") if n.metadata.get("execution_result_source") == "reviewer" else (result if refs else n.metadata.get("execution_result", "")))
         if n.level == 3:
             out["execution_result"] = deepcopy(out["execution_result"])
+        if n.metadata.get('ltm_wm'):
+            out['wanted']=deepcopy(n.metadata['intent']['wanted'])
+            out['constraints']=deepcopy(n.metadata['intent']['constraints'])
+        if n.level==2 and 'concept' in n.metadata:
+            out.update(concept=n.metadata['concept'], value=n.metadata['value'],
+                       identity_claim=n.metadata.get('identity_claim'))
+        if n.metadata.get('ltm_task'):
+            out.update(input_entity_ids=list(n.metadata['input_entity_ids']),
+                       depends_on=list(n.metadata['depends_on']),
+                       output_entity_ids=list(n.metadata.get('output_entity_ids',[])),
+                       procedure_run_id=n.metadata.get('procedure_run_id'))
         if planner_view:
             if n.level < 3:
                 out.pop("status")

@@ -1,0 +1,2299 @@
+{
+  "id": "incident_39_train_030",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 30,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident was detected involving PsExec being used to launch a command on a remote device `vnevado-win10v`. This incident might indicate an attacker leveraging PsExec to execute malicious commands and move laterally within the organization. One of the commands involved launching the `rubeus.exe` tool, which is often used for Kerberos ticket attacks.",
+    "question": "What is the name of the account that was observed in the end alert, possibly involved in the kerberoasting attack using the Rubeus tool?",
+    "answer": "fk8mq",
+    "solution": [
+      "PsExec was used to launch a command on a remote device, with the associated file `adminticket.txt`.",
+      "The account `fk8mq` was involved in activity indicating the use of the Rubeus kerberoasting tool, which can perform attacks such as kerberoasting and pass-the-ticket."
+    ],
+    "start_alert": 95,
+    "end_alert": 0,
+    "start_entities": [
+      69,
+      18,
+      32,
+      49,
+      70,
+      36,
+      28,
+      27,
+      97,
+      50
+    ],
+    "end_entities": [
+      1
+    ],
+    "shortest_alert_path": [
+      95,
+      8,
+      0
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "95",
+    "8",
+    "0"
+  ],
+  "nodes": {
+    "69": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\""
+    },
+    "18": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "net.exe"
+    },
+    "32": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10v"
+    },
+    "49": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 "
+    },
+    "70": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "psexec.exe"
+    },
+    "36": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+    },
+    "28": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-5-7-21-1843151660-3234030288-105586167-1422"
+    },
+    "27": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "tgs2z"
+    },
+    "97": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+    },
+    "50": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "domaindominance27.ps1"
+    },
+    "95": {
+      "type": "alert",
+      "name": "PsExec launched a command on a remote device",
+      "description": "PsExec was used to launch a command on a remote device. PsExec is a tool used to launch programs on remote, or local devices. An attacker might be leveraging this tool to launch malicious commands to a remote device and move laterally in the organization."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "adminticket.txt"
+    },
+    "0": {
+      "type": "alert",
+      "name": "Possible use of the Rubeus kerberoasting tool",
+      "description": "Activity indicating the use of the Rubeus tool was observed on this endpoint. This tool can perform kerberoasting, pass-the-ticket, and other attack techniques that take advantage of Kerberos authentication.\n\nDuring these attacks, attackers often request Kerberos tickets for an account's service principal name (SPN). They then decrypt the tickets to get plaintext credentials associated with the account. Alternatively, they can perform the pass-the-ticket technique to authenticate directly without having to decrypt the obtained tickets."
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "fk8mq"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "69",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "18",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "32",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "49",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "70",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "36",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "28",
+        "concept": "Account_SID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "27",
+        "concept": "Account_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "97",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "50",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_55c5697ecf3f294f",
+  "merged_ems": [
+    "em_0df0df84e926e5d1",
+    "em_afdcb0e9dc74c4fe",
+    "em_786437addb3952bb",
+    "em_71b0ed9affecd48c",
+    "em_6b040dd1616cc12b",
+    "em_3207d456cf954197"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 11,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "domaindominance27.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command Set-MpPreference -DisableRealtimeMonitoring 1\""
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "get-krbticket.ps1",
+                "powershell.exe",
+                "psexec.exe",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 11,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "domaindominance27.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command Set-MpPreference -DisableRealtimeMonitoring 1\""
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "get-krbticket.ps1",
+                "powershell.exe",
+                "psexec.exe",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 11,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "domaindominance27.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command Set-MpPreference -DisableRealtimeMonitoring 1\""
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "psexec.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "get-krbticket.ps1",
+                "powershell.exe",
+                "psexec.exe",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 11,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "domaindominance27.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command Set-MpPreference -DisableRealtimeMonitoring 1\""
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "get-krbticket.ps1",
+                "powershell.exe",
+                "psexec.exe",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 11,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "domaindominance27.ps1",
+              "raw_components": {
+                "CommandLine": "\"powershell.exe\" -ExecutionPolicy bypass -File C:\\Users\\tgs2z\\Downloads\\DomainDominance27\\DomainDominance27.ps1 "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "net.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-dc -accepteula cmd /c \"powershell.exe -Command \"net.exe stop ntds /y; Add-ADDBSidHistory -SamAccountName BDAdmin -SidHistory \\\"S-1-5-32-544\\\" -DatabasePath (Get-ItemProperty -Path Registry::HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters).\\\"DSA Database file\\\" -Force; net.exe start ntds\"\""
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command Set-MpPreference -DisableRealtimeMonitoring 1\""
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+                "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "get-krbticket.ps1",
+                "powershell.exe",
+                "psexec.exe",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_6b040dd1616cc12b",
+          "status": "ok",
+          "candidate_count": 297,
+          "unique_values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "tgs2z"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_0df0df84e926e5d1",
+          "status": "ok",
+          "candidate_count": 297,
+          "unique_values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_3207d456cf954197",
+          "status": "ok",
+          "candidate_count": 891,
+          "unique_values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 2,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "domaindominance27.ps1"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "net.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "psexec.exe"
+              ]
+            }
+          ],
+          "witness_count": 81,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "domaindominance27.ps1",
+            "net.exe",
+            "psexec.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 297,
+          "unique_values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-21 22:40:00.556997+00:00",
+              "source_row_hash": "1e292a7f16bf695a1b0977ed71423be6c80873d690081f5e1614ca15b6282d08",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-17 22:34:56.527384+00:00",
+              "source_row_hash": "321803adb264aef1f0761137579626cc2f650b8ce2bb78f26e03d3288310f03f",
+              "matched_inputs": [
+                "vnevado-win10v"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "vnevado-win10v"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 1188,
+          "unique_values": [
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 3,
+          "expected_alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 "
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "adminticket.txt",
+              "raw_components": {
+                "CommandLine": "\"PsExec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"C:\\Temp\\Rubeus.exe dump /service:xfbzkp /user:lucasb > C:\\Temp\\AdminTicket.txt\""
+              },
+              "roles": [],
+              "entity_index": 19,
+              "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838",
+              "time": "2024-07-04 22:35:03.229603+00:00",
+              "source_row_hash": "0e16502f6547e4f935bacc7a63e1230dd0ecddb2585e5443060f4c2abfe998e8",
+              "matched_inputs": [
+                "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\""
+              ]
+            }
+          ],
+          "witness_count": 108,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+            "5924__2024-06-27t14:33:14.4981439z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\"",
+            "6264__2024-06-27t14:32:52.4129045z__\"psexec.exe\" \\\\vnevado-win10b -accepteula cmd /c \"powershell -command set-mppreference -disablerealtimemonitoring 1\"",
+            "6636__2024-06-27t14:32:46.5860644z__powershell.exe c:\\m365dattack\\get-krbticket.ps1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "fk8mq",
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "fk8mq",
+              "raw_components": {
+                "Name": "fk8mq"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "adminticket.txt",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "net.exe",
+            "powershell.exe",
+            "psexec.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "b1f9e18b-91bf-6ea6-0ebc-13557453f838"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

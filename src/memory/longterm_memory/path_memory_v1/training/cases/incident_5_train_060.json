@@ -1,0 +1,1130 @@
+{
+  "id": "incident_5_train_060",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 60,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident was reported where LSASS process memory was modified, indicating potential attempts to bypass security mechanisms or circumvent legitimate checks. During this investigation, Mimikatz.exe was found running multiple commands involving privilege escalation and lateral movement, particularly targeting 'vnevado-jump'. Subsequently, there were alerts indicating ransomware payloads being remotely launched and possible lateral movements detected across devices.",
+    "question": "Can you identify the IP address associated with the possible lateral movement observed in close proximity to the suspicious network event?",
+    "answer": "38.142.109.10",
+    "solution": [
+      "The account with SID `S-5-7-21-1843151660-3234030288-105586167-1422` was involved in modifying the LSASS process memory.",
+      "There was a lateral movement to the jump server indicated by the PSExec operation from IP address `99.83.111.100`.",
+      "A ransomware payload was remotely launched on the host with AadDeviceId `bc00e484-d0e5-4da4-9472-95568cccc07e`.",
+      "A possible lateral movement was observed involving the IP address `38.142.109.10`."
+    ],
+    "start_alert": 115,
+    "end_alert": 101,
+    "start_entities": [
+      24,
+      29,
+      30,
+      31,
+      32
+    ],
+    "end_entities": [
+      102
+    ],
+    "shortest_alert_path": [
+      115,
+      17,
+      174,
+      42,
+      112,
+      8,
+      101
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "115",
+    "17",
+    "174",
+    "42",
+    "112",
+    "8",
+    "101"
+  ],
+  "nodes": {
+    "24": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "mimikatz.exe"
+    },
+    "29": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+    },
+    "30": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "notepad.exe"
+    },
+    "31": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "cmd.exe"
+    },
+    "32": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+    },
+    "115": {
+      "type": "alert",
+      "name": "LSASS process memory modified",
+      "description": "The Local Security Authority Subsystem Service (LSASS) process enforces security policy by verifying user logons and password changes. Attackers might modify LSASS memory to bypass security mechanisms or circumvent legitimate checks."
+    },
+    "17": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-5-7-21-1843151660-3234030288-105586167-1422"
+    },
+    "174": {
+      "type": "alert",
+      "name": "PSExec to Vnevado-jump",
+      "description": "Lateral movement to the jump server"
+    },
+    "42": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "99.83.111.100"
+    },
+    "112": {
+      "type": "alert",
+      "name": "Ransomware payload remotely launched. ",
+      "description": "A ransomware payload was remotely launched on this device. Attackers might be attempting to encrypt content on this device, rendering it unusable to users. For more information, read the Threat Analytics report, Threat overview: Human-operated ransomware: https://security.microsoft.com/threatanalytics3/05658b6c-dc62-496d-ad3c-c6a795a33c27/analystreport"
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+    },
+    "101": {
+      "type": "alert",
+      "name": "Possible lateral movement",
+      "description": "Lateral movement on another device was observed in close time proximity to a suspicious network event on this device. This could mean that an attacker is attempting to move laterally across devices to gather data or elevate privileges. This alert was triggered based on a Microsoft Defender for Endpoint alert."
+    },
+    "102": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "38.142.109.10"
+    }
+  },
+  "interpretation": {
+    "alerts": 4,
+    "sql_steps_per_variant": 4,
+    "start_alternatives": [
+      {
+        "node": "24",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "29",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "30",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "31",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "32",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [
+      "42"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_2d1ac5f2686e63c8",
+  "merged_ems": [
+    "em_744b8479e6535662",
+    "em_7f9df21551f77db2",
+    "em_b30f58cf03511b0b",
+    "em_2474cf47fd91a742",
+    "em_9339ee7c75ce2525"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "17",
+          "expected_present": true,
+          "values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-04 22:35:01.998483+00:00",
+              "matched_inputs": [
+                "cmd.exe",
+                "mimikatz.exe",
+                "notepad.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "entity_index": 3,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 4,
+              "entity_ref": "10",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "bc00e484-d0e5-4da4-9472-95568cccc07e",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+              "time": "2024-07-04 22:35:01.951341+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "e5799261-6720-4297-961e-bd9ca4275033",
+              "raw_components": {
+                "AadDeviceId": "e5799261-6720-4297-961e-bd9ca4275033"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "89b41efc-e77c-5195-ec98-358dbc7d8200",
+              "time": "2024-07-04 22:35:02.812470+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "5db9adae-ae25-6452-3e27-7c1c4b55aee7",
+              "time": "2024-07-04 22:35:03.038773+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "e5799261-6720-4297-961e-bd9ca4275033",
+              "raw_components": {
+                "AadDeviceId": "e5799261-6720-4297-961e-bd9ca4275033"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "63421576-f354-5bba-974d-2e744ab44577",
+              "time": "2024-07-04 22:35:03.280964+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "102",
+          "expected_present": true,
+          "values": [
+            "38.142.109.10",
+            "83.162.58.168"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "38.142.109.10",
+              "raw_components": {
+                "Address": "38.142.109.10"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+              "time": "2024-07-04 22:35:01.650261+00:00",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "83.162.58.168",
+              "raw_components": {
+                "Address": "83.162.58.168"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "befb4b25-00b6-1ca7-ad46-bc8d181b26c3",
+              "time": "2024-07-04 22:35:01.674367+00:00",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "17",
+          "expected_present": true,
+          "values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-04 22:35:01.998483+00:00",
+              "matched_inputs": [
+                "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\"",
+                "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "entity_index": 3,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "entity_index": 4,
+              "entity_ref": "10",
+              "roles": [],
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "bc00e484-d0e5-4da4-9472-95568cccc07e",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+              "time": "2024-07-04 22:35:01.951341+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "e5799261-6720-4297-961e-bd9ca4275033",
+              "raw_components": {
+                "AadDeviceId": "e5799261-6720-4297-961e-bd9ca4275033"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "89b41efc-e77c-5195-ec98-358dbc7d8200",
+              "time": "2024-07-04 22:35:02.812470+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "5db9adae-ae25-6452-3e27-7c1c4b55aee7",
+              "time": "2024-07-04 22:35:03.038773+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "e5799261-6720-4297-961e-bd9ca4275033",
+              "raw_components": {
+                "AadDeviceId": "e5799261-6720-4297-961e-bd9ca4275033"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "63421576-f354-5bba-974d-2e744ab44577",
+              "time": "2024-07-04 22:35:03.280964+00:00",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "102",
+          "expected_present": true,
+          "values": [
+            "38.142.109.10",
+            "83.162.58.168"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "38.142.109.10",
+              "raw_components": {
+                "Address": "38.142.109.10"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+              "time": "2024-07-04 22:35:01.650261+00:00",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "83.162.58.168",
+              "raw_components": {
+                "Address": "83.162.58.168"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "befb4b25-00b6-1ca7-ad46-bc8d181b26c3",
+              "time": "2024-07-04 22:35:01.674367+00:00",
+              "matched_inputs": [
+                "e5799261-6720-4297-961e-bd9ca4275033"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_2f9c280845d0888d",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 30,
+          "unique_values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-17 22:39:57.708001+00:00",
+              "source_row_hash": "0011ec873bb055ebd8d97e724cb3928778706f09e7b794c3e6078bf421927870",
+              "matched_inputs": [
+                "cmd.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-17 22:39:57.708001+00:00",
+              "source_row_hash": "0011ec873bb055ebd8d97e724cb3928778706f09e7b794c3e6078bf421927870",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-17 22:39:57.708001+00:00",
+              "source_row_hash": "0011ec873bb055ebd8d97e724cb3928778706f09e7b794c3e6078bf421927870",
+              "matched_inputs": [
+                "notepad.exe"
+              ]
+            }
+          ],
+          "witness_count": 30,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "LSASS process memory modified",
+            "cmd.exe",
+            "mimikatz.exe",
+            "notepad.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_2474cf47fd91a742",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-12 22:39:37.245925+00:00",
+              "source_row_hash": "321f0b375b404f37b0fcd4be43a8618f24b13e84c618210abee69c09ebe5a5c3",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "source_row_hash": "c4daf5d07275aa5d85bf1e7698acc999bbac6033efe6086ccbd1fa9fec43e664",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PSExec to Vnevado-jump",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_7f9df21551f77db2",
+          "status": "ok",
+          "candidate_count": 56,
+          "unique_values": [
+            "bc00e484-d0e5-4da4-9472-95568cccc07e",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+              "time": "2024-07-15 22:39:20.921993+00:00",
+              "source_row_hash": "19ce690e2dc42f9ad83cd74d13cfcd546e45e0bb7fbace8d5e82f97a3661d319",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+              "time": "2024-07-06 22:34:52.014880+00:00",
+              "source_row_hash": "244d8fb61015927ad583e965c0e354f0ae2d013cbc51ad58fb0cff71239c8031",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+              "time": "2024-07-04 22:35:01.951341+00:00",
+              "source_row_hash": "28103d873c2742c561d2a1358723bf9c9518a1a678375bb4dbeeb39932280857",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ransomware payload remotely launched. ",
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "38.142.109.10",
+            "83.162.58.168"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "38.142.109.10",
+              "raw_components": {
+                "Address": "38.142.109.10"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+              "time": "2024-07-12 22:34:23.283946+00:00",
+              "source_row_hash": "0ac03f30427d619c0bc8120bcd4f023725bdc0d4a3a293b99ce29e117ab43246",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "38.142.109.10",
+              "raw_components": {
+                "Address": "38.142.109.10"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+              "time": "2024-07-08 22:34:58.483906+00:00",
+              "source_row_hash": "19045bfc302c53010d132ed5b36b13fd1df89229b813b9a025d5b6bc65c2c6b2",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "38.142.109.10",
+              "raw_components": {
+                "Address": "38.142.109.10"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+              "time": "2024-07-09 22:34:23.936329+00:00",
+              "source_row_hash": "212c2f32341662e5f36d83b1d5b93a2324dc836f5ff399826ba4e4253b487033",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible lateral movement",
+            "bc00e484-d0e5-4da4-9472-95568cccc07e",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_2f9c280845d0888d",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b30f58cf03511b0b",
+          "status": "ok",
+          "candidate_count": 20,
+          "unique_values": [
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-17 22:39:57.708001+00:00",
+              "source_row_hash": "0011ec873bb055ebd8d97e724cb3928778706f09e7b794c3e6078bf421927870",
+              "matched_inputs": [
+                "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-17 22:39:57.708001+00:00",
+              "source_row_hash": "0011ec873bb055ebd8d97e724cb3928778706f09e7b794c3e6078bf421927870",
+              "matched_inputs": [
+                "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-5-7-21-1843151660-3234030288-105586167-1422",
+              "raw_components": {
+                "Sid": "S-5-7-21-1843151660-3234030288-105586167-1422"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b",
+              "time": "2024-07-15 22:39:20.968683+00:00",
+              "source_row_hash": "01368e0e3412f9ff02534f6687aeb646229329f941a89602bb1512a39b2ed07d",
+              "matched_inputs": [
+                "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\""
+              ]
+            }
+          ],
+          "witness_count": 20,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "LSASS process memory modified",
+            "2020__2024-06-20t09:03:47.538167z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jump cmd.exe\"",
+            "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_2474cf47fd91a742",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-12 22:39:37.245925+00:00",
+              "source_row_hash": "321f0b375b404f37b0fcd4be43a8618f24b13e84c618210abee69c09ebe5a5c3",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "99.83.111.100",
+              "raw_components": {
+                "Address": "99.83.111.100"
+              },
+              "roles": [],
+              "entity_index": 4,
+              "alert_id": "14c7f2bd-eccb-2063-15ea-cc0209e2bd97",
+              "time": "2024-07-10 11:24:45.260113+00:00",
+              "source_row_hash": "c4daf5d07275aa5d85bf1e7698acc999bbac6033efe6086ccbd1fa9fec43e664",
+              "matched_inputs": [
+                "S-5-7-21-1843151660-3234030288-105586167-1422"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PSExec to Vnevado-jump",
+            "S-5-7-21-1843151660-3234030288-105586167-1422"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_7f9df21551f77db2",
+          "status": "ok",
+          "candidate_count": 56,
+          "unique_values": [
+            "bc00e484-d0e5-4da4-9472-95568cccc07e",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+              "time": "2024-07-15 22:39:20.921993+00:00",
+              "source_row_hash": "19ce690e2dc42f9ad83cd74d13cfcd546e45e0bb7fbace8d5e82f97a3661d319",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+              "time": "2024-07-06 22:34:52.014880+00:00",
+              "source_row_hash": "244d8fb61015927ad583e965c0e354f0ae2d013cbc51ad58fb0cff71239c8031",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "bc00e484-d0e5-4da4-9472-95568cccc07e",
+              "raw_components": {
+                "AadDeviceId": "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "9b2a6ade-6821-64a8-5bce-b47750ddf62d",
+              "time": "2024-07-04 22:35:01.951341+00:00",
+              "source_row_hash": "28103d873c2742c561d2a1358723bf9c9518a1a678375bb4dbeeb39932280857",
+              "matched_inputs": [
+                "99.83.111.100"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Ransomware payload remotely launched. ",
+            "141.216.110.153",
+            "99.83.111.100"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 28,
+          "unique_values": [
+            "38.142.109.10",
+            "83.162.58.168"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "38.142.109.10",
+              "raw_components": {
+                "Address": "38.142.109.10"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+              "time": "2024-07-12 22:34:23.283946+00:00",
+              "source_row_hash": "0ac03f30427d619c0bc8120bcd4f023725bdc0d4a3a293b99ce29e117ab43246",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "38.142.109.10",
+              "raw_components": {
+                "Address": "38.142.109.10"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+              "time": "2024-07-08 22:34:58.483906+00:00",
+              "source_row_hash": "19045bfc302c53010d132ed5b36b13fd1df89229b813b9a025d5b6bc65c2c6b2",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "38.142.109.10",
+              "raw_components": {
+                "Address": "38.142.109.10"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "809db74e-750c-a121-f6c0-c8ccec7bf1a6",
+              "time": "2024-07-09 22:34:23.936329+00:00",
+              "source_row_hash": "212c2f32341662e5f36d83b1d5b93a2324dc836f5ff399826ba4e4253b487033",
+              "matched_inputs": [
+                "bc00e484-d0e5-4da4-9472-95568cccc07e"
+              ]
+            }
+          ],
+          "witness_count": 14,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible lateral movement",
+            "bc00e484-d0e5-4da4-9472-95568cccc07e",
+            "e5799261-6720-4297-961e-bd9ca4275033"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "6d9e3f90-c582-15f9-fc05-a56b2018253b"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

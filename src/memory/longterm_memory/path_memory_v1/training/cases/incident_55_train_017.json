@@ -1,0 +1,857 @@
+{
+  "id": "incident_55_train_017",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_55_qa_incident_o1-ga_c42.json",
+  "index": 17,
+  "sha256": "d3d22be38c226f61a5ac240a940e0c8901208766ea002b6e4f273361ce61ae80",
+  "split": "train",
+  "question_record": {
+    "context": "A suspicious service creation activity was detected where the account gsmith (gsmith@niseko.alpineskihouse.co) created a service named DDLOXJDSQSNGMUKKFUXQ on the host MB-ADFS in order to execute potentially malicious commands. This is part of a larger incident involving a suspicious sequence of exploration activities followed by a process injecting potentially malicious code into another process, indicating possible code execution within the target process.",
+    "question": "What is the name of the file associated with the process that was injected with potentially malicious code?",
+    "answer": "contosoadfsblatempcreds.ps1",
+    "solution": [
+      "The account `gsmith` created a suspicious service named `DDLOXJDSQSNGMUKKFUXQ` on `MB-ADFS` to execute potentially malicious commands.",
+      "A process named `powershell.exe` executed a series of windows commands likely in exploration activities to identify assets and coordinate lateral movement after potentially compromising a machine.",
+      "A process `contosoadfsblatempcreds.ps1` was injected with potentially malicious code, which may involve suspicious activities such as opening a listening port or connecting to a command and control server."
+    ],
+    "start_alert": 101,
+    "end_alert": 41,
+    "start_entities": [
+      102,
+      103
+    ],
+    "end_entities": [
+      42
+    ],
+    "shortest_alert_path": [
+      101,
+      18,
+      52,
+      8,
+      41
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_55.graphml",
+  "graph_sha256": "c1455d8cf64d45d0e46183a7a347c100476f75193fdf2ae664a2ae2e03f6e8f2",
+  "path": [
+    "101",
+    "18",
+    "52",
+    "8",
+    "41"
+  ],
+  "nodes": {
+    "102": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "MB-ADFS"
+    },
+    "103": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Email",
+      "value": "gsmith@niseko.alpineskihouse.co"
+    },
+    "101": {
+      "type": "alert",
+      "name": "Suspicious service creation",
+      "description": "gsmith created DDLOXJDSQSNGMUKKFUXQ in order to execute potentially malicious commands on MB-ADFS."
+    },
+    "18": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "gsmith"
+    },
+    "52": {
+      "type": "alert",
+      "name": "Suspicious sequence of exploration activities",
+      "description": "A process called a set of windows commands. These commands can be used by attackers in order to identify assets of value and coordinate lateral movement after compromising a machine."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "powershell.exe"
+    },
+    "41": {
+      "type": "alert",
+      "name": "A process was injected with potentially malicious code",
+      "description": "A process has injected code into another process, indicating suspicious code being run in the target process memory. Injection is often used to hide malicious code execution within a trusted process. \nAs a result, the target process may exhibit abnormal behaviors such as opening a listening port or connecting to a command and control server."
+    },
+    "42": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "contosoadfsblatempcreds.ps1"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "102",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "103",
+        "concept": "Account_Derived_Email",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "File_Name",
+    "weak_links": [
+      "18",
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_82a679f366380dc0",
+  "merged_ems": [
+    "em_bbd91402e3e40422",
+    "em_dbea5330c3a592d2",
+    "em_6b040dd1616cc12b",
+    "em_a1856eff0c584ee8"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "18",
+          "expected_present": true,
+          "values": [
+            "gsmith"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "gsmith",
+              "raw_components": {
+                "Name": "gsmith"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+              "time": "2024-07-10 11:24:45.488649+00:00",
+              "matched_inputs": [
+                "gsmith@niseko.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 6,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "whoami.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "whoami.exe",
+              "raw_components": {
+                "CommandLine": "\"whoami.exe\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "whoami.exe",
+              "raw_components": {
+                "CommandLine": "\"whoami.exe\""
+              },
+              "entity_index": 23,
+              "entity_ref": "25",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "whoami.exe",
+              "raw_components": {
+                "CommandLine": "\"whoami.exe\""
+              },
+              "entity_index": 25,
+              "entity_ref": "27",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "contosoadfsblatempcreds.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "Name": "ContosoADFSblatempcreds.ps1"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "18",
+          "expected_present": true,
+          "values": [
+            "gsmith"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "gsmith",
+              "raw_components": {
+                "Name": "gsmith"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [
+                "Source"
+              ],
+              "alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+              "time": "2024-07-10 11:24:45.488649+00:00",
+              "matched_inputs": [
+                "MB-ADFS"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 6,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "whoami.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "whoami.exe",
+              "raw_components": {
+                "CommandLine": "\"whoami.exe\""
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "whoami.exe",
+              "raw_components": {
+                "CommandLine": "\"whoami.exe\""
+              },
+              "entity_index": 23,
+              "entity_ref": "25",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 24,
+              "entity_ref": "26",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "whoami.exe",
+              "raw_components": {
+                "CommandLine": "\"whoami.exe\""
+              },
+              "entity_index": 25,
+              "entity_ref": "27",
+              "roles": [],
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-04 22:35:03.106654+00:00",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "42",
+          "expected_present": true,
+          "values": [
+            "contosoadfsblatempcreds.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "Name": "ContosoADFSblatempcreds.ps1"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-04 22:35:02.726557+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_c29522c89469c792",
+      "seed_concept": "Account_Derived_Email",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_dbea5330c3a592d2",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "gsmith"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "gsmith",
+              "raw_components": {
+                "Name": "gsmith"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 1,
+              "alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+              "time": "2024-07-10 11:24:45.488649+00:00",
+              "source_row_hash": "6ac93377a7a0bcbc67bf41de1de2b9fe06509ac178df66ac37723fe7f254c62e",
+              "matched_inputs": [
+                "gsmith@niseko.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Derived_Email' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service creation",
+            "gsmith@niseko.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_6b040dd1616cc12b",
+          "status": "ok",
+          "candidate_count": 252,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "whoami.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-08-01 22:34:10.477027+00:00",
+              "source_row_hash": "09056f619d21fed38c7d0d543edc7fa994b632f329dfb8c470cd8687520addbe",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-07 22:34:17.324001+00:00",
+              "source_row_hash": "1229bf3d83d7cf26422c8f1a78650b19fbd02a6b4005403dcb4cb0c1d5c71573",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-27 22:35:10.228923+00:00",
+              "source_row_hash": "127e53929a1c3045c29ea970b062aaf6ac39f5489ac10bd9664282dbcf876ec8",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            }
+          ],
+          "witness_count": 32,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious sequence of exploration activities",
+            "gsmith"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bbd91402e3e40422",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "contosoadfsblatempcreds.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "Name": "ContosoADFSblatempcreds.ps1"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-21 22:34:53.555995+00:00",
+              "source_row_hash": "019cf1ab1e751bd266b92f6565bdea0849f5beab74f90a26076e4283a9918894",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "Name": "ContosoADFSblatempcreds.ps1"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-22 22:34:43.148248+00:00",
+              "source_row_hash": "03cdb29ee8a215efb1f9b31db740a825f2fa2cd9a7d95a41cf2e4b14a14fc79c",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "Name": "ContosoADFSblatempcreds.ps1"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-31 22:34:52.738183+00:00",
+              "source_row_hash": "138ab9f55b5f87285b0c6f96d4c639634da0ebb475ba8f9be82379c8028871b1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A process was injected with potentially malicious code",
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "whoami.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_c29522c89469c792",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a1856eff0c584ee8",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "gsmith"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "gsmith",
+              "raw_components": {
+                "Name": "gsmith"
+              },
+              "roles": [
+                "Source"
+              ],
+              "entity_index": 1,
+              "alert_id": "f09fde30-a29a-df44-97ce-38ead6ecb205",
+              "time": "2024-07-10 11:24:45.488649+00:00",
+              "source_row_hash": "6ac93377a7a0bcbc67bf41de1de2b9fe06509ac178df66ac37723fe7f254c62e",
+              "matched_inputs": [
+                "MB-ADFS"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service creation",
+            "MB-ADFS"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_6b040dd1616cc12b",
+          "status": "ok",
+          "candidate_count": 252,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "whoami.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-08-01 22:34:10.477027+00:00",
+              "source_row_hash": "09056f619d21fed38c7d0d543edc7fa994b632f329dfb8c470cd8687520addbe",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-07 22:34:17.324001+00:00",
+              "source_row_hash": "1229bf3d83d7cf26422c8f1a78650b19fbd02a6b4005403dcb4cb0c1d5c71573",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 16,
+              "alert_id": "a8242a8a-9bc8-a64a-7f79-f84227a62d7e",
+              "time": "2024-07-27 22:35:10.228923+00:00",
+              "source_row_hash": "127e53929a1c3045c29ea970b062aaf6ac39f5489ac10bd9664282dbcf876ec8",
+              "matched_inputs": [
+                "gsmith"
+              ]
+            }
+          ],
+          "witness_count": 32,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious sequence of exploration activities",
+            "gsmith"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_bbd91402e3e40422",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "contosoadfsblatempcreds.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "Name": "ContosoADFSblatempcreds.ps1"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-21 22:34:53.555995+00:00",
+              "source_row_hash": "019cf1ab1e751bd266b92f6565bdea0849f5beab74f90a26076e4283a9918894",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "Name": "ContosoADFSblatempcreds.ps1"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-22 22:34:43.148248+00:00",
+              "source_row_hash": "03cdb29ee8a215efb1f9b31db740a825f2fa2cd9a7d95a41cf2e4b14a14fc79c",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "contosoadfsblatempcreds.ps1",
+              "raw_components": {
+                "Name": "ContosoADFSblatempcreds.ps1"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "389da660-b6e0-a0ed-4bbc-b5a4b9e0bd56",
+              "time": "2024-07-31 22:34:52.738183+00:00",
+              "source_row_hash": "138ab9f55b5f87285b0c6f96d4c639634da0ebb475ba8f9be82379c8028871b1",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "A process was injected with potentially malicious code",
+            "iy2orr1e.rrg.exe",
+            "powershell.exe",
+            "whoami.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_Derived_Email",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

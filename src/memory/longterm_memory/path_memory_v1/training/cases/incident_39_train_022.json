@@ -1,0 +1,1301 @@
+{
+  "id": "incident_39_train_022",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 22,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A multi-stage security incident involving initial access and possible lateral movement was reported. During the investigation, it was identified that a file `psexesvc.exe` was launched, and commands initiating `rubeus.exe` were executed. This activity is indicative of the Rubeus tool usage to perform Kerberoasting and possibly pass-the-ticket attack techniques.",
+    "question": "Related to this incident, there was observed lateral movement to another device following a suspicious network event. Can you identify the IP address associated with the device to which the attacker was moving laterally?",
+    "answer": "35.202.74.47",
+    "solution": [
+      "There is activity indicating the use of the Rubeus tool on host with AadDeviceId `fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb`.",
+      "There was a lateral movement observed from IP address `35.202.74.47`."
+    ],
+    "start_alert": 0,
+    "end_alert": 57,
+    "start_entities": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "end_entities": [
+      43
+    ],
+    "shortest_alert_path": [
+      0,
+      11,
+      57
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "0",
+    "11",
+    "57"
+  ],
+  "nodes": {
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "fk8mq"
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1540151660-3530000288-105586595-1517"
+    },
+    "3": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "97e6a954-b6bd-48a5-808c-bd8464cce677"
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+    },
+    "5": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "psexesvc.exe"
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+    },
+    "7": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "rubeus.exe"
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "adminticket.txt"
+    },
+    "9": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+    },
+    "0": {
+      "type": "alert",
+      "name": "Possible use of the Rubeus kerberoasting tool",
+      "description": "Activity indicating the use of the Rubeus tool was observed on this endpoint. This tool can perform kerberoasting, pass-the-ticket, and other attack techniques that take advantage of Kerberos authentication.\n\nDuring these attacks, attackers often request Kerberos tickets for an account's service principal name (SPN). They then decrypt the tickets to get plaintext credentials associated with the account. Alternatively, they can perform the pass-the-ticket technique to authenticate directly without having to decrypt the obtained tickets."
+    },
+    "11": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+    },
+    "57": {
+      "type": "alert",
+      "name": "Possible lateral movement",
+      "description": "Lateral movement on another device was observed in close time proximity to a suspicious network event on this device. This could mean that an attacker is attempting to move laterally across devices to gather data or elevate privileges. This alert was triggered based on a Microsoft Defender for Endpoint alert."
+    },
+    "43": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "35.202.74.47"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "1",
+        "concept": "Account_Name",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "2",
+        "concept": "Account_SID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "3",
+        "concept": "Account_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "4",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "5",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "6",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "7",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "8",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "9",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_1d06d6c714600a89",
+  "merged_ems": [
+    "em_0b627f485461102f",
+    "em_f786239dd70259a3",
+    "em_0a8dc58b9068bbaf",
+    "em_744b8479e6535662",
+    "em_632d000ee41b927b",
+    "em_7ede6ce88cbad0ac"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "entity_index": 21,
+              "entity_ref": "23",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "43",
+          "expected_present": true,
+          "values": [
+            "35.202.74.47"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-04 22:35:01.716777+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "entity_index": 21,
+              "entity_ref": "23",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "43",
+          "expected_present": true,
+          "values": [
+            "35.202.74.47"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-04 22:35:01.716777+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "entity_index": 21,
+              "entity_ref": "23",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "43",
+          "expected_present": true,
+          "values": [
+            "35.202.74.47"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-04 22:35:01.716777+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "4d8d23e9-a77d-4e33-9435-b8c457e57ca1",
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "entity_index": 21,
+              "entity_ref": "23",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "psexesvc.exe",
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1",
+              "raw_components": {
+                "AadDeviceId": "4d8d23e9-a77d-4e33-9435-b8c457e57ca1"
+              },
+              "entity_index": 16,
+              "entity_ref": "18",
+              "roles": [],
+              "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e",
+              "time": "2024-07-04 22:35:04.021732+00:00",
+              "matched_inputs": [
+                "adminticket.txt",
+                "rubeus.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "43",
+          "expected_present": true,
+          "values": [
+            "35.202.74.47"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-04 22:35:01.716777+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "11",
+          "expected_present": true,
+          "values": [
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "entity_index": 21,
+              "entity_ref": "23",
+              "roles": [],
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-04 22:35:00.481750+00:00",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+                "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "43",
+          "expected_present": true,
+          "values": [
+            "35.202.74.47"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-04 22:35:01.716777+00:00",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_90d198978add79fe",
+      "seed_concept": "Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_632d000ee41b927b",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "97e6a954-b6bd-48a5-808c-bd8464cce677"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "97e6a954-b6bd-48a5-808c-bd8464cce677"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "35.202.74.47"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-14 22:34:28.094564+00:00",
+              "source_row_hash": "06fa7c9f8991c31224a6c319daffe473fd85bd01e0a213c89d36d7cf9a232304",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-06 22:34:51.770814+00:00",
+              "source_row_hash": "0d4c86994cb6a3b6c5ea56677a494ee1e327e89d5c80559bd775606596e16620",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-25 22:35:06.378559+00:00",
+              "source_row_hash": "10ec019c57bb7b70ea83aba31fed69261e3f1ab57343d3ecf9764f2b07184100",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible lateral movement",
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_90d198978add79fe",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f786239dd70259a3",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "fk8mq"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "fk8mq"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "35.202.74.47"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-14 22:34:28.094564+00:00",
+              "source_row_hash": "06fa7c9f8991c31224a6c319daffe473fd85bd01e0a213c89d36d7cf9a232304",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-06 22:34:51.770814+00:00",
+              "source_row_hash": "0d4c86994cb6a3b6c5ea56677a494ee1e327e89d5c80559bd775606596e16620",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-25 22:35:06.378559+00:00",
+              "source_row_hash": "10ec019c57bb7b70ea83aba31fed69261e3f1ab57343d3ecf9764f2b07184100",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible lateral movement",
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_90d198978add79fe",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_0a8dc58b9068bbaf",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-21 22:34:52.344956+00:00",
+              "source_row_hash": "0c340ea2238cbf64fad2f260ee219e10ed0cf98f85feddd6bda6ed20def0d54d",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-26 22:35:00.163482+00:00",
+              "source_row_hash": "1545588d3c39270e5f2ad47b40d4012b0df92e264c6b7b6a7024547f049a41e2",
+              "matched_inputs": [
+                "S-1-5-21-1540151660-3530000288-105586595-1517"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "S-1-5-21-1540151660-3530000288-105586595-1517"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "35.202.74.47"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-14 22:34:28.094564+00:00",
+              "source_row_hash": "06fa7c9f8991c31224a6c319daffe473fd85bd01e0a213c89d36d7cf9a232304",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-06 22:34:51.770814+00:00",
+              "source_row_hash": "0d4c86994cb6a3b6c5ea56677a494ee1e327e89d5c80559bd775606596e16620",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-25 22:35:06.378559+00:00",
+              "source_row_hash": "10ec019c57bb7b70ea83aba31fed69261e3f1ab57343d3ecf9764f2b07184100",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible lateral movement",
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_90d198978add79fe",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7ede6ce88cbad0ac",
+          "status": "ok",
+          "candidate_count": 135,
+          "unique_values": [
+            "4d8d23e9-a77d-4e33-9435-b8c457e57ca1",
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "adminticket.txt"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            }
+          ],
+          "witness_count": 81,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "adminticket.txt",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "35.202.74.47"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-14 22:34:28.094564+00:00",
+              "source_row_hash": "06fa7c9f8991c31224a6c319daffe473fd85bd01e0a213c89d36d7cf9a232304",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-06 22:34:51.770814+00:00",
+              "source_row_hash": "0d4c86994cb6a3b6c5ea56677a494ee1e327e89d5c80559bd775606596e16620",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-25 22:35:06.378559+00:00",
+              "source_row_hash": "10ec019c57bb7b70ea83aba31fed69261e3f1ab57343d3ecf9764f2b07184100",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible lateral movement",
+            "4d8d23e9-a77d-4e33-9435-b8c457e57ca1",
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_90d198978add79fe",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_0b627f485461102f",
+          "status": "ok",
+          "candidate_count": 81,
+          "unique_values": [
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb",
+              "raw_components": {
+                "AadDeviceId": "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              },
+              "roles": [],
+              "entity_index": 21,
+              "alert_id": "3b95ce77-1a27-c77b-6658-f900da2ed3f5",
+              "time": "2024-07-19 00:13:48.242346+00:00",
+              "source_row_hash": "052038772c95fed70f51630d72b7fdc56cedbaa196165b572b5f597cde2e719d",
+              "matched_inputs": [
+                "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+              ]
+            }
+          ],
+          "witness_count": 81,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible use of the Rubeus kerberoasting tool",
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "7644__2024-06-27t14:33:27.7473684z__\"cmd\" /c \"c:\\temp\\rubeus.exe dump /service:xfbzkp /user:lucasb > c:\\temp\\adminticket.txt\""
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_744b8479e6535662",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "35.202.74.47"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-14 22:34:28.094564+00:00",
+              "source_row_hash": "06fa7c9f8991c31224a6c319daffe473fd85bd01e0a213c89d36d7cf9a232304",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-06 22:34:51.770814+00:00",
+              "source_row_hash": "0d4c86994cb6a3b6c5ea56677a494ee1e327e89d5c80559bd775606596e16620",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "35.202.74.47",
+              "raw_components": {
+                "Address": "35.202.74.47"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1f94a35-880f-fb78-84c8-401f453a83d2",
+              "time": "2024-07-25 22:35:06.378559+00:00",
+              "source_row_hash": "10ec019c57bb7b70ea83aba31fed69261e3f1ab57343d3ecf9764f2b07184100",
+              "matched_inputs": [
+                "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Possible lateral movement",
+            "fafdcd65-46c6-45a6-aa85-ec9b77ca0bcb"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 323 (char 322)",
+          "alert_id": "225167be-a6e4-1ce5-fdc5-5ae46bddb15e"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

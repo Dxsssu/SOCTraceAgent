@@ -1,0 +1,262 @@
+{
+  "id": "incident_166_train_013",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_166_qa_incident_o1-ga_c42.json",
+  "index": 13,
+  "sha256": "57a4491e11e42986ad61360378ea3d1c5b0f1058426bcfb455e8959bb64b3cda",
+  "split": "train",
+  "question_record": {
+    "context": "A sign-in from an anonymous IP address `95.202.65.202` was observed which could indicate the use of Tor browser or anonymizer VPNs. This sign-in was flagged as a potential security incident. In connection with this incident, further investigation led to a suspicious sign-in to SAP by a user involved in a business email compromise (BEC) alert. The attacker might have taken control of this user account to browse through SAP, possibly with intentions to record or alter sensitive financial information, for use in later stages of attack such as phishing or social engineering.",
+    "question": "Can you identify the application ID of the cloud application used during the suspicious SAP sign-in?",
+    "answer": "100",
+    "solution": [
+      "There was a sign-in from an anonymous IP address for the account with AadUserId `89e933b9-5b2e-4bd6-bcdf-033db707ef82`.",
+      "The account with AadUserId `89e933b9-5b2e-4bd6-bcdf-033db707ef82`, involved in a business email compromise-related alert, also signed in to the cloud application SAP (AppId `100`) in a suspicious manner."
+    ],
+    "start_alert": 0,
+    "end_alert": 27,
+    "start_entities": [
+      2
+    ],
+    "end_entities": [
+      24
+    ],
+    "shortest_alert_path": [
+      0,
+      1,
+      27
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_166.graphml",
+  "graph_sha256": "0b5a949fa824acc0369e8da5a8a612b8987a900571001c1d3ac0ce9581522b24",
+  "path": [
+    "0",
+    "1",
+    "27"
+  ],
+  "nodes": {
+    "2": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "95.202.65.202"
+    },
+    "0": {
+      "type": "alert",
+      "name": "Anonymous IP address",
+      "description": "Sign-in from an anonymous IP address (e.g. Tor browser, anonymizer VPNs)"
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+    },
+    "27": {
+      "type": "alert",
+      "name": "BEC-related user signed in to SAP",
+      "description": "A user involved in a business email compromise-related alert also signed in to SAP in a suspicious manner. An attacker might have taken control of a user account to search through SAP with the intention of recording or modifying sensitive financial information. The gathered information might be used for later stages in the attack, such as phishing or social engineering. This alert was triggered based on a Microsoft Defender XDR alert."
+    },
+    "24": {
+      "type": "entity",
+      "node_type": "cloud-application",
+      "identifier_fields": "AppId",
+      "value": "100"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "2",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Cloud_App_ID",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_3e960709ed883a4e",
+  "merged_ems": [
+    "em_1bc1af61b62114f4",
+    "em_2c021427290dc77e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "f2ca8b1b-2085-f0db-8f58-31b2d8a5512c",
+              "time": "2024-07-22 08:45:32.664841+00:00",
+              "matched_inputs": [
+                "95.202.65.202"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "24",
+          "expected_present": true,
+          "values": [
+            "100"
+          ],
+          "evidence": [
+            {
+              "concept": "Cloud_App_ID",
+              "graph_value": "100",
+              "raw_components": {
+                "AppId": 100
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_3b1ec4969052ae4d",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_2c021427290dc77e",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "f2ca8b1b-2085-f0db-8f58-31b2d8a5512c",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "f2ca8b1b-2085-f0db-8f58-31b2d8a5512c",
+              "time": "2024-07-22 08:45:32.664841+00:00",
+              "source_row_hash": "cc6fc70901c34188ac53be4d99b70e76c33245391e76aac384fbee71bc4f69e6",
+              "matched_inputs": [
+                "95.202.65.202"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anonymous IP address",
+            "95.202.65.202"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_1bc1af61b62114f4",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "100"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+          "witnesses": [
+            {
+              "concept": "Cloud_App_ID",
+              "graph_value": "100",
+              "raw_components": {
+                "AppId": 100
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "source_row_hash": "40122eb3f5afdd3557ed89686db714995701faa14e18d872246e910835d0bc87",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Cloud_App_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC-related user signed in to SAP",
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

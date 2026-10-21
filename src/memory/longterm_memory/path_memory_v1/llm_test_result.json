@@ -1,0 +1,167 @@
+{
+  "provider": "fancybag",
+  "model": "deepseek-v4.1-flash",
+  "utc": "2026-10-19T17:25:38.676580+00:00",
+  "retrieval": {
+    "intent": {
+      "known": [
+        {
+          "id": "E1",
+          "concept": "URL",
+          "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+        }
+      ],
+      "wanted": {
+        "concept": "URL",
+        "description": "与已给出恶意URL点击处于同一设备上的另一次潜在恶意URL点击所对应的URL"
+      },
+      "constraints": [
+        "URL须保留完整协议和路径，http与https不可互换",
+        "另一次点击须发生在同一设备上",
+        "属于近期安全事件中另一次潜在恶意URL点击"
+      ],
+      "event_context": [
+        "已检测到某用户点击了被判定为恶意的URL",
+        "该事件属于更广泛的安全事件，涉及可疑探测活动，包括使用多种Windows命令以识别有价值资产并在入侵机器后协调横向移动"
+      ],
+      "retrieval_query": "查找同一设备上另一次潜在恶意URL点击对应的URL"
+    },
+    "recall_mode": "direct_llm",
+    "similarity_scores": {},
+    "candidate_ids": [
+      "pm_url_account_device_url"
+    ],
+    "selected_pm": "pm_url_account_device_url",
+    "execution_inputs": {
+      "url": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+      "start_title": "A potentially malicious URL click was detected",
+      "bridge_title": "Suspicious sequence of exploration activities",
+      "target_title": "Malicious URL was clicked on that device"
+    },
+    "status": "matched",
+    "decision": {
+      "selected_pm": "pm_url_account_device_url",
+      "decision": "applicable",
+      "bindings": {
+        "url": "E1"
+      },
+      "constraint_checks": [
+        {
+          "constraint": "URL须保留完整协议和路径，http与https不可互换",
+          "supported": true,
+          "reason": "流程从已知URL提取起点事件线索，目标查询按原样保留目标的协议与路径，不对URL做归一化改写；候选协议与路径的完整性可在查询结果中验证。"
+        },
+        {
+          "constraint": "另一次点击须发生在同一设备上",
+          "supported": true,
+          "reason": "流程以账户SID为线索定位中间可疑探测事件关联的主机，再在目标事件中查询这些主机对应的URL点击，设备一致性需由中间事件与起点事件的设备关联证据确认，账户共现不能单独证明同设备。"
+        },
+        {
+          "constraint": "属于近期安全事件中另一次潜在恶意URL点击",
+          "supported": true,
+          "reason": "流程的起点与目标均为潜在恶意URL点击事件，且通过背景中的可疑探测活动关联；目标事件与起点事件须经后置条件确认互不相同，并保留告警来源作为近期事件范围判断依据。"
+        }
+      ],
+      "reason": "候选流程的所需输入为URL，可由E1绑定；其目标概念为URL，与wanted一致。流程覆盖同设备另一次潜在恶意URL点击的调查路径，时间与设备约束须在执行查询及后置条件验证中确认，不预先添加原文事实。"
+    },
+    "postconditions": [
+      "确认目标事件和起点事件不同",
+      "确认候选设备与起点事件关联证据充分；账户共现本身不能证明同设备",
+      "多候选时保留分支，不把首条当作答案"
+    ]
+  },
+  "execution": {
+    "status": "candidate_ready",
+    "trace": [
+      {
+        "step": "T1",
+        "episode_id": "em_url_to_sid",
+        "sql": "SELECT DISTINCT u.AlertId,u.Title,u.EvidenceRole,u.AccountSid\nFROM AlertEvidence a JOIN AlertEvidence u ON a.AlertId=u.AlertId\nWHERE a.EntityType='Url' AND a.RemoteUrl=%s AND a.Title=%s\nAND u.EntityType='User' AND u.AccountSid IS NOT NULL AND u.AccountSid<>''\nLIMIT 101",
+        "params": [
+          "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+          "A potentially malicious URL click was detected"
+        ],
+        "rows": [
+          {
+            "AlertId": "fae1354063-732a-eb9c-2600-08dc9a7cc1ee",
+            "Title": "A potentially malicious URL click was detected",
+            "EvidenceRole": "Impacted",
+            "AccountSid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+          }
+        ]
+      },
+      {
+        "step": "T2",
+        "episode_id": "em_sid_to_device",
+        "sql": "SELECT DISTINCT h.AlertId,h.Title,h.EvidenceRole,h.DeviceName\nFROM AlertEvidence u JOIN AlertEvidence h ON u.AlertId=h.AlertId\nWHERE u.EntityType='User' AND u.AccountSid IN (%s) AND u.Title=%s\nAND h.EntityType='Machine' AND h.DeviceName IS NOT NULL AND h.DeviceName<>''\nLIMIT 101",
+        "params": [
+          "S-1-5-21-561436748-3867387497-1732241745-3701",
+          "Suspicious sequence of exploration activities"
+        ],
+        "rows": [
+          {
+            "AlertId": "dabefe8595-f926-4e52-b91b-033a583d74f3_1",
+            "Title": "Suspicious sequence of exploration activities",
+            "EvidenceRole": "Impacted",
+            "DeviceName": "mb-winclient.internal.niseko.alpineskihouse.co"
+          }
+        ]
+      },
+      {
+        "step": "T3",
+        "episode_id": "em_device_to_url",
+        "sql": "SELECT DISTINCT u.AlertId,u.Title,u.EvidenceRole,h.DeviceName,u.RemoteUrl\nFROM AlertEvidence h JOIN AlertEvidence u ON h.AlertId=u.AlertId\nWHERE h.EntityType='Machine' AND h.Title=%s\nAND (LOWER(h.DeviceName) IN (%s)\n OR SUBSTRING_INDEX(LOWER(h.DeviceName),'.',1) IN (NULL))\nAND u.EntityType='Url' AND u.RemoteUrl IS NOT NULL AND u.RemoteUrl<>''\nLIMIT 101",
+        "params": [
+          "Malicious URL was clicked on that device",
+          "mb-winclient.internal.niseko.alpineskihouse.co"
+        ],
+        "rows": [
+          {
+            "AlertId": "ea638555292711314844_1873318062",
+            "Title": "Malicious URL was clicked on that device",
+            "EvidenceRole": "Related",
+            "DeviceName": "mb-winclient.internal.niseko.alpineskihouse.co",
+            "RemoteUrl": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+          }
+        ]
+      }
+    ],
+    "candidates": [
+      {
+        "RemoteUrl": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+      }
+    ]
+  },
+  "evaluation": {
+    "exact_match": false,
+    "match_ignoring_trailing_slash": true,
+    "scope": "单训练样例的LTM检索与执行；不是workflow评估，未自动验证全部postconditions"
+  },
+  "llm_calls": [
+    {
+      "stage": 1,
+      "attempt": 1,
+      "usage": {
+        "completion_tokens": 181,
+        "prompt_tokens": 404,
+        "total_tokens": 585,
+        "completion_tokens_details": null,
+        "prompt_tokens_details": null
+      },
+      "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"与已给出恶意URL点击处于同一设备上的另一次潜在恶意URL点击所对应的URL\"},\"constraints\":[\"URL须保留完整协议和路径，http与https不可互换\",\"另一次点击须发生在同一设备上\",\"属于近期安全事件中另一次潜在恶意URL点击\"],\"event_context\":[\"已检测到某用户点击了被判定为恶意的URL\",\"该事件属于更广泛的安全事件，涉及可疑探测活动，包括使用多种Windows命令以识别有价值资产并在入侵机器后协调横向移动\"],\"retrieval_query\":\"查找同一设备上另一次潜在恶意URL点击对应的URL\"}"
+    },
+    {
+      "stage": 2,
+      "attempt": 1,
+      "usage": {
+        "completion_tokens": 295,
+        "prompt_tokens": 881,
+        "total_tokens": 1176,
+        "completion_tokens_details": null,
+        "prompt_tokens_details": null
+      },
+      "response": "{\"selected_pm\":\"pm_url_account_device_url\",\"decision\":\"applicable\",\"bindings\":{\"url\":\"E1\"},\"constraint_checks\":[{\"constraint\":\"URL须保留完整协议和路径，http与https不可互换\",\"supported\":true,\"reason\":\"流程从已知URL提取起点事件线索，目标查询按原样保留目标的协议与路径，不对URL做归一化改写；候选协议与路径的完整性可在查询结果中验证。\"},{\"constraint\":\"另一次点击须发生在同一设备上\",\"supported\":true,\"reason\":\"流程以账户SID为线索定位中间可疑探测事件关联的主机，再在目标事件中查询这些主机对应的URL点击，设备一致性需由中间事件与起点事件的设备关联证据确认，账户共现不能单独证明同设备。\"},{\"constraint\":\"属于近期安全事件中另一次潜在恶意URL点击\",\"supported\":true,\"reason\":\"流程的起点与目标均为潜在恶意URL点击事件，且通过背景中的可疑探测活动关联；目标事件与起点事件须经后置条件确认互不相同，并保留告警来源作为近期事件范围判断依据。\"}],\"reason\":\"候选流程的所需输入为URL，可由E1绑定；其目标概念为URL，与wanted一致。流程覆盖同设备另一次潜在恶意URL点击的调查路径，时间与设备约束须在执行查询及后置条件验证中确认，不预先添加原文事实。\"}"
+    }
+  ],
+  "total_tokens": 1761
+}

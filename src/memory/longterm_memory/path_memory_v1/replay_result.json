@@ -1,0 +1,71 @@
+{
+  "status": "candidate_ready",
+  "trace": [
+    {
+      "step": "T1",
+      "episode_id": "em_url_to_sid",
+      "sql": "SELECT DISTINCT u.AlertId,u.Title,u.EvidenceRole,u.AccountSid\nFROM AlertEvidence a JOIN AlertEvidence u ON a.AlertId=u.AlertId\nWHERE a.EntityType='Url' AND a.RemoteUrl=%s AND a.Title=%s\nAND u.EntityType='User' AND u.AccountSid IS NOT NULL AND u.AccountSid<>''\nLIMIT 101",
+      "params": [
+        "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+        "A potentially malicious URL click was detected"
+      ],
+      "rows": [
+        {
+          "AlertId": "fae1354063-732a-eb9c-2600-08dc9a7cc1ee",
+          "Title": "A potentially malicious URL click was detected",
+          "EvidenceRole": "Impacted",
+          "AccountSid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+        }
+      ]
+    },
+    {
+      "step": "T2",
+      "episode_id": "em_sid_to_device",
+      "sql": "SELECT DISTINCT h.AlertId,h.Title,h.EvidenceRole,h.DeviceName\nFROM AlertEvidence u JOIN AlertEvidence h ON u.AlertId=h.AlertId\nWHERE u.EntityType='User' AND u.AccountSid IN (%s) AND u.Title=%s\nAND h.EntityType='Machine' AND h.DeviceName IS NOT NULL AND h.DeviceName<>''\nLIMIT 101",
+      "params": [
+        "S-1-5-21-561436748-3867387497-1732241745-3701",
+        "Suspicious sequence of exploration activities"
+      ],
+      "rows": [
+        {
+          "AlertId": "dabefe8595-f926-4e52-b91b-033a583d74f3_1",
+          "Title": "Suspicious sequence of exploration activities",
+          "EvidenceRole": "Impacted",
+          "DeviceName": "mb-winclient.internal.niseko.alpineskihouse.co"
+        }
+      ]
+    },
+    {
+      "step": "T3",
+      "episode_id": "em_device_to_url",
+      "sql": "SELECT DISTINCT u.AlertId,u.Title,u.EvidenceRole,h.DeviceName,u.RemoteUrl\nFROM AlertEvidence h JOIN AlertEvidence u ON h.AlertId=u.AlertId\nWHERE h.EntityType='Machine' AND h.Title=%s\nAND (LOWER(h.DeviceName) IN (%s)\n OR SUBSTRING_INDEX(LOWER(h.DeviceName),'.',1) IN (NULL))\nAND u.EntityType='Url' AND u.RemoteUrl IS NOT NULL AND u.RemoteUrl<>''\nLIMIT 101",
+      "params": [
+        "Malicious URL was clicked on that device",
+        "mb-winclient.internal.niseko.alpineskihouse.co"
+      ],
+      "rows": [
+        {
+          "AlertId": "ea638555292711314844_1873318062",
+          "Title": "Malicious URL was clicked on that device",
+          "EvidenceRole": "Related",
+          "DeviceName": "mb-winclient.internal.niseko.alpineskihouse.co",
+          "RemoteUrl": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "RemoteUrl": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+    }
+  ],
+  "evaluation": {
+    "example_id": "train_incident55_index0",
+    "utc": "2026-10-19T17:15:20.946051+00:00",
+    "official_path_verified": true,
+    "gold": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+    "exact_match": false,
+    "match_ignoring_trailing_slash": true,
+    "scope": "起点/目标标题由官方路径离线映射；本例验证给定计划的执行能力，不验证在线选路。"
+  }
+}

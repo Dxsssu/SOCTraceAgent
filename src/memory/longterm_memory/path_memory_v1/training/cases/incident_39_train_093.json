@@ -1,0 +1,657 @@
+{
+  "id": "incident_39_train_093",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 93,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident involving a file being dropped and launched from a remote location was detected. During this incident, an attacker or malware might be attempting to move laterally or propagate. The remote session involved an account with the SID `S-0-6-5` and an IP address `141.216.110.153`.",
+    "question": "Can you identify the name of the file associated with the detected malware activity?",
+    "answer": "rubeus.exe",
+    "solution": [
+      "A remote session dropped and executed the file `rubeus.exe` with the command line `rubeus.exe dump /service:xfbzkp /user:lucasb` on 2024-06-27 at 14:33:27.7927134 UTC, with Process ID `2608`.",
+      "The file `rubeus.exe` was detected as 'Kekeo' malware and was active."
+    ],
+    "start_alert": 34,
+    "end_alert": 100,
+    "start_entities": [
+      23,
+      25
+    ],
+    "end_entities": [
+      65
+    ],
+    "shortest_alert_path": [
+      34,
+      9,
+      100
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "34",
+    "9",
+    "100"
+  ],
+  "nodes": {
+    "23": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-0-6-5"
+    },
+    "25": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "141.216.110.153"
+    },
+    "34": {
+      "type": "alert",
+      "name": "File dropped and launched from remote location",
+      "description": "A remote session dropped a file and executed it. An attacker or a malware might be an attempting move laterally or propagate."
+    },
+    "9": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+    },
+    "100": {
+      "type": "alert",
+      "name": "'Kekeo' malware was detected and was active",
+      "description": "Malware and unwanted software are undesirable applications that perform annoying, disruptive, or harmful actions on affected machines. Some of these undesirable applications can replicate and spread from one machine to another. Others are able to receive commands from remote attackers and perform activities associated with cyber attacks.\n\nThis detection might indicate that the malware was stopped from delivering its payload. However, it is prudent to check the machine for signs of infection."
+    },
+    "65": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "rubeus.exe"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "23",
+        "concept": "Account_SID",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "25",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "File_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_8fbe62ed5a1c7a7c",
+  "merged_ems": [
+    "em_898e68d595db343b",
+    "em_ffe03979aa807e5d",
+    "em_e70aeae96c2b61b0"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "9",
+          "expected_present": true,
+          "values": [
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+              "raw_components": {
+                "ProcessId": "2608",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.7927134Z",
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+              "time": "2024-07-04 22:35:00.721436+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-04 22:35:01.862275+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5912",
+                "CreatedTimeUtc": "2024-06-27T14:32:53.2267179Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-04 22:35:01.862275+00:00",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "65",
+          "expected_present": true,
+          "values": [
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+              "time": "2024-07-04 22:35:03.402097+00:00",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 4,
+          "expected_node": "9",
+          "expected_present": true,
+          "values": [
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+            "7668__2024-06-27t14:34:10.0201983z__psexesvc.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+              "raw_components": {
+                "ProcessId": "2608",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.7927134Z",
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+              "time": "2024-07-04 22:35:00.721436+00:00",
+              "matched_inputs": [
+                "141.216.110.153"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-04 22:35:01.862275+00:00",
+              "matched_inputs": [
+                "141.216.110.153"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5912",
+                "CreatedTimeUtc": "2024-06-27T14:32:53.2267179Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 18,
+              "entity_ref": "20",
+              "roles": [],
+              "alert_id": "e0b11833-aec1-6a18-1271-cf54a9fdd7a5",
+              "time": "2024-07-04 22:35:01.862275+00:00",
+              "matched_inputs": [
+                "141.216.110.153"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "7668__2024-06-27t14:34:10.0201983z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "7668",
+                "CreatedTimeUtc": "2024-06-27T14:34:10.0201983Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "da757149-9c60-3f26-53e1-b2b009de196c",
+              "time": "2024-07-04 22:35:02.050095+00:00",
+              "matched_inputs": [
+                "141.216.110.153"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "65",
+          "expected_present": true,
+          "values": [
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+              "time": "2024-07-04 22:35:03.402097+00:00",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_db96e339d4c1b39d",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_898e68d595db343b",
+          "status": "ok",
+          "candidate_count": 81,
+          "unique_values": [
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+              "raw_components": {
+                "ProcessId": "2608",
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.7927134Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+              "time": "2024-07-19 22:35:13.788532+00:00",
+              "source_row_hash": "0139840b82897740c7b19d75e96d7df5507a3cd4f74d14463f58029bc5c28369",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+              "raw_components": {
+                "ProcessId": "2608",
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.7927134Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+              "time": "2024-07-13 22:34:38.300301+00:00",
+              "source_row_hash": "0f773c209e3b75efb340612850fd10b74ecdbd1034dd4b129c1ada087d758318",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+              "raw_components": {
+                "ProcessId": "2608",
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.7927134Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+              "time": "2024-07-26 22:35:00.321923+00:00",
+              "source_row_hash": "21f1a93cb31b50c2e039fabdc38eda5d9b0e7eeafaa10c4757a075e2e03b97d4",
+              "matched_inputs": [
+                "S-0-6-5"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File dropped and launched from remote location",
+            "S-0-6-5"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_e70aeae96c2b61b0",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+              "time": "2024-07-13 22:39:47.851914+00:00",
+              "source_row_hash": "14323e26ad5376d6c0156ce6e6e28285d63660d80b934c5fb345bf34230a948a",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+              "time": "2024-07-19 22:35:15.374667+00:00",
+              "source_row_hash": "2eade08cd1e13604e9c4d2a5e778a344b8decdb90055b96291c91c60d089eb1b",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+              "time": "2024-07-24 22:35:11.731303+00:00",
+              "source_row_hash": "3aa2c23b1764474b509cfbed3af6a1f64ed4c93deea4964703ad11681f117a8a",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "'Kekeo' malware was detected and was active",
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_db96e339d4c1b39d",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_ffe03979aa807e5d",
+          "status": "ok",
+          "candidate_count": 107,
+          "unique_values": [
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+            "7668__2024-06-27t14:34:10.0201983z__psexesvc.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+              "raw_components": {
+                "ProcessId": "2608",
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.7927134Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+              "time": "2024-07-19 22:35:13.788532+00:00",
+              "source_row_hash": "0139840b82897740c7b19d75e96d7df5507a3cd4f74d14463f58029bc5c28369",
+              "matched_inputs": [
+                "141.216.110.153"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+              "raw_components": {
+                "ProcessId": "2608",
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.7927134Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+              "time": "2024-07-13 22:34:38.300301+00:00",
+              "source_row_hash": "0f773c209e3b75efb340612850fd10b74ecdbd1034dd4b129c1ada087d758318",
+              "matched_inputs": [
+                "141.216.110.153"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+              "raw_components": {
+                "ProcessId": "2608",
+                "CommandLine": "Rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.7927134Z"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e",
+              "time": "2024-07-26 22:35:00.321923+00:00",
+              "source_row_hash": "21f1a93cb31b50c2e039fabdc38eda5d9b0e7eeafaa10c4757a075e2e03b97d4",
+              "matched_inputs": [
+                "141.216.110.153"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "File dropped and launched from remote location",
+            "141.216.110.153"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_e70aeae96c2b61b0",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+              "time": "2024-07-13 22:39:47.851914+00:00",
+              "source_row_hash": "14323e26ad5376d6c0156ce6e6e28285d63660d80b934c5fb345bf34230a948a",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+              "time": "2024-07-19 22:35:15.374667+00:00",
+              "source_row_hash": "2eade08cd1e13604e9c4d2a5e778a344b8decdb90055b96291c91c60d089eb1b",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ade74e37-a40a-77d7-9775-8a9e893f4777",
+              "time": "2024-07-24 22:35:11.731303+00:00",
+              "source_row_hash": "3aa2c23b1764474b509cfbed3af6a1f64ed4c93deea4964703ad11681f117a8a",
+              "matched_inputs": [
+                "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb "
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "'Kekeo' malware was detected and was active",
+            "2608__2024-06-27t14:33:27.7927134z__rubeus.exe  dump /service:xfbzkp /user:lucasb ",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+            "7668__2024-06-27t14:34:10.0201983z__psexesvc.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 513 (char 512)",
+          "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e"
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 513 (char 512)",
+          "alert_id": "50a75b61-924e-eaab-4439-13edc8f6620e"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

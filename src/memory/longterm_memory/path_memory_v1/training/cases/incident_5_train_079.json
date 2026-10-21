@@ -1,0 +1,710 @@
+{
+  "id": "incident_5_train_079",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 79,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "In a recent security incident, a known credential theft tool `mimikatz.exe` was executed. The execution command line indicated an attempt to dump users' credentials, keys, and plain-text passwords. The process had a Process ID of 3008 and was created at 2024-06-20T09:03:30.2086323Z.",
+    "question": "Related to this incident, PsExec was used to launch a command on a remote device likely for lateral movement. Can you provide the Process ID and creation time of the `cmd.exe` process that was launched by PsExec?",
+    "answer": "Process ID: 8656, Creation time: 2024-06-20T09:07:09.5458894Z",
+    "solution": [
+      "A known credential theft tool was executed by the account `tgs2z`.",
+      "PsExec was used to launch `cmd.exe` on a remote device with Process ID `8656` at `2024-06-20t09:07:09.5458894z`."
+    ],
+    "start_alert": 161,
+    "end_alert": 84,
+    "start_entities": [
+      24,
+      29
+    ],
+    "end_entities": [
+      85
+    ],
+    "shortest_alert_path": [
+      161,
+      16,
+      84
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "161",
+    "16",
+    "84"
+  ],
+  "nodes": {
+    "24": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "mimikatz.exe"
+    },
+    "29": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+    },
+    "161": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "16": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "tgs2z"
+    },
+    "84": {
+      "type": "alert",
+      "name": "PsExec launched a command on a remote device",
+      "description": "PsExec was used to launch a command on a remote device. PsExec is a tool used to launch programs on remote, or local devices. An attacker might be leveraging this tool to launch malicious commands to a remote device and move laterally in the organization."
+    },
+    "85": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "24",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "29",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Process_Identity",
+    "weak_links": [
+      "16"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e249a04d77503775",
+  "merged_ems": [
+    "em_ef96f297ee42800a",
+    "em_71b0ed9affecd48c",
+    "em_46de56dff68618c8"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 6,
+          "expected_node": "16",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9",
+              "time": "2024-07-04 22:35:01.368957+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "20ead08a-82fa-af66-a6d2-51ae76517dac",
+              "time": "2024-07-04 22:35:02.654051+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "c3b65635-eb84-20c8-ccc9-b1e73a38284c",
+              "time": "2024-07-04 22:35:02.680957+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-04 22:35:02.702215+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "e9866748-c910-72ff-588e-aeaff9082b21",
+              "time": "2024-07-04 22:35:03.869406+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-04 22:35:04.193072+00:00",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "85",
+          "expected_present": true,
+          "values": [
+            "6428__2024-06-20t09:07:40.2264462z__notepad.exe  \\\\vnevado-jump cmd.ee",
+            "6624__2024-06-20t09:07:44.707052z__notepad.exe  \\\\vnevado-jump cmd.exe",
+            "8656__2024-06-20t09:07:09.5458894z__cmd.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe",
+              "raw_components": {
+                "ProcessId": "8656",
+                "CreatedTimeUtc": "2024-06-20T09:07:09.5458894Z",
+                "CommandLine": "cmd.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-04 22:35:01.285549+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6428__2024-06-20t09:07:40.2264462z__notepad.exe  \\\\vnevado-jump cmd.ee",
+              "raw_components": {
+                "ProcessId": "6428",
+                "CreatedTimeUtc": "2024-06-20T09:07:40.2264462Z",
+                "CommandLine": "notepad.exe  \\\\vnevado-jump cmd.ee"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-04 22:35:01.285549+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6624__2024-06-20t09:07:44.707052z__notepad.exe  \\\\vnevado-jump cmd.exe",
+              "raw_components": {
+                "ProcessId": "6624",
+                "CreatedTimeUtc": "2024-06-20T09:07:44.707052Z",
+                "CommandLine": "notepad.exe  \\\\vnevado-jump cmd.exe"
+              },
+              "entity_index": 17,
+              "entity_ref": "19",
+              "roles": [],
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-04 22:35:01.285549+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "16",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-04 22:35:04.193072+00:00",
+              "matched_inputs": [
+                "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "85",
+          "expected_present": true,
+          "values": [
+            "6428__2024-06-20t09:07:40.2264462z__notepad.exe  \\\\vnevado-jump cmd.ee",
+            "6624__2024-06-20t09:07:44.707052z__notepad.exe  \\\\vnevado-jump cmd.exe",
+            "8656__2024-06-20t09:07:09.5458894z__cmd.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe",
+              "raw_components": {
+                "ProcessId": "8656",
+                "CreatedTimeUtc": "2024-06-20T09:07:09.5458894Z",
+                "CommandLine": "cmd.exe"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-04 22:35:01.285549+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6428__2024-06-20t09:07:40.2264462z__notepad.exe  \\\\vnevado-jump cmd.ee",
+              "raw_components": {
+                "ProcessId": "6428",
+                "CreatedTimeUtc": "2024-06-20T09:07:40.2264462Z",
+                "CommandLine": "notepad.exe  \\\\vnevado-jump cmd.ee"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-04 22:35:01.285549+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "6624__2024-06-20t09:07:44.707052z__notepad.exe  \\\\vnevado-jump cmd.exe",
+              "raw_components": {
+                "ProcessId": "6624",
+                "CreatedTimeUtc": "2024-06-20T09:07:44.707052Z",
+                "CommandLine": "notepad.exe  \\\\vnevado-jump cmd.exe"
+              },
+              "entity_index": 17,
+              "entity_ref": "19",
+              "roles": [],
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-04 22:35:01.285549+00:00",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_0aa795d4f236ec67",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 60,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-14 22:39:35.774236+00:00",
+              "source_row_hash": "0508ac5a4dc7ac97e88174c8b42d8b1b6ffb5b55ff3070fb32344b2e430e8072",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-05 22:34:21.397763+00:00",
+              "source_row_hash": "0bf5edea44fea225b0943246ecbd1d6d6a81dc78fbb21b19cfb83744ecb430be",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-17 22:34:57.413389+00:00",
+              "source_row_hash": "1e43b5c17ad6ad49f56c3496b35c9cd06d484722812474f17e2bd36323b9a35b",
+              "matched_inputs": [
+                "mimikatz.exe"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "mimikatz.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_ef96f297ee42800a",
+          "status": "ok",
+          "candidate_count": 30,
+          "unique_values": [
+            "6428__2024-06-20t09:07:40.2264462z__notepad.exe  \\\\vnevado-jump cmd.ee",
+            "6624__2024-06-20t09:07:44.707052z__notepad.exe  \\\\vnevado-jump cmd.exe",
+            "8656__2024-06-20t09:07:09.5458894z__cmd.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe",
+              "raw_components": {
+                "ProcessId": "8656",
+                "CommandLine": "cmd.exe",
+                "CreatedTimeUtc": "2024-06-20T09:07:09.5458894Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-04 22:35:01.285549+00:00",
+              "source_row_hash": "0c03105ac8f3cd42403a372779c5bbac6ed06e5b3dfcc18bb91b529e4a71f5c4",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe",
+              "raw_components": {
+                "ProcessId": "8656",
+                "CommandLine": "cmd.exe",
+                "CreatedTimeUtc": "2024-06-20T09:07:09.5458894Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-14 22:34:27.717535+00:00",
+              "source_row_hash": "116f4c2e228925a1bf57bec17bb027f43c06b32452c1b0eb235bab59159273c4",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe",
+              "raw_components": {
+                "ProcessId": "8656",
+                "CommandLine": "cmd.exe",
+                "CreatedTimeUtc": "2024-06-20T09:07:09.5458894Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-17 22:39:56.965951+00:00",
+              "source_row_hash": "1d2015248c8cc64f9a25c074943f8e6b7f115ebcabd5d27bf55ccccc26fb8f7c",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "tgs2z"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_0aa795d4f236ec67",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_46de56dff68618c8",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-14 22:39:35.774236+00:00",
+              "source_row_hash": "0508ac5a4dc7ac97e88174c8b42d8b1b6ffb5b55ff3070fb32344b2e430e8072",
+              "matched_inputs": [
+                "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-05 22:34:21.397763+00:00",
+              "source_row_hash": "0bf5edea44fea225b0943246ecbd1d6d6a81dc78fbb21b19cfb83744ecb430be",
+              "matched_inputs": [
+                "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5cfbdc06-9cf4-b7e0-a7c3-fceacde8c33f",
+              "time": "2024-07-17 22:34:57.413389+00:00",
+              "source_row_hash": "1e43b5c17ad6ad49f56c3496b35c9cd06d484722812474f17e2bd36323b9a35b",
+              "matched_inputs": [
+                "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "3008__2024-06-20t09:03:30.2086323z__\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:..\\notepad.exe //vnevado-jumpv cmd.exe\""
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_ef96f297ee42800a",
+          "status": "ok",
+          "candidate_count": 30,
+          "unique_values": [
+            "6428__2024-06-20t09:07:40.2264462z__notepad.exe  \\\\vnevado-jump cmd.ee",
+            "6624__2024-06-20t09:07:44.707052z__notepad.exe  \\\\vnevado-jump cmd.exe",
+            "8656__2024-06-20t09:07:09.5458894z__cmd.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe",
+              "raw_components": {
+                "ProcessId": "8656",
+                "CommandLine": "cmd.exe",
+                "CreatedTimeUtc": "2024-06-20T09:07:09.5458894Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-04 22:35:01.285549+00:00",
+              "source_row_hash": "0c03105ac8f3cd42403a372779c5bbac6ed06e5b3dfcc18bb91b529e4a71f5c4",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe",
+              "raw_components": {
+                "ProcessId": "8656",
+                "CommandLine": "cmd.exe",
+                "CreatedTimeUtc": "2024-06-20T09:07:09.5458894Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-14 22:34:27.717535+00:00",
+              "source_row_hash": "116f4c2e228925a1bf57bec17bb027f43c06b32452c1b0eb235bab59159273c4",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "8656__2024-06-20t09:07:09.5458894z__cmd.exe",
+              "raw_components": {
+                "ProcessId": "8656",
+                "CommandLine": "cmd.exe",
+                "CreatedTimeUtc": "2024-06-20T09:07:09.5458894Z"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "7b4d46ca-afa7-c4c2-e086-bf1935e2e658",
+              "time": "2024-07-17 22:39:56.965951+00:00",
+              "source_row_hash": "1d2015248c8cc64f9a25c074943f8e6b7f115ebcabd5d27bf55ccccc26fb8f7c",
+              "matched_inputs": [
+                "tgs2z"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "PsExec launched a command on a remote device",
+            "tgs2z"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

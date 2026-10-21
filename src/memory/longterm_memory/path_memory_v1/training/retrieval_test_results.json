@@ -1,0 +1,2923 @@
+{
+  "timestamp": "2026-10-19T18:30:34.675625+00:00",
+  "model": "deepseek-v4.1-flash",
+  "provider": "fancybag",
+  "recall": "lexical+LLM",
+  "scope": "Training-memory resubstitution tests, not held-out accuracy. No official seed/path/index passed to retriever. Ablations explicitly hide memory layers.",
+  "tests": [
+    {
+      "case": "incident_55_train_000",
+      "mode": "normal",
+      "context": "We have detected that one of your users has recently clicked on a link that was found to be malicious: `http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/`. This is part of a broader security incident involving suspicious exploration activities including the use of multiple Windows commands which can be used by attackers to identify assets of value and coordinate lateral movement after compromising a machine.",
+      "question": "A recent security incident included another instance of potentially malicious URL click on the same device. Can you identify the URL?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "与同一设备上另一潜在恶意URL点击事件关联的URL"
+          },
+          "constraints": [
+            "必须对应同一设备上的另一潜在恶意URL点击事件",
+            "URL值须原样保留"
+          ],
+          "event_context": [
+            "检测到某用户近期点击了已判定为恶意的URL",
+            "更广泛的安全事件涉及可疑探查活动，包括使用多个Windows命令进行资产识别和横向移动协调"
+          ],
+          "retrieval_query": "同一设备上另一潜在恶意URL点击事件中的URL"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "PM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "必须对应同一设备上的另一潜在恶意URL点击事件",
+                  "supported": true,
+                  "reason": "该路线按账户→主机→URL顺序调查，包含“A potentially malicious URL click was detected”“Suspicious sequence of exploration activities”“Malicious URL was clicked on that device”事件节点，并输出Host_Name和URL；执行后需用Host_Name与已知点击设备比对，确认目标URL来自同一设备上的另一潜在恶意URL点击事件。"
+                },
+                {
+                  "constraint": "URL值须原样保留",
+                  "supported": true,
+                  "reason": "路线目标输出为URL，执行时应从日志原样提取目标URL值，并保留已知E1的原始URL值用于比对。"
+                }
+              ],
+              "reason": "候选1覆盖已知恶意URL点击告警、同一设备上的可疑探查活动及“Malicious URL was clicked on that device”事件，且提供Host_Name作为同一设备校验桥梁，可推进定位另一潜在恶意URL点击事件；候选3和4缺少主机维度，候选2的事件链偏向邮件钓鱼/进程注入，与当前设备URL点击调查的上下文不如候选1匹配。",
+              "candidates": [
+                "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+                "pm_946f48bf4383cee1/scope_a5cad25ec6b4e92c/route_9195073f7a8130d5/URL",
+                "pm_3076db3c3bca149e/scope_55e1fe92b7f270fe/route_3c31d15c9d9bbed0/URL",
+                "pm_e7814882561779b8/scope_55e1fe92b7f270fe/route_90017d55fe2e2b5e/URL"
+              ]
+            },
+            "selected": {
+              "id": "pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL",
+              "pm_id": "pm_946f48bf4383cee1",
+              "scenario_id": "scope_f54ed65dfffc7b12",
+              "route_id": "route_a4a73f68d563b0d7",
+              "known": "URL",
+              "wanted": "URL",
+              "name": "账户 → 主机 → URL关联调查",
+              "guide": "从已知实体选择满足输入与目标类型的具体路线及完整事件场景，依次调查账户、主机、URL。严格按路线的EM依赖顺序传递观测结果，保留证据和候选；阶段归并不代表标识等价，不可跳过重复追踪步骤。",
+              "events": [
+                "A potentially malicious URL click was detected",
+                "Suspicious sequence of exploration activities",
+                "Malicious URL was clicked on that device"
+              ],
+              "outputs": [
+                "Account_SID",
+                "Host_Name",
+                "URL"
+              ],
+              "recall_score": 0.193093,
+              "values": [
+                "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "必须对应同一设备上的另一潜在恶意URL点击事件",
+                  "supported": true,
+                  "reason": "T1显示已知恶意URL点击事件关联Account_SID；T2将该Account_SID映射到主机mb-winclient；T3显示在该设备mb-winclient上发生恶意URL点击，候选URL作为T3输出且matched_inputs为mb-winclient。"
+                },
+                {
+                  "constraint": "URL值须原样保留",
+                  "supported": true,
+                  "reason": "候选取自T3输出，保留为https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/，未改写。"
+                }
+              ],
+              "reason": "证据表明已知点击事件关联的账户SID对应设备mb-winclient，而T3在该设备上记录了另一潜在恶意URL点击，候选值正是该URL。"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_e516c468f5783731",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-561436748-3867387497-1732241745-3701",
+                "raw_components": {
+                  "Sid": "S-1-5-21-561436748-3867387497-1732241745-3701"
+                },
+                "roles": [],
+                "entity_index": 3,
+                "alert_id": "88bca7a1-236a-b068-c486-a023d84ac979",
+                "time": "2024-07-10 11:24:45.507742+00:00",
+                "source_row_hash": "038fe874ecf41d2accc4744ec2fd63b1b738d8c4e3867ebdc64438f9834b6a62",
+                "matched_inputs": [
+                  "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'URL' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "A potentially malicious URL click was detected",
+              "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            ]
+          },
+          {
+            "step": "T2",
+            "episode_id": "em_b108d6b14ba923d1",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-04 22:35:03.197761+00:00",
+                "source_row_hash": "0199fcecfa31eaf6175917359b5016ed7b5105322feb145c859bb645bb029d40",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-31 22:40:02.973923+00:00",
+                "source_row_hash": "1044a74d6ac7ad7b854011e1ddb599f15d0b782f199b060bfbd344936c874f3f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-22 22:34:43.459272+00:00",
+                "source_row_hash": "1c0eb9de58d3dc5227e1cb7f856b44c799ac3c5e2f97428d7373041205d709c8",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-05 22:34:20.263868+00:00",
+                "source_row_hash": "28088ecf1be941c132e2fa3a228736e46bbf54224a13d212dd41325ae286e3ca",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-17 22:34:56.504955+00:00",
+                "source_row_hash": "2b51cae449d346aba9c89e9b11852b8eaae9873fee0e7c760f06a79db623a3a6",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-28 22:34:32.041305+00:00",
+                "source_row_hash": "2c804d24e4cce9b1c5d135590ee3b2971e07f07f684656fa01cb3ecc58df5f12",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-16 22:34:46.365151+00:00",
+                "source_row_hash": "3160203713066de64eafc5dc011e821b9ff0defe257d3f68447ef7536b38b188",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-15 22:39:22.104088+00:00",
+                "source_row_hash": "444f53939ed0dafc1da315131dc87ca8a7192c359af8fe7783561dbe3776ef68",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-27 22:35:10.351189+00:00",
+                "source_row_hash": "58eb9b7d952e0d7d1a7fb7a27b4ec15b0fef7740496debe6fea8a4ec73bb094a",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-20 22:34:25.658848+00:00",
+                "source_row_hash": "6575997cc71446e8df397fee44cf0b8c8faff9e290d3e119a0cd678b7cdc7c64",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-09 07:30:01.738261+00:00",
+                "source_row_hash": "71231ac67d452f84c462e7327ccbb6b19279c5bf7317eaa659059bc54e31893c",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-12 22:34:24.665964+00:00",
+                "source_row_hash": "716ee69ef0e29176a86f2241688437c54f542130db31a416df8d09ec7bb97119",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-13 22:34:40.838195+00:00",
+                "source_row_hash": "7f4c1d73e7b212e7c468ca97a88438dc9452f6d736b5d09dca4b3cc20a338f7e",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-07 22:34:17.429571+00:00",
+                "source_row_hash": "87784f67e8df80ffdc99e7e2bbb6ac5eae7a06fb6011a60b7c0bf365c1810ee1",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-23 22:34:45.181949+00:00",
+                "source_row_hash": "8cad82285c53d0256aea7fb9ed3e078e070fbff8fdd6d2fecfcb3ec2cab213e0",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-28 22:39:34.780875+00:00",
+                "source_row_hash": "940382da55dca1a92a3ff8ce93ae62893817de3ef924272c2e978e35cbca6683",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-31 22:34:53.280094+00:00",
+                "source_row_hash": "aa985f0ad2320e20717b4d6b4c04a99ebcc56f181405a75ea96d193ffad0fc86",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-21 22:34:53.945511+00:00",
+                "source_row_hash": "b96c52ae4c26884394917983780efb59af679b11e913f76a37028cda9eca872a",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-18 22:36:02.298264+00:00",
+                "source_row_hash": "c0fff2f4a854bdc86ec770cc2af3841a2add522a5dd9cb04f3bc9f3157b6e90f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-29 22:40:19.723316+00:00",
+                "source_row_hash": "c9dd9701240999fe9dd318ae2f5727efcaa6a9a1b8256811e36e70f253534fc0",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-24 22:39:15.361905+00:00",
+                "source_row_hash": "cb7cbe93b589e2e0be5682a8369e3f89ac32eda91e83727c0434e00c1fb6d313",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-25 22:39:13.696036+00:00",
+                "source_row_hash": "cde16e6272ec4e4b31bc4264a840dd3c570f943d76d677002444d9e6e339382b",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-30 22:39:41.483098+00:00",
+                "source_row_hash": "d7b5de0ea2147f3dd894f24f9f2ae8e4bf62cfa838452f1af1338bc700a4c19f",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-19 22:35:15.275758+00:00",
+                "source_row_hash": "d9d0c6bb0c3e0435d62d1ccab727655fea66f33136ceebb04468860657c2965e",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-08-01 22:39:19.643703+00:00",
+                "source_row_hash": "e417119931a71e3c9d83cdd641e825afaa0ae491f099189dd6dfb76f23f27681",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              },
+              {
+                "concept": "Host_Name",
+                "graph_value": "mb-winclient",
+                "raw_components": {
+                  "HostName": "mb-winclient"
+                },
+                "roles": [],
+                "entity_index": 32,
+                "alert_id": "7fda744b-166c-ef5d-18ec-7ddf62ebf77d",
+                "time": "2024-07-14 22:34:29.671458+00:00",
+                "source_row_hash": "f0a12e4d831e3b8feed37962f68d7b6f9fb101a7430a6d101c7f7e6ab741167c",
+                "matched_inputs": [
+                  "S-1-5-21-561436748-3867387497-1732241745-3701"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Host_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Suspicious sequence of exploration activities",
+              "S-1-5-21-561436748-3867387497-1732241745-3701"
+            ]
+          },
+          {
+            "step": "T3",
+            "episode_id": "em_1e29a02e39e38dec",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-24 22:39:30.160437+00:00",
+                "source_row_hash": "12d60f823382bad786cf1da8be83e94e13ec9ed1f629da8fa96d4cae67a9f27c",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-23 22:39:10.359959+00:00",
+                "source_row_hash": "1853702f4792647584523605b73da67835a17577fe0441c58ecc92b2e6fd307f",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-25 22:39:57.656949+00:00",
+                "source_row_hash": "3dd185583c9de4ac96bbaf462e100365bc6343e3f69b3a9a3836bc38e0d53085",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-12 22:39:37.571741+00:00",
+                "source_row_hash": "3eb38acb8e4e7a4b89128d9dbc7023f0f25eedce69460d5c047c57bb288209de",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-08-01 22:41:05.511922+00:00",
+                "source_row_hash": "51e998c20b5d429ab0042eb5144a266757543cf6481704a1df699ba23aad26f4",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-31 22:39:13.246089+00:00",
+                "source_row_hash": "6c9ba14d6812e82c5e081c3984dbb21a0115976e3c9b5f3f373f75c811b3d5fb",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-13 22:40:05.144951+00:00",
+                "source_row_hash": "6d2dfdcdb7eea673dd469317ff979a3bd38911b673cc645d2e8a2fb9f8743251",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-28 22:39:57.724890+00:00",
+                "source_row_hash": "84f2361df19a975fac32eb7710228bb500845b9a3dbc3ae843f0a0840f85dcc8",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-29 22:39:58.320630+00:00",
+                "source_row_hash": "882e8c7b824528c6f1c7892d778533731873b18d7b6f91754f1f132cf0a9d4fe",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-30 22:39:33.137082+00:00",
+                "source_row_hash": "a37ef8383b5f6521cc4e20514de0b865f7ea2a73647a8c7f0eb7144bc869a4ef",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-10 11:24:45.667104+00:00",
+                "source_row_hash": "b433ab3538aa0116f847b79854326e833089fe7370201f65531da9b0f5f39e91",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+                "raw_components": {
+                  "Url": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-27 22:39:12.735557+00:00",
+                "source_row_hash": "e61237c23ea622eeb945bb93bcc57a59e281f914b56fb5da4617486d4d0bfa26",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Malicious URL was clicked on that device",
+              "mb-winclient"
+            ]
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+        "exact": false,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 5,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 150,
+            "prompt_tokens": 1069,
+            "total_tokens": 1219,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"与同一设备上另一潜在恶意URL点击事件关联的URL\"},\"constraints\":[\"必须对应同一设备上的另一潜在恶意URL点击事件\",\"URL值须原样保留\"],\"event_context\":[\"检测到某用户近期点击了已判定为恶意的URL\",\"更广泛的安全事件涉及可疑探查活动，包括使用多个Windows命令进行资产识别和横向移动协调\"],\"retrieval_query\":\"同一设备上另一潜在恶意URL点击事件中的URL\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 1627,
+            "prompt_tokens": 1656,
+            "total_tokens": 3283,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"pm_946f48bf4383cee1/scope_f54ed65dfffc7b12/route_a4a73f68d563b0d7/URL\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"必须对应同一设备上的另一潜在恶意URL点击事件\",\"supported\":true,\"reason\":\"该路线按账户→主机→URL顺序调查，包含“A potentially malicious URL click was detected”“Suspicious sequence of exploration activities”“Malicious URL was clicked on that device”事件节点，并输出Host_Name和URL；执行后需用Host_Name与已知点击设备比对，确认目标URL来自同一设备上的另一潜在恶意URL点击事件。\"},{\"constraint\":\"URL值须原样保留\",\"supported\":true,\"reason\":\"路线目标输出为URL，执行时应从日志原样提取目标URL值，并保留已知E1的原始URL值用于比对。\"}],\"reason\":\"候选1覆盖已知恶意URL点击告警、同一设备上的可疑探查活动及“Malicious URL was clicked on that device”事件，且提供Host_Name作为同一设备校验桥梁，可推进定位另一潜在恶意URL点击事件；候选3和4缺少主机维度，候选2的事件链偏向邮件钓鱼/进程注入，与当前设备URL点击调查的上下文不如候选1匹配。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 939,
+            "prompt_tokens": 7673,
+            "total_tokens": 8612,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"],\"constraint_checks\":[{\"constraint\":\"必须对应同一设备上的另一潜在恶意URL点击事件\",\"supported\":true,\"reason\":\"T1显示已知恶意URL点击事件关联Account_SID；T2将该Account_SID映射到主机mb-winclient；T3显示在该设备mb-winclient上发生恶意URL点击，候选URL作为T3输出且matched_inputs为mb-winclient。\"},{\"constraint\":\"URL值须原样保留\",\"supported\":true,\"reason\":\"候选取自T3输出，保留为https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/，未改写。\"}],\"reason\":\"证据表明已知点击事件关联的账户SID对应设备mb-winclient，而T3在该设备上记录了另一潜在恶意URL点击，候选值正是该URL。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 13114
+    },
+    {
+      "case": "incident_55_train_000",
+      "mode": "without_PM",
+      "context": "We have detected that one of your users has recently clicked on a link that was found to be malicious: `http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/`. This is part of a broader security incident involving suspicious exploration activities including the use of multiple Windows commands which can be used by attackers to identify assets of value and coordinate lateral movement after compromising a machine.",
+      "question": "A recent security incident included another instance of potentially malicious URL click on the same device. Can you identify the URL?",
+      "result": {
+        "status": "no_match",
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "同一设备上另一次潜在恶意URL点击事件中涉及的URL"
+          },
+          "constraints": [
+            "材料中只有一个URL，无法确定其他实例",
+            "材料未给出设备标识"
+          ],
+          "event_context": [
+            "检测到某用户点击了恶意链接",
+            "该事件属于安全事件的一部分，涉及可疑探测活动，包括使用多个Windows命令识别有价值资产并协调横向移动"
+          ],
+          "retrieval_query": "同一设备另一次潜在恶意URL点击事件涉及的URL"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "EM",
+            "decision": {
+              "decision": "no_match",
+              "candidate_id": null,
+              "entity_ids": [],
+              "constraint_checks": [
+                {
+                  "constraint": "材料中只有一个URL，无法确定其他实例",
+                  "supported": false,
+                  "reason": "检索目标要求“另一实例/同一设备另一次点击”的URL，但材料仅提供E1一个URL，无法证明存在其他URL实例；候选均为不同告警中的账户/设备/收件人等属性，不提供目标URL。"
+                },
+                {
+                  "constraint": "材料未给出设备标识",
+                  "supported": false,
+                  "reason": "材料没有设备ID，无法按“同一设备”匹配候选；候选中Device_AAD_ID等仅为目标类型，不能据此证明同一设备或其他URL点击。"
+                }
+              ],
+              "reason": "目标需要同一设备上另一次潜在恶意URL点击涉及的URL，但材料只给出一个URL实体且无设备标识；所有候选的wanted均为账户/邮件/主机等非URL目标，不能推进该URL检索，故拒绝。",
+              "candidates": [
+                "EM/em_282d44abd73e9a92/2aacabb3bd0e",
+                "EM/em_36b2add63380b678/2aacabb3bd0e",
+                "EM/em_91337af89e0a799a/2aacabb3bd0e",
+                "EM/em_a3221b25c137cf72/2aacabb3bd0e",
+                "EM/em_acf4bcfca67f0e2b/2aacabb3bd0e",
+                "EM/em_c5500cc48c1247c7/2aacabb3bd0e",
+                "EM/em_e516c468f5783731/2aacabb3bd0e",
+                "EM/em_282d44abd73e9a92/36e2c6b79fbb"
+              ]
+            }
+          },
+          {
+            "round": 1,
+            "layer": "SM",
+            "decision": {
+              "decision": "no_match",
+              "candidate_id": null,
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "材料中只有一个URL，无法确定其他实例",
+                  "supported": false,
+                  "reason": "所有候选均以同一已知URL E1（http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/）作为输入/关联URL，未提供任何其他URL；材料中确实只有一个URL，无法定位“另一次”点击中的另一URL。"
+                },
+                {
+                  "constraint": "材料未给出设备标识",
+                  "supported": false,
+                  "reason": "材料与候选均未提供设备标识（如AAD设备ID）；候选SM/em_c5500cc48c1247c7仅以wanted=Device_AAD_ID为输出类型，无法用来确认同一设备，且其输出不是URL。"
+                },
+                {
+                  "constraint": "同一设备上另一次潜在恶意URL点击事件中涉及的URL",
+                  "supported": false,
+                  "reason": "wanted概念为URL，但除已知E1外没有任何候选返回另一URL实体；所有候选的wanted字段分别为URL/Device_AAD_ID/Account_Name/Mail_Recipient/Cloud_App_Instance/Command_File_Mention/File_Name/IP_Address，均无法提供“同一设备上另一次点击”的URL。不能把同一告警中共现实体当作另一URL点击事件的证明。"
+                }
+              ],
+              "reason": "没有候选能返回除已知E1之外的另一个URL实体，且材料缺少设备标识，无法验证“同一设备”与“另一次”点击。所有候选仅与当前告警关联，不构成另一URL点击事件的证据，故拒绝，不凑答案。",
+              "candidates": [
+                "SM/em_4fcdffffd71c45be/2aacabb3bd0e",
+                "SM/em_c5500cc48c1247c7/2aacabb3bd0e",
+                "SM/em_acf4bcfca67f0e2b/2aacabb3bd0e",
+                "SM/em_36b2add63380b678/2aacabb3bd0e",
+                "SM/em_2210b83e57f41eab/2aacabb3bd0e",
+                "SM/em_8a2bf2bcdc8b00e1/2aacabb3bd0e",
+                "SM/em_e5234471b5537ad5/2aacabb3bd0e",
+                "SM/em_f5d3089bee2ffe3c/2aacabb3bd0e"
+              ]
+            }
+          }
+        ],
+        "trace": []
+      },
+      "evaluation": {
+        "expected": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+        "exact": false,
+        "normalized_single_answer": false,
+        "answer_in_candidates": false
+      },
+      "sql_queries_including_metadata": 2,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 145,
+            "prompt_tokens": 1069,
+            "total_tokens": 1214,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 896
+            }
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"同一设备上另一次潜在恶意URL点击事件中涉及的URL\"},\"constraints\":[\"材料中只有一个URL，无法确定其他实例\",\"材料未给出设备标识\"],\"event_context\":[\"检测到某用户点击了恶意链接\",\"该事件属于安全事件的一部分，涉及可疑探测活动，包括使用多个Windows命令识别有价值资产并协调横向移动\"],\"retrieval_query\":\"同一设备另一次潜在恶意URL点击事件涉及的URL\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 200,
+            "prompt_tokens": 1517,
+            "total_tokens": 1717,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"no_match\",\"candidate_id\":null,\"entity_ids\":[],\"constraint_checks\":[{\"constraint\":\"材料中只有一个URL，无法确定其他实例\",\"supported\":false,\"reason\":\"检索目标要求“另一实例/同一设备另一次点击”的URL，但材料仅提供E1一个URL，无法证明存在其他URL实例；候选均为不同告警中的账户/设备/收件人等属性，不提供目标URL。\"},{\"constraint\":\"材料未给出设备标识\",\"supported\":false,\"reason\":\"材料没有设备ID，无法按“同一设备”匹配候选；候选中Device_AAD_ID等仅为目标类型，不能据此证明同一设备或其他URL点击。\"}],\"reason\":\"目标需要同一设备上另一次潜在恶意URL点击涉及的URL，但材料只给出一个URL实体且无设备标识；所有候选的wanted均为账户/邮件/主机等非URL目标，不能推进该URL检索，故拒绝。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 353,
+            "prompt_tokens": 3658,
+            "total_tokens": 4011,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"no_match\",\"candidate_id\":null,\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"材料中只有一个URL，无法确定其他实例\",\"supported\":false,\"reason\":\"所有候选均以同一已知URL E1（http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/）作为输入/关联URL，未提供任何其他URL；材料中确实只有一个URL，无法定位“另一次”点击中的另一URL。\"},{\"constraint\":\"材料未给出设备标识\",\"supported\":false,\"reason\":\"材料与候选均未提供设备标识（如AAD设备ID）；候选SM/em_c5500cc48c1247c7仅以wanted=Device_AAD_ID为输出类型，无法用来确认同一设备，且其输出不是URL。\"},{\"constraint\":\"同一设备上另一次潜在恶意URL点击事件中涉及的URL\",\"supported\":false,\"reason\":\"wanted概念为URL，但除已知E1外没有任何候选返回另一URL实体；所有候选的wanted字段分别为URL/Device_AAD_ID/Account_Name/Mail_Recipient/Cloud_App_Instance/Command_File_Mention/File_Name/IP_Address，均无法提供“同一设备上另一次点击”的URL。不能把同一告警中共现实体当作另一URL点击事件的证明。\"}],\"reason\":\"没有候选能返回除已知E1之外的另一个URL实体，且材料缺少设备标识，无法验证“同一设备”与“另一次”点击。所有候选仅与当前告警关联，不构成另一URL点击事件的证据，故拒绝，不凑答案。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 6942
+    },
+    {
+      "case": "incident_55_train_000",
+      "mode": "SM_only",
+      "context": "We have detected that one of your users has recently clicked on a link that was found to be malicious: `http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/`. This is part of a broader security incident involving suspicious exploration activities including the use of multiple Windows commands which can be used by attackers to identify assets of value and coordinate lateral movement after compromising a machine.",
+      "question": "A recent security incident included another instance of potentially malicious URL click on the same device. Can you identify the URL?",
+      "result": {
+        "status": "no_match",
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "同一设备上另一次潜在恶意URL点击事件中的URL，与材料所述安全事件相关"
+          },
+          "constraints": [
+            "只从材料提取已知实体，不推断未知实体",
+            "URL值必须原样出现在原文"
+          ],
+          "event_context": [
+            "检测到用户点击了被标记为恶意的链接",
+            "涉及可疑探测活动的更广泛安全事件，包括攻击者可能用来识别资产和协调横向移动的多个Windows命令"
+          ],
+          "retrieval_query": "查找与同设备潜在恶意URL点击事件关联的另一个URL"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "SM",
+            "decision": {
+              "decision": "no_match",
+              "candidate_id": null,
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "只从材料提取已知实体，不推断未知实体",
+                  "supported": false,
+                  "reason": "材料仅给出一个URL（E1），未提供同一设备上另一次URL点击事件的任何URL值，无法提取第二个URL。"
+                },
+                {
+                  "constraint": "URL值必须原样出现在原文",
+                  "supported": false,
+                  "reason": "所有候选的目标字段均不是原文中出现的第二个URL；候选项仅关联事件主题并指向设备ID、账户名、收件人、文件名、IP、主机名等其他类型实体，均不满足'同一设备另一次恶意URL点击事件中的URL'这一目标。"
+                }
+              ],
+              "reason": "目标类型为URL，且需为同一设备上另一次潜在恶意URL点击事件中的另一个URL。当前材料只包含一个已知URL实体E1，候选均为已知URL到其他类型实体（Device_AAD_ID、Account_Name、Mail_Recipient、Command_File_Mention、File_Name、IP_Address、Host_Name）的映射，无法返回另一个URL，且不得编造或复用E1作为'另一次事件'的URL，故拒绝。",
+              "candidates": [
+                "SM/em_4fcdffffd71c45be/2aacabb3bd0e",
+                "SM/em_c5500cc48c1247c7/2aacabb3bd0e",
+                "SM/em_acf4bcfca67f0e2b/2aacabb3bd0e",
+                "SM/em_36b2add63380b678/2aacabb3bd0e",
+                "SM/em_8a2bf2bcdc8b00e1/2aacabb3bd0e",
+                "SM/em_e5234471b5537ad5/2aacabb3bd0e",
+                "SM/em_f5d3089bee2ffe3c/2aacabb3bd0e",
+                "SM/em_91337af89e0a799a/2aacabb3bd0e"
+              ]
+            }
+          }
+        ],
+        "trace": []
+      },
+      "evaluation": {
+        "expected": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io",
+        "exact": false,
+        "normalized_single_answer": false,
+        "answer_in_candidates": false
+      },
+      "sql_queries_including_metadata": 2,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 160,
+            "prompt_tokens": 1069,
+            "total_tokens": 1229,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 896
+            }
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"http://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"同一设备上另一次潜在恶意URL点击事件中的URL，与材料所述安全事件相关\"},\"constraints\":[\"只从材料提取已知实体，不推断未知实体\",\"URL值必须原样出现在原文\"],\"event_context\":[\"检测到用户点击了被标记为恶意的链接\",\"涉及可疑探测活动的更广泛安全事件，包括攻击者可能用来识别资产和协调横向移动的多个Windows命令\"],\"retrieval_query\":\"查找与同设备潜在恶意URL点击事件关联的另一个URL\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 255,
+            "prompt_tokens": 3659,
+            "total_tokens": 3914,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"no_match\",\"candidate_id\":null,\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"只从材料提取已知实体，不推断未知实体\",\"supported\":false,\"reason\":\"材料仅给出一个URL（E1），未提供同一设备上另一次URL点击事件的任何URL值，无法提取第二个URL。\"},{\"constraint\":\"URL值必须原样出现在原文\",\"supported\":false,\"reason\":\"所有候选的目标字段均不是原文中出现的第二个URL；候选项仅关联事件主题并指向设备ID、账户名、收件人、文件名、IP、主机名等其他类型实体，均不满足'同一设备另一次恶意URL点击事件中的URL'这一目标。\"}],\"reason\":\"目标类型为URL，且需为同一设备上另一次潜在恶意URL点击事件中的另一个URL。当前材料只包含一个已知URL实体E1，候选均为已知URL到其他类型实体（Device_AAD_ID、Account_Name、Mail_Recipient、Command_File_Mention、File_Name、IP_Address、Host_Name）的映射，无法返回另一个URL，且不得编造或复用E1作为'另一次事件'的URL，故拒绝。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 5143
+    },
+    {
+      "case": "incident_5_train_000",
+      "mode": "normal",
+      "context": "A suspicious and anomalous user behavior was detected on the device `vnevado-win11t` indicating potential compromise. This could be a part of a possible human-operated attack. This suspicious behavior caused several alerts related to the user, including a change in the frequency and usage pattern of tools or applications.",
+      "question": "What is the URL associated with the Manatee Tempest activity group observed in this incident?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "vectorsandarrows.com"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "Host_Name",
+              "value": "vnevado-win11t"
+            }
+          ],
+          "wanted": {
+            "concept": "URL",
+            "description": "与Manatee Tempest活动组织相关联的URL"
+          },
+          "constraints": [
+            "URL须保留原文，官方图谱可能将路径转为小写",
+            "实体共现仅证明关联，不证明因果关系或攻击者身份"
+          ],
+          "event_context": [
+            "设备vnevado-win11t上检测到可疑异常用户行为，提示可能失陷",
+            "疑似为人工操作攻击的一部分",
+            "该行为引发多条与用户相关的告警，包括工具或应用程序使用频率与模式的变化"
+          ],
+          "retrieval_query": "调查涉及特定活动组织的安全事件中关联的URL"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "PM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "pm_3076db3c3bca149e/scope_09d875cfb70bd8fd/route_ee74e4bc5ae730ff/Host_Name",
+              "entity_ids": [
+                "E1"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "URL须保留原文，官方图谱可能将路径转为小写",
+                  "supported": true,
+                  "reason": "该候选以URL为输出目标；最终输出URL时须保留原文，不能因图谱路径大小写处理而改写。当前仅选择路线，具体URL需在后续证据中按原文核验。"
+                },
+                {
+                  "constraint": "实体共现仅证明关联，不证明因果关系或攻击者身份",
+                  "supported": true,
+                  "reason": "该路线仅将主机vnevado-win11t上的可疑行为与Manatee Tempest活动组织事件及URL线索关联，不据此单独认定因果关系或攻击者身份。"
+                }
+              ],
+              "reason": "E1是已知Host_Name实体，与候选的已知类型一致。候选事件顺序为“Suspicious hands on keyboard user behavior”后接“Manatee Tempest activity group”，与context中人工操作攻击、可疑用户行为及工具使用模式变化的描述最匹配；其他候选或缺少Manatee Tempest事件，或以勒索软件/C2阻断等不直接匹配当前上下文的事件开头。",
+              "candidates": [
+                "pm_3076db3c3bca149e/scope_84e2817f7d7c393f/route_ee74e4bc5ae730ff/Host_Name",
+                "pm_3076db3c3bca149e/scope_09d875cfb70bd8fd/route_ee74e4bc5ae730ff/Host_Name",
+                "pm_3076db3c3bca149e/scope_a821c05919bfde55/route_ee74e4bc5ae730ff/Host_Name",
+                "pm_3076db3c3bca149e/scope_75df786eb670f0e1/route_c053298726961c2e/Host_Name",
+                "pm_3076db3c3bca149e/scope_ca7420223bfd6a1d/route_c053298726961c2e/Host_Name"
+              ]
+            },
+            "selected": {
+              "id": "pm_3076db3c3bca149e/scope_09d875cfb70bd8fd/route_ee74e4bc5ae730ff/Host_Name",
+              "pm_id": "pm_3076db3c3bca149e",
+              "scenario_id": "scope_09d875cfb70bd8fd",
+              "route_id": "route_ee74e4bc5ae730ff",
+              "known": "Host_Name",
+              "wanted": "URL",
+              "name": "账户 → URL关联调查",
+              "guide": "从已知实体选择满足输入与目标类型的具体路线及完整事件场景，依次调查账户、URL。严格按路线的EM依赖顺序传递观测结果，保留证据和候选；阶段归并不代表标识等价，不可跳过重复追踪步骤。",
+              "events": [
+                "Suspicious hands on keyboard user behavior",
+                "Manatee Tempest activity group"
+              ],
+              "outputs": [
+                "Account_SID",
+                "URL"
+              ],
+              "recall_score": 0.126856,
+              "values": [
+                "vnevado-win11t"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "vectorsandarrows.com"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "URL须保留原文，官方图谱可能将路径转为小写",
+                  "supported": true,
+                  "reason": "证据中URL原文为 vectorsandarrows.com，候选值一致且未见路径大小写偏差。"
+                },
+                {
+                  "constraint": "实体共现仅证明关联，不证明因果关系或攻击者身份",
+                  "supported": true,
+                  "reason": "证据显示该URL与Manatee Tempest活动组事件关联，但仅能证明关联，不能据此推断因果或确认攻击者身份。"
+                }
+              ],
+              "reason": "T2事件明确为Manatee Tempest activity group，其输出中多次出现URL候选 vectorsandarrows.com，且通过Account SID与T1中vnevado-win11t相关告警建立关联。"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_f328ca5b1574cda5",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-06 22:34:50.981796+00:00",
+                "source_row_hash": "07eea2a1d6d6bc112e8dddaf23b3128c65f83e485d197a98244bf8b22ff21e82",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-13 22:34:38.553863+00:00",
+                "source_row_hash": "1b66773bef27d1c96ae75bb643e535996c2551c27804aa84db0268d6ff3f4016",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-14 22:34:27.271194+00:00",
+                "source_row_hash": "4868bac6eb9811e40093a4a00a586ba17183916b71d7216ea2fe38c1828f79ad",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-11 22:34:56.252873+00:00",
+                "source_row_hash": "579a553c3612f484db21110cc333092b16cda8432cc7c45aa1e844a5181ffa24",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-12 22:34:22.554018+00:00",
+                "source_row_hash": "715b5723c25a7bbab19c289237bb23a243458101d2eb1435838fd886722dafc7",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-05 22:34:18.068172+00:00",
+                "source_row_hash": "91a4f6112d5dd2fb41eaf7f7b148e697b61a73ce7d665343f2471d726bc34739",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-15 22:39:19.799826+00:00",
+                "source_row_hash": "981576b8c4261d7c03f4ef31da449a873cf2e13ba73001fa1897d41860b02d22",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-09 22:34:23.272624+00:00",
+                "source_row_hash": "a68298d76955a76f844f3847d183e1bed8100ff458dfef00de38538c954b867c",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-07 22:34:15.062835+00:00",
+                "source_row_hash": "c411a9b05a5137416171086944cc66d2af90b4e488c363e4455d342b95020e89",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-16 22:34:44.032565+00:00",
+                "source_row_hash": "dbbfb5e566380ac4daf7e9189e45d0abc72a9a26a3c1a3a9d799ddb7ac969c6c",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-17 22:34:54.068025+00:00",
+                "source_row_hash": "e389041b80d5676561765e077b4ac647a469cad4698b43a628692c90aa0e2814",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-10 22:39:28.468213+00:00",
+                "source_row_hash": "e45d53a7e06bdcb4d505f06afa82c404c2337e02ff0b22b35e91a8666e9ce5eb",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-04 22:35:00.921503+00:00",
+                "source_row_hash": "e78753971ba6859c730d869b5dbbe1949734d5acef68477cafeb7a002c98ab85",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1840191660-8534830288-125585561-1522",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1840191660-8534830288-125585561-1522"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "9e0dfe42-a062-1b52-7e4e-6a9d22c9f9a7",
+                "time": "2024-07-08 22:34:57.839087+00:00",
+                "source_row_hash": "f7b1ab7e2ebb4cbe29cb2bad7f7420c318e11d86a6d291020e2df8db84da8b81",
+                "matched_inputs": [
+                  "vnevado-win11t"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Suspicious hands on keyboard user behavior",
+              "vnevado-win11t"
+            ]
+          },
+          {
+            "step": "T2",
+            "episode_id": "em_c18a0a34286a80b5",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-12 22:34:22.671822+00:00",
+                "source_row_hash": "13f490d6dd3ebdb125118a954d4ad19106e489f0ff2d85653d8e09d9dff8aa68",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-16 22:34:44.198522+00:00",
+                "source_row_hash": "14ff084f0d41ff7110c7fa418a3cf1ad9c8fbf0a9474e0e387e79d3ffbd521e5",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-10 22:39:28.590213+00:00",
+                "source_row_hash": "156de02bfb8135830faea96286d8a4a75c59864bd8b2206bc6aacc68d0424e80",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-09 22:34:23.386546+00:00",
+                "source_row_hash": "1f2a89f865a75768f0d60186c6b40f7a4724266cebdf941440ae296c8cd30fe2",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-08 22:34:57.948296+00:00",
+                "source_row_hash": "891cebae071f885442ee78ca87d2adcd9585815a0e2f1800aeecb8b61d231116",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-05 22:34:18.191709+00:00",
+                "source_row_hash": "8d5a81e9f8ee8742f2fb336398bd00a98a3c1797aa9e3d81a9f7d6b5609e65e2",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-04 22:35:01.061459+00:00",
+                "source_row_hash": "96e5ca3caa54ebc329b02a34164b471d80061194bcd8c06c88ea613441dc1ffd",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-15 22:39:19.968240+00:00",
+                "source_row_hash": "9a72ca69523776cd2c29d0aaaeb95ddff2609158ab950d6df7f714a6ebe0e42c",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-17 22:34:54.235761+00:00",
+                "source_row_hash": "a60610049bfcf8e29c083f85eff74e85bd87d0241f3e2fb0cb2eca5dc0671faa",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-07 22:34:15.194416+00:00",
+                "source_row_hash": "ab8a80b4ea802715a755efb6af71221056f7780ab952feb3690c52c8b1625c4d",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-06 22:34:51.126396+00:00",
+                "source_row_hash": "b0678d6ed1ee0c61cd4a7e2295e7900df28fba77f3085d92828ebd4557d260b0",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-13 22:34:38.704262+00:00",
+                "source_row_hash": "c0e1cd6cb366be6637bb4c4be0c6335ca1425e5fe36f8810fa13c7acf05e3f5e",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-14 22:34:27.426383+00:00",
+                "source_row_hash": "d3c40380b09081ac6e9ffbd60a47cfa8d435fe0d2fc68f10eabeaad6995d3603",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "2829a21b-e106-56bf-60d9-14f53f63cb7f",
+                "time": "2024-07-11 22:34:56.365093+00:00",
+                "source_row_hash": "fd9fe9e639443cd4985a45491b4cbff307cca8369e1dc0ec28280ef5aa399b1a",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-14 22:34:29.317364+00:00",
+                "source_row_hash": "0f8f865009d84458951f4920f9ee0dc3497237f26f48ade15ab10b065da79eb5",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-05 22:34:19.909655+00:00",
+                "source_row_hash": "1ef2879dcaa9f2a35c2129be87743f6a7e83d75da46d36867eee5c2a7e0b6cd4",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-15 22:39:21.755235+00:00",
+                "source_row_hash": "29ad73585b2cf558239ef041a423659ad0adea37266b432c5656d30a006df9ec",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-08 22:34:59.676001+00:00",
+                "source_row_hash": "328293e3269e7862048bfca009d1676d68ebadb9fda6e08b85264bb170e65d91",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-17 22:34:56.071990+00:00",
+                "source_row_hash": "770ae34fc6dc39970c0eff8de5f40cd79126c4011903af8b5b1bb14655bb7678",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-12 22:34:24.353084+00:00",
+                "source_row_hash": "8280b9bbba517c478f58df95b4b70df66f1c9cd0fefb865404e8e71319bc9666",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-06 22:34:53.053278+00:00",
+                "source_row_hash": "8c60958b37195a2a88a0cbc782b50b7d3087115a6e0f72ee15233daaf12e97d2",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-11 22:34:58.030018+00:00",
+                "source_row_hash": "995c3f3814255b4007f0e50466b1c11ccde6afcc8b0bf5246b8df719f8f56394",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-09 22:34:25.166879+00:00",
+                "source_row_hash": "c2735159ea78f2dd1385217d8aec78db8dbabe59bbc1ad01adcdf5238190c3f3",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-16 22:34:45.997359+00:00",
+                "source_row_hash": "c29ae6da1f47a17adbd2b1a1bdeef674d7f11e28e7cb45288010f37339e7aed0",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-10 22:39:30.157416+00:00",
+                "source_row_hash": "d38b1ea9fd38bbf6c52df78d10e45ff0d1df51b3dc2181ddfd7de4647f1b1fda",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-07 22:34:17.096265+00:00",
+                "source_row_hash": "d83022b7c6cb2aa1b8abe1ab5a3db99515d0d8d5d52c9b7b8a33573aabb70fd7",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-13 22:34:40.488234+00:00",
+                "source_row_hash": "f1f3b93111117e762f92c4945f1cf19d622bdbc3d64aff14543b79055edf3dfa",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "3f25b0c7-fcf6-aee6-7790-0b8e5ba10dd7",
+                "time": "2024-07-04 22:35:02.885829+00:00",
+                "source_row_hash": "f2528c4f898c32e3c81cf8d3a769136c9808ad26cb5d770d659e35d9b6ddbdbb",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-04 22:35:00.428096+00:00",
+                "source_row_hash": "08dad2f62eefe92aa36b02b3b66db3512e71084e91f94bb9fdf542f698a7acbc",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-05 22:34:17.604681+00:00",
+                "source_row_hash": "41b7e82046e7ed1f250bd75771849e217eb090e3436098e73e2c3afb7168c3da",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-08 22:34:57.377309+00:00",
+                "source_row_hash": "57b3193afeb874688ba978946ef64b80e54ffd37cddb0ac525ce470937676e22",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-11 22:34:55.773639+00:00",
+                "source_row_hash": "59ac427e3c6754016fc7449b7b85db20dd67059043bc844fc7b1505d6b4b4764",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-07 22:34:14.567675+00:00",
+                "source_row_hash": "6375cc050b41af22067cc93af93fd3a2a65eaee64f18a1be8365987aef7a21f6",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-17 22:34:53.621437+00:00",
+                "source_row_hash": "653ca9d0d80c1aa1dca137ff6b98cd68f6e81fdbd1d21ac07b64517918893560",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-09 22:34:22.834141+00:00",
+                "source_row_hash": "69d438322520a9a7cb040e86fa85bc33637df7563b0d5c65e88a287d1112851e",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-15 22:39:19.361161+00:00",
+                "source_row_hash": "78a7a0cf1c7d51e0e12a8ce0731a7ee2c46e715f0a58bd906e0f4a7267ec88bd",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-16 22:34:43.595425+00:00",
+                "source_row_hash": "89b240a8866b7a75b81c78108ad2882d6a7136634eccfaec4ac0179ce3419e18",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-12 22:34:22.094442+00:00",
+                "source_row_hash": "da3a741c0383832447f19fe113631ea3702743ac363f4cc6ba285cd4ae4a44bb",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-06 22:34:50.462745+00:00",
+                "source_row_hash": "e7536430385a88e5e44cd1e7f570172d798c8733d74c0a1115e9750778364ba7",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-10 22:39:28.031458+00:00",
+                "source_row_hash": "f0611e22ad288139a0cc5ab50eee29f06abd517f85e12f53a322d8ac441ac9df",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-13 22:34:38.064191+00:00",
+                "source_row_hash": "f252552796b8552c2680d666a503ac119f79c224a8ac1c0b5313225d2271e98c",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "8844d981-1a9a-d893-aa55-acb124bcb188",
+                "time": "2024-07-14 22:34:26.819282+00:00",
+                "source_row_hash": "f35799e539e0ef777ce7ce7a9175c671919591997ecd54a411cc9d6623ed108e",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-11 22:34:57.987448+00:00",
+                "source_row_hash": "1bc65bee03807d0fe94edf5bad76914f4be9b7ca1806d0997e3036072835d4de",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-14 22:34:29.277396+00:00",
+                "source_row_hash": "22aa235221c673c554c96c1cd164ca84c5d0d8dd31ea3cb606ad914e098550b8",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-04 22:35:02.836460+00:00",
+                "source_row_hash": "2943e454280da6350be9cd692ff30e6b8582576dd9ee1e4c3b0847a2e9ca55f1",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-13 22:34:40.449648+00:00",
+                "source_row_hash": "2f9feebdb168338bcf3a407c9a5cd5a2ba58c919e89af802f645932673089144",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-15 22:39:21.719628+00:00",
+                "source_row_hash": "3ca8f88ec218554f5380ef755ff42c8e6d664408dc5a52288ae57cc9d4412f67",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-10 22:39:30.118565+00:00",
+                "source_row_hash": "4daef1c0d151d5bb39ad32f7a40fbcc4e2d123fd94718549534ed4386190db65",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-07 22:34:17.050703+00:00",
+                "source_row_hash": "7f335d0d5790df4d3ef6b687d51f25591fe658fb07562f32fca0741cfa0f1926",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-08 22:34:59.630664+00:00",
+                "source_row_hash": "8795276a97bb9b924840680c7ad2f1c2912bb952a51f89af4449b6c9559dec5a",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-05 22:34:19.866650+00:00",
+                "source_row_hash": "a45190bfb123eafce0b2fdfa9c28cfb809f9e88ff0a0b12210bf2f147c5b8884",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-09 22:34:25.126467+00:00",
+                "source_row_hash": "d6b6cca3981c0619b1a55e9048befe81257a8e5ac9f64d746d16af43aba9b0db",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-06 22:34:53.001291+00:00",
+                "source_row_hash": "f0a8ca35888da881ed9959f637cd6656a8f22b32b2413bc9695d052e6be7bbdf",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              },
+              {
+                "concept": "URL",
+                "graph_value": "vectorsandarrows.com",
+                "raw_components": {
+                  "Url": "vectorsandarrows.com"
+                },
+                "roles": [],
+                "entity_index": 1,
+                "alert_id": "e8726a31-a306-23e1-4284-23403d4bd463",
+                "time": "2024-07-12 22:34:24.304185+00:00",
+                "source_row_hash": "f642cab58d46a8b4cbfaabb17ea3347b29360c8e7f48a29f3bc0b3b51fefa166",
+                "matched_inputs": [
+                  "S-1-5-21-1840191660-8534830288-125585561-1522"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Manatee Tempest activity group",
+              "S-1-5-21-1840191660-8534830288-125585561-1522"
+            ]
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "vectorsandarrows.com",
+        "exact": true,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 4,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 151,
+            "prompt_tokens": 1038,
+            "total_tokens": 1189,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"Host_Name\",\"value\":\"vnevado-win11t\"}],\"wanted\":{\"concept\":\"URL\",\"description\":\"与Manatee Tempest活动组织相关联的URL\"},\"constraints\":[\"URL须保留原文，官方图谱可能将路径转为小写\",\"实体共现仅证明关联，不证明因果关系或攻击者身份\"],\"event_context\":[\"设备vnevado-win11t上检测到可疑异常用户行为，提示可能失陷\",\"疑似为人工操作攻击的一部分\",\"该行为引发多条与用户相关的告警，包括工具或应用程序使用频率与模式的变化\"],\"retrieval_query\":\"调查涉及特定活动组织的安全事件中关联的URL\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 1211,
+            "prompt_tokens": 1642,
+            "total_tokens": 2853,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"pm_3076db3c3bca149e/scope_09d875cfb70bd8fd/route_ee74e4bc5ae730ff/Host_Name\",\"entity_ids\":[\"E1\"],\"constraint_checks\":[{\"constraint\":\"URL须保留原文，官方图谱可能将路径转为小写\",\"supported\":true,\"reason\":\"该候选以URL为输出目标；最终输出URL时须保留原文，不能因图谱路径大小写处理而改写。当前仅选择路线，具体URL需在后续证据中按原文核验。\"},{\"constraint\":\"实体共现仅证明关联，不证明因果关系或攻击者身份\",\"supported\":true,\"reason\":\"该路线仅将主机vnevado-win11t上的可疑行为与Manatee Tempest活动组织事件及URL线索关联，不据此单独认定因果关系或攻击者身份。\"}],\"reason\":\"E1是已知Host_Name实体，与候选的已知类型一致。候选事件顺序为“Suspicious hands on keyboard user behavior”后接“Manatee Tempest activity group”，与context中人工操作攻击、可疑用户行为及工具使用模式变化的描述最匹配；其他候选或缺少Manatee Tempest事件，或以勒索软件/C2阻断等不直接匹配当前上下文的事件开头。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 348,
+            "prompt_tokens": 10265,
+            "total_tokens": 10613,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"vectorsandarrows.com\"],\"constraint_checks\":[{\"constraint\":\"URL须保留原文，官方图谱可能将路径转为小写\",\"supported\":true,\"reason\":\"证据中URL原文为 vectorsandarrows.com，候选值一致且未见路径大小写偏差。\"},{\"constraint\":\"实体共现仅证明关联，不证明因果关系或攻击者身份\",\"supported\":true,\"reason\":\"证据显示该URL与Manatee Tempest活动组事件关联，但仅能证明关联，不能据此推断因果或确认攻击者身份。\"}],\"reason\":\"T2事件明确为Manatee Tempest activity group，其输出中多次出现URL候选 vectorsandarrows.com，且通过Account SID与T1中vnevado-win11t相关告警建立关联。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 14655
+    },
+    {
+      "case": "incident_34_train_000",
+      "mode": "normal",
+      "context": "During an investigation into an advanced security incident, an anomaly was detected in the ASEP registry, indicating that a process named `winatp-intro-backdoor.exe` with ProcessId__CreatedTimeUtc__CommandLine `10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe` was registered to run after a reboot on host `vnevado-win10e` linked to user `samuelf`.",
+      "question": "What is the SID of the account observed in the alert indicating that an uncommon file was created and added to a Run Key?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "S-1-5-21-1870156660-7534030218-135086563-1193"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "Host_Name",
+              "value": "vnevado-win10e"
+            },
+            {
+              "id": "E2",
+              "concept": "Account_Name",
+              "value": "samuelf"
+            },
+            {
+              "id": "E3",
+              "concept": "File_Name",
+              "value": "winatp-intro-backdoor.exe"
+            }
+          ],
+          "wanted": {
+            "concept": "Account_SID",
+            "description": "SID of the account observed in the alert where an uncommon file was created and added to a Run Key"
+          },
+          "constraints": [
+            "No Account_SID value is present in the provided context.",
+            "The context links the host to user samuelf but does not provide a SID.",
+            "The SID cannot be inferred from the account name or host name."
+          ],
+          "event_context": [
+            "An ASEP registry anomaly was detected.",
+            "A process named winatp-intro-backdoor.exe was registered to run after reboot on host vnevado-win10e linked to user samuelf.",
+            "The command modifies HKCU RunOnce."
+          ],
+          "retrieval_query": "Find the account SID associated with the security alert for an uncommon file created and added to a Run Key."
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "PM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name",
+              "entity_ids": [
+                "E2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "No Account_SID value is present in the provided context.",
+                  "supported": true,
+                  "reason": "上下文未直接给出SID，因此需要一个能产出Account_SID的账户关联调查路线；该路线以Account_Name为输入并输出Account_SID。"
+                },
+                {
+                  "constraint": "The context links the host to user samuelf but does not provide a SID.",
+                  "supported": true,
+                  "reason": "已观测实体E2为Account_Name samuelf，与该路线的已知输入类型Account_Name匹配，可将samuelf绑定为账户调查起点。"
+                },
+                {
+                  "constraint": "The SID cannot be inferred from the account name or host name.",
+                  "supported": true,
+                  "reason": "该选择不推断SID，只绑定账户名实体进入路线，由后续调查获取Account_SID；事件链包含ASEP注册表异常与Run Key文件创建，与题意一致。"
+                }
+              ],
+              "reason": "题目要求账户SID，且已知账户名为samuelf(E2)。候选路线pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name以Account_Name为输入、Account_SID为输出，事件覆盖ASEP注册表异常与文件加入Run Key，符合完整事件链；相比同route的Host_Name起点，账户名起点更直接对应查询的账户SID。未编造SID，仅绑定实体进入调查。",
+              "candidates": [
+                "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name",
+                "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Host_Name",
+                "pm_6117b813c7bba655/scope_22b395a0b711f67e/route_a251cf37abc0a30a/File_Name",
+                "pm_eaad33cd317d6bde/scope_7365dbfd0059cea5/route_78179bae78e8e57d/Host_Name",
+                "pm_eaad33cd317d6bde/scope_7365dbfd0059cea5/route_78179bae78e8e57d/Account_Name",
+                "pm_b42712efb9db99f7/scope_512ca646cfd5afe5/route_8160a4c433a8a7f1/File_Name"
+              ]
+            },
+            "selected": {
+              "id": "pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name",
+              "pm_id": "pm_eaad33cd317d6bde",
+              "scenario_id": "scope_17d713539bb15339",
+              "route_id": "route_d3b727a910e089cc",
+              "known": "Account_Name",
+              "wanted": "Account_SID",
+              "name": "账户关联调查",
+              "guide": "从已知实体选择满足输入与目标类型的具体路线及完整事件场景，依次调查账户。严格按路线的EM依赖顺序传递观测结果，保留证据和候选；阶段归并不代表标识等价，不可跳过重复追踪步骤。",
+              "events": [
+                "Anomaly detected in ASEP registry",
+                "An uncommon file was created and added to a Run Key"
+              ],
+              "outputs": [
+                "Account_SID",
+                "Account_SID"
+              ],
+              "recall_score": 0.222643,
+              "values": [
+                "samuelf"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "No Account_SID value is present in the provided context.",
+                  "supported": true,
+                  "reason": "The question context itself does not include an Account_SID; the SID is supplied by retrieved evidence for the matching alert, not inferred from context."
+                },
+                {
+                  "constraint": "The context links the host to user samuelf but does not provide a SID.",
+                  "supported": true,
+                  "reason": "The context links host vnevado-win10e to user samuelf without a SID; T2 evidence independently provides the Account_SID for the Run Key alert."
+                },
+                {
+                  "constraint": "The SID cannot be inferred from the account name or host name.",
+                  "supported": true,
+                  "reason": "The answer value is directly observed in T2 evidence for alert 3f7e932e-ce45-9d20-d0bb-b86b394c701f, titled 'An uncommon file was created and added to a Run Key', not inferred from samuelf or the host name."
+                }
+              ],
+              "reason": "The retrieved T2 evidence matches the target alert 'An uncommon file was created and added to a Run Key' and repeatedly reports Account_SID S-1-5-21-1870156660-7534030218-135086563-1193, which is the only candidate."
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_837a161de400deb8",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-26 22:35:00.573584+00:00",
+                "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-13 22:39:45.487350+00:00",
+                "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-24 22:39:13.842278+00:00",
+                "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-05 22:34:18.215026+00:00",
+                "source_row_hash": "4a9b44471621e6fc1ab681325a71c3231b7fb4961af733e0c9b459e54fcc7e3c",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-21 22:39:59.208297+00:00",
+                "source_row_hash": "628ede86b9a1873e95838d08666f0aa211f65dbc88e18738cdea57416440262e",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-16 22:39:54.716326+00:00",
+                "source_row_hash": "6d03798c130c6bf6c74228b2bd85d4c6cbe31a0d168ea9d438ed2dd03d3bb253",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-21 22:34:52.673493+00:00",
+                "source_row_hash": "7420e02792cd21e0863adb9b47504ac07b2a0ce442d1ab31966ea3818edb984e",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-06 22:34:51.149619+00:00",
+                "source_row_hash": "7b07db37ae641266c8f9fce222b5b89eef3da5330ebfa050a4e3136f17a24199",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-22 22:39:51.710708+00:00",
+                "source_row_hash": "7b17e92a8c4a3142dcce08b3ba94070a02608ccccd8ef569775e501e2a31a96f",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-19 00:13:48.553157+00:00",
+                "source_row_hash": "7e9f3b67e3689aea1cb0a5e9abe295c4b867f4db645586777c92a7fffae7f954",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-17 22:39:56.737660+00:00",
+                "source_row_hash": "902912f155fbc1be9486c20f6a781171895e49cd5fb03f6782eb7e185122a96a",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-13 22:34:38.722955+00:00",
+                "source_row_hash": "a27297fab28e0463a1f24d757fbc5754b8b4127fa87e09c77df81c7729c75a4e",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-04 22:35:01.084834+00:00",
+                "source_row_hash": "aef2b316d3053720ff2ad5b7f5530ca985b095372b32e1b37f7bf93d786fce9d",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-12 22:34:22.691521+00:00",
+                "source_row_hash": "d97c327314b701d7982cfcd3322ce97b5629ee442bdc8b4a915fd65e65885e46",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-15 22:39:20.002600+00:00",
+                "source_row_hash": "e7767346dea5d2db74d5b841334b48e45fd97c63ca4c60d1821e4dd0991f6a50",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+                "time": "2024-07-23 22:34:43.655177+00:00",
+                "source_row_hash": "f6150a96b7e065519fd849ef23397cc57a92f58fec5b1b0a38e6553d67875b00",
+                "matched_inputs": [
+                  "samuelf"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Anomaly detected in ASEP registry",
+              "samuelf"
+            ]
+          },
+          {
+            "step": "T2",
+            "episode_id": "em_acd9f0e565efcca0",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-15 22:39:21.186988+00:00",
+                "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-12 22:34:23.814148+00:00",
+                "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-13 22:39:46.678263+00:00",
+                "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-16 22:39:55.950266+00:00",
+                "source_row_hash": "322806e84d04e47622ded80d820a7a965cd5a94c65dc8bd5c73bb2391d117cda",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-13 22:34:39.883279+00:00",
+                "source_row_hash": "326fa56480fd84400b35b8887c1d5dedf06e39928649b7338484760e55969188",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-21 22:34:53.260803+00:00",
+                "source_row_hash": "3368ca995999ec0e0ebf10443591c265f1796478811ea747fb3bc670c0761baa",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-06 22:34:52.375789+00:00",
+                "source_row_hash": "4a3123567586362fae65ce6da6b8aca77a00759333e2ae86730cbe37af9af501",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-22 22:39:52.374462+00:00",
+                "source_row_hash": "519c3b9f48a1d44603d6f70b51655eb8ed400552435e2ab9e4fdcbcb66ab7b29",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-05 22:34:19.314806+00:00",
+                "source_row_hash": "6bbfae86ef02be86d9f2b6f3987c8c32c6684f676e02842a240c21b55b55ce64",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-04 22:35:02.252731+00:00",
+                "source_row_hash": "7bd3a0564ea18faa66c407cbeac33f2d612a6d9fac15509a5b014d8d3d4e5baa",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-17 22:39:57.921987+00:00",
+                "source_row_hash": "80cfe3c3aea5eb8fb05e5aa3aa20d01bb76edb3ae3373466c816daa4f5b4347c",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-23 22:34:44.438016+00:00",
+                "source_row_hash": "8d5f17c63b21ec8218ee3cd4e38df42f5e5ef557e01de174028c6de7570851a6",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-19 00:13:49.128721+00:00",
+                "source_row_hash": "959ce7d6aa37e3ef05a994f1535178ab6097d3513d8d44d2974adb23538c35c7",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-26 22:35:01.415004+00:00",
+                "source_row_hash": "aaab0fd063d69de8922bb1d057cf98922c8926a4ef90a5048bcfdcf2a9184620",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-21 22:39:59.853304+00:00",
+                "source_row_hash": "d2a0f2bbbed652620e39f7d1ac1f822e5a6e02679875fd1113e37dd3f37b732a",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              },
+              {
+                "concept": "Account_SID",
+                "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+                "raw_components": {
+                  "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+                "time": "2024-07-24 22:39:14.594910+00:00",
+                "source_row_hash": "f54949a80ed0e6da264a00196e363fb5469e9e9e44d81f9fb992b156964cc446",
+                "matched_inputs": [
+                  "S-1-5-21-1870156660-7534030218-135086563-1193"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "An uncommon file was created and added to a Run Key",
+              "S-1-5-21-1870156660-7534030218-135086563-1193"
+            ]
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "S-1-5-21-1870156660-7534030218-135086563-1193",
+        "exact": true,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 6,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 1785,
+            "prompt_tokens": 1154,
+            "total_tokens": 2939,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"Host_Name\",\"value\":\"vnevado-win10e\"},{\"id\":\"E2\",\"concept\":\"Account_Name\",\"value\":\"samuelf\"},{\"id\":\"E3\",\"concept\":\"File_Name\",\"value\":\"winatp-intro-backdoor.exe\"}],\"wanted\":{\"concept\":\"Account_SID\",\"description\":\"SID of the account observed in the alert where an uncommon file was created and added to a Run Key\"},\"constraints\":[\"No Account_SID value is present in the provided context.\",\"The context links the host to user samuelf but does not provide a SID.\",\"The SID cannot be inferred from the account name or host name.\"],\"event_context\":[\"An ASEP registry anomaly was detected.\",\"A process named winatp-intro-backdoor.exe was registered to run after reboot on host vnevado-win10e linked to user samuelf.\",\"The command modifies HKCU RunOnce.\"],\"retrieval_query\":\"Find the account SID associated with the security alert for an uncommon file created and added to a Run Key.\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 361,
+            "prompt_tokens": 2093,
+            "total_tokens": 2454,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name\",\"entity_ids\":[\"E2\"],\"constraint_checks\":[{\"constraint\":\"No Account_SID value is present in the provided context.\",\"supported\":true,\"reason\":\"上下文未直接给出SID，因此需要一个能产出Account_SID的账户关联调查路线；该路线以Account_Name为输入并输出Account_SID。\"},{\"constraint\":\"The context links the host to user samuelf but does not provide a SID.\",\"supported\":true,\"reason\":\"已观测实体E2为Account_Name samuelf，与该路线的已知输入类型Account_Name匹配，可将samuelf绑定为账户调查起点。\"},{\"constraint\":\"The SID cannot be inferred from the account name or host name.\",\"supported\":true,\"reason\":\"该选择不推断SID，只绑定账户名实体进入路线，由后续调查获取Account_SID；事件链包含ASEP注册表异常与Run Key文件创建，与题意一致。\"}],\"reason\":\"题目要求账户SID，且已知账户名为samuelf(E2)。候选路线pm_eaad33cd317d6bde/scope_17d713539bb15339/route_d3b727a910e089cc/Account_Name以Account_Name为输入、Account_SID为输出，事件覆盖ASEP注册表异常与文件加入Run Key，符合完整事件链；相比同route的Host_Name起点，账户名起点更直接对应查询的账户SID。未编造SID，仅绑定实体进入调查。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 1080,
+            "prompt_tokens": 7258,
+            "total_tokens": 8338,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"S-1-5-21-1870156660-7534030218-135086563-1193\"],\"constraint_checks\":[{\"constraint\":\"No Account_SID value is present in the provided context.\",\"supported\":true,\"reason\":\"The question context itself does not include an Account_SID; the SID is supplied by retrieved evidence for the matching alert, not inferred from context.\"},{\"constraint\":\"The context links the host to user samuelf but does not provide a SID.\",\"supported\":true,\"reason\":\"The context links host vnevado-win10e to user samuelf without a SID; T2 evidence independently provides the Account_SID for the Run Key alert.\"},{\"constraint\":\"The SID cannot be inferred from the account name or host name.\",\"supported\":true,\"reason\":\"The answer value is directly observed in T2 evidence for alert 3f7e932e-ce45-9d20-d0bb-b86b394c701f, titled 'An uncommon file was created and added to a Run Key', not inferred from samuelf or the host name.\"}],\"reason\":\"The retrieved T2 evidence matches the target alert 'An uncommon file was created and added to a Run Key' and repeatedly reports Account_SID S-1-5-21-1870156660-7534030218-135086563-1193, which is the only candidate.\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 13731
+    }
+  ]
+}

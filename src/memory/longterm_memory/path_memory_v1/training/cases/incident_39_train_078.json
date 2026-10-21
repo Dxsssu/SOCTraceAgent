@@ -1,0 +1,661 @@
+{
+  "id": "incident_39_train_078",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 78,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "As part of investigating a suspicious sequence of exploration activities on a machine, we observed several Windows commands being executed, including PowerShell and net.exe commands to manage domain users and groups. These commands are often used by attackers to identify valuable assets and facilitate lateral movement. The commands were executed using the script `domaindominance27.ps1`.",
+    "question": "During the investigation, another alert indicated that a known credential theft tool was executed on the machine. Can you identify the script file name associated with this malicious credential theft tool?",
+    "answer": "get-krbticket.ps1",
+    "solution": [
+      "A user with AadUserId `1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1` executed a sequence of suspicious exploration activities.",
+      "A malicious credential theft tool named `get-krbticket.ps1` was executed, indicating an attempt to dump users' credentials."
+    ],
+    "start_alert": 77,
+    "end_alert": 44,
+    "start_entities": [
+      49,
+      18,
+      80,
+      81,
+      50,
+      79,
+      51,
+      83,
+      84,
+      82
+    ],
+    "end_entities": [
+      38
+    ],
+    "shortest_alert_path": [
+      77,
+      29,
+      44
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "77",
+    "29",
+    "44"
+  ],
+  "nodes": {
+    "49": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 "
+    },
+    "18": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "net.exe"
+    },
+    "80": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "2720__2024-06-27t14:32:20.9965284z__\"net.exe\" user /domain"
+    },
+    "81": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6252__2024-06-27t14:32:23.4863625z__\"net.exe\" group \"domain admins\" /domain"
+    },
+    "50": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "domaindominance27.ps1"
+    },
+    "79": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "whoami.exe"
+    },
+    "51": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3624__2024-06-27t14:33:43.4299474z__\"net.exe\" user /add bdadmin password1! /domain"
+    },
+    "83": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6264__2024-06-27t14:32:22.2653632z__\"net.exe\" group /domain"
+    },
+    "84": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3560__2024-06-27t14:32:37.0854938z__\"net.exe\" user fk8mq /domain"
+    },
+    "82": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "1700__2024-06-27t14:32:24.729893z__\"net.exe\" group \"enterprise admins\" /domain"
+    },
+    "77": {
+      "type": "alert",
+      "name": "Suspicious sequence of exploration activities",
+      "description": "A process called a set of windows commands. These commands can be used by attackers in order to identify assets of value and coordinate lateral movement after compromising a machine."
+    },
+    "29": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+    },
+    "44": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "38": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "get-krbticket.ps1"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "49",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "18",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "80",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "81",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "50",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "79",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "51",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "83",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "84",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "82",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "File_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_b4d8459299e2b0c3",
+  "merged_ems": [
+    "em_1b180a45703de956",
+    "em_b01c5e8e6379ab3b",
+    "em_bde4ee0e5ccbde3e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "29",
+          "expected_present": true,
+          "values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+              "time": "2024-07-04 22:35:02.508708+00:00",
+              "matched_inputs": [
+                "domaindominance27.ps1",
+                "net.exe",
+                "whoami.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "38",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "29",
+          "expected_present": true,
+          "values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+              "time": "2024-07-04 22:35:02.508708+00:00",
+              "matched_inputs": [
+                "1700__2024-06-27t14:32:24.729893z__\"net.exe\" group \"enterprise admins\" /domain",
+                "2720__2024-06-27t14:32:20.9965284z__\"net.exe\" user /domain",
+                "3560__2024-06-27t14:32:37.0854938z__\"net.exe\" user fk8mq /domain",
+                "3624__2024-06-27t14:33:43.4299474z__\"net.exe\" user /add bdadmin password1! /domain",
+                "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+                "6252__2024-06-27t14:32:23.4863625z__\"net.exe\" group \"domain admins\" /domain",
+                "6264__2024-06-27t14:32:22.2653632z__\"net.exe\" group /domain"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "38",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_0f728c4e7fff2d2e",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 81,
+          "unique_values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+              "time": "2024-07-04 22:35:02.508708+00:00",
+              "source_row_hash": "01c6643c71fec6eeb1669cbcb0fb76da91be30e1cc7848733545e6cef645bd46",
+              "matched_inputs": [
+                "domaindominance27.ps1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+              "time": "2024-07-04 22:35:02.508708+00:00",
+              "source_row_hash": "01c6643c71fec6eeb1669cbcb0fb76da91be30e1cc7848733545e6cef645bd46",
+              "matched_inputs": [
+                "net.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+              "time": "2024-07-04 22:35:02.508708+00:00",
+              "source_row_hash": "01c6643c71fec6eeb1669cbcb0fb76da91be30e1cc7848733545e6cef645bd46",
+              "matched_inputs": [
+                "whoami.exe"
+              ]
+            }
+          ],
+          "witness_count": 81,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious sequence of exploration activities",
+            "domaindominance27.ps1",
+            "net.exe",
+            "whoami.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_1b180a45703de956",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "get-krbticket.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-31 12:19:34.205582+00:00",
+              "source_row_hash": "0f116ac8edc1a28ea30bc7dd43246ff27e504c8ecade82e1e21e72add226bda1",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-21 22:34:52.714071+00:00",
+              "source_row_hash": "16ed885236c3561b3373c05721393899cd9ea29f56e1b66276671083ccbfb8d6",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-20 22:39:29.272087+00:00",
+              "source_row_hash": "24658850e333f4661fae0915d507f2b3337a2ad28667e1054b9503b8b5c3b6aa",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_0f728c4e7fff2d2e",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b01c5e8e6379ab3b",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+              "time": "2024-07-04 22:35:02.508708+00:00",
+              "source_row_hash": "01c6643c71fec6eeb1669cbcb0fb76da91be30e1cc7848733545e6cef645bd46",
+              "matched_inputs": [
+                "1700__2024-06-27t14:32:24.729893z__\"net.exe\" group \"enterprise admins\" /domain"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+              "time": "2024-07-04 22:35:02.508708+00:00",
+              "source_row_hash": "01c6643c71fec6eeb1669cbcb0fb76da91be30e1cc7848733545e6cef645bd46",
+              "matched_inputs": [
+                "2720__2024-06-27t14:32:20.9965284z__\"net.exe\" user /domain"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2",
+              "time": "2024-07-04 22:35:02.508708+00:00",
+              "source_row_hash": "01c6643c71fec6eeb1669cbcb0fb76da91be30e1cc7848733545e6cef645bd46",
+              "matched_inputs": [
+                "3560__2024-06-27t14:32:37.0854938z__\"net.exe\" user fk8mq /domain"
+              ]
+            }
+          ],
+          "witness_count": 189,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious sequence of exploration activities",
+            "1700__2024-06-27t14:32:24.729893z__\"net.exe\" group \"enterprise admins\" /domain",
+            "2720__2024-06-27t14:32:20.9965284z__\"net.exe\" user /domain",
+            "3560__2024-06-27t14:32:37.0854938z__\"net.exe\" user fk8mq /domain",
+            "3624__2024-06-27t14:33:43.4299474z__\"net.exe\" user /add bdadmin password1! /domain",
+            "4676__2024-06-27t14:32:08.4041849z__\"powershell.exe\" -executionpolicy bypass -file c:\\users\\tgs2z\\downloads\\domaindominance27\\domaindominance27.ps1 ",
+            "6252__2024-06-27t14:32:23.4863625z__\"net.exe\" group \"domain admins\" /domain",
+            "6264__2024-06-27t14:32:22.2653632z__\"net.exe\" group /domain"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_1b180a45703de956",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "get-krbticket.ps1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-31 12:19:34.205582+00:00",
+              "source_row_hash": "0f116ac8edc1a28ea30bc7dd43246ff27e504c8ecade82e1e21e72add226bda1",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-21 22:34:52.714071+00:00",
+              "source_row_hash": "16ed885236c3561b3373c05721393899cd9ea29f56e1b66276671083ccbfb8d6",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-20 22:39:29.272087+00:00",
+              "source_row_hash": "24658850e333f4661fae0915d507f2b3337a2ad28667e1054b9503b8b5c3b6aa",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 307 (char 306)",
+          "alert_id": "ddf48353-345a-81cf-84eb-3732186fa8b2"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

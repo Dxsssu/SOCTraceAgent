@@ -1,0 +1,730 @@
+{
+  "id": "incident_39_train_004",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 4,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A Mimikatz credential theft tool activity was detected on a device, with Mimikatz attempting to use DCSync functionality to harvest credentials and potentially impersonate a valid user. This activity was tracked as part of investigating a larger security incident. Additionally, multiple known public tools that could be used maliciously were dropped on the same device.",
+    "question": "What was the IP address related to the suspicious file that was registered as a service?",
+    "answer": "141.216.110.153",
+    "solution": [
+      "A Mimikatz credential theft tool script named `get-krbticket.ps1` was detected.",
+      "A dual-purpose tool named `psexesvc.exe` was dropped on the device.",
+      "A suspicious file was registered as a service originating from IP address `141.216.110.153`."
+    ],
+    "start_alert": 108,
+    "end_alert": 21,
+    "start_entities": [
+      30
+    ],
+    "end_entities": [
+      25
+    ],
+    "shortest_alert_path": [
+      108,
+      37,
+      62,
+      24,
+      21
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "108",
+    "37",
+    "62",
+    "24",
+    "21"
+  ],
+  "nodes": {
+    "30": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+    },
+    "108": {
+      "type": "alert",
+      "name": "Mimikatz credential theft tool",
+      "description": "The Mimikatz hacktool was detected on this device. Mimikatz is a credential theft tool that can harvest plaintext passwords, password hashes, smartcard PINs, and Kerberos tickets.  An attacker might be trying to harvest credentials to log into this or other devices on the network, by impersonating a valid user.\n\nFor more information, read the Mimikatz tool profile Threat Analytics report: https://security.microsoft.com/threatanalytics3/51db19ab-081f-46f3-9fe1-3f5e5d2f8ee0/analystreport? and read the Actor profile: Storm-0875 Threat Analytics report https://security.microsoft.com/threatanalytics3/4f60801d-912e-4bcb-91b2-f46879c8a718/analystreport\n"
+    },
+    "37": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "get-krbticket.ps1"
+    },
+    "62": {
+      "type": "alert",
+      "name": "Multiple dual-purpose tools were dropped",
+      "description": "Multiple known public tools, which could also be used for malicious reasons were dropped on this device.\nAttackers might download or copy multiple dual-purpose tools to the target device to perform various attack stages including, credential theft, privilege escalation, and lateral movement."
+    },
+    "24": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "psexesvc.exe"
+    },
+    "21": {
+      "type": "alert",
+      "name": "Suspicious file registered as a service",
+      "description": "A file with suspicious attributes or involved in possible breach activity was registered as a service. An attacker might be attempting to register the file as a service for persistence."
+    },
+    "25": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "141.216.110.153"
+    }
+  },
+  "interpretation": {
+    "alerts": 3,
+    "sql_steps_per_variant": 3,
+    "start_alternatives": [
+      {
+        "node": "30",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [
+      "37",
+      "24"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_74232bfc59d802a6",
+  "merged_ems": [
+    "em_786437addb3952bb",
+    "em_bbd91402e3e40422",
+    "em_85b9e5ad8cbcce89"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 10,
+          "expected_node": "37",
+          "expected_present": true,
+          "values": [
+            "get-krbticket.ps1",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              },
+              "entity_index": 4,
+              "entity_ref": "6",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug sekurlsa::logonpasswords exit"
+              },
+              "entity_index": 10,
+              "entity_ref": "12",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:kyleg /ntlm:96def1a633fc6790124d5f8fe31cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"kerberos::ptt C:\\M365DAttack\\Admin-Tickets\" exit"
+              },
+              "entity_index": 13,
+              "entity_ref": "15",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe dir \\\\vnevado-win10b\\C$\\\"\" exit"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-04 22:35:04.055507+00:00",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 10,
+          "expected_node": "24",
+          "expected_present": true,
+          "values": [
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "mimikatz.exe",
+            "psexec.exe",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "Name": "PsExec.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-04 22:35:02.140784+00:00",
+              "matched_inputs": [
+                "get-krbticket.ps1",
+                "mimikatz.exe",
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-04 22:35:02.140784+00:00",
+              "matched_inputs": [
+                "get-krbticket.ps1",
+                "mimikatz.exe",
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-04 22:35:02.140784+00:00",
+              "matched_inputs": [
+                "get-krbticket.ps1",
+                "mimikatz.exe",
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "domaindominance27.ps1",
+              "raw_components": {
+                "Name": "DomainDominance27.ps1"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-04 22:35:02.140784+00:00",
+              "matched_inputs": [
+                "get-krbticket.ps1",
+                "mimikatz.exe",
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "Name": "PSEXESVC.exe"
+              },
+              "entity_index": 25,
+              "entity_ref": "27",
+              "roles": [],
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-04 22:35:02.140784+00:00",
+              "matched_inputs": [
+                "get-krbticket.ps1",
+                "mimikatz.exe",
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "Name": "Get-KRBTicket.ps1"
+              },
+              "entity_index": 28,
+              "entity_ref": "30",
+              "roles": [],
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-04 22:35:02.140784+00:00",
+              "matched_inputs": [
+                "get-krbticket.ps1",
+                "mimikatz.exe",
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "psexec.exe",
+              "raw_components": {
+                "Name": "PsExec.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+              "time": "2024-07-04 22:35:02.325756+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+              "time": "2024-07-04 22:35:02.325756+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "entity_index": 15,
+              "entity_ref": "17",
+              "roles": [],
+              "alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+              "time": "2024-07-04 22:35:02.325756+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "domaindominance27.ps1",
+              "raw_components": {
+                "Name": "DomainDominance27.ps1"
+              },
+              "entity_index": 19,
+              "entity_ref": "21",
+              "roles": [],
+              "alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+              "time": "2024-07-04 22:35:02.325756+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "25",
+          "expected_present": true,
+          "values": [
+            "141.216.110.153"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "bda17cc8-8655-b0a1-9df2-1009b342ed40",
+              "time": "2024-07-04 22:35:00.647302+00:00",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_1f485272796e4baa",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 270,
+          "unique_values": [
+            "get-krbticket.ps1",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-21 22:40:00.985266+00:00",
+              "source_row_hash": "0abbf8ee8916ec4a03e3e866508d6f15635a587e0376ae368a66789a3fabda22",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-23 22:34:45.720003+00:00",
+              "source_row_hash": "18697c72083e6898762e956714003ba7ae6d10125f42c5f5bcd4b38e47715101",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "get-krbticket.ps1",
+              "raw_components": {
+                "CommandLine": "\"mimikatz.exe\" privilege::debug \"sekurlsa::pth /user:fk8mq /ntlm:96def1a633fc6790124d5f8fe21cc72b /domain:vnevado.alpineskihouse.co /run:\\\"powershell.exe C:\\M365DAttack\\Get-KRBTicket.ps1\\\"\" exit -Wait"
+              },
+              "roles": [],
+              "entity_index": 15,
+              "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f",
+              "time": "2024-07-25 22:35:08.183057+00:00",
+              "source_row_hash": "18975f7e28028c0bebb1ade1ec7bdb36681f5999e0f28c761894f534624cadd9",
+              "matched_inputs": [
+                "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Mimikatz credential theft tool",
+            "4748__2024-06-27t14:33:38.0249949z__\"mimikatz.exe\" \"lsadump::dcsync /domain:vnevado.alpineskihouse.co /user:xfbzkp\" exit"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_bbd91402e3e40422",
+          "status": "ok",
+          "candidate_count": 594,
+          "unique_values": [
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "mimikatz.exe",
+            "psexec.exe",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 2,
+          "expected_alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "Name": "PSEXESVC.exe"
+              },
+              "roles": [],
+              "entity_index": 25,
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-23 22:34:44.353732+00:00",
+              "source_row_hash": "0527c0f81af710b428b9fffc830e78c4e1014bfbb71c0199f45fb97ba3958492",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "Name": "PSEXESVC.exe"
+              },
+              "roles": [],
+              "entity_index": 25,
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-05 22:34:19.214340+00:00",
+              "source_row_hash": "0736f48a74c4a09ef887e1f4966f1c2eaebd4d9b24d53d477c4f6d0e5d406bf1",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "psexesvc.exe",
+              "raw_components": {
+                "Name": "PSEXESVC.exe"
+              },
+              "roles": [],
+              "entity_index": 25,
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-17 22:39:57.824905+00:00",
+              "source_row_hash": "122e69da483ddcf21f47b1e2b1df7f3c80dfd89bf0324ae683f1115f7c76bbce",
+              "matched_inputs": [
+                "get-krbticket.ps1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Multiple dual-purpose tools were dropped",
+            "get-krbticket.ps1",
+            "mimikatz.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_85b9e5ad8cbcce89",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "141.216.110.153"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "bda17cc8-8655-b0a1-9df2-1009b342ed40",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "bda17cc8-8655-b0a1-9df2-1009b342ed40",
+              "time": "2024-07-04 22:35:00.647302+00:00",
+              "source_row_hash": "0f782e824474127abff3c803cc99fb43f93546d02173b7cc9e04c889ab886e13",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "bda17cc8-8655-b0a1-9df2-1009b342ed40",
+              "time": "2024-07-26 22:35:00.248290+00:00",
+              "source_row_hash": "10e41666cc8706a920b33d9b3799368e5e2f98c66b0304d017b175ea18d76f92",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "141.216.110.153",
+              "raw_components": {
+                "Address": "141.216.110.153"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "bda17cc8-8655-b0a1-9df2-1009b342ed40",
+              "time": "2024-07-15 22:39:19.529392+00:00",
+              "source_row_hash": "1604dcf402f02966707836f2bfc62e14ac15edfe868d33509b6e2a34557b9af4",
+              "matched_inputs": [
+                "psexesvc.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s,%s,%s,%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious file registered as a service",
+            "domaindominance27.ps1",
+            "get-krbticket.ps1",
+            "mimikatz.exe",
+            "psexec.exe",
+            "psexesvc.exe",
+            "rubeus.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 28 (char 27)",
+          "alert_id": "84b87469-5fb2-0d4a-fc55-f10f8bc78d9f"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

@@ -1,0 +1,298 @@
+{
+  "id": "incident_166_train_032",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_166_qa_incident_o1-ga_c42.json",
+  "index": 32,
+  "sha256": "57a4491e11e42986ad61360378ea3d1c5b0f1058426bcfb455e8959bb64b3cda",
+  "split": "train",
+  "question_record": {
+    "context": "A suspicious inbox manipulation rule was detected on cloud application with AppId `20893`, indicating that an attacker's access to a user's inbox might have been used to manipulate rules possibly to exfiltrate data from the organization.",
+    "question": "What is the primary email address of the mailbox that was used to send suspicious emails related to a BEC (business email compromise) fraud attempt?",
+    "answer": "tony@avoriaz.alpineskihouse.co",
+    "solution": [
+      "The user's inbox rules, associated with AadUserId `89e933b9-5b2e-4bd6-bcdf-033db707ef82`, were manipulated suspiciously.",
+      "Suspicious emails were sent from the mailbox with the primary address `tony@avoriaz.alpineskihouse.co` by a possibly compromised user account."
+    ],
+    "start_alert": 16,
+    "end_alert": 18,
+    "start_entities": [
+      11
+    ],
+    "end_entities": [
+      19
+    ],
+    "shortest_alert_path": [
+      16,
+      1,
+      18
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_166.graphml",
+  "graph_sha256": "0b5a949fa824acc0369e8da5a8a612b8987a900571001c1d3ac0ce9581522b24",
+  "path": [
+    "16",
+    "1",
+    "18"
+  ],
+  "nodes": {
+    "11": {
+      "type": "entity",
+      "node_type": "cloud-application",
+      "identifier_fields": "AppId",
+      "value": "20893"
+    },
+    "16": {
+      "type": "alert",
+      "name": "Suspicious inbox manipulation rule",
+      "description": "A user's inbox rules were manipulated in a suspicious manner. An attacker might have gained access to a user's inbox and is manipulating rules to delete or move messages or folders to exfiltrate data from your organization."
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+    },
+    "18": {
+      "type": "alert",
+      "name": "Suspicious emails sent by BEC-related user",
+      "description": "Suspicious emails were sent by a possibly compromised user account related to an ongoing BEC (business email compromise) fraud attempt. This alert was triggered based on a previous BEC-related alert."
+    },
+    "19": {
+      "type": "entity",
+      "node_type": "mailbox",
+      "identifier_fields": "MailboxPrimaryAddress",
+      "value": "tony@avoriaz.alpineskihouse.co"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "11",
+        "concept": "Cloud_App_ID",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Mailbox_Address",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_2d1ed3b768403261",
+  "merged_ems": [
+    "em_90052e14bd03a379",
+    "em_757d3eda611caf21"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Cloud_App_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "20893"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Compromised"
+              ],
+              "alert_id": "b4d87322-7575-9c11-4073-58dc7f554a5a",
+              "time": "2024-07-22 10:00:07.502771+00:00",
+              "matched_inputs": [
+                "20893"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "19",
+          "expected_present": true,
+          "values": [
+            "tony@avoriaz.alpineskihouse.co"
+          ],
+          "evidence": [
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "tony@avoriaz.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "tony@avoriaz.alpineskihouse.co"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_3f119dd3fd036064",
+      "seed_concept": "Cloud_App_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_90052e14bd03a379",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b4d87322-7575-9c11-4073-58dc7f554a5a",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "b4d87322-7575-9c11-4073-58dc7f554a5a",
+              "time": "2024-07-22 10:00:07.502771+00:00",
+              "source_row_hash": "169c2ff52668ec5a5f7c3185826d970505a0998b0412e10a4b6909d0eb792102",
+              "matched_inputs": [
+                "20893"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "89e933b9-5b2e-4bd6-bcdf-033db707ef82",
+              "raw_components": {
+                "AadUserId": "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "b4d87322-7575-9c11-4073-58dc7f554a5a",
+              "time": "2024-07-22 22:39:42.620867+00:00",
+              "source_row_hash": "17dc94e568e61d7a7d5da0560fe097b647a8c6a63d16653504955c8b475ced21",
+              "matched_inputs": [
+                "20893"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Cloud_App_ID' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious inbox manipulation rule",
+            "20893"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_757d3eda611caf21",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "tony@avoriaz.alpineskihouse.co"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+          "witnesses": [
+            {
+              "concept": "Mailbox_Address",
+              "graph_value": "tony@avoriaz.alpineskihouse.co",
+              "raw_components": {
+                "MailboxPrimaryAddress": "tony@avoriaz.alpineskihouse.co"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "fe1adc68-ea85-2d91-65e8-64de4a76c63d",
+              "time": "2024-07-22 10:14:23.841423+00:00",
+              "source_row_hash": "2abdcdb0e5ec5912c332175a5eafdea79081b7f37e0ef6961653f84fda1455e0",
+              "matched_inputs": [
+                "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Mailbox_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious emails sent by BEC-related user",
+            "89e933b9-5b2e-4bd6-bcdf-033db707ef82"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Cloud_App_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

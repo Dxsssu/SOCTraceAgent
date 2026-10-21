@@ -1,0 +1,1110 @@
+{
+  "timestamp": "2026-10-19T18:41:48.652858+00:00",
+  "model": "deepseek-v4.1-flash",
+  "provider": "fancybag",
+  "recall": "lexical+LLM",
+  "scope": "Training-memory resubstitution tests, not held-out accuracy. No official seed/path/index passed to retriever. Ablations explicitly hide memory layers.",
+  "tests": [
+    {
+      "case": "incident_55_train_025",
+      "mode": "normal",
+      "context": "A malicious URL `https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/` was clicked on the device with the hostname `mb-winclient` on 2024-07-10 at 11:24:45.667104+00:00. This event was flagged as part of a security investigation.",
+      "question": "What is the Azure AD Device ID of the host where the malicious URL was clicked?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "7661dfd4-218f-4016-8a87-66d68a7f098e"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            },
+            {
+              "id": "E2",
+              "concept": "Host_Name",
+              "value": "mb-winclient"
+            }
+          ],
+          "wanted": {
+            "concept": "Device_AAD_ID",
+            "description": "点击恶意URL的主机对应的Azure AD设备ID"
+          },
+          "constraints": [
+            "该设备必须是恶意URL被点击时所在的主机"
+          ],
+          "constraint_sources": [
+            "the host where the malicious URL was clicked"
+          ],
+          "event_context": [
+            "2024-07-10 11:24:45.667104+00:00 在主机 mb-winclient 上点击了恶意URL https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/",
+            "该事件被标记为安全调查的一部分"
+          ],
+          "retrieval_query": "查询点击恶意URL的主机的Azure AD设备ID"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "PM",
+            "decision": {
+              "decision": "no_match",
+              "reason": "No eligible candidates",
+              "candidates": []
+            }
+          },
+          {
+            "round": 1,
+            "layer": "EM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "EM/em_7f9ee32440614a22/aa3def90979d",
+              "entity_ids": [
+                "E2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该设备必须是恶意URL被点击时所在的主机",
+                  "supported": true,
+                  "reason": "候选事件为'Malicious URL was clicked on that device'，且已知实体绑定为E2（Host_Name=mb-winclient），即点击恶意URL的主机；执行该路线可获得该主机的Device_AAD_ID，用于验证其是否为点击时所在主机。"
+                }
+              ],
+              "reason": "目标为点击恶意URL主机的Azure AD设备ID。候选中仅EM/em_7f9ee32440614a22/aa3def90979d为Host_Name→Device_AAD_ID且事件主题正是'Malicious URL was clicked on that device'，可直接由E2推进到所需Device_AAD_ID；其余候选或wanted类型不符（URL/Host_Name/Account），或事件主题不符（PowerShell）。",
+              "candidates": [
+                "EM/em_1e29a02e39e38dec/aa3def90979d",
+                "EM/em_91337af89e0a799a/aa3def90979d",
+                "EM/em_c5500cc48c1247c7/aa3def90979d",
+                "EM/em_7f9ee32440614a22/aa3def90979d",
+                "EM/em_7f9ee32440614a22/17b802b122a0",
+                "EM/em_a1856eff0c584ee8/17b802b122a0",
+                "EM/em_b064dbb7606ee24b/17b802b122a0",
+                "EM/em_f328ca5b1574cda5/17b802b122a0"
+              ],
+              "rejected_decisions": []
+            },
+            "selected": {
+              "id": "EM/em_7f9ee32440614a22/aa3def90979d",
+              "episode_id": "em_7f9ee32440614a22",
+              "known": "Host_Name",
+              "wanted": "Device_AAD_ID",
+              "event": "Malicious URL was clicked on that device",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "recall_score": 0.218434,
+              "bindable_entity_ids": [
+                "E2"
+              ],
+              "values": [
+                "mb-winclient"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "7661dfd4-218f-4016-8a87-66d68a7f098e"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该设备必须是恶意URL被点击时所在的主机",
+                  "supported": true,
+                  "reason": "证据中包含与已知主机 mb-winclient 匹配的记录，且其中一条时间精确为 2024-07-10 11:24:45.667104+00:00，事件描述为恶意URL在该设备上被点击，并返回同一 Azure AD Device ID。"
+                }
+              ],
+              "reason": "证据明确将主机 mb-winclient 在恶意URL点击时间点关联到 Azure AD Device ID 7661dfd4-218f-4016-8a87-66d68a7f098e，且候选值唯一。"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_7f9ee32440614a22",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-24 22:39:30.160437+00:00",
+                "source_row_hash": "12d60f823382bad786cf1da8be83e94e13ec9ed1f629da8fa96d4cae67a9f27c",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-23 22:39:10.359959+00:00",
+                "source_row_hash": "1853702f4792647584523605b73da67835a17577fe0441c58ecc92b2e6fd307f",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-25 22:39:57.656949+00:00",
+                "source_row_hash": "3dd185583c9de4ac96bbaf462e100365bc6343e3f69b3a9a3836bc38e0d53085",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-12 22:39:37.571741+00:00",
+                "source_row_hash": "3eb38acb8e4e7a4b89128d9dbc7023f0f25eedce69460d5c047c57bb288209de",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-08-01 22:41:05.511922+00:00",
+                "source_row_hash": "51e998c20b5d429ab0042eb5144a266757543cf6481704a1df699ba23aad26f4",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-31 22:39:13.246089+00:00",
+                "source_row_hash": "6c9ba14d6812e82c5e081c3984dbb21a0115976e3c9b5f3f373f75c811b3d5fb",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-13 22:40:05.144951+00:00",
+                "source_row_hash": "6d2dfdcdb7eea673dd469317ff979a3bd38911b673cc645d2e8a2fb9f8743251",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-28 22:39:57.724890+00:00",
+                "source_row_hash": "84f2361df19a975fac32eb7710228bb500845b9a3dbc3ae843f0a0840f85dcc8",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-29 22:39:58.320630+00:00",
+                "source_row_hash": "882e8c7b824528c6f1c7892d778533731873b18d7b6f91754f1f132cf0a9d4fe",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-30 22:39:33.137082+00:00",
+                "source_row_hash": "a37ef8383b5f6521cc4e20514de0b865f7ea2a73647a8c7f0eb7144bc869a4ef",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-10 11:24:45.667104+00:00",
+                "source_row_hash": "b433ab3538aa0116f847b79854326e833089fe7370201f65531da9b0f5f39e91",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-27 22:39:12.735557+00:00",
+                "source_row_hash": "e61237c23ea622eeb945bb93bcc57a59e281f914b56fb5da4617486d4d0bfa26",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Malicious URL was clicked on that device",
+              "mb-winclient"
+            ],
+            "round": 1,
+            "layer": "EM",
+            "selected_memory": "EM/em_7f9ee32440614a22/aa3def90979d"
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+        "exact": true,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 4,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 205,
+            "prompt_tokens": 1154,
+            "total_tokens": 1359,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"},{\"id\":\"E2\",\"concept\":\"Host_Name\",\"value\":\"mb-winclient\"}],\"wanted\":{\"concept\":\"Device_AAD_ID\",\"description\":\"点击恶意URL的主机对应的Azure AD设备ID\"},\"constraints\":[\"该设备必须是恶意URL被点击时所在的主机\"],\"constraint_sources\":[\"the host where the malicious URL was clicked\"],\"event_context\":[\"2024-07-10 11:24:45.667104+00:00 在主机 mb-winclient 上点击了恶意URL https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\",\"该事件被标记为安全调查的一部分\"],\"retrieval_query\":\"查询点击恶意URL的主机的Azure AD设备ID\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 220,
+            "prompt_tokens": 1819,
+            "total_tokens": 2039,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"EM/em_7f9ee32440614a22/aa3def90979d\",\"entity_ids\":[\"E2\"],\"constraint_checks\":[{\"constraint\":\"该设备必须是恶意URL被点击时所在的主机\",\"supported\":true,\"reason\":\"候选事件为'Malicious URL was clicked on that device'，且已知实体绑定为E2（Host_Name=mb-winclient），即点击恶意URL的主机；执行该路线可获得该主机的Device_AAD_ID，用于验证其是否为点击时所在主机。\"}],\"reason\":\"目标为点击恶意URL主机的Azure AD设备ID。候选中仅EM/em_7f9ee32440614a22/aa3def90979d为Host_Name→Device_AAD_ID且事件主题正是'Malicious URL was clicked on that device'，可直接由E2推进到所需Device_AAD_ID；其余候选或wanted类型不符（URL/Host_Name/Account），或事件主题不符（PowerShell）。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 341,
+            "prompt_tokens": 2968,
+            "total_tokens": 3309,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"7661dfd4-218f-4016-8a87-66d68a7f098e\"],\"constraint_checks\":[{\"constraint\":\"该设备必须是恶意URL被点击时所在的主机\",\"supported\":true,\"reason\":\"证据中包含与已知主机 mb-winclient 匹配的记录，且其中一条时间精确为 2024-07-10 11:24:45.667104+00:00，事件描述为恶意URL在该设备上被点击，并返回同一 Azure AD Device ID。\"}],\"reason\":\"证据明确将主机 mb-winclient 在恶意URL点击时间点关联到 Azure AD Device ID 7661dfd4-218f-4016-8a87-66d68a7f098e，且候选值唯一。\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 6707
+    },
+    {
+      "case": "incident_55_train_025",
+      "mode": "without_PM",
+      "context": "A malicious URL `https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/` was clicked on the device with the hostname `mb-winclient` on 2024-07-10 at 11:24:45.667104+00:00. This event was flagged as part of a security investigation.",
+      "question": "What is the Azure AD Device ID of the host where the malicious URL was clicked?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "7661dfd4-218f-4016-8a87-66d68a7f098e"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            },
+            {
+              "id": "E2",
+              "concept": "Host_Name",
+              "value": "mb-winclient"
+            }
+          ],
+          "wanted": {
+            "concept": "Device_AAD_ID",
+            "description": "被点击恶意URL的主机(mb-winclient)的Azure AD设备ID"
+          },
+          "constraints": [
+            "该ID对应的是恶意URL被点击的主机"
+          ],
+          "constraint_sources": [
+            "the host where the malicious URL was clicked"
+          ],
+          "event_context": [
+            "恶意URL https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/ 于2024-07-10 11:24:45.667104+00:00在主机mb-winclient上被点击",
+            "该事件作为安全调查的一部分被标记"
+          ],
+          "retrieval_query": "恶意URL被点击主机的Azure AD设备ID"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "EM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "EM/em_7f9ee32440614a22/aa3def90979d",
+              "entity_ids": [
+                "E2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该ID对应的是恶意URL被点击的主机",
+                  "supported": true,
+                  "reason": "该候选以已知主机实体 E2（mb-winclient）为输入，目标类型为 Device_AAD_ID，且事件为“Malicious URL was clicked on that device”，与恶意URL在 mb-winclient 上被点击的事件主题一致；返回后需核验所得设备ID确实属于该主机。"
+                }
+              ],
+              "reason": "候选项 EM/em_7f9ee32440614a22/aa3def90979d 正是从 Host_Name 实体 E2 查询 Device_AAD_ID，且事件主题匹配“恶意URL在该设备上被点击”，因此能直接推进目标设备ID调查。",
+              "candidates": [
+                "EM/em_1e29a02e39e38dec/aa3def90979d",
+                "EM/em_91337af89e0a799a/aa3def90979d",
+                "EM/em_c5500cc48c1247c7/aa3def90979d",
+                "EM/em_7f9ee32440614a22/aa3def90979d",
+                "EM/em_7f9ee32440614a22/17b802b122a0",
+                "EM/em_a1856eff0c584ee8/17b802b122a0",
+                "EM/em_b064dbb7606ee24b/17b802b122a0",
+                "EM/em_f328ca5b1574cda5/17b802b122a0"
+              ],
+              "rejected_decisions": []
+            },
+            "selected": {
+              "id": "EM/em_7f9ee32440614a22/aa3def90979d",
+              "episode_id": "em_7f9ee32440614a22",
+              "known": "Host_Name",
+              "wanted": "Device_AAD_ID",
+              "event": "Malicious URL was clicked on that device",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "recall_score": 0.218119,
+              "bindable_entity_ids": [
+                "E2"
+              ],
+              "values": [
+                "mb-winclient"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "7661dfd4-218f-4016-8a87-66d68a7f098e"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "该ID对应的是恶意URL被点击的主机",
+                  "supported": true,
+                  "reason": "证据中事件记录包含与事件上下文完全一致的时间戳2024-07-10 11:24:45.667104+00:00及匹配主机mb-winclient，该记录中AadDeviceId为7661dfd4-218f-4016-8a87-66d68a7f098e，同一告警下其余记录的主机匹配及AadDeviceId均一致"
+                }
+              ],
+              "reason": "证据在同时间戳及设备mb-winclient的事件行中给出Azure AD设备ID 7661dfd4-218f-4016-8a87-66d68a7f098e，且该值与候选项一致"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_7f9ee32440614a22",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-24 22:39:30.160437+00:00",
+                "source_row_hash": "12d60f823382bad786cf1da8be83e94e13ec9ed1f629da8fa96d4cae67a9f27c",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-23 22:39:10.359959+00:00",
+                "source_row_hash": "1853702f4792647584523605b73da67835a17577fe0441c58ecc92b2e6fd307f",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-25 22:39:57.656949+00:00",
+                "source_row_hash": "3dd185583c9de4ac96bbaf462e100365bc6343e3f69b3a9a3836bc38e0d53085",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-12 22:39:37.571741+00:00",
+                "source_row_hash": "3eb38acb8e4e7a4b89128d9dbc7023f0f25eedce69460d5c047c57bb288209de",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-08-01 22:41:05.511922+00:00",
+                "source_row_hash": "51e998c20b5d429ab0042eb5144a266757543cf6481704a1df699ba23aad26f4",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-31 22:39:13.246089+00:00",
+                "source_row_hash": "6c9ba14d6812e82c5e081c3984dbb21a0115976e3c9b5f3f373f75c811b3d5fb",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-13 22:40:05.144951+00:00",
+                "source_row_hash": "6d2dfdcdb7eea673dd469317ff979a3bd38911b673cc645d2e8a2fb9f8743251",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-28 22:39:57.724890+00:00",
+                "source_row_hash": "84f2361df19a975fac32eb7710228bb500845b9a3dbc3ae843f0a0840f85dcc8",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-29 22:39:58.320630+00:00",
+                "source_row_hash": "882e8c7b824528c6f1c7892d778533731873b18d7b6f91754f1f132cf0a9d4fe",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-30 22:39:33.137082+00:00",
+                "source_row_hash": "a37ef8383b5f6521cc4e20514de0b865f7ea2a73647a8c7f0eb7144bc869a4ef",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-10 11:24:45.667104+00:00",
+                "source_row_hash": "b433ab3538aa0116f847b79854326e833089fe7370201f65531da9b0f5f39e91",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-27 22:39:12.735557+00:00",
+                "source_row_hash": "e61237c23ea622eeb945bb93bcc57a59e281f914b56fb5da4617486d4d0bfa26",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Malicious URL was clicked on that device",
+              "mb-winclient"
+            ],
+            "round": 1,
+            "layer": "EM",
+            "selected_memory": "EM/em_7f9ee32440614a22/aa3def90979d"
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+        "exact": true,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 4,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 210,
+            "prompt_tokens": 1154,
+            "total_tokens": 1364,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cached_tokens": 1020
+            }
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"},{\"id\":\"E2\",\"concept\":\"Host_Name\",\"value\":\"mb-winclient\"}],\"wanted\":{\"concept\":\"Device_AAD_ID\",\"description\":\"被点击恶意URL的主机(mb-winclient)的Azure AD设备ID\"},\"constraints\":[\"该ID对应的是恶意URL被点击的主机\"],\"constraint_sources\":[\"the host where the malicious URL was clicked\"],\"event_context\":[\"恶意URL https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/ 于2024-07-10 11:24:45.667104+00:00在主机mb-winclient上被点击\",\"该事件作为安全调查的一部分被标记\"],\"retrieval_query\":\"恶意URL被点击主机的Azure AD设备ID\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 437,
+            "prompt_tokens": 1849,
+            "total_tokens": 2286,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"EM/em_7f9ee32440614a22/aa3def90979d\",\"entity_ids\":[\"E2\"],\"constraint_checks\":[{\"constraint\":\"该ID对应的是恶意URL被点击的主机\",\"supported\":true,\"reason\":\"该候选以已知主机实体 E2（mb-winclient）为输入，目标类型为 Device_AAD_ID，且事件为“Malicious URL was clicked on that device”，与恶意URL在 mb-winclient 上被点击的事件主题一致；返回后需核验所得设备ID确实属于该主机。\"}],\"reason\":\"候选项 EM/em_7f9ee32440614a22/aa3def90979d 正是从 Host_Name 实体 E2 查询 Device_AAD_ID，且事件主题匹配“恶意URL在该设备上被点击”，因此能直接推进目标设备ID调查。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 201,
+            "prompt_tokens": 2948,
+            "total_tokens": 3149,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"7661dfd4-218f-4016-8a87-66d68a7f098e\"],\"constraint_checks\":[{\"constraint\":\"该ID对应的是恶意URL被点击的主机\",\"supported\":true,\"reason\":\"证据中事件记录包含与事件上下文完全一致的时间戳2024-07-10 11:24:45.667104+00:00及匹配主机mb-winclient，该记录中AadDeviceId为7661dfd4-218f-4016-8a87-66d68a7f098e，同一告警下其余记录的主机匹配及AadDeviceId均一致\"}],\"reason\":\"证据在同时间戳及设备mb-winclient的事件行中给出Azure AD设备ID 7661dfd4-218f-4016-8a87-66d68a7f098e，且该值与候选项一致\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 6799
+    },
+    {
+      "case": "incident_55_train_025",
+      "mode": "SM_only",
+      "context": "A malicious URL `https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/` was clicked on the device with the hostname `mb-winclient` on 2024-07-10 at 11:24:45.667104+00:00. This event was flagged as part of a security investigation.",
+      "question": "What is the Azure AD Device ID of the host where the malicious URL was clicked?",
+      "result": {
+        "status": "answer_candidate",
+        "values": [
+          "7661dfd4-218f-4016-8a87-66d68a7f098e"
+        ],
+        "intent": {
+          "known": [
+            {
+              "id": "E1",
+              "concept": "URL",
+              "value": "https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/"
+            },
+            {
+              "id": "E2",
+              "concept": "Host_Name",
+              "value": "mb-winclient"
+            }
+          ],
+          "wanted": {
+            "concept": "Device_AAD_ID",
+            "description": "The Azure AD Device ID of the host where the malicious URL was clicked."
+          },
+          "constraints": [
+            "The Azure AD Device ID must be for the device with hostname mb-winclient where the malicious URL was clicked.",
+            "The relevant click event occurred on 2024-07-10 at 11:24:45.667104+00:00."
+          ],
+          "constraint_sources": [
+            "was clicked on the device with the hostname `mb-winclient`",
+            "on 2024-07-10 at 11:24:45.667104+00:00"
+          ],
+          "event_context": [
+            "A malicious URL was clicked on the device with hostname mb-winclient on 2024-07-10 at 11:24:45.667104+00:00.",
+            "The event was flagged as part of a security investigation."
+          ],
+          "retrieval_query": "Azure AD Device ID of the host where a malicious URL was clicked"
+        },
+        "log": [
+          {
+            "round": 1,
+            "layer": "SM",
+            "decision": {
+              "decision": "match",
+              "candidate_id": "SM/em_7f9ee32440614a22/aa3def90979d",
+              "entity_ids": [
+                "E2"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "The Azure AD Device ID must be for the device with hostname mb-winclient where the malicious URL was clicked.",
+                  "supported": true,
+                  "reason": "候选以Host_Name=mb-winclient（E2）为已知实体，wanted为Device_AAD_ID，事件标题为恶意URL在该设备被点击，可在同一恶意URL点击告警中获取该主机的AAD设备ID；实体共现仅表示关联，需执行后核验。"
+                },
+                {
+                  "constraint": "The relevant click event occurred on 2024-07-10 at 11:24:45.667104+00:00.",
+                  "supported": true,
+                  "reason": "当前候选对应恶意URL点击事件，执行后需核验该主机在该点击事件中的AAD设备ID，不能仅凭共现断言。"
+                }
+              ],
+              "reason": "优先选择与目标事件主题（恶意URL在mb-winclient上被点击）一致、且wanted类型恰为Device_AAD_ID、已知实体为E2的候选；em_7f9ee32440614a22/aa3def90979d事件标题匹配题意，而另一同类候选17b802b122a0的事件为PowerShell Cmdlet，与恶意URL点击事件不符。返回的是调查推进的下一步，需执行后核验时间与设备绑定。",
+              "candidates": [
+                "SM/em_1e29a02e39e38dec/aa3def90979d",
+                "SM/em_91337af89e0a799a/aa3def90979d",
+                "SM/em_c5500cc48c1247c7/aa3def90979d",
+                "SM/em_7f9ee32440614a22/aa3def90979d",
+                "SM/em_7f9ee32440614a22/17b802b122a0",
+                "SM/em_a1856eff0c584ee8/17b802b122a0",
+                "SM/em_b064dbb7606ee24b/17b802b122a0",
+                "SM/em_f328ca5b1574cda5/17b802b122a0"
+              ],
+              "rejected_decisions": []
+            },
+            "selected": {
+              "id": "SM/em_7f9ee32440614a22/aa3def90979d",
+              "episode_id": "em_7f9ee32440614a22",
+              "known": "Host_Name",
+              "wanted": "Device_AAD_ID",
+              "event": "Malicious URL was clicked on that device",
+              "relation": "筛选指定事件主题，确认输入实体在同一告警中，再返回该告警的目标类型实体；不宣称二者为同一对象或直接因果。",
+              "fields": {
+                "Host_Name": {
+                  "name": "主机名",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "Host_Name",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "short names can collide; exact full name when known",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "host",
+                    "json_paths": [
+                      "$[*].HostName"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                },
+                "Device_AAD_ID": {
+                  "name": "AAD设备ID",
+                  "mapping": {
+                    "table": "LTMEntityEvidence",
+                    "field": "GraphValue",
+                    "type_filter": "Device_AAD_ID",
+                    "raw_field": "RawComponents"
+                  },
+                  "cautions": [
+                    "not Defender DeviceId",
+                    "Entity co-occurrence proves association only, not causality or actor identity."
+                  ],
+                  "source_mapping": {
+                    "table": "SecurityAlert",
+                    "field": "Entities",
+                    "storage_type": "TEXT",
+                    "json_entity_type": "host",
+                    "json_paths": [
+                      "$[*].AadDeviceId"
+                    ],
+                    "extraction": "typed postprocessor; direct"
+                  }
+                }
+              },
+              "recall_score": 0.255999,
+              "bindable_entity_ids": [
+                "E2"
+              ],
+              "values": [
+                "mb-winclient"
+              ]
+            },
+            "verification": {
+              "decision": "answer",
+              "values": [
+                "7661dfd4-218f-4016-8a87-66d68a7f098e"
+              ],
+              "constraint_checks": [
+                {
+                  "constraint": "The Azure AD Device ID must be for the device with hostname mb-winclient where the malicious URL was clicked.",
+                  "supported": true,
+                  "reason": "The Device_AAD_ID output with matched_inputs ['mb-winclient'] ties the AadDeviceId to the host mb-winclient; the host is the one associated with the malicious URL click event."
+                },
+                {
+                  "constraint": "The relevant click event occurred on 2024-07-10 at 11:24:45.667104+00:00.",
+                  "supported": true,
+                  "reason": "One evidence output has time exactly 2024-07-10 11:24:45.667104+00:00 and the same AadDeviceId, matching the specified click event timestamp."
+                }
+              ],
+              "reason": "The AadDeviceId value 7661dfd4-218f-4016-8a87-66d68a7f098e is returned for host mb-winclient, including at the exact event timestamp 2024-07-10 11:24:45.667104+00:00, establishing the Azure AD Device ID for the host where the malicious URL was clicked."
+            }
+          }
+        ],
+        "trace": [
+          {
+            "step": "T1",
+            "episode_id": "em_7f9ee32440614a22",
+            "status": "ok",
+            "outputs": [
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-24 22:39:30.160437+00:00",
+                "source_row_hash": "12d60f823382bad786cf1da8be83e94e13ec9ed1f629da8fa96d4cae67a9f27c",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-23 22:39:10.359959+00:00",
+                "source_row_hash": "1853702f4792647584523605b73da67835a17577fe0441c58ecc92b2e6fd307f",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-25 22:39:57.656949+00:00",
+                "source_row_hash": "3dd185583c9de4ac96bbaf462e100365bc6343e3f69b3a9a3836bc38e0d53085",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-12 22:39:37.571741+00:00",
+                "source_row_hash": "3eb38acb8e4e7a4b89128d9dbc7023f0f25eedce69460d5c047c57bb288209de",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-08-01 22:41:05.511922+00:00",
+                "source_row_hash": "51e998c20b5d429ab0042eb5144a266757543cf6481704a1df699ba23aad26f4",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-31 22:39:13.246089+00:00",
+                "source_row_hash": "6c9ba14d6812e82c5e081c3984dbb21a0115976e3c9b5f3f373f75c811b3d5fb",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-13 22:40:05.144951+00:00",
+                "source_row_hash": "6d2dfdcdb7eea673dd469317ff979a3bd38911b673cc645d2e8a2fb9f8743251",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-28 22:39:57.724890+00:00",
+                "source_row_hash": "84f2361df19a975fac32eb7710228bb500845b9a3dbc3ae843f0a0840f85dcc8",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-29 22:39:58.320630+00:00",
+                "source_row_hash": "882e8c7b824528c6f1c7892d778533731873b18d7b6f91754f1f132cf0a9d4fe",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-30 22:39:33.137082+00:00",
+                "source_row_hash": "a37ef8383b5f6521cc4e20514de0b865f7ea2a73647a8c7f0eb7144bc869a4ef",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-10 11:24:45.667104+00:00",
+                "source_row_hash": "b433ab3538aa0116f847b79854326e833089fe7370201f65531da9b0f5f39e91",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              },
+              {
+                "concept": "Device_AAD_ID",
+                "graph_value": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+                "raw_components": {
+                  "AadDeviceId": "7661dfd4-218f-4016-8a87-66d68a7f098e"
+                },
+                "roles": [],
+                "entity_index": 0,
+                "alert_id": "bead3ab4-038f-61d4-5eaf-9d25031afa16",
+                "time": "2024-07-27 22:39:12.735557+00:00",
+                "source_row_hash": "e61237c23ea622eeb945bb93bcc57a59e281f914b56fb5da4617486d4d0bfa26",
+                "matched_inputs": [
+                  "mb-winclient"
+                ]
+              }
+            ],
+            "query_count": 1,
+            "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+            "parameters": [
+              "Malicious URL was clicked on that device",
+              "mb-winclient"
+            ],
+            "round": 1,
+            "layer": "SM",
+            "selected_memory": "SM/em_7f9ee32440614a22/aa3def90979d"
+          }
+        ]
+      },
+      "evaluation": {
+        "expected": "7661dfd4-218f-4016-8a87-66d68a7f098e",
+        "exact": true,
+        "normalized_single_answer": true,
+        "answer_in_candidates": true
+      },
+      "sql_queries_including_metadata": 4,
+      "llm_calls": [
+        {
+          "usage": {
+            "completion_tokens": 2402,
+            "prompt_tokens": 1179,
+            "total_tokens": 3581,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"known\":[{\"id\":\"E1\",\"concept\":\"URL\",\"value\":\"https://ym018491661.wittytree-b6f239d6.northeurope.azurecontainerapps.io/\"},{\"id\":\"E2\",\"concept\":\"Host_Name\",\"value\":\"mb-winclient\"}],\"wanted\":{\"concept\":\"Device_AAD_ID\",\"description\":\"The Azure AD Device ID of the host where the malicious URL was clicked.\"},\"constraints\":[\"The Azure AD Device ID must be for the device with hostname mb-winclient where the malicious URL was clicked.\",\"The relevant click event occurred on 2024-07-10 at 11:24:45.667104+00:00.\"],\"constraint_sources\":[\"was clicked on the device with the hostname `mb-winclient`\",\"on 2024-07-10 at 11:24:45.667104+00:00\"],\"event_context\":[\"A malicious URL was clicked on the device with hostname mb-winclient on 2024-07-10 at 11:24:45.667104+00:00.\",\"The event was flagged as part of a security investigation.\"],\"retrieval_query\":\"Azure AD Device ID of the host where a malicious URL was clicked\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 320,
+            "prompt_tokens": 4137,
+            "total_tokens": 4457,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"match\",\"candidate_id\":\"SM/em_7f9ee32440614a22/aa3def90979d\",\"entity_ids\":[\"E2\"],\"constraint_checks\":[{\"constraint\":\"The Azure AD Device ID must be for the device with hostname mb-winclient where the malicious URL was clicked.\",\"supported\":true,\"reason\":\"候选以Host_Name=mb-winclient（E2）为已知实体，wanted为Device_AAD_ID，事件标题为恶意URL在该设备被点击，可在同一恶意URL点击告警中获取该主机的AAD设备ID；实体共现仅表示关联，需执行后核验。\"},{\"constraint\":\"The relevant click event occurred on 2024-07-10 at 11:24:45.667104+00:00.\",\"supported\":true,\"reason\":\"当前候选对应恶意URL点击事件，执行后需核验该主机在该点击事件中的AAD设备ID，不能仅凭共现断言。\"}],\"reason\":\"优先选择与目标事件主题（恶意URL在mb-winclient上被点击）一致、且wanted类型恰为Device_AAD_ID、已知实体为E2的候选；em_7f9ee32440614a22/aa3def90979d事件标题匹配题意，而另一同类候选17b802b122a0的事件为PowerShell Cmdlet，与恶意URL点击事件不符。返回的是调查推进的下一步，需执行后核验时间与设备绑定。\"}",
+          "attempt": 1
+        },
+        {
+          "usage": {
+            "completion_tokens": 281,
+            "prompt_tokens": 3005,
+            "total_tokens": 3286,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": null
+          },
+          "response": "{\"decision\":\"answer\",\"values\":[\"7661dfd4-218f-4016-8a87-66d68a7f098e\"],\"constraint_checks\":[{\"constraint\":\"The Azure AD Device ID must be for the device with hostname mb-winclient where the malicious URL was clicked.\",\"supported\":true,\"reason\":\"The Device_AAD_ID output with matched_inputs ['mb-winclient'] ties the AadDeviceId to the host mb-winclient; the host is the one associated with the malicious URL click event.\"},{\"constraint\":\"The relevant click event occurred on 2024-07-10 at 11:24:45.667104+00:00.\",\"supported\":true,\"reason\":\"One evidence output has time exactly 2024-07-10 11:24:45.667104+00:00 and the same AadDeviceId, matching the specified click event timestamp.\"}],\"reason\":\"The AadDeviceId value 7661dfd4-218f-4016-8a87-66d68a7f098e is returned for host mb-winclient, including at the exact event timestamp 2024-07-10 11:24:45.667104+00:00, establishing the Azure AD Device ID for the host where the malicious URL was clicked.\"}",
+          "attempt": 1
+        }
+      ],
+      "tokens": 11324
+    }
+  ]
+}

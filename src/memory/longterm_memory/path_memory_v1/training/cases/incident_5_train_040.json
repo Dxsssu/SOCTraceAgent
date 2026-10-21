@@ -1,0 +1,677 @@
+{
+  "id": "incident_5_train_040",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_5_qa_incident_o1-ga_c42.json",
+  "index": 40,
+  "sha256": "9418a0322a6d6c6440ae262cdf1a786f173c31837b061377137e69aa9ff7268d",
+  "split": "train",
+  "question_record": {
+    "context": "During an investigation of a security incident on 2024-07-04, a known credential theft tool execution command line involving `conhost.exe` was detected. This indicates an attempt to dump users' credentials, keys, and plain-text passwords using the tool.",
+    "question": "What is the name of the file involved in the suspicious access to LSASS service?",
+    "answer": "hid.dll",
+    "solution": [
+      "The account with AadUserId `1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1` executed a known credential theft tool.",
+      "Suspicious access was detected to the LSASS service involving file `hid.dll`."
+    ],
+    "start_alert": 131,
+    "end_alert": 15,
+    "start_entities": [
+      132,
+      133
+    ],
+    "end_entities": [
+      27
+    ],
+    "shortest_alert_path": [
+      131,
+      18,
+      15
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_5.graphml",
+  "graph_sha256": "93b57565a1a6380dd5a04a8fff7af58eb09d26cde1faa709295b39a8e7b5d7e8",
+  "path": [
+    "131",
+    "18",
+    "15"
+  ],
+  "nodes": {
+    "132": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "7948__2024-06-20t08:59:42.8455252z__conhost.exe 0xffffffff -forcev1"
+    },
+    "133": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "conhost.exe"
+    },
+    "131": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "18": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+    },
+    "15": {
+      "type": "alert",
+      "name": "Suspicious access to LSASS service",
+      "description": "In order to obtain clear-text password, attackers must decrypt the user's password from the LSASS service's memory. Multiple public tools as well as custom ones could be used to perform this operation. Once obtained, these credentials are often used in lateral movement activities to infiltrate other machines and servers in the network."
+    },
+    "27": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "hid.dll"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "132",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "133",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "File_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e85359997205c5ca",
+  "merged_ems": [
+    "em_1b180a45703de956",
+    "em_b01c5e8e6379ab3b",
+    "em_bde4ee0e5ccbde3e"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "18",
+          "expected_present": true,
+          "values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-04 22:35:02.702215+00:00",
+              "matched_inputs": [
+                "conhost.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 5,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "cryptdll.dll",
+            "hid.dll",
+            "mimikatz.exe",
+            "samlib.dll",
+            "winscard.dll"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "cryptdll.dll",
+              "raw_components": {
+                "Name": "cryptdll.dll"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "samlib.dll",
+              "raw_components": {
+                "Name": "samlib.dll"
+              },
+              "entity_index": 26,
+              "entity_ref": "28",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "hid.dll",
+              "raw_components": {
+                "Name": "hid.dll"
+              },
+              "entity_index": 30,
+              "entity_ref": "32",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "winscard.dll",
+              "raw_components": {
+                "Name": "WinSCard.dll"
+              },
+              "entity_index": 34,
+              "entity_ref": "36",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "18",
+          "expected_present": true,
+          "values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-04 22:35:02.702215+00:00",
+              "matched_inputs": [
+                "7948__2024-06-20t08:59:42.8455252z__conhost.exe 0xffffffff -forcev1"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 5,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "cryptdll.dll",
+            "hid.dll",
+            "mimikatz.exe",
+            "samlib.dll",
+            "winscard.dll"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "mimikatz.exe",
+              "raw_components": {
+                "Name": "mimikatz.exe"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "cryptdll.dll",
+              "raw_components": {
+                "Name": "cryptdll.dll"
+              },
+              "entity_index": 22,
+              "entity_ref": "24",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "samlib.dll",
+              "raw_components": {
+                "Name": "samlib.dll"
+              },
+              "entity_index": 26,
+              "entity_ref": "28",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "hid.dll",
+              "raw_components": {
+                "Name": "hid.dll"
+              },
+              "entity_index": 30,
+              "entity_ref": "32",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "winscard.dll",
+              "raw_components": {
+                "Name": "WinSCard.dll"
+              },
+              "entity_index": 34,
+              "entity_ref": "36",
+              "roles": [],
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-04 22:35:00.569686+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_0f728c4e7fff2d2e",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_bde4ee0e5ccbde3e",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-12 22:34:24.186017+00:00",
+              "source_row_hash": "0d0bd2d785d7913585af41b58e0b2c1f7a949d54a5a66601a61ac10ca8988b14",
+              "matched_inputs": [
+                "conhost.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-16 22:34:45.805627+00:00",
+              "source_row_hash": "123be0561bde7575121b91562a5e337be2bf2d4761f3c03de4f825079767b539",
+              "matched_inputs": [
+                "conhost.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-17 22:34:55.827569+00:00",
+              "source_row_hash": "27c4840180187183f000966981814aedd39a7de8f0a1988e5aced8f2cd7dc536",
+              "matched_inputs": [
+                "conhost.exe"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "conhost.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_1b180a45703de956",
+          "status": "ok",
+          "candidate_count": 50,
+          "unique_values": [
+            "cryptdll.dll",
+            "hid.dll",
+            "mimikatz.exe",
+            "samlib.dll",
+            "winscard.dll"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "hid.dll",
+              "raw_components": {
+                "Name": "hid.dll"
+              },
+              "roles": [],
+              "entity_index": 30,
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-15 22:39:19.467294+00:00",
+              "source_row_hash": "23609af5ace0accde28ac323c6b9fa7c545fbb183b9437ee509316f51c2a6f9d",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "hid.dll",
+              "raw_components": {
+                "Name": "hid.dll"
+              },
+              "roles": [],
+              "entity_index": 30,
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-12 22:34:22.216367+00:00",
+              "source_row_hash": "2d825b204f2869c7f73ae9acefb2e1e414ba3c09a0e38d8429359d89a508e8c4",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "hid.dll",
+              "raw_components": {
+                "Name": "hid.dll"
+              },
+              "roles": [],
+              "entity_index": 30,
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-13 22:34:38.172438+00:00",
+              "source_row_hash": "327310ac92ef011ad4cd8c2c7343df9c0d7c8c284920f0bf285df36b2fe13e99",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious access to LSASS service",
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_0f728c4e7fff2d2e",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b01c5e8e6379ab3b",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-12 22:34:24.186017+00:00",
+              "source_row_hash": "0d0bd2d785d7913585af41b58e0b2c1f7a949d54a5a66601a61ac10ca8988b14",
+              "matched_inputs": [
+                "7948__2024-06-20t08:59:42.8455252z__conhost.exe 0xffffffff -forcev1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-16 22:34:45.805627+00:00",
+              "source_row_hash": "123be0561bde7575121b91562a5e337be2bf2d4761f3c03de4f825079767b539",
+              "matched_inputs": [
+                "7948__2024-06-20t08:59:42.8455252z__conhost.exe 0xffffffff -forcev1"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "5aed8f7d-81b9-4f94-3e68-66157426eedf",
+              "time": "2024-07-17 22:34:55.827569+00:00",
+              "source_row_hash": "27c4840180187183f000966981814aedd39a7de8f0a1988e5aced8f2cd7dc536",
+              "matched_inputs": [
+                "7948__2024-06-20t08:59:42.8455252z__conhost.exe 0xffffffff -forcev1"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "7948__2024-06-20t08:59:42.8455252z__conhost.exe 0xffffffff -forcev1"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_1b180a45703de956",
+          "status": "ok",
+          "candidate_count": 50,
+          "unique_values": [
+            "cryptdll.dll",
+            "hid.dll",
+            "mimikatz.exe",
+            "samlib.dll",
+            "winscard.dll"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "hid.dll",
+              "raw_components": {
+                "Name": "hid.dll"
+              },
+              "roles": [],
+              "entity_index": 30,
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-15 22:39:19.467294+00:00",
+              "source_row_hash": "23609af5ace0accde28ac323c6b9fa7c545fbb183b9437ee509316f51c2a6f9d",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "hid.dll",
+              "raw_components": {
+                "Name": "hid.dll"
+              },
+              "roles": [],
+              "entity_index": 30,
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-12 22:34:22.216367+00:00",
+              "source_row_hash": "2d825b204f2869c7f73ae9acefb2e1e414ba3c09a0e38d8429359d89a508e8c4",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "hid.dll",
+              "raw_components": {
+                "Name": "hid.dll"
+              },
+              "roles": [],
+              "entity_index": 30,
+              "alert_id": "52c92ba1-8c4a-a629-0cb7-6ae531138eec",
+              "time": "2024-07-13 22:34:38.172438+00:00",
+              "source_row_hash": "327310ac92ef011ad4cd8c2c7343df9c0d7c8c284920f0bf285df36b2fe13e99",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ],
+          "witness_count": 10,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious access to LSASS service",
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 358 (char 357)",
+          "alert_id": "e1adfe8d-a12e-c026-b3b5-855de47fe9a9"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

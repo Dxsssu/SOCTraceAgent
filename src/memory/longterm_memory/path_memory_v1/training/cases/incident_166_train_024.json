@@ -1,0 +1,615 @@
+{
+  "id": "incident_166_train_024",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_166_qa_incident_o1-ga_c42.json",
+  "index": 24,
+  "sha256": "57a4491e11e42986ad61360378ea3d1c5b0f1058426bcfb455e8959bb64b3cda",
+  "split": "train",
+  "question_record": {
+    "context": "There was an alert involving Business Email Compromise (BEC) where a user signed in to SAP in a suspicious manner. This behavior suggests that an attacker might have taken control of a user account to search through SAP with the intention of recording or modifying sensitive financial information. This alert was triggered based on a Microsoft Defender XDR alert. The login to this cloud-application happens from IP address `107.253.5.27` and the application has an AppId of `100`.",
+    "question": "Related to this alert, there is also a suspicious inbox manipulation rule set on a user's mailbox. Can you find the IP address from which this suspicious activity was detected?",
+    "answer": "192.238.237.190",
+    "solution": [
+      "A user account named `Jordan P` involved in a business email compromise-related alert signed in to SAP in a suspicious manner.",
+      "The inbox of the user `Jordan P` (laylaw@vnevado.alpineskihouse.co) had a suspicious inbox manipulation rule set, moving messages to a folder named RSS Feeds using an IP address `192.238.237.190`."
+    ],
+    "start_alert": 27,
+    "end_alert": 5,
+    "start_entities": [
+      24,
+      25
+    ],
+    "end_entities": [
+      4
+    ],
+    "shortest_alert_path": [
+      27,
+      6,
+      5
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_166.graphml",
+  "graph_sha256": "0b5a949fa824acc0369e8da5a8a612b8987a900571001c1d3ac0ce9581522b24",
+  "path": [
+    "27",
+    "6",
+    "5"
+  ],
+  "nodes": {
+    "24": {
+      "type": "entity",
+      "node_type": "cloud-application",
+      "identifier_fields": "AppId",
+      "value": "100"
+    },
+    "25": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "107.253.5.27"
+    },
+    "27": {
+      "type": "alert",
+      "name": "BEC-related user signed in to SAP",
+      "description": "A user involved in a business email compromise-related alert also signed in to SAP in a suspicious manner. An attacker might have taken control of a user account to search through SAP with the intention of recording or modifying sensitive financial information. The gathered information might be used for later stages in the attack, such as phishing or social engineering. This alert was triggered based on a Microsoft Defender XDR alert."
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "Jordan P"
+    },
+    "5": {
+      "type": "alert",
+      "name": "Suspicious inbox manipulation rule",
+      "description": "A suspicious inbox rule was set on the inbox of the user Jordan P (laylaw@vnevado.alpineskihouse.co). This may indicate that the user account is compromised and that the mailbox is being used for spreading phishing emails and gaining access to other accounts and devices. The user created a MoveToFolder rule named ITCleanup on their own inbox, to move messages to a folder named RSS Feeds."
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "192.238.237.190"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "24",
+        "concept": "Cloud_App_ID",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "25",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "IP_Address",
+    "weak_links": [
+      "6"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_e33f77d9a0eb9adb",
+  "merged_ems": [
+    "em_43f76168e85060e5",
+    "em_d88d3bbe6f849524",
+    "em_d3c90d75aeb88742"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Cloud_App_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "Jordan P"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "matched_inputs": [
+                "100"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 5,
+          "expected_node": "4",
+          "expected_present": true,
+          "values": [
+            "180.144.153.174",
+            "192.238.237.190",
+            "255.246.85.58",
+            "95.202.65.202"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "180.144.153.174",
+              "raw_components": {
+                "Address": "180.144.153.174"
+              },
+              "entity_index": 4,
+              "entity_ref": "6",
+              "roles": [
+                "Contextual"
+              ],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "95.202.65.202",
+              "raw_components": {
+                "Address": "95.202.65.202"
+              },
+              "entity_index": 5,
+              "entity_ref": "7",
+              "roles": [
+                "Contextual"
+              ],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "192.238.237.190",
+              "raw_components": {
+                "Address": "192.238.237.190"
+              },
+              "entity_index": 6,
+              "entity_ref": "8",
+              "roles": [
+                "Contextual"
+              ],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "255.246.85.58",
+              "raw_components": {
+                "Address": "255.246.85.58"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [
+                "Attacker"
+              ],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "255.246.85.58",
+              "raw_components": {
+                "Address": "255.246.85.58"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [
+                "Source",
+                "Attacker"
+              ],
+              "alert_id": "b4d87322-7575-9c11-4073-58dc7f554a5a",
+              "time": "2024-07-22 10:00:07.502771+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "6",
+          "expected_present": true,
+          "values": [
+            "Jordan P"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "matched_inputs": [
+                "107.253.5.27"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 5,
+          "expected_node": "4",
+          "expected_present": true,
+          "values": [
+            "180.144.153.174",
+            "192.238.237.190",
+            "255.246.85.58",
+            "95.202.65.202"
+          ],
+          "evidence": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "180.144.153.174",
+              "raw_components": {
+                "Address": "180.144.153.174"
+              },
+              "entity_index": 4,
+              "entity_ref": "6",
+              "roles": [
+                "Contextual"
+              ],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "95.202.65.202",
+              "raw_components": {
+                "Address": "95.202.65.202"
+              },
+              "entity_index": 5,
+              "entity_ref": "7",
+              "roles": [
+                "Contextual"
+              ],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "192.238.237.190",
+              "raw_components": {
+                "Address": "192.238.237.190"
+              },
+              "entity_index": 6,
+              "entity_ref": "8",
+              "roles": [
+                "Contextual"
+              ],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "255.246.85.58",
+              "raw_components": {
+                "Address": "255.246.85.58"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [
+                "Attacker"
+              ],
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "255.246.85.58",
+              "raw_components": {
+                "Address": "255.246.85.58"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [
+                "Source",
+                "Attacker"
+              ],
+              "alert_id": "b4d87322-7575-9c11-4073-58dc7f554a5a",
+              "time": "2024-07-22 10:00:07.502771+00:00",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_69e62ebbeaf0d7d2",
+      "seed_concept": "Cloud_App_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_43f76168e85060e5",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Jordan P"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "source_row_hash": "40122eb3f5afdd3557ed89686db714995701faa14e18d872246e910835d0bc87",
+              "matched_inputs": [
+                "100"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Cloud_App_ID' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC-related user signed in to SAP",
+            "100"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_d3c90d75aeb88742",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "180.144.153.174",
+            "192.238.237.190",
+            "255.246.85.58",
+            "95.202.65.202"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "192.238.237.190",
+              "raw_components": {
+                "Address": "192.238.237.190"
+              },
+              "roles": [
+                "Contextual"
+              ],
+              "entity_index": 6,
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 22:39:42.604352+00:00",
+              "source_row_hash": "33c55a4a66a55ad1320d6e6d308cc7204489215798dfddd16f9899ded24db304",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "192.238.237.190",
+              "raw_components": {
+                "Address": "192.238.237.190"
+              },
+              "roles": [
+                "Contextual"
+              ],
+              "entity_index": 6,
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "source_row_hash": "514363f3a2b175f5807aff2c2558138eca3303abdf6bf08310780d25ba9866a2",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious inbox manipulation rule",
+            "Jordan P"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_69e62ebbeaf0d7d2",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d88d3bbe6f849524",
+          "status": "ok",
+          "candidate_count": 1,
+          "unique_values": [
+            "Jordan P"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "Jordan P",
+              "raw_components": {
+                "Name": "Jordan P"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d1ff5c7d-e659-2a59-a5b2-7c93aa59685e",
+              "time": "2024-07-22 14:09:41.075798+00:00",
+              "source_row_hash": "40122eb3f5afdd3557ed89686db714995701faa14e18d872246e910835d0bc87",
+              "matched_inputs": [
+                "107.253.5.27"
+              ]
+            }
+          ],
+          "witness_count": 1,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "BEC-related user signed in to SAP",
+            "107.253.5.27"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_d3c90d75aeb88742",
+          "status": "ok",
+          "candidate_count": 10,
+          "unique_values": [
+            "180.144.153.174",
+            "192.238.237.190",
+            "255.246.85.58",
+            "95.202.65.202"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+          "witnesses": [
+            {
+              "concept": "IP_Address",
+              "graph_value": "192.238.237.190",
+              "raw_components": {
+                "Address": "192.238.237.190"
+              },
+              "roles": [
+                "Contextual"
+              ],
+              "entity_index": 6,
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 22:39:42.604352+00:00",
+              "source_row_hash": "33c55a4a66a55ad1320d6e6d308cc7204489215798dfddd16f9899ded24db304",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            },
+            {
+              "concept": "IP_Address",
+              "graph_value": "192.238.237.190",
+              "raw_components": {
+                "Address": "192.238.237.190"
+              },
+              "roles": [
+                "Contextual"
+              ],
+              "entity_index": 6,
+              "alert_id": "6bd4d57a-41a8-2d37-2e05-45421731afd5",
+              "time": "2024-07-22 09:49:55.558204+00:00",
+              "source_row_hash": "514363f3a2b175f5807aff2c2558138eca3303abdf6bf08310780d25ba9866a2",
+              "matched_inputs": [
+                "Jordan P"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'IP_Address'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious inbox manipulation rule",
+            "Jordan P"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Cloud_App_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "empty",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": null,
+          "alert_id": null
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

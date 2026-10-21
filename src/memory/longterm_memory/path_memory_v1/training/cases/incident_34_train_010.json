@@ -1,0 +1,314 @@
+{
+  "id": "incident_34_train_010",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_34_qa_incident_o1-ga_c42.json",
+  "index": 10,
+  "sha256": "658133de6e295b829793ba58a5244db9515e2ef17d44398605bf71236d88c37f",
+  "split": "train",
+  "question_record": {
+    "context": "In a recent security incident where an anomaly was detected in the ASEP registry, it was found that a process had registered a suspicious command or file in the ASEP registry key. This could be a move by an attacker to maintain persistence even after a machine reboot. This incident is connected to the IP address 72.5.72.208.",
+    "question": "During this incident, Powershell dropped a suspicious file on the machine. Can you identify the name of the suspicious file?",
+    "answer": "winatp-intro-backdoor.exe",
+    "solution": [
+      "A suspicious command or file was registered in the ASEP registry on the host with AadDeviceId `02b8f519-1123-4228-b32a-ccb78af3449f`.",
+      "Powershell dropped and executed a suspicious file named `winatp-intro-backdoor.exe` on the machine."
+    ],
+    "start_alert": 17,
+    "end_alert": 25,
+    "start_entities": [
+      18
+    ],
+    "end_entities": [
+      16
+    ],
+    "shortest_alert_path": [
+      17,
+      2,
+      25
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_34.graphml",
+  "graph_sha256": "f4d6e37d5b5ea1ae63e4e63d1148a74acca74a673a5fa91213e4284748386a8d",
+  "path": [
+    "17",
+    "2",
+    "25"
+  ],
+  "nodes": {
+    "18": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "72.5.72.208"
+    },
+    "17": {
+      "type": "alert",
+      "name": "Anomaly detected in ASEP registry",
+      "description": "A process registered a suspicious command or file in ASEP registry key, where it will be run after a reboot.\nAn attacker may place a malicious piece of software in such a location to prevent losing access if a machine is turned off."
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "02b8f519-1123-4228-b32a-ccb78af3449f"
+    },
+    "25": {
+      "type": "alert",
+      "name": "Powershell dropped a suspicious file on the machine",
+      "description": "Powershell dropped a suspicious file on the machine and executed it."
+    },
+    "16": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "winatp-intro-backdoor.exe"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "18",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "File_Name",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_4a97c739fb3e3710",
+  "merged_ems": [
+    "em_7f9df21551f77db2",
+    "em_13778774ab0e7651"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "2",
+          "expected_present": true,
+          "values": [
+            "02b8f519-1123-4228-b32a-ccb78af3449f"
+          ],
+          "evidence": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "02b8f519-1123-4228-b32a-ccb78af3449f",
+              "raw_components": {
+                "AadDeviceId": "02b8f519-1123-4228-b32a-ccb78af3449f"
+              },
+              "entity_index": 14,
+              "entity_ref": "16",
+              "roles": [],
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-04 22:35:01.084834+00:00",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "16",
+          "expected_present": true,
+          "values": [
+            "winatp-intro-backdoor.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "winatp-intro-backdoor.exe",
+              "raw_components": {
+                "Name": "WinATP-Intro-Backdoor.exe"
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "4f28608c-80dd-78be-35d5-4a032385080c",
+              "time": "2024-07-04 22:35:03.736539+00:00",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_7b042efb57c7ee1e",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_7f9df21551f77db2",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "02b8f519-1123-4228-b32a-ccb78af3449f"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+          "witnesses": [
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "02b8f519-1123-4228-b32a-ccb78af3449f",
+              "raw_components": {
+                "AadDeviceId": "02b8f519-1123-4228-b32a-ccb78af3449f"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-26 22:35:00.573584+00:00",
+              "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "02b8f519-1123-4228-b32a-ccb78af3449f",
+              "raw_components": {
+                "AadDeviceId": "02b8f519-1123-4228-b32a-ccb78af3449f"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-13 22:39:45.487350+00:00",
+              "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            },
+            {
+              "concept": "Device_AAD_ID",
+              "graph_value": "02b8f519-1123-4228-b32a-ccb78af3449f",
+              "raw_components": {
+                "AadDeviceId": "02b8f519-1123-4228-b32a-ccb78af3449f"
+              },
+              "roles": [],
+              "entity_index": 14,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-24 22:39:13.842278+00:00",
+              "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Device_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomaly detected in ASEP registry",
+            "72.5.72.208"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_13778774ab0e7651",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "winatp-intro-backdoor.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "4f28608c-80dd-78be-35d5-4a032385080c",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "winatp-intro-backdoor.exe",
+              "raw_components": {
+                "Name": "WinATP-Intro-Backdoor.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4f28608c-80dd-78be-35d5-4a032385080c",
+              "time": "2024-07-17 22:39:59.394244+00:00",
+              "source_row_hash": "0a184ff783abfeb180d8a3887b3306f1fb5c4340e71601dfa99a8e3036a119c6",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "winatp-intro-backdoor.exe",
+              "raw_components": {
+                "Name": "WinATP-Intro-Backdoor.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4f28608c-80dd-78be-35d5-4a032385080c",
+              "time": "2024-07-21 22:34:54.249062+00:00",
+              "source_row_hash": "1956fd41d2ecaf2327f4c0cbc048edfa15d05abf3d75f538b14d4dd9d9c59447",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "winatp-intro-backdoor.exe",
+              "raw_components": {
+                "Name": "WinATP-Intro-Backdoor.exe"
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "4f28608c-80dd-78be-35d5-4a032385080c",
+              "time": "2024-07-13 22:39:48.140745+00:00",
+              "source_row_hash": "20b971c50c6e3a3d11b1c80d096a9ae5bd60098e91e4d380c80dc7d32b029cf6",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Powershell dropped a suspicious file on the machine",
+            "02b8f519-1123-4228-b32a-ccb78af3449f"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 372 (char 371)",
+          "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

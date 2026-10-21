@@ -1,0 +1,706 @@
+{
+  "id": "incident_39_train_041",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_39_qa_incident_o1-ga_c42.json",
+  "index": 41,
+  "sha256": "51898e3bff27d9ff8efd0c5a129f65cf6eafc3ba35e09b27c5013e938f76b79b",
+  "split": "train",
+  "question_record": {
+    "context": "A security incident has been identified where a suspicious service was started on a device on 2024-07-04. The suspicious process `services.exe` with Process ID 684 and `psexesvc.exe` with Process ID 5912 were involved. This service could be used by attackers to launch malicious commands or programs. Subsequently, 'Kekeo' malware was detected on the same device, indicating possible lateral movement by the attacker. Also, multiple dual-purpose tools, which could be used for credential theft, privilege escalation, and lateral movement, were dropped. Finally, a known credential theft tool submission was detected, suggesting an attempt to steal credentials.",
+    "question": "What is the name of the account associated with the malicious credential theft tool execution detected?",
+    "answer": "tgs2z",
+    "solution": [
+      "A suspicious service was launched with command line `psexesvc.exe` at `2024-06-27t14:33:27.3525354z`, with Process ID `5512`.",
+      "The 'Kekeo' malware was detected with the filename `rubeus.exe` during lateral movement.",
+      "Multiple dual-purpose tools were dropped on the device by the AadUserId `1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1`.",
+      "A malicious credential theft tool execution was detected, executed by the account with Name `tgs2z`."
+    ],
+    "start_alert": 90,
+    "end_alert": 104,
+    "start_entities": [
+      59,
+      91
+    ],
+    "end_entities": [
+      27
+    ],
+    "shortest_alert_path": [
+      90,
+      4,
+      110,
+      65,
+      76,
+      29,
+      104
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_39.graphml",
+  "graph_sha256": "018dbb36a3bc8e4e9df16f3337868296c9796087303c2321abc4a2eda2b79d41",
+  "path": [
+    "90",
+    "4",
+    "110",
+    "65",
+    "76",
+    "29",
+    "104"
+  ],
+  "nodes": {
+    "59": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+    },
+    "91": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "684__2024-06-26t17:11:52.8075185z__services.exe"
+    },
+    "90": {
+      "type": "alert",
+      "name": "Suspicious service launched",
+      "description": "A suspicious service was started on this device. Attackers might use services to launch malicious commands or programs. This technique is used to maintain persistence or elevate privileges on the target device."
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+    },
+    "110": {
+      "type": "alert",
+      "name": "'Kekeo' malware was detected during lateral movement",
+      "description": "'Kekeo' malware was detected on this device. An attacker might be attempting to move laterally to this device from another device on the network."
+    },
+    "65": {
+      "type": "entity",
+      "node_type": "file",
+      "identifier_fields": "Name",
+      "value": "rubeus.exe"
+    },
+    "76": {
+      "type": "alert",
+      "name": "Multiple dual-purpose tools were dropped",
+      "description": "Multiple known public tools, which could also be used for malicious reasons were dropped on this device.\nAttackers might download or copy multiple dual-purpose tools to the target device to perform various attack stages including, credential theft, privilege escalation, and lateral movement."
+    },
+    "29": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+    },
+    "104": {
+      "type": "alert",
+      "name": "Malicious credential theft tool execution detected",
+      "description": "A known credential theft tool execution command line was detected.\nEither the process itself or its command line indicated an intent to dump users' credentials, keys, plain-text passwords and more."
+    },
+    "27": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "tgs2z"
+    }
+  },
+  "interpretation": {
+    "alerts": 4,
+    "sql_steps_per_variant": 4,
+    "start_alternatives": [
+      {
+        "node": "59",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "91",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [
+      "65"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_ca89a4250cb60465",
+  "merged_ems": [
+    "em_a5657604896b51cf",
+    "em_4fd9ac723a041ec1",
+    "em_f6a369032e873e00",
+    "em_e70aeae96c2b61b0"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 3,
+          "expected_node": "4",
+          "expected_present": true,
+          "values": [
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+            "684__2024-06-26t17:11:52.8075185z__services.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "684__2024-06-26t17:11:52.8075185z__services.exe",
+              "raw_components": {
+                "ProcessId": "684",
+                "CreatedTimeUtc": "2024-06-26T17:11:52.8075185Z",
+                "CommandLine": "services.exe"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+                "684__2024-06-26t17:11:52.8075185z__services.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 7,
+              "entity_ref": "9",
+              "roles": [],
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+                "684__2024-06-26t17:11:52.8075185z__services.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5912",
+                "CreatedTimeUtc": "2024-06-27T14:32:53.2267179Z",
+                "CommandLine": "PSEXESVC.exe"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+                "684__2024-06-26t17:11:52.8075185z__services.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "65",
+          "expected_present": true,
+          "values": [
+            "rubeus.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "entity_index": 12,
+              "entity_ref": "14",
+              "roles": [],
+              "alert_id": "b8580047-332e-91cd-dff9-c44f084a59b2",
+              "time": "2024-07-04 22:35:04.098458+00:00",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T3",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "29",
+          "expected_present": true,
+          "values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "f41d8a7b-4de3-c218-ff71-31af37d66366",
+              "time": "2024-07-04 22:35:02.140784+00:00",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+              "time": "2024-07-04 22:35:02.325756+00:00",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T4",
+          "status": "ok",
+          "row_count": 7,
+          "expected_node": "27",
+          "expected_present": true,
+          "values": [
+            "tgs2z"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "74460ba6-f705-313a-8103-bcfb17b903cb",
+              "time": "2024-07-04 22:35:00.671776+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "a2604763-f21a-3d7c-3683-4a9e082d7664",
+              "time": "2024-07-04 22:35:00.823035+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "de152a4c-24b9-e410-3e2e-4a72778417d8",
+              "time": "2024-07-04 22:35:01.182306+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "532a5162-7573-5642-fd2a-baddc2ed1360",
+              "time": "2024-07-04 22:35:02.584465+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "80e1ce36-0e85-8e96-374b-706b848a201b",
+              "time": "2024-07-04 22:35:02.863113+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-04 22:35:03.557275+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "1fc0b386-f173-5013-b555-c128b2532e97",
+              "time": "2024-07-04 22:35:04.214786+00:00",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_e3cdbde004c16981",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a5657604896b51cf",
+          "status": "ok",
+          "candidate_count": 162,
+          "unique_values": [
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+            "684__2024-06-26t17:11:52.8075185z__services.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+          "witnesses": [
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CommandLine": "PSEXESVC.exe",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "source_row_hash": "0079cec720531fa1ce2bf694a7b747d147b26aaf3ffed7c4b8e269de17bc39ef",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CommandLine": "PSEXESVC.exe",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-04 22:35:02.929834+00:00",
+              "source_row_hash": "0079cec720531fa1ce2bf694a7b747d147b26aaf3ffed7c4b8e269de17bc39ef",
+              "matched_inputs": [
+                "684__2024-06-26t17:11:52.8075185z__services.exe"
+              ]
+            },
+            {
+              "concept": "Process_Identity",
+              "graph_value": "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+              "raw_components": {
+                "ProcessId": "5512",
+                "CommandLine": "PSEXESVC.exe",
+                "CreatedTimeUtc": "2024-06-27T14:33:27.3525354Z"
+              },
+              "roles": [],
+              "entity_index": 7,
+              "alert_id": "e0c2b4a4-b099-0b36-1edd-b03146a00103",
+              "time": "2024-07-06 22:34:53.103930+00:00",
+              "source_row_hash": "00dceffd4d197118fc0020cc6375f7b844b2727b42a6a5851b95637fe43b1122",
+              "matched_inputs": [
+                "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe"
+              ]
+            }
+          ],
+          "witness_count": 54,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Process_Identity'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious service launched",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+            "684__2024-06-26t17:11:52.8075185z__services.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_e70aeae96c2b61b0",
+          "status": "ok",
+          "candidate_count": 27,
+          "unique_values": [
+            "rubeus.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "b8580047-332e-91cd-dff9-c44f084a59b2",
+          "witnesses": [
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "b8580047-332e-91cd-dff9-c44f084a59b2",
+              "time": "2024-07-15 22:39:22.921248+00:00",
+              "source_row_hash": "13fa8a0b316211f73d46d01f014e8775885c82eb9a11959e901302c4d790c473",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "b8580047-332e-91cd-dff9-c44f084a59b2",
+              "time": "2024-07-05 22:34:21.306948+00:00",
+              "source_row_hash": "1d5accc467d2be3d89d78bcb70f4358525dd872ace5888b33582382b957f1704",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            },
+            {
+              "concept": "File_Name",
+              "graph_value": "rubeus.exe",
+              "raw_components": {
+                "Name": "Rubeus.exe"
+              },
+              "roles": [],
+              "entity_index": 12,
+              "alert_id": "b8580047-332e-91cd-dff9-c44f084a59b2",
+              "time": "2024-07-22 22:34:43.969730+00:00",
+              "source_row_hash": "20895ce5480430b232b20dd21110d101017382e9de3cd4332a4b313da9255db9",
+              "matched_inputs": [
+                "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'File_Name'\n  AND i.GraphValue IN (%s,%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "'Kekeo' malware was detected during lateral movement",
+            "5512__2024-06-27t14:33:27.3525354z__psexesvc.exe",
+            "5912__2024-06-27t14:32:53.2267179z__psexesvc.exe",
+            "684__2024-06-26t17:11:52.8075185z__services.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T3",
+          "episode_id": "em_4fd9ac723a041ec1",
+          "status": "ok",
+          "candidate_count": 54,
+          "unique_values": [
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+          "witnesses": [
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+              "time": "2024-07-19 22:35:14.670141+00:00",
+              "source_row_hash": "06ac13569ea4c1b824c40655f1811678d79de9e05dfb07c27859cfc8cfe4d1ad",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+              "time": "2024-07-05 22:34:19.378043+00:00",
+              "source_row_hash": "0847120948350d795517666513d49280196441e9ee2c79eff6255bf094660e22",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            },
+            {
+              "concept": "Account_AAD_ID",
+              "graph_value": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1",
+              "raw_components": {
+                "AadUserId": "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "e41f3f2b-bff0-b75e-a3ec-4704baf683ae",
+              "time": "2024-07-24 22:39:14.716638+00:00",
+              "source_row_hash": "1234694daa4807229444f98689a42dc8a2000a0f02851f33017b3e74893b87a2",
+              "matched_inputs": [
+                "rubeus.exe"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'File_Name' AND o.Concept = 'Account_AAD_ID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Multiple dual-purpose tools were dropped",
+            "rubeus.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T4",
+          "episode_id": "em_f6a369032e873e00",
+          "status": "ok",
+          "candidate_count": 189,
+          "unique_values": [
+            "tgs2z"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-24 22:39:15.540009+00:00",
+              "source_row_hash": "0b473814ecfa68e858e2f4dbb12e5ab731f054ab72bfb69ae51934d98c42404c",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-17 22:34:56.807638+00:00",
+              "source_row_hash": "0b7ba40d154b0f6060e67a0847975c853ce97b5f0c2986a882fa3269e9770767",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "tgs2z",
+              "raw_components": {
+                "Name": "tgs2z"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "486b0923-0456-2841-3dd4-5b3d0f0d0dc9",
+              "time": "2024-07-26 22:35:02.712193+00:00",
+              "source_row_hash": "101dc2def092805419f4a627950571a14635a260152cce7fb1e7c3c3b18c7fe2",
+              "matched_inputs": [
+                "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+              ]
+            }
+          ],
+          "witness_count": 27,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Malicious credential theft tool execution detected",
+            "1d94aaf6-efe6-4e76-ad56-ffd7d1257bc1"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 363 (char 362)",
+          "alert_id": "5c69e4e9-cf85-26f3-8bf6-2ef292b915d8"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

@@ -1,0 +1,935 @@
+{
+  "id": "incident_322_train_010",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_322_qa_incident_o1-ga_c42.json",
+  "index": 10,
+  "sha256": "af9d019b60fcad75fa00492344563c1969e39aaf80b506c77ed06a9749ad2fb2",
+  "split": "train",
+  "question_record": {
+    "context": "In a recent event on 2024-08-01, an email containing a malicious URL was sent from `raphaelt@vnevado.alpineskihouse.co` to `alyssat@vnevado.alpineskihouse.co`. The email was later removed after delivery due to its malicious content. Subsequently, a user accessed a link from an email which was later quarantined by zero-hour auto purge (ZAP). This raised a Microsoft Defender for Office 365 alert.",
+    "question": "What was the malicious URL that the user accessed from the email that was later quarantined by ZAP?",
+    "answer": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+    "solution": [
+      "The user with SID `S-1-5-21-1840151686-3534835288-156286563-1127` received an email containing a malicious URL, which was subsequently removed.",
+      "The user accessed the link `https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/` in an email that was later quarantined by zero-hour auto purge (ZAP)."
+    ],
+    "start_alert": 2,
+    "end_alert": 23,
+    "start_entities": [
+      1,
+      3,
+      4,
+      5
+    ],
+    "end_entities": [
+      24
+    ],
+    "shortest_alert_path": [
+      2,
+      8,
+      23
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_322.graphml",
+  "graph_sha256": "8d2d318a4fcded2f15b1565627612655b20ff74b3984bdbb10a632fdc242080f",
+  "path": [
+    "2",
+    "8",
+    "23"
+  ],
+  "nodes": {
+    "1": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "Recipient",
+      "value": "alyssat@vnevado.alpineskihouse.co"
+    },
+    "3": {
+      "type": "entity",
+      "node_type": "mailbox",
+      "identifier_fields": "MailboxPrimaryAddress",
+      "value": "alyssat@vnevado.alpineskihouse.co"
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "SenderIP",
+      "value": "202.205.215.225"
+    },
+    "5": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "Sender",
+      "value": "raphaelt@vnevado.alpineskihouse.co"
+    },
+    "2": {
+      "type": "alert",
+      "name": "Email messages containing malicious URL removed after delivery​",
+      "description": "Emails with malicious URL that were delivered and later removed -V62.34.26.163"
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1840151686-3534835288-156286563-1127"
+    },
+    "23": {
+      "type": "alert",
+      "name": "User accessed a link in an email subsequently quarantined by ZAP",
+      "description": "A user clicked on a link in an email that was later quarantined by zero-hour auto purge (ZAP). This alert was triggered based on a Microsoft Defender for Office 365 alert."
+    },
+    "24": {
+      "type": "entity",
+      "node_type": "url",
+      "identifier_fields": "Url",
+      "value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "1",
+        "concept": "Mail_Recipient",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "3",
+        "concept": "Mailbox_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "4",
+        "concept": "Mail_Sender_IP",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "5",
+        "concept": "Mail_Sender",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "URL",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_67668fec065c74ae",
+  "merged_ems": [
+    "em_c18a0a34286a80b5",
+    "em_1a8926f8d3e8a059",
+    "em_1d8b1a2643de6257",
+    "em_076b2fb789bcf6e0",
+    "em_5936c1c7524e9997"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Mail_Recipient",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "24",
+          "expected_present": true,
+          "values": [
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "evidence": [
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Sender",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "matched_inputs": [
+                "raphaelt@vnevado.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "24",
+          "expected_present": true,
+          "values": [
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "evidence": [
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Sender_IP",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "matched_inputs": [
+                "202.205.215.225"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "24",
+          "expected_present": true,
+          "values": [
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "evidence": [
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Mailbox_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "24",
+          "expected_present": true,
+          "values": [
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "evidence": [
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "entity_index": 2,
+              "entity_ref": "4",
+              "roles": [],
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_ee74e4bc5ae730ff",
+      "seed_concept": "Mail_Recipient",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_5936c1c7524e9997",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-02 22:39:34.084782+00:00",
+              "source_row_hash": "3d77ae3b3c9a4ee0e3239bc0c7d67e737e0b5b1937839a5c40f15588fef86ffc",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:54:55.640816+00:00",
+              "source_row_hash": "769adbc49e49422dad36ac47c88b1908728a604e96271e64f7e7d7fd02851a1a",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "source_row_hash": "aab4c5a13e3397f1f827653e0990c8391d6148dee1f4d0d1814c75f34fd883be",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 4,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mail_Recipient' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "alyssat@vnevado.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_c18a0a34286a80b5",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+          "witnesses": [
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "source_row_hash": "c3ab8d8e7ecdfd6a8d4e6ba3b22282c203f90b0db7728bc082a311805ad57c1b",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-02 22:39:34.103990+00:00",
+              "source_row_hash": "d76c2be7a6cfcc3ae3b5045f35f7589ed2dc29ab619a71db92790381d6008f54",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "User accessed a link in an email subsequently quarantined by ZAP",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_ee74e4bc5ae730ff",
+      "seed_concept": "Mail_Sender",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1d8b1a2643de6257",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-02 22:39:34.084782+00:00",
+              "source_row_hash": "3d77ae3b3c9a4ee0e3239bc0c7d67e737e0b5b1937839a5c40f15588fef86ffc",
+              "matched_inputs": [
+                "raphaelt@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:54:55.640816+00:00",
+              "source_row_hash": "769adbc49e49422dad36ac47c88b1908728a604e96271e64f7e7d7fd02851a1a",
+              "matched_inputs": [
+                "raphaelt@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "source_row_hash": "aab4c5a13e3397f1f827653e0990c8391d6148dee1f4d0d1814c75f34fd883be",
+              "matched_inputs": [
+                "raphaelt@vnevado.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 4,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mail_Sender' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "raphaelt@vnevado.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_c18a0a34286a80b5",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+          "witnesses": [
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "source_row_hash": "c3ab8d8e7ecdfd6a8d4e6ba3b22282c203f90b0db7728bc082a311805ad57c1b",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-02 22:39:34.103990+00:00",
+              "source_row_hash": "d76c2be7a6cfcc3ae3b5045f35f7589ed2dc29ab619a71db92790381d6008f54",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "User accessed a link in an email subsequently quarantined by ZAP",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_ee74e4bc5ae730ff",
+      "seed_concept": "Mail_Sender_IP",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_076b2fb789bcf6e0",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-02 22:39:34.084782+00:00",
+              "source_row_hash": "3d77ae3b3c9a4ee0e3239bc0c7d67e737e0b5b1937839a5c40f15588fef86ffc",
+              "matched_inputs": [
+                "202.205.215.225"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:54:55.640816+00:00",
+              "source_row_hash": "769adbc49e49422dad36ac47c88b1908728a604e96271e64f7e7d7fd02851a1a",
+              "matched_inputs": [
+                "202.205.215.225"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "source_row_hash": "aab4c5a13e3397f1f827653e0990c8391d6148dee1f4d0d1814c75f34fd883be",
+              "matched_inputs": [
+                "202.205.215.225"
+              ]
+            }
+          ],
+          "witness_count": 4,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mail_Sender_IP' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "202.205.215.225"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_c18a0a34286a80b5",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+          "witnesses": [
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "source_row_hash": "c3ab8d8e7ecdfd6a8d4e6ba3b22282c203f90b0db7728bc082a311805ad57c1b",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-02 22:39:34.103990+00:00",
+              "source_row_hash": "d76c2be7a6cfcc3ae3b5045f35f7589ed2dc29ab619a71db92790381d6008f54",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "User accessed a link in an email subsequently quarantined by ZAP",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_ee74e4bc5ae730ff",
+      "seed_concept": "Mailbox_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1a8926f8d3e8a059",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-02 22:39:34.084782+00:00",
+              "source_row_hash": "3d77ae3b3c9a4ee0e3239bc0c7d67e737e0b5b1937839a5c40f15588fef86ffc",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:54:55.640816+00:00",
+              "source_row_hash": "769adbc49e49422dad36ac47c88b1908728a604e96271e64f7e7d7fd02851a1a",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "source_row_hash": "aab4c5a13e3397f1f827653e0990c8391d6148dee1f4d0d1814c75f34fd883be",
+              "matched_inputs": [
+                "alyssat@vnevado.alpineskihouse.co"
+              ]
+            }
+          ],
+          "witness_count": 4,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Mailbox_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "alyssat@vnevado.alpineskihouse.co"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_c18a0a34286a80b5",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+          "witnesses": [
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-01 12:54:55.663380+00:00",
+              "source_row_hash": "c3ab8d8e7ecdfd6a8d4e6ba3b22282c203f90b0db7728bc082a311805ad57c1b",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "URL",
+              "graph_value": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/",
+              "raw_components": {
+                "Url": "https://dj01161621.bravesand-e1ccd718.eastus.azurecontainerapps.io/"
+              },
+              "roles": [],
+              "entity_index": 2,
+              "alert_id": "c4318426-0f64-14f9-d2d4-6787328357c7",
+              "time": "2024-08-02 22:39:34.103990+00:00",
+              "source_row_hash": "d76c2be7a6cfcc3ae3b5045f35f7589ed2dc29ab619a71db92790381d6008f54",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'URL'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "User accessed a link in an email subsequently quarantined by ZAP",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Mail_Recipient",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 3006 (char 3005)",
+          "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec"
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Sender",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 3006 (char 3005)",
+          "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec"
+        }
+      ]
+    },
+    {
+      "variant": "from_Mail_Sender_IP",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 3006 (char 3005)",
+          "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec"
+        }
+      ]
+    },
+    {
+      "variant": "from_Mailbox_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 3006 (char 3005)",
+          "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

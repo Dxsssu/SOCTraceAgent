@@ -1,0 +1,313 @@
+{
+  "id": "incident_322_train_015",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_322_qa_incident_o1-ga_c42.json",
+  "index": 15,
+  "sha256": "af9d019b60fcad75fa00492344563c1969e39aaf80b506c77ed06a9749ad2fb2",
+  "split": "train",
+  "question_record": {
+    "context": "During a recent security incident involving suspicious Azure Resource Management (ARM) activities by a risky user, an alert was triggered based on a Microsoft Defender for Cloud alert related to ARM and Microsoft Entra ID Protection risk scores. The incident involved an IP address `253.1.244.215` associated with the user's risky session.",
+    "question": "What is the SenderIP of the emails containing the malicious URL that were removed after delivery related to this incident?",
+    "answer": "202.205.215.225",
+    "solution": [
+      "There are suspicious Azure Resource Management activities by a user with SID `S-1-5-21-1840151686-3534835288-156286563-1127`.",
+      "An email with a malicious URL was sent from IP address `202.205.215.225` and later removed after delivery."
+    ],
+    "start_alert": 32,
+    "end_alert": 2,
+    "start_entities": [
+      31
+    ],
+    "end_entities": [
+      4
+    ],
+    "shortest_alert_path": [
+      32,
+      8,
+      2
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_322.graphml",
+  "graph_sha256": "8d2d318a4fcded2f15b1565627612655b20ff74b3984bdbb10a632fdc242080f",
+  "path": [
+    "32",
+    "8",
+    "2"
+  ],
+  "nodes": {
+    "31": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "253.1.244.215"
+    },
+    "32": {
+      "type": "alert",
+      "name": "Suspicious Azure Resource Management activities by a risky user",
+      "description": "Suspicious cloud Azure Resource Management (ARM) activities were performed by a user account that signed in to a risky session. This alert was triggered based on a Microsoft Defender for Cloud alert related to ARM and Microsoft Entra ID Protection risk scores."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1840151686-3534835288-156286563-1127"
+    },
+    "2": {
+      "type": "alert",
+      "name": "Email messages containing malicious URL removed after delivery​",
+      "description": "Emails with malicious URL that were delivered and later removed -V62.34.26.163"
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "mailmessage",
+      "identifier_fields": "SenderIP",
+      "value": "202.205.215.225"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "31",
+        "concept": "IP_Address",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Mail_Sender_IP",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_f92f9f1ca416ea54",
+  "merged_ems": [
+    "em_1fb69112e61590cd",
+    "em_ddd3eeabface0a24"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [
+                "Compromised"
+              ],
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "4",
+          "expected_present": true,
+          "values": [
+            "202.205.215.225"
+          ],
+          "evidence": [
+            {
+              "concept": "Mail_Sender_IP",
+              "graph_value": "202.205.215.225",
+              "raw_components": {
+                "SenderIP": "202.205.215.225"
+              },
+              "entity_index": 1,
+              "entity_ref": "3",
+              "roles": [],
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_e0ef52615805372f",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1fb69112e61590cd",
+          "status": "ok",
+          "candidate_count": 2,
+          "unique_values": [
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 14:19:35.758105+00:00",
+              "source_row_hash": "67d82dcdc3c753cbf58461504f30347fd25eaf6641ebf46ef2b82f140d82dfc8",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1840151686-3534835288-156286563-1127",
+              "raw_components": {
+                "Sid": "S-1-5-21-1840151686-3534835288-156286563-1127"
+              },
+              "roles": [
+                "Compromised"
+              ],
+              "entity_index": 0,
+              "alert_id": "0ffbd146-7624-e696-75b1-2e923cfbfce0",
+              "time": "2024-08-01 13:19:20.704658+00:00",
+              "source_row_hash": "e2861ad69a06ce76db1ed84789e989ab39ea7a08a3239bb8d104584551cd1fce",
+              "matched_inputs": [
+                "253.1.244.215"
+              ]
+            }
+          ],
+          "witness_count": 2,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Suspicious Azure Resource Management activities by a risky user",
+            "253.1.244.215"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_ddd3eeabface0a24",
+          "status": "ok",
+          "candidate_count": 4,
+          "unique_values": [
+            "202.205.215.225"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+          "witnesses": [
+            {
+              "concept": "Mail_Sender_IP",
+              "graph_value": "202.205.215.225",
+              "raw_components": {
+                "SenderIP": "202.205.215.225"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-02 22:39:34.084782+00:00",
+              "source_row_hash": "3d77ae3b3c9a4ee0e3239bc0c7d67e737e0b5b1937839a5c40f15588fef86ffc",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Mail_Sender_IP",
+              "graph_value": "202.205.215.225",
+              "raw_components": {
+                "SenderIP": "202.205.215.225"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:54:55.640816+00:00",
+              "source_row_hash": "769adbc49e49422dad36ac47c88b1908728a604e96271e64f7e7d7fd02851a1a",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            },
+            {
+              "concept": "Mail_Sender_IP",
+              "graph_value": "202.205.215.225",
+              "raw_components": {
+                "SenderIP": "202.205.215.225"
+              },
+              "roles": [],
+              "entity_index": 1,
+              "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec",
+              "time": "2024-08-01 12:44:53.291456+00:00",
+              "source_row_hash": "aab4c5a13e3397f1f827653e0990c8391d6148dee1f4d0d1814c75f34fd883be",
+              "matched_inputs": [
+                "S-1-5-21-1840151686-3534835288-156286563-1127"
+              ]
+            }
+          ],
+          "witness_count": 4,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Mail_Sender_IP'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Email messages containing malicious URL removed after delivery​",
+            "S-1-5-21-1840151686-3534835288-156286563-1127"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 1,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "candidate_count": 1,
+          "expected_present": true,
+          "error": null,
+          "alert_id": null
+        },
+        {
+          "step": "T2",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 3006 (char 3005)",
+          "alert_id": "435de706-beea-2f9f-c955-a0bec72a16ec"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

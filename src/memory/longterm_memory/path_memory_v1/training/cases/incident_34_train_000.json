@@ -1,0 +1,1670 @@
+{
+  "id": "incident_34_train_000",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_34_qa_incident_o1-ga_c42.json",
+  "index": 0,
+  "sha256": "658133de6e295b829793ba58a5244db9515e2ef17d44398605bf71236d88c37f",
+  "split": "train",
+  "question_record": {
+    "context": "During an investigation into an advanced security incident, an anomaly was detected in the ASEP registry, indicating that a process named `winatp-intro-backdoor.exe` with ProcessId__CreatedTimeUtc__CommandLine `10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe` was registered to run after a reboot on host `vnevado-win10e` linked to user `samuelf`.",
+    "question": "What is the SID of the account observed in the alert indicating that an uncommon file was created and added to a Run Key?",
+    "answer": "S-1-5-21-1870156660-7534030218-135086563-1193",
+    "solution": [
+      "An anomaly detected in ASEP registry involved the account with SID `S-1-5-21-1870156660-7534030218-135086563-1193`.",
+      "An uncommon file was created and added to a Run Key involving the same account with SID `S-1-5-21-1870156660-7534030218-135086563-1193`."
+    ],
+    "start_alert": 17,
+    "end_alert": 23,
+    "start_entities": [
+      1,
+      2,
+      4,
+      6,
+      9,
+      18,
+      19
+    ],
+    "end_entities": [
+      5
+    ],
+    "shortest_alert_path": [
+      17,
+      5,
+      23
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_34.graphml",
+  "graph_sha256": "f4d6e37d5b5ea1ae63e4e63d1148a74acca74a673a5fa91213e4284748386a8d",
+  "path": [
+    "17",
+    "5",
+    "23"
+  ],
+  "nodes": {
+    "1": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "vnevado-win10e"
+    },
+    "2": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "AadDeviceId",
+      "value": "02b8f519-1123-4228-b32a-ccb78af3449f"
+    },
+    "4": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "samuelf"
+    },
+    "6": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "AadUserId",
+      "value": "16320fec-8d90-403b-b7fe-78f715d4728d"
+    },
+    "9": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "winatp-intro-backdoor.exe"
+    },
+    "18": {
+      "type": "entity",
+      "node_type": "ip",
+      "identifier_fields": "Address",
+      "value": "72.5.72.208"
+    },
+    "19": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe"
+    },
+    "17": {
+      "type": "alert",
+      "name": "Anomaly detected in ASEP registry",
+      "description": "A process registered a suspicious command or file in ASEP registry key, where it will be run after a reboot.\nAn attacker may place a malicious piece of software in such a location to prevent losing access if a machine is turned off."
+    },
+    "5": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-1-5-21-1870156660-7534030218-135086563-1193"
+    },
+    "23": {
+      "type": "alert",
+      "name": "An uncommon file was created and added to a Run Key",
+      "description": "An uncommon file was observed being created on this machine, and was then put into a Registry Key where it will be run after a reboot. An attacker may place a malicious piece of software in such a location to prevent losing access if a machine is turned off.\n\nFor more information, read the Simulated threat Threat Analytics report: https://security.microsoft.com/threatanalytics3/3d82501e-8ac3-4272-9ddc-59526ee32c4d/analystreport"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "1",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "2",
+        "concept": "Device_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "4",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "6",
+        "concept": "Account_AAD_ID",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "9",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "18",
+        "concept": "IP_Address",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "19",
+        "concept": "Process_Identity",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_SID",
+    "weak_links": [],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_57fe1026e12a093a",
+  "merged_ems": [
+    "em_acd9f0e565efcca0",
+    "em_1fb69112e61590cd",
+    "em_f328ca5b1574cda5",
+    "em_d9b50eac5051c30c",
+    "em_a968efcb19f242b8",
+    "em_837a161de400deb8",
+    "em_b30f58cf03511b0b",
+    "em_9339ee7c75ce2525"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-04 22:35:01.084834+00:00",
+              "matched_inputs": [
+                "16320fec-8d90-403b-b7fe-78f715d4728d"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-04 22:35:02.252731+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-04 22:35:01.084834+00:00",
+              "matched_inputs": [
+                "samuelf"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-04 22:35:02.252731+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-04 22:35:01.084834+00:00",
+              "matched_inputs": [
+                "winatp-intro-backdoor.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-04 22:35:02.252731+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-04 22:35:01.084834+00:00",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-04 22:35:02.252731+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-04 22:35:01.084834+00:00",
+              "matched_inputs": [
+                "vnevado-win10e"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-04 22:35:02.252731+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-04 22:35:01.084834+00:00",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-04 22:35:02.252731+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-04 22:35:01.084834+00:00",
+              "matched_inputs": [
+                "10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "5",
+          "expected_present": true,
+          "values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-04 22:35:02.252731+00:00",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "Account_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_d9b50eac5051c30c",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-26 22:35:00.573584+00:00",
+              "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+              "matched_inputs": [
+                "16320fec-8d90-403b-b7fe-78f715d4728d"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-13 22:39:45.487350+00:00",
+              "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+              "matched_inputs": [
+                "16320fec-8d90-403b-b7fe-78f715d4728d"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-24 22:39:13.842278+00:00",
+              "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+              "matched_inputs": [
+                "16320fec-8d90-403b-b7fe-78f715d4728d"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_AAD_ID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomaly detected in ASEP registry",
+            "16320fec-8d90-403b-b7fe-78f715d4728d"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-15 22:39:21.186988+00:00",
+              "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-12 22:34:23.814148+00:00",
+              "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-13 22:39:46.678263+00:00",
+              "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An uncommon file was created and added to a Run Key",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_837a161de400deb8",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-26 22:35:00.573584+00:00",
+              "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+              "matched_inputs": [
+                "samuelf"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-13 22:39:45.487350+00:00",
+              "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+              "matched_inputs": [
+                "samuelf"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-24 22:39:13.842278+00:00",
+              "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+              "matched_inputs": [
+                "samuelf"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomaly detected in ASEP registry",
+            "samuelf"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-15 22:39:21.186988+00:00",
+              "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-12 22:34:23.814148+00:00",
+              "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-13 22:39:46.678263+00:00",
+              "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An uncommon file was created and added to a Run Key",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_9339ee7c75ce2525",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-26 22:35:00.573584+00:00",
+              "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+              "matched_inputs": [
+                "winatp-intro-backdoor.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-13 22:39:45.487350+00:00",
+              "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+              "matched_inputs": [
+                "winatp-intro-backdoor.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-24 22:39:13.842278+00:00",
+              "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+              "matched_inputs": [
+                "winatp-intro-backdoor.exe"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomaly detected in ASEP registry",
+            "winatp-intro-backdoor.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-15 22:39:21.186988+00:00",
+              "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-12 22:34:23.814148+00:00",
+              "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-13 22:39:46.678263+00:00",
+              "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An uncommon file was created and added to a Run Key",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "Device_AAD_ID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_a968efcb19f242b8",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-26 22:35:00.573584+00:00",
+              "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-13 22:39:45.487350+00:00",
+              "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-24 22:39:13.842278+00:00",
+              "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+              "matched_inputs": [
+                "02b8f519-1123-4228-b32a-ccb78af3449f"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Device_AAD_ID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomaly detected in ASEP registry",
+            "02b8f519-1123-4228-b32a-ccb78af3449f"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-15 22:39:21.186988+00:00",
+              "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-12 22:34:23.814148+00:00",
+              "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-13 22:39:46.678263+00:00",
+              "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An uncommon file was created and added to a Run Key",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_f328ca5b1574cda5",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-26 22:35:00.573584+00:00",
+              "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+              "matched_inputs": [
+                "vnevado-win10e"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-13 22:39:45.487350+00:00",
+              "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+              "matched_inputs": [
+                "vnevado-win10e"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-24 22:39:13.842278+00:00",
+              "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+              "matched_inputs": [
+                "vnevado-win10e"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomaly detected in ASEP registry",
+            "vnevado-win10e"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-15 22:39:21.186988+00:00",
+              "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-12 22:34:23.814148+00:00",
+              "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-13 22:39:46.678263+00:00",
+              "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An uncommon file was created and added to a Run Key",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "IP_Address",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_1fb69112e61590cd",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-26 22:35:00.573584+00:00",
+              "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-13 22:39:45.487350+00:00",
+              "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-24 22:39:13.842278+00:00",
+              "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+              "matched_inputs": [
+                "72.5.72.208"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'IP_Address' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomaly detected in ASEP registry",
+            "72.5.72.208"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-15 22:39:21.186988+00:00",
+              "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-12 22:34:23.814148+00:00",
+              "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-13 22:39:46.678263+00:00",
+              "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An uncommon file was created and added to a Run Key",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_d3b727a910e089cc",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_b30f58cf03511b0b",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-26 22:35:00.573584+00:00",
+              "source_row_hash": "07c91ec7b437fd6559b2d55f3e971a253163e59dd2f6d21fc02c6aafba60793d",
+              "matched_inputs": [
+                "10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-13 22:39:45.487350+00:00",
+              "source_row_hash": "447d6114a5e94f79fcbe1a5b587d6a641c98d6d5d19a7e7eabbe07f985af2620",
+              "matched_inputs": [
+                "10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d",
+              "time": "2024-07-24 22:39:13.842278+00:00",
+              "source_row_hash": "475d655bf1e68c6f41ddb73a460a921ad759e2a63cafff557bdccf78bded7945",
+              "matched_inputs": [
+                "10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Anomaly detected in ASEP registry",
+            "10208__2024-06-26t13:17:18.8268389z__reg  add hkcu\\software\\microsoft\\windows\\currentversion\\runonce /f /v yrei /t reg_expand_sz /d %userprofile%\\desktop\\winatp-intro-backdoor.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_acd9f0e565efcca0",
+          "status": "ok",
+          "candidate_count": 16,
+          "unique_values": [
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+          "witnesses": [
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-15 22:39:21.186988+00:00",
+              "source_row_hash": "1b6ec98c75908b6bf79ce15e107b7fa3c1b0325a80cb25ffe40c309659f173a4",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-12 22:34:23.814148+00:00",
+              "source_row_hash": "26b88ad53efb90a34d813af780c55c43257e1b8a3dbb4faf5a32fe55bca6843c",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            },
+            {
+              "concept": "Account_SID",
+              "graph_value": "S-1-5-21-1870156660-7534030218-135086563-1193",
+              "raw_components": {
+                "Sid": "S-1-5-21-1870156660-7534030218-135086563-1193"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "3f7e932e-ce45-9d20-d0bb-b86b394c701f",
+              "time": "2024-07-13 22:39:46.678263+00:00",
+              "source_row_hash": "2939e02df9fc6928a11c0af48b0eb115a9751e77e5b7daac502c63718be370e1",
+              "matched_inputs": [
+                "S-1-5-21-1870156660-7534030218-135086563-1193"
+              ]
+            }
+          ],
+          "witness_count": 16,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Account_SID'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "An uncommon file was created and added to a Run Key",
+            "S-1-5-21-1870156660-7534030218-135086563-1193"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 372 (char 371)",
+          "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 372 (char 371)",
+          "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 372 (char 371)",
+          "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d"
+        }
+      ]
+    },
+    {
+      "variant": "from_Device_AAD_ID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 372 (char 371)",
+          "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 372 (char 371)",
+          "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d"
+        }
+      ]
+    },
+    {
+      "variant": "from_IP_Address",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 372 (char 371)",
+          "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Invalid \\escape: line 1 column 372 (char 371)",
+          "alert_id": "64bfe87b-7a67-ab87-571a-511b6861669d"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}

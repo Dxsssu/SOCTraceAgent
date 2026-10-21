@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "concepts": {
+    "URL": {
+      "meaning": "完整URL，协议、路径保留；http与https不可互换",
+      "kind": "url",
+      "fields": [
+        {
+          "table": "AlertEvidence",
+          "field": "RemoteUrl",
+          "type": "TEXT",
+          "entity_type": "Url"
+        }
+      ]
+    },
+    "Account_SID": {
+      "meaning": "账户安全标识符，不等同UPN或AAD对象ID",
+      "kind": "sid",
+      "fields": [
+        {
+          "table": "AlertEvidence",
+          "field": "AccountSid",
+          "type": "TEXT",
+          "entity_type": "User"
+        }
+      ]
+    },
+    "Device_Name": {
+      "meaning": "设备名称；优先精确匹配FQDN，只有输入是短名时允许匹配FQDN首段；可能存在短名歧义",
+      "kind": "device_name",
+      "fields": [
+        {
+          "table": "AlertEvidence",
+          "field": "DeviceName",
+          "type": "TEXT",
+          "entity_type": "Machine"
+        }
+      ]
+    },
+    "Alert_ID": {
+      "meaning": "同一告警证据行的连接键，不等同SecurityAlert.SystemAlertId",
+      "kind": "defender_alert_id",
+      "fields": [
+        {
+          "table": "AlertEvidence",
+          "field": "AlertId",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "Alert_Title": {
+      "meaning": "事件主题范围；标题相同不代表同一事件",
+      "kind": "title",
+      "fields": [
+        {
+          "table": "AlertEvidence",
+          "field": "Title",
+          "type": "TEXT"
+        }
+      ]
+    }
+  },
+  "tables": {
+    "AlertEvidence": {
+      "description": "告警关联实体证据；账户、设备和URL通常分行存储，以AlertId连接",
+      "time_field": "TimeGenerated",
+      "support_fields": {
+        "EntityType": "实体类型：User、Machine、Url等",
+        "EvidenceRole": "证据角色；同告警关联不自动证明操作者身份",
+        "TimeGenerated": "记录时间，不自动等于攻击时间"
+      }
+    }
+  },
+  "event_types": {
+    "potential_malicious_url_click": {
+      "description": "检测到潜在恶意URL点击",
+      "table": "AlertEvidence",
+      "field": "Title",
+      "value": "A potentially malicious URL click was detected",
+      "source_refs": [
+        "train_incident55_index0"
+      ],
+      "scope": "训练样例所在日志环境的已登记标题；其他环境需重新验证映射"
+    },
+    "suspicious_exploration": {
+      "description": "可疑探索活动，使用Windows命令发现资产或准备横向移动",
+      "table": "AlertEvidence",
+      "field": "Title",
+      "value": "Suspicious sequence of exploration activities",
+      "source_refs": [
+        "train_incident55_index0"
+      ],
+      "scope": "训练样例所在日志环境的已登记标题；其他环境需重新验证映射"
+    },
+    "malicious_url_click_on_device": {
+      "description": "设备上的恶意URL点击事件",
+      "table": "AlertEvidence",
+      "field": "Title",
+      "value": "Malicious URL was clicked on that device",
+      "source_refs": [
+        "train_incident55_index0"
+      ],
+      "scope": "训练样例所在日志环境的已登记标题；其他环境需重新验证映射"
+    }
+  }
+}

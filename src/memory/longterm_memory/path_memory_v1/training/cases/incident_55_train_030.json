@@ -1,0 +1,1330 @@
+{
+  "id": "incident_55_train_030",
+  "source_file": "data/excytin-bench/huggingface/questions/train/incident_55_qa_incident_o1-ga_c42.json",
+  "index": 30,
+  "sha256": "d3d22be38c226f61a5ac240a940e0c8901208766ea002b6e4f273361ce61ae80",
+  "split": "train",
+  "question_record": {
+    "context": "A recent security incident on the host `mb-adfs` involved multiple malicious activities. Initially, the system executable `iy2orr1e.rrg.exe` was renamed and launched, potentially by an attacker aiming to run malicious code or connect to an attacker-controlled network address while avoiding certain behavior-based detection technologies. The process is associated with the account `SYSTEM` with SID `S-2-2-78`.",
+    "question": "Who is the account associated with the process that accessed the Local Security Authority Subsystem Service (lsass.exe) memory?",
+    "answer": "bjenkins",
+    "solution": [
+      "A renamed executable file `powershell.exe` was launched.",
+      "The account `bjenkins` was involved in a sensitive credential memory read from the Local Security Authority Subsystem Service (lsass.exe)."
+    ],
+    "start_alert": 27,
+    "end_alert": 67,
+    "start_entities": [
+      25,
+      26,
+      28,
+      29,
+      30,
+      31
+    ],
+    "end_entities": [
+      1
+    ],
+    "shortest_alert_path": [
+      27,
+      8,
+      67
+    ]
+  },
+  "graph_file": "data/excytin-bench/github/secgym/qagen/graph_files/incident_55.graphml",
+  "graph_sha256": "c1455d8cf64d45d0e46183a7a347c100476f75193fdf2ae664a2ae2e03f6e8f2",
+  "path": [
+    "27",
+    "8",
+    "67"
+  ],
+  "nodes": {
+    "25": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "6808__2024-07-02t09:48:12.7628138z__powershell.exe  -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcafiazqbuageabqblafaabwb3aguacgbzaggazqbsagwalgbwahmamqa="
+    },
+    "26": {
+      "type": "entity",
+      "node_type": "host",
+      "identifier_fields": "HostName",
+      "value": "mb-adfs"
+    },
+    "28": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ProcessId__CreatedTimeUtc__CommandLine",
+      "value": "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+    },
+    "29": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "iy2orr1e.rrg.exe"
+    },
+    "30": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "SYSTEM"
+    },
+    "31": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Sid",
+      "value": "S-2-2-78"
+    },
+    "27": {
+      "type": "alert",
+      "name": "System executable renamed and launched",
+      "description": "A Windows executable file that has been renamed was launched. Attackers might be attempting to use the executable to perform malicious activities, such as running malicious code or connecting to an attacker-controlled network address. By changing the path or file name of a system executable, attackers can avoid certain behavior-based detection technologies that rely on default paths and file names."
+    },
+    "8": {
+      "type": "entity",
+      "node_type": "process",
+      "identifier_fields": "ExtractedFileName",
+      "value": "powershell.exe"
+    },
+    "67": {
+      "type": "alert",
+      "name": "Sensitive credential memory read",
+      "description": "A process scanned or dumped memory from the Local Security Authority Subsystem Service (lsass.exe).  Accessing this process memory allows the attacker to extract secrets such as authentication hashes or passwords.  A copy of this memory may be written to the file system and exfiltrated to extract these credentials offline."
+    },
+    "1": {
+      "type": "entity",
+      "node_type": "account",
+      "identifier_fields": "Name",
+      "value": "bjenkins"
+    }
+  },
+  "interpretation": {
+    "alerts": 2,
+    "sql_steps_per_variant": 2,
+    "start_alternatives": [
+      {
+        "node": "25",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "26",
+        "concept": "Host_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "28",
+        "concept": "Process_Identity",
+        "value_literal_in_input": false,
+        "value_casefold_in_input": false
+      },
+      {
+        "node": "29",
+        "concept": "Command_File_Mention",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "30",
+        "concept": "Account_Name",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      },
+      {
+        "node": "31",
+        "concept": "Account_SID",
+        "value_literal_in_input": true,
+        "value_casefold_in_input": true
+      }
+    ],
+    "target_concept": "Account_Name",
+    "weak_links": [
+      "8"
+    ],
+    "scope": "official graph witness, not a proof of causality, actor identity or autonomous planning"
+  },
+  "merged_pm": "pm_dc350fdec13ea45a",
+  "merged_ems": [
+    "em_0df0df84e926e5d1",
+    "em_afdcb0e9dc74c4fe",
+    "em_786437addb3952bb",
+    "em_71b0ed9affecd48c",
+    "em_6b040dd1616cc12b",
+    "em_3207d456cf954197"
+  ],
+  "offline_validation": [
+    {
+      "variant": "from_Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "SYSTEM"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "SYSTEM"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "bjenkins"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "S-2-2-78"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "S-2-2-78"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "bjenkins"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "bjenkins"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "bjenkins"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "ok",
+          "row_count": 2,
+          "expected_node": "8",
+          "expected_present": true,
+          "values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "evidence": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "iy2orr1e.rrg.exe",
+              "raw_components": {
+                "CommandLine": "\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAEUAeABwAG8AcgB0AEEARABGAFMAVABvAGsAZQBuAFMAaQBnAG4AaQBuAEMAZQByAHQALgBwAHMAMQA="
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa=",
+                "6808__2024-07-02t09:48:12.7628138z__powershell.exe  -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcafiazqbuageabqblafaabwb3aguacgbzaggazqbsagwalgbwahmamqa="
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "entity_index": 11,
+              "entity_ref": "13",
+              "roles": [],
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-04 22:35:01.543723+00:00",
+              "matched_inputs": [
+                "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa=",
+                "6808__2024-07-02t09:48:12.7628138z__powershell.exe  -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcafiazqbuageabqblafaabwb3aguacgbzaggazqbsagwalgbwahmamqa="
+              ]
+            }
+          ]
+        },
+        {
+          "step": "T2",
+          "status": "ok",
+          "row_count": 1,
+          "expected_node": "1",
+          "expected_present": true,
+          "values": [
+            "bjenkins"
+          ],
+          "evidence": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "entity_index": 0,
+              "entity_ref": "2",
+              "roles": [],
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-04 22:35:04.120690+00:00",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "live_validation": [
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Account_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_6b040dd1616cc12b",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "SYSTEM"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "SYSTEM"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "SYSTEM"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "SYSTEM"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "bjenkins"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Account_SID",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_0df0df84e926e5d1",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "S-2-2-78"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "S-2-2-78"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "S-2-2-78"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Account_SID' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "S-2-2-78"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "bjenkins"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Command_File_Mention",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_3207d456cf954197",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "iy2orr1e.rrg.exe"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "iy2orr1e.rrg.exe"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "bjenkins"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Host_Name",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_afdcb0e9dc74c4fe",
+          "status": "ok",
+          "candidate_count": 62,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-21 22:34:52.938142+00:00",
+              "source_row_hash": "20d6bcbb715c9a74280fe3b9809e168b3ca87323362cbcc2eaa80f77ba867216",
+              "matched_inputs": [
+                "mb-adfs"
+              ]
+            }
+          ],
+          "witness_count": 31,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Host_Name' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "mb-adfs"
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "bjenkins"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "variant": "route_3a9f5c39a16eba67",
+      "seed_concept": "Process_Identity",
+      "passed": true,
+      "steps": [
+        {
+          "step": "T1",
+          "episode_id": "em_786437addb3952bb",
+          "status": "ok",
+          "candidate_count": 124,
+          "unique_values": [
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+          "witnesses": [
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-09 22:34:23.848472+00:00",
+              "source_row_hash": "08bace78e3e36f5cf6ee6c73e18c57ee2d2490f4d22ed9da23b4aa125e1b2405",
+              "matched_inputs": [
+                "6808__2024-07-02t09:48:12.7628138z__powershell.exe  -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcafiazqbuageabqblafaabwb3aguacgbzaggazqbsagwalgbwahmamqa="
+              ]
+            },
+            {
+              "concept": "Command_File_Mention",
+              "graph_value": "powershell.exe",
+              "raw_components": {
+                "CommandLine": "powershell.exe  -EncodedCommand QwA6AFwAUwBjAHIAaQBwAHQAcwBcAFIAZQBuAGEAbQBlAFAAbwB3AGUAcgBzAGgAZQBsAGwALgBwAHMAMQA="
+              },
+              "roles": [],
+              "entity_index": 11,
+              "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9",
+              "time": "2024-07-20 22:34:24.826776+00:00",
+              "source_row_hash": "0d18d94650824954cbf3cc85345632cb26cffb95fd4ae8d15706d619fa0379c9",
+              "matched_inputs": [
+                "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa="
+              ]
+            }
+          ],
+          "witness_count": 62,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Process_Identity' AND o.Concept = 'Command_File_Mention'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "System executable renamed and launched",
+            "3116__2024-07-02t09:48:23.9439954z__\"iy2orr1e.rrg.exe\" -windowstyle hidden -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcaeuaeabwag8acgb0aeearabgafmavabvagsazqbuafmaaqbnag4aaqbuaemazqbyahqalgbwahmamqa=",
+            "6808__2024-07-02t09:48:12.7628138z__powershell.exe  -encodedcommand qwa6afwauwbjahiaaqbwahqacwbcafiazqbuageabqblafaabwb3aguacgbzaggazqbsagwalgbwahmamqa="
+          ],
+          "error": null
+        },
+        {
+          "step": "T2",
+          "episode_id": "em_71b0ed9affecd48c",
+          "status": "ok",
+          "candidate_count": 26,
+          "unique_values": [
+            "bjenkins"
+          ],
+          "expected_present": true,
+          "query_count": 1,
+          "expected_alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+          "witnesses": [
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-17 22:34:57.347099+00:00",
+              "source_row_hash": "03f3dc974066774c4735130dbf5da1521b5bd44c800f0c811b72422e400dc5c0",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-28 22:39:34.976130+00:00",
+              "source_row_hash": "051e898668349e0aea9f2f1834e3c83715dccd36f1fcf166599cd18d206ad57b",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            },
+            {
+              "concept": "Account_Name",
+              "graph_value": "bjenkins",
+              "raw_components": {
+                "Name": "bjenkins"
+              },
+              "roles": [],
+              "entity_index": 0,
+              "alert_id": "d39a3e64-8f75-61cc-dcd4-2f28b945e65c",
+              "time": "2024-07-13 22:34:41.778058+00:00",
+              "source_row_hash": "0673acecc919bbe9af67b08f1cdc7e467814a7244e811ba8f0b7673cd963edda",
+              "matched_inputs": [
+                "powershell.exe"
+              ]
+            }
+          ],
+          "witness_count": 26,
+          "sql": "SELECT DISTINCT o.AlertId, o.AlertTitle, o.ObservedAt, o.EntityIndex,\n       o.GraphValue AS value, o.RawComponents, o.Roles, o.SourceRowHash,\n       i.GraphValue AS matched_input\nFROM LTMInputEvidence i\nJOIN LTMEntityEvidence o ON o.SourceRowHash = i.SourceRowHash\nWHERE i.AlertTitle = %s\n  AND i.Concept = 'Command_File_Mention' AND o.Concept = 'Account_Name'\n  AND i.GraphValue IN (%s,%s)\nORDER BY o.AlertId, o.SourceRowHash, o.EntityIndex, o.GraphValue, i.GraphValue\nLIMIT 501",
+          "parameters": [
+            "Sensitive credential memory read",
+            "iy2orr1e.rrg.exe",
+            "powershell.exe"
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "offline_scope": "Uses official start entities; no intermediate or target value supplied to queries. Expected values checked only after results.",
+  "live_scope": "Exported merged PM/EM; session-local MySQL projection of original CSV, membership from SecurityIncident.AlertIds. Official graph supplies seed, expected path checked only AFTER full route execution.",
+  "delta": {
+    "sm": 0,
+    "em": 0,
+    "pm": 1
+  },
+  "live_validation_v1": [
+    {
+      "variant": "from_Account_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9"
+        }
+      ]
+    },
+    {
+      "variant": "from_Account_SID",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9"
+        }
+      ]
+    },
+    {
+      "variant": "from_Command_File_Mention",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9"
+        }
+      ]
+    },
+    {
+      "variant": "from_Host_Name",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9"
+        }
+      ]
+    },
+    {
+      "variant": "from_Process_Identity",
+      "passed": false,
+      "steps": [
+        {
+          "step": "T1",
+          "status": "invalid_json",
+          "candidate_count": 0,
+          "expected_present": false,
+          "error": "Expecting ',' delimiter: line 1 column 48 (char 47)",
+          "alert_id": "049dac7c-f760-c44b-b3f3-7fa11c1965d9"
+        }
+      ]
+    }
+  ],
+  "physical_revision": 2,
+  "verification": "exact_alert_and_edge_lineage"
+}
